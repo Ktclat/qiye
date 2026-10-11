@@ -1,0 +1,33 @@
+name: Verify and package
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test
+        run: npm test
+      - name: Build Pages
+        run: python3 scripts/build-pages.py "$RUNNER_TEMP/qiye-pages"
+      - name: Source archive
+        run: git archive --format=zip --output="$RUNNER_TEMP/qiye-source.zip" HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qiye-source
+          path: ${{ runner.temp }}/qiye-source.zip
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qiye-static
+          path: ${{ runner.temp }}/qiye-pages
+          include-hidden-files: true
+          retention-days: 7
