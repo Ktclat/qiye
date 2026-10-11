@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the static GitHub Pages files in a separate publishing checkout."""
+"""Build static files for the qiye repository's gh-pages branch."""
 import argparse
 import json
 from pathlib import Path
@@ -9,7 +9,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('output', type=Path, help='Path to the separate GitHub Pages repository checkout')
+parser.add_argument('output', type=Path, help='Path to a separate checkout or worktree of the gh-pages branch')
 output = parser.parse_args().output.resolve()
 if output == root or root in output.parents:
     parser.error('Use a separate publishing directory outside the source repository.')
@@ -27,21 +27,25 @@ shutil.copyfile(root / 'icons/icon32.png', output / 'icons/icon32.png')
 
 栖页 v{version} 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
 
-**[打开栖页](https://ktclat.github.io/qiye.ktclat.github.io/)** · **[完整源码与扩展安装](https://github.com/Ktclat/qiye)**
+**[打开栖页](https://ktclat.github.io/qiye/)** · **[完整源码与扩展安装](https://github.com/Ktclat/qiye/tree/main)**
 
-本仓库保存由生产模块生成的静态发布文件。完整源码、功能说明、图标智能提取实现、隐私说明和测试位于 [Ktclat/qiye](https://github.com/Ktclat/qiye)。
+本分支 `gh-pages` 专门保存由生产模块生成的静态网页文件。完整源码、功能说明、图标智能提取实现、隐私说明和测试位于同一仓库的 [main 分支](https://github.com/Ktclat/qiye/tree/main)。
+
+## 首次启用 Pages
+
+打开 [仓库 Settings → Pages](https://github.com/Ktclat/qiye/settings/pages)，选择 **Deploy from a branch → gh-pages → /(root)**，然后点击 **Save**。首次部署完成后，上方演示地址才会显示栖页。可以在 [Actions](https://github.com/Ktclat/qiye/actions) 查看部署结果。
 
 ## 更新网站
 
-在源码仓库运行：
+在 `main` 分支的源码目录运行：
 
 ```sh
-python3 scripts/build-pages.py /path/to/qiye-pages
+python3 scripts/build-pages.py /path/to/qiye-demo
 ```
 
-输出目录应为本发布仓库的本地 checkout。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll` 和本文档，保留目录中的 Git 历史与其他文件。请修改源码后重新生成，不直接编辑生成的 HTML。
+输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll` 和本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
 
-将生成文件提交到本仓库的 `main` 分支，GitHub Pages 会自动部署。Pages 配置为 **Deploy from a branch → main → /(root)**；源码仓库的提交不会自动跨仓库发布。
+Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分支**，GitHub Pages 会自动部署。仅推送 `main` 不会更新演示页面；请先构建，再将生成文件推送到 `gh-pages`。
 
 网页使用相对图标路径，其余样式和生产模块均已内联，无需 Node.js 或服务器构建。网站图标、壁纸与 WebDAV 等联网功能仍受相应服务和浏览器网络策略影响。
 

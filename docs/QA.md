@@ -26,14 +26,24 @@
 - 检查 Manifest V3、版本号、扩展页面/图标/脚本、HTML 样式和模块导入路径。
 - 检查 GitHub Pages 项目路径下的相对资源引用与 `.nojekyll` 发布标记。
 
-这些检查已随 v0.2.1 更新执行，本次通过仓库交付源码与生成文件。网页由独立发布仓库的 GitHub Pages 托管，配置与构建方法见 [DEPLOYMENT.md](DEPLOYMENT.md)。
+这些检查已随 v0.2.1 更新执行。本轮将网页发布文件调整到同一仓库的 `gh-pages` 分支，`main` 保留完整源码。配置与构建方法见 [DEPLOYMENT.md](DEPLOYMENT.md)。
 
-## 已完成的 GitHub Pages 网页验收
+## 本轮 gh-pages 分支发布与验收
 
-- 正式地址：[https://ktclat.github.io/qiye.ktclat.github.io/](https://ktclat.github.io/qiye.ktclat.github.io/)。
+更新日期：2026-10-12（香港时间）。
+
+- 已将 `Ktclat/qiye` 的 `gh-pages` 分支用于演示发布，当前提交为 [`d79d075`](https://github.com/Ktclat/qiye/commit/d79d0750801236622e32b9fe918dfa0e05b85b8a)。分支仅包含静态首页、网页标签图标、`.nojekyll` 和发布说明。
+- Pages 已启用，发布配置为 **Deploy from a branch → gh-pages → /(root)**。对应提交的 [Pages 构建与部署运行](https://github.com/Ktclat/qiye/actions/runs/38155464505) 已成功。
+- 已核验新地址 [https://ktclat.github.io/qiye/](https://ktclat.github.io/qiye/)：首页返回 **HTTP 200**，内容与 `gh-pages` 中的发布文件逐字节一致（319,280 字节）；网页标签图标也返回 **HTTP 200**，与源码一致。
+- 本轮仅调整发布位置、构建说明与演示链接，运行时生产模块沿用已验证的 v0.2.1。重新生成并检查了 HTML 模块语法、相对图标路径与发布文件内容。
+- 新地址的部署和 HTTP 响应已经验收；生产模块与下方历史网页验证使用同一版本，本轮未重复执行浏览器完整交互、扩展实装或真实 WebDAV 服务联调。
+
+## 迁移前已完成的 GitHub Pages 网页验收
+
+- 以下是迁移前在旧发布地址完成的历史浏览器记录；新地址的部署验收见上节。旧验证地址：[https://ktclat.github.io/qiye.ktclat.github.io/](https://ktclat.github.io/qiye.ktclat.github.io/)。
 - 发布提交：[`2544ce3`](https://github.com/Ktclat/qiye.ktclat.github.io/commit/2544ce3ab24699af8e199eed0908058f511dedda)。对应的原生 [Pages 构建与部署运行](https://github.com/Ktclat/qiye.ktclat.github.io/actions/runs/38154532696) 已成功完成。
-- 正式首页和网页标签图标均返回 **HTTP 200**。下载到的 HTML 与已验证发布文件逐字节一致（319,280 字节），标签图标也与源码一致。
-- 在浏览器实际打开正式地址，无需登录即可显示桌面、时钟、分组、卡片与新增网站弹层。留存了 [实际运行截图](screenshots/qiye-pages-20261011.jpg)。
+- 当时的首页和网页标签图标均返回 **HTTP 200**。下载到的 HTML 与已验证发布文件逐字节一致（319,280 字节），标签图标也与源码一致。
+- 在浏览器实际打开旧发布地址，无需登录即可显示桌面、时钟、分组、卡片与新增网站弹层。留存了 [实际运行截图](screenshots/qiye-pages-20261011.jpg)。
 - 本次首页及文件夹预览的 12 个网站图标中，Google、哔哩哔哩、GitHub、ChatGPT、YouTube、知乎、豆瓣、DeepL、Unsplash、Excalidraw 的图片实际加载成功；Notion、Figma 使用文字回退。这是当前浏览器中的观察结果，不保证所有网络环境都相同。
 - 新增网站表单中，对 Google 执行智能提取，观察到网页版 CORS 失败提示并回退到站点图标；切换文字模式后预览变为文字，提取按钮停用。关闭表单时未添加测试网址。
 
