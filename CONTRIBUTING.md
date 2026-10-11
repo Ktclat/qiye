@@ -17,6 +17,8 @@ python3 scripts/build-preview.py
 
 Windows 如未提供 `python3` 命令，可使用 `py -3 scripts/build-preview.py`。`Qiye-preview.html` 是提交到仓库的生成文件；请修改 `index.html`、样式及 `src/` 模块，再运行生成脚本，不要只修改生成结果。
 
+GitHub Pages 使用 `main` 分支根目录的 `index.html` 发布。保留 `.nojekyll` 和相对资源路径，部署和域名迁移说明见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+
 ## 修改与验证
 
 每个 Pull Request 围绕一个明确的问题，说明原因、修改后的行为以及实际做过的验证。涉及页面或组件时附上自己的浏览器截图，并注明浏览器版本和窗口尺寸。

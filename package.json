@@ -1,6 +1,6 @@
 {
   "name": "qiye-extension",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "栖页 Qiye — account-free new tab with WebDAV sync",
@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/Ktclat/qiye.git"
   },
-  "homepage": "https://qiye-newtab-preview.koesloratu.chatgpt.site",
+  "homepage": "https://ktclat.github.io/qiye/",
   "bugs": {
     "url": "https://github.com/Ktclat/qiye/issues"
   },

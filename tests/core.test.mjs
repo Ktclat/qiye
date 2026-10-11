@@ -83,11 +83,63 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
     assert.ok(homeWidgets.some(item => item.widget === kind), `${kind} has a default home card`);
   }
   assert.equal(homeWidgets.find(item => item.widget === 'wallpaper').size, '4x2');
+  assert.ok(checked.items.filter(item => item.type === 'link').every(item => item.iconMode === 'auto'));
+  assert.ok(checked.items.filter(item => item.type !== 'link').every(item => !Object.hasOwn(item, 'iconMode')));
   assert.deepEqual(validateImport(exportState(checked)), checked);
   checked.settings.theme = 'light';
   assert.equal(DEFAULT_STATE.settings.theme, 'dark');
   assert.ok(Object.isFrozen(DEFAULT_STATE.items));
   assert.ok(ENGINES.every(engine => safeUrl(engine.url.replace('{q}', 'test'))));
+});
+
+test('legacy backups gain automatic icons while text choices survive storage and backup round trips', async () => {
+  for (const version of ['0.1', '0.2']) {
+    const legacy = fresh();
+    for (const item of legacy.items) delete item.iconMode;
+    if (version === '0.1') {
+      delete legacy.settings.wallpaperApiEnabled;
+      delete legacy.settings.remoteWallpaper;
+      legacy.items = legacy.items.filter(item => item.widget !== 'wallpaper');
+    }
+    const fixture = extensionFixture(legacy);
+    const loaded = await loadState();
+    assert.equal(fixture.writes, 0, 'normalizing an old record must not silently write it');
+    for (const item of loaded.items.filter(item => item.type === 'link')) {
+      assert.equal(item.iconMode, 'auto');
+      assert.equal(item.icon, legacy.items.find(old => old.id === item.id).icon);
+    }
+    assert.deepEqual(validateImport(exportState(loaded)), loaded);
+    loaded.items.find(item => item.type === 'link').iconMode = 'text';
+    const saved = await saveState(loaded);
+    assert.deepEqual(await loadState(), saved);
+    assert.deepEqual(validateImport(exportState(saved)), saved);
+    assert.equal(saved.items.find(item => item.type === 'link').iconMode, 'text');
+  }
+  const appended = await appendLink({ title: '自选文字图标', url: 'https://example.org/text-icon', iconMode: 'text' });
+  assert.equal(appended.item.iconMode, 'text');
+  assert.equal((await loadState()).items.find(item => item.id === appended.item.id).iconMode, 'text');
+});
+
+test('invalid icon modes and remote icon fields cannot enter persistent desktop data', async () => {
+  const fixture = extensionFixture(fresh());
+  const original = copy(fixture.records[STORAGE_KEY]);
+  for (const mode of ['favicon', '', null, { url: 'https://example.org/icon.png' }]) {
+    const state = fresh();
+    state.items.find(item => item.type === 'link').iconMode = mode;
+    assert.throws(() => validateImport(state), /iconMode/);
+    await assert.rejects(saveState(state), /iconMode/);
+    await assert.rejects(appendLink({ title: '无效模式', url: 'https://example.org/invalid-mode', iconMode: mode }), /iconMode/);
+  }
+  for (const type of ['folder', 'widget']) {
+    const state = fresh();
+    state.items.find(item => item.type === type).iconMode = 'auto';
+    assert.throws(() => validateImport(state), /iconMode.*不是支持的字段/);
+  }
+  const remote = fresh();
+  remote.items.find(item => item.type === 'link').iconUrl = 'https://example.org/icon.png';
+  assert.throws(() => exportState(remote), /iconUrl.*不是支持的字段/);
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], original);
 });
 
 test('safeUrl normalizes safe domains but rejects scripts, credentials, controls, and ambiguous schemes', () => {
@@ -369,6 +421,7 @@ test('parallel append transactions retain every new link and duplicates do not w
   await Promise.all(Array.from({ length: 12 }, (_, i) => appendLink({ title: `收藏 ${i}`, url: `https://example.org/item-${i}` })));
   const state = await loadState();
   assert.equal(state.items.length, originalCount + 12);
+  assert.ok(state.items.slice(originalCount).every(item => item.iconMode === 'auto'));
   assert.equal(new Set(state.items.map(item => item.id)).size, state.items.length);
   const writes = fixture.writes;
   const duplicate = await appendLink({ title: '已有网页', url: 'https://example.org/item-1' });
@@ -385,6 +438,7 @@ test('current-tab action honors chosen group and rejects privileged browser URLs
   assert.equal(added.item.title, '手动命名');
   assert.equal(added.item.groupId, 'work');
   assert.equal(added.item.url, fixture.tab.url);
+  assert.equal(added.item.iconMode, 'auto');
   fixture.tab.url = 'chrome://settings/';
   const writes = fixture.writes;
   await assert.rejects(addCurrentTab(), /http 或 https/);

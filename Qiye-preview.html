@@ -105,6 +105,35 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @media(max-width:560px){.sidebar{width:52px}.brand{margin-top:22px;margin-bottom:15px}.group-button{width:40px;min-height:51px;font-size:9px}.group-button.active:before{left:-6px}.groups{gap:6px}.side-button{width:35px;height:35px}.sidebar-bottom{padding-bottom:13px;gap:5px}main{margin-left:52px;padding:0 16px 88px}.hero{padding-top:80px}.clock{font-size:clamp(48px,12vw,70px);letter-spacing:-2px}.search-wrapper{margin-top:24px}.search-form{height:46px}.engine-button{width:49px;padding-left:10px}.engine-button:after{top:14px;bottom:14px}.search-form input{padding-left:9px;font-size:11px}.search-submit{width:35px}.desktop-wrap{margin-top:23px}.desktop-heading{margin-bottom:10px}.tile-label{font-size:10px}.daily-quote{left:68px;right:16px;bottom:36px;font-size:9px}.wallpaper-credit{right:13px;bottom:10px;max-width:calc(100vw - 78px);font-size:9px}.app-dialog{border-radius:19px}.tab-button{font-size:11px;padding:8px 7px}.dialog-head h2{font-size:18px}.dialog-head p{font-size:11px}.toast{bottom:56px;left:50%;font-size:11px}.context-menu{width:196px}}
 @media(max-width:390px){.two-columns{grid-template-columns:1fr}.tab-bar{gap:1px}.tab-button{padding:8px 5px}.clock{font-size:52px}.date{letter-spacing:0;font-size:10px}.theme-options{gap:5px}}
 
+/* Site icons are image resources only; the text fallback remains until load. */
+.site-visual{position:relative;display:grid;place-items:center;width:100%;height:100%;min-width:0;border-radius:inherit;overflow:hidden}
+.site-visual.is-loaded{background:rgba(250,252,253,.96)}
+.site-fallback{display:grid;place-items:center;width:100%;height:100%;color:inherit}
+.site-visual.is-loaded>.site-fallback{visibility:hidden}
+.site-visual>.site-favicon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:60%;height:60%;max-width:38px;max-height:38px;object-fit:contain;background:transparent;pointer-events:none}
+.site-visual>.site-favicon[hidden]{display:none}
+.site-fallback>.icon{width:30px;height:30px}
+.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{max-width:60px;max-height:60px}
+.tile-link[data-size="2x2"] .site-fallback>.icon,.tile-link[data-size="4x2"] .site-fallback>.icon{width:48px;height:48px}
+.mini-site .site-favicon{max-width:30px;max-height:30px}
+.mini-site .site-glyph{font-size:21px}
+.mini-site .site-glyph.small{font-size:15px}
+.folder-site .site-visual,.folder-site .site-fallback{max-width:none;overflow:visible}
+.folder-site .site-visual{overflow:hidden}
+.folder-site .site-glyph{font-size:26px}
+.folder-site .site-glyph.small{font-size:19px}
+.suggestion-site{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:8px;background:var(--tile-color,#486c91);color:var(--tile-ink,#fff);overflow:hidden}
+.suggestion-site .site-favicon{width:72%;height:72%;max-width:24px;max-height:24px}
+.suggestion-site .site-glyph,.suggestion-site .site-glyph.small{font-size:13px;letter-spacing:0}
+.suggestion-site .site-fallback>.icon,.suggestion-site>.icon{width:17px;height:17px;opacity:1}
+.form-preview .preview-icon{overflow:hidden;color:var(--tile-ink,#fff)}
+.form-preview .preview-icon .site-glyph{font-size:28px}
+.favicon-controls{display:flex;gap:13px;align-items:center;margin:-3px 0 18px}
+.favicon-controls .secondary-button{flex:none;min-width:95px}
+.favicon-controls .help-text{margin:0;min-width:0}
+.favicon-controls .secondary-button:disabled{opacity:.48;cursor:default;filter:none}
+@media(max-width:390px){.favicon-controls{align-items:flex-start;gap:10px}.favicon-controls .secondary-button{min-width:85px;padding-right:12px;padding-left:12px}}
+
 </style>
   <style>
 .widget-inner{position:relative;display:flex;flex-direction:column;box-sizing:border-box;width:100%;height:100%;min-height:0;padding:12px;overflow:hidden;border-radius:inherit;color:#354354;background:#fbfcff;font-size:11px;line-height:1.4;text-align:left;container-type:inline-size;isolation:isolate}
@@ -428,6 +457,421 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
   <input id="backup-file" type="file" accept="application/json,.json" hidden>
   <input id="wallpaper-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm" hidden>
   <script type="module">
+const __favicons = (() => {
+/* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
+
+const FAVICON_CACHE_KEY = 'qiye.favicons.local.v1';
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+const FAILURE_TTL = 10 * 60 * 1000;
+const MAX_ENTRIES = 200;
+const MAX_CANDIDATES = 12;
+const HTML_LIMIT = 384 * 1024;
+const MANIFEST_LIMIT = 128 * 1024;
+const REQUEST_TIMEOUT = 8_000;
+const cache = new Map();
+const pending = new Map();
+const WARNINGS = Object.freeze({
+  unsafe: '此网址不支持在线图标提取；请使用公开网站的 HTTPS 地址。',
+  permission: '尚未允许读取此站点，已使用站点图标地址回退。',
+  network: '无法读取站点图标声明；网页版可能受网站 CORS 限制，已使用站点图标地址回退。',
+  timeout: '图标提取超时，已使用站点图标地址回退。',
+  redirect: '站点跳转无法安全读取；可将网址改成跳转后的 HTTPS 地址再试。',
+  large: '站点返回的内容过大，已使用站点图标地址回退。',
+  content: '站点未返回可读取的网页或图标清单，已使用站点图标地址回退。',
+  missing: '网页未声明可用图标，已使用站点图标地址回退。',
+});
+
+function extensionRuntime() {
+  const runtime = globalThis.chrome?.runtime;
+  return runtime?.id && typeof runtime.getURL === 'function' ? runtime : null;
+}
+
+/* URL() canonicalizes alternate IPv4 spellings before this check. Reject local
+ * hostnames and IP literals, including public IPs, to keep extraction on ordinary
+ * public HTTPS domains. DNS resolution remains subject to the browser's policy. */
+function publicHost(hostname) {
+  const host = hostname.toLowerCase().replace(/\.$/, '');
+  return host.includes('.') && !host.includes(':') && !/^\d+(?:\.\d+){3}$/.test(host)
+    && !/(?:^|\.)(?:localhost|local|internal|lan|home|localdomain|intranet|onion)$/.test(host);
+}
+
+function safeImageUrl(value, base) {
+  if (typeof value !== 'string' || !value.trim() || value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+  try {
+    const url = new URL(value.trim(), base);
+    if (url.protocol !== 'https:' || url.username || url.password || url.port || !publicHost(url.hostname)) return null;
+    url.hash = '';
+    return url.href;
+  } catch { return null; }
+}
+
+function sitePageUrl(value) {
+  if (typeof value !== 'string' || value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol === 'http:' && !url.port) url.protocol = 'https:';
+    const safe = safeImageUrl(url.href);
+    if (!safe) return null;
+    const result = new URL(safe);
+    result.search = '';
+    result.hash = '';
+    return result.href;
+  } catch { return null; }
+}
+
+function unique(values) { return [...new Set(values.filter(Boolean))].slice(0, MAX_CANDIDATES); }
+
+function browserFavicon(pageUrl) {
+  try {
+    const runtime = extensionRuntime();
+    if (!runtime) return null;
+    const url = new URL(runtime.getURL('/_favicon/'));
+    if (url.protocol !== 'chrome-extension:' || url.hostname !== runtime.id) return null;
+    url.searchParams.set('pageUrl', pageUrl);
+    url.searchParams.set('size', '64');
+    return url.href;
+  } catch { return null; }
+}
+
+function currentEntry(pageUrl) {
+  const entry = cache.get(pageUrl);
+  if (entry && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > Date.now()) return entry;
+  if (entry) cache.delete(pageUrl);
+  return null;
+}
+
+/** Synchronous image candidates: known working icon, discovered declarations,
+ * site-owned conventional paths, then Chrome's local favicon service. */
+function getFaviconCandidates(siteUrl) {
+  const pageUrl = sitePageUrl(siteUrl);
+  if (!pageUrl) return [];
+  const entry = currentEntry(pageUrl);
+  const origin = new URL(pageUrl).origin;
+  const known = entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : [];
+  const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
+  const extracted = unique([preferred, ...known]).slice(0, MAX_CANDIDATES - 3);
+  return unique([...extracted, `${origin}/favicon.ico`, `${origin}/apple-touch-icon.png`, browserFavicon(pageUrl)]);
+}
+
+function trimCache() {
+  const ordered = [...cache].sort((a, b) => Math.max(b[1].checkedAt, b[1].loadedAt) - Math.max(a[1].checkedAt, a[1].loadedAt));
+  cache.clear();
+  for (const [key, entry] of ordered.slice(0, MAX_ENTRIES)) {
+    if (Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > Date.now()) cache.set(key, entry);
+  }
+}
+
+async function readCache() {
+  try {
+    let raw;
+    if (extensionRuntime() && globalThis.chrome?.storage?.local) raw = (await globalThis.chrome.storage.local.get(FAVICON_CACHE_KEY))?.[FAVICON_CACHE_KEY];
+    else {
+      const json = globalThis.localStorage?.getItem(FAVICON_CACHE_KEY);
+      if (typeof json === 'string' && json.length <= 1024 * 1024) raw = JSON.parse(json);
+    }
+    if (!raw || raw.version !== 1 || !Array.isArray(raw.entries)) return;
+    const now = Date.now();
+    for (const item of raw.entries.slice(0, MAX_ENTRIES)) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      const pageUrl = sitePageUrl(item.pageUrl);
+      if (!pageUrl || pageUrl !== item.pageUrl) continue;
+      const time = value => Number.isFinite(value) && value >= 0 && value <= now ? value : 0;
+      const entry = {
+        preferred: safeImageUrl(item.preferred) || '',
+        candidates: unique(Array.isArray(item.candidates) ? item.candidates.slice(0, MAX_CANDIDATES).map(url => safeImageUrl(url)) : []),
+        checkedAt: time(item.checkedAt), loadedAt: time(item.loadedAt),
+        failedUntil: Number.isFinite(item.failedUntil) && item.failedUntil >= 0 && item.failedUntil <= now + FAILURE_TTL ? item.failedUntil : 0,
+        errorCode: Object.hasOwn(WARNINGS, item.errorCode) ? item.errorCode : '',
+        source: ['html', 'manifest', 'fallback'].includes(item.source) ? item.source : 'fallback',
+      };
+      if (!cache.has(pageUrl) && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > now) cache.set(pageUrl, entry);
+    }
+    trimCache();
+  } catch { /* Private browsing or storage quotas must not prevent local fallback. */ }
+}
+
+const faviconCacheReady = readCache();
+let writeQueued = false;
+let writes = Promise.resolve();
+
+function persistCache() {
+  if (writeQueued) return;
+  writeQueued = true;
+  queueMicrotask(() => {
+    writeQueued = false;
+    writes = writes.catch(() => {}).then(async () => {
+      await faviconCacheReady;
+      trimCache();
+      const value = { version: 1, entries: [...cache].map(([pageUrl, entry]) => ({ pageUrl, ...entry })) };
+      try {
+        if (extensionRuntime() && globalThis.chrome?.storage?.local) await globalThis.chrome.storage.local.set({ [FAVICON_CACHE_KEY]: value });
+        else globalThis.localStorage?.setItem(FAVICON_CACHE_KEY, JSON.stringify(value));
+      } catch { /* Best-effort cache; desktop data is stored separately. */ }
+    });
+  });
+}
+
+/** Call only after an <img> load succeeds. Internal Chrome URLs never persist. */
+function rememberFavicon(siteUrl, iconUrl) {
+  const pageUrl = sitePageUrl(siteUrl);
+  const safe = safeImageUrl(iconUrl);
+  if (!pageUrl || !safe) return false;
+  const entry = currentEntry(pageUrl) || { candidates: [], preferred: '', checkedAt: 0, loadedAt: 0, failedUntil: 0, errorCode: '', source: 'fallback' };
+  if (entry.preferred === safe && entry.loadedAt + CACHE_TTL / 2 > Date.now()) return true;
+  entry.preferred = safe;
+  entry.loadedAt = Date.now();
+  cache.set(pageUrl, entry);
+  persistCache();
+  return true;
+}
+
+function decodeAttribute(value) {
+  const named = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', colon: ':', sol: '/', Tab: '\t', NewLine: '\n' };
+  return value.replace(/&(#x[\da-f]+|#\d+|amp|quot|apos|lt|gt|colon|sol|Tab|NewLine);/gi, (entity, key) => {
+    if (key[0] !== '#') return named[key] ?? named[key.toLowerCase()] ?? entity;
+    const code = key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1));
+    return code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff) ? String.fromCodePoint(code) : '\uFFFD';
+  });
+}
+
+/* A bounded metadata tokenizer, not a DOM: fetched markup is never inserted,
+ * executed, or handed to DOMParser (which can load embedded resources). */
+function metadataTags(html) {
+  const tags = [];
+  const lower = html.toLowerCase();
+  let index = 0;
+  let templateDepth = 0;
+  while (index < html.length && tags.length < 128) {
+    const start = html.indexOf('<', index);
+    if (start < 0) break;
+    if (html.startsWith('<!--', start)) {
+      const end = html.indexOf('-->', start + 4);
+      index = end < 0 ? html.length : end + 3;
+      continue;
+    }
+    const match = /^<\s*(\/?)\s*([a-z][a-z\d:-]*)/i.exec(html.slice(start, start + 100));
+    if (!match) { index = start + 1; continue; }
+    const tag = match[2].toLowerCase();
+    const closing = Boolean(match[1]);
+    let cursor = start + match[0].length;
+    const attrs = Object.create(null);
+    while (cursor < html.length) {
+      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
+      if (html[cursor] === '>' || html[cursor] === '/' && html[cursor + 1] === '>') break;
+      const nameStart = cursor;
+      while (cursor < html.length && !/[\s=/>]/.test(html[cursor])) cursor++;
+      const name = html.slice(nameStart, cursor).toLowerCase();
+      if (!name) { cursor++; continue; }
+      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
+      let value = '';
+      if (html[cursor] === '=') {
+        cursor++;
+        while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
+        const quote = html[cursor] === '"' || html[cursor] === "'" ? html[cursor++] : null;
+        const valueStart = cursor;
+        if (quote) while (cursor < html.length && html[cursor] !== quote) cursor++;
+        else while (cursor < html.length && !/[\s>]/.test(html[cursor])) cursor++;
+        value = html.slice(valueStart, cursor);
+        if (quote && html[cursor] === quote) cursor++;
+      }
+      if (!Object.hasOwn(attrs, name)) attrs[name] = decodeAttribute(value);
+    }
+    const end = html.indexOf('>', cursor);
+    index = end < 0 ? html.length : end + 1;
+    if (!templateDepth && (tag === 'body' || closing && tag === 'head')) break;
+    if (tag === 'template') { templateDepth = Math.max(0, templateDepth + (closing ? -1 : 1)); continue; }
+    if (!closing && /^(?:script|style|title|textarea|xmp|iframe|noembed|noframes|noscript)$/.test(tag)) {
+      const endTag = new RegExp(`</${tag}(?=[\\s/>])`, 'g');
+      endTag.lastIndex = index;
+      const rawEnd = endTag.exec(lower);
+      index = rawEnd ? rawEnd.index : html.length;
+      continue;
+    }
+    if (!templateDepth && !closing && (tag === 'link' || tag === 'base')) tags.push({ tag, attrs });
+  }
+  return tags;
+}
+
+function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, order) {
+  const mime = String(type).toLowerCase().split(';')[0].trim();
+  if (mime && !/^image\/(?:png|jpeg|gif|webp|avif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/.test(mime)) return null;
+  const purposes = String(purpose).toLowerCase().split(/\s+/);
+  if (purposes.includes('monochrome') && !purposes.includes('any') && !purposes.includes('maskable')) return null;
+  const scalable = /(?:^|\s)any(?:$|\s)/i.test(sizes) || mime === 'image/svg+xml' || /\.svg$/i.test(new URL(url).pathname);
+  let quality = scalable ? 1000 : 350;
+  let adequate = scalable;
+  for (const token of String(sizes).slice(0, 250).split(/\s+/)) {
+    const dimensions = /^(\d{1,4})x(\d{1,4})$/i.exec(token);
+    if (!dimensions) continue;
+    const width = Number(dimensions[1]), height = Number(dimensions[2]);
+    if (!width || !height || width > 8192 || height > 8192) continue;
+    const size = Math.min(width, height);
+    const shapePenalty = Math.abs(width - height) / Math.max(width, height) * 200;
+    const score = (size >= 64 ? 600 + Math.min(size, 192) : size >= 32 ? 400 + size : 200 + size) - shapePenalty;
+    quality = Math.max(quality, score);
+    if (size >= 128 && shapePenalty < 20) adequate = true;
+  }
+  return { url, score: quality + (kind === 'html' ? 20 : kind === 'apple' ? 10 : 0), adequate, source: kind === 'manifest' ? 'manifest' : 'html', order };
+}
+
+function parseHtmlIcons(html, pageUrl) {
+  const tags = metadataTags(html);
+  const firstBase = tags.find(tag => tag.tag === 'base' && Object.hasOwn(tag.attrs, 'href'));
+  const base = firstBase ? safeImageUrl(firstBase.attrs.href, pageUrl) || pageUrl : pageUrl;
+  let manifest = null;
+  const icons = [];
+  for (const { tag, attrs } of tags) {
+    if (tag !== 'link' || typeof attrs.href !== 'string' || !attrs.href.trim()) continue;
+    const rel = String(attrs.rel || '').toLowerCase().split(/\s+/);
+    const url = safeImageUrl(attrs.href, base);
+    if (!url) continue;
+    const kind = rel.includes('icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
+    if (kind) {
+      const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length);
+      if (icon) icons.push(icon);
+    }
+    if (!manifest && rel.includes('manifest') && new URL(url).origin === new URL(pageUrl).origin) manifest = sitePageUrl(url);
+  }
+  return { icons, manifest };
+}
+
+function parseManifestIcons(text, manifestUrl, offset) {
+  let value;
+  try { value = JSON.parse(text); } catch { throw new Error('content'); }
+  if (!value || typeof value !== 'object' || !Array.isArray(value.icons)) return [];
+  return value.icons.slice(0, 64).flatMap((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+    const url = safeImageUrl(item.src, manifestUrl);
+    if (!url) return [];
+    const icon = rankIcon({ url, sizes: item.sizes, type: item.type, purpose: item.purpose, kind: 'manifest' }, offset + index);
+    return icon ? [icon] : [];
+  });
+}
+
+async function boundedText(response, limit) {
+  if (Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
+  if (!response.body?.getReader) {
+    const text = await response.text();
+    if (new TextEncoder().encode(text).byteLength > limit) throw new Error('large');
+    return text;
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let length = 0, text = '';
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
+      text += decoder.decode(value, { stream: true });
+    }
+    return text + decoder.decode();
+  } finally { reader.releaseLock(); }
+}
+
+async function fetchMetadata(url, kind, signal) {
+  const origin = new URL(url).origin;
+  const seen = new Set();
+  for (let redirects = 0; redirects <= 2; redirects++) {
+    if (seen.has(url)) throw new Error('redirect');
+    seen.add(url);
+    const response = await globalThis.fetch(url, {
+      method: 'GET', signal, credentials: 'omit', referrerPolicy: 'no-referrer',
+      redirect: 'manual', mode: 'cors', cache: 'no-store',
+      headers: { Accept: kind === 'html' ? 'text/html,application/xhtml+xml;q=0.9' : 'application/manifest+json,application/json;q=0.9' },
+    });
+    if (response.type === 'opaqueredirect') throw new Error('redirect');
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers?.get?.('location');
+      const safe = typeof location === 'string' ? safeImageUrl(location, url) : null;
+      const next = safe && sitePageUrl(safe);
+      if (!next || new URL(next).origin !== origin || redirects === 2) throw new Error('redirect');
+      url = next;
+      continue;
+    }
+    if (response.url && (!safeImageUrl(response.url) || new URL(response.url).origin !== origin)) throw new Error('redirect');
+    if (!response.ok) throw new Error('network');
+    const mime = (response.headers?.get?.('content-type') || '').toLowerCase().split(';')[0].trim();
+    if (mime && !(kind === 'html' ? ['text/html', 'application/xhtml+xml'].includes(mime) : /^(?:application\/(?:manifest\+json|json)|text\/json)$/.test(mime))) throw new Error('content');
+    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT), url };
+  }
+  throw new Error('redirect');
+}
+
+function resultFor(pageUrl, source, errorCode = '') {
+  const candidates = pageUrl ? getFaviconCandidates(pageUrl) : [];
+  return { url: candidates[0] || null, candidates, source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
+}
+
+/** Explicit user action only. When requested, the permission API is invoked
+ * synchronously, before cache initialization or any asynchronous work. Web pages
+ * can read only sites that opt into CORS; no proxy bypass is attempted. */
+function discoverFavicon(siteUrl, { requestPermission = false, force = false } = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe'));
+  if (pending.has(pageUrl)) return pending.get(pageUrl);
+  const runtime = extensionRuntime();
+  const origins = [`${new URL(pageUrl).origin}/*`];
+  let permission;
+  if (runtime && requestPermission) {
+    try { permission = Promise.resolve(globalThis.chrome?.permissions?.request?.({ origins })).catch(() => false); }
+    catch { permission = Promise.resolve(false); }
+  }
+  const job = (async () => {
+    await faviconCacheReady;
+    if (runtime) {
+      let granted = false;
+      try { granted = permission ? await permission : await globalThis.chrome?.permissions?.contains?.({ origins }); }
+      catch { /* A revoked or unavailable permission is an ordinary fallback. */ }
+      if (granted !== true) return resultFor(pageUrl, 'fallback', 'permission');
+    }
+    const previous = currentEntry(pageUrl);
+    if (!force && previous) {
+      if (previous.failedUntil > Date.now()) return resultFor(pageUrl, 'fallback', previous.errorCode || 'network');
+      if (previous.checkedAt + CACHE_TTL > Date.now() && previous.candidates.length) return resultFor(pageUrl, 'cache');
+    }
+    const controller = new AbortController();
+    let timer;
+    const deadline = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('timeout')); }, REQUEST_TIMEOUT); });
+    try {
+      const operation = (async () => {
+        const html = await fetchMetadata(pageUrl, 'html', controller.signal);
+        const metadata = parseHtmlIcons(html.text, html.url);
+        let icons = metadata.icons;
+        let manifestError = '';
+        if (metadata.manifest && !icons.some(icon => icon.adequate)) {
+          try {
+            const manifest = await fetchMetadata(metadata.manifest, 'manifest', controller.signal);
+            icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length)];
+          } catch (error) { manifestError = Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network'; }
+        }
+        if (!icons.length) throw new Error(manifestError || 'missing');
+        icons.sort((a, b) => b.score - a.score || a.order - b.order);
+        return icons;
+      })();
+      const icons = await Promise.race([operation, deadline]);
+      cache.set(pageUrl, { preferred: '', candidates: unique(icons.map(icon => icon.url)), checkedAt: Date.now(), loadedAt: 0, failedUntil: 0, errorCode: '', source: icons[0].source });
+      persistCache();
+      return resultFor(pageUrl, icons[0].source);
+    } catch (error) {
+      const code = controller.signal.aborted ? 'timeout' : Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network';
+      const entry = currentEntry(pageUrl) || { preferred: '', candidates: [], loadedAt: 0, source: 'fallback' };
+      cache.set(pageUrl, { ...entry, checkedAt: entry.checkedAt || Date.now(), failedUntil: Date.now() + FAILURE_TTL, errorCode: code });
+      persistCache();
+      return resultFor(pageUrl, 'fallback', code);
+    } finally {
+      clearTimeout(timer);
+      controller.abort(); // Also stop unread bodies rejected by their headers.
+    }
+  })();
+  pending.set(pageUrl, job);
+  job.finally(() => { if (pending.get(pageUrl) === job) pending.delete(pageUrl); });
+  return job;
+}
+
+return {getFaviconCandidates, faviconCacheReady, rememberFavicon, discoverFavicon};
+})();
 const __wallpapers = (() => {
 /* Public wallpaper provider. No account, API key, or application server. */
 
@@ -619,8 +1063,8 @@ function deepFreeze(value) {
 
 const ENGINES = deepFreeze(BASE_ENGINES);
 
-function link(id, groupId, title, url, icon, color, folderId = null) {
-  return { id, groupId, type: 'link', title, url, icon, color, size: '1x1', folderId };
+function link(id, groupId, title, url, icon, color, folderId = null, iconMode = 'auto') {
+  return { id, groupId, type: 'link', title, url, icon, iconMode, color, size: '1x1', folderId };
 }
 
 function widget(id, widgetType, title, size = '2x2', config = {}, groupId = 'home') {
@@ -897,7 +1341,7 @@ function validateImport(raw) {
     const path = `items[${i}]`;
     plain(item, path);
     const type = enumeration(item.type, ['link', 'folder', 'widget'], `${path}.type`);
-    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
+    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
     keys(item, allowed, path);
     const groupId = id(item.groupId, `${path}.groupId`);
     if (!groupIds.has(groupId)) invalid(`${path}.groupId`, '对应分组不存在');
@@ -910,7 +1354,9 @@ function validateImport(raw) {
     }
     const appearance = { icon: string(maybe(item.icon, type === 'folder' ? 'folder' : item.title.slice(0, 1)), `${path}.icon`, 80), color: color(maybe(item.color, '#6BA39A'), `${path}.color`), size };
     if (type === 'folder') return { ...base, ...appearance };
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    // Old backups acquire automatic discovery without losing their text fallback.
+    const iconMode = enumeration(maybe(item.iconMode, 'auto'), ['auto', 'text'], `${path}.iconMode`);
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
@@ -1083,6 +1529,7 @@ async function saveState(state, options = {}) {
 async function appendLink(linkData, groupId) {
   const checkedUrl = safeUrl(linkData?.url);
   if (!checkedUrl) throw new Error('只能添加 http 或 https 网页。浏览器内部页面无法收藏到栖页。');
+  const iconMode = enumeration(maybe(linkData.iconMode, 'auto'), ['auto', 'text'], 'link.iconMode');
   const title = typeof linkData.title === 'string' && linkData.title.trim() ? linkData.title.trim().slice(0, 120) : new URL(checkedUrl).hostname;
   return withWriteLock(async () => {
     const state = await loadState();
@@ -1090,7 +1537,7 @@ async function appendLink(linkData, groupId) {
     if (!state.groups.some(group => group.id === targetGroup)) throw new Error('目标分组已不存在，请重新选择。');
     const existing = state.items.find(item => item.type === 'link' && item.groupId === targetGroup && item.url === checkedUrl && !item.folderId);
     if (existing) return { state, item: clone(existing), duplicate: true };
-    const item = link(uid(), targetGroup, title, checkedUrl, title.slice(0, 1), '#6BA39A');
+    const item = link(uid(), targetGroup, title, checkedUrl, title.slice(0, 1), '#6BA39A', null, iconMode);
     state.items.push(item);
     const saved = await persistValidated(validateImport(state));
     return { state: saved, item: clone(item), duplicate: false };
@@ -2801,6 +3248,7 @@ const { icon, iconNames } = __icons;
 const { normalizeWallpaperPhoto } = __wallpapers;
 const { webDAVStateFingerprint } = __webdav;
 const { createSyncController } = __sync_ui;
+const { getFaviconCandidates, discoverFavicon, rememberFavicon, faviconCacheReady } = __favicons;
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -2822,6 +3270,8 @@ let editing = false, widgetsCleanup = () => {}, saving = 0, revision = 0, blocke
 let dialogKind = '', dialogData = {}, lastDialogFocus = null, lastToastTimer, undoAction = null;
 let dragId = null, draggedGroup = null, localScope = 'desktop', localExtra = [], searchToken = 0;
 let currentMedia = null, lastDate = '', renderedGroup = '', currentGridColumns = 14;
+const faviconBindings = new WeakMap(), faviconFailures = new Map(), faviconFormStates = new WeakMap();
+let faviconRequestSequence = 0;
 
 function allEngines() { return [...ENGINES, ...(state.settings.customEngines || [])]; }
 async function applyOnlineWallpaper(value) {
@@ -2861,8 +3311,104 @@ function tileInk(color) {
 }
 function siteGlyph(item) {
  const value = item.icon || item.title?.slice(0,2) || '↗';
- if (iconNames.includes(value)) return icon(value);
- return `<span class="site-glyph ${[...value].length > 2 ? 'small' : ''}">${esc(value.slice(0,8))}</span>`;
+ const fallback = iconNames.includes(value) ? icon(value) : `<span class="site-glyph ${[...value].length > 2 ? 'small' : ''}">${esc(value.slice(0,8))}</span>`;
+ const url = item.iconMode === 'text' ? null : safeUrl(item.url);
+ if (!url) return fallback;
+ return `<span class="site-visual" data-favicon-site="${esc(url)}"><span class="site-fallback" aria-hidden="true">${fallback}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
+}
+function bindFaviconImages(root = document, options = {}) {
+ $$('.site-visual[data-favicon-site]',root).forEach(visual => {
+  if (faviconBindings.has(visual) && !options.force) return;
+  faviconBindings.get(visual)?.cancel();
+  const image = $('.site-favicon',visual), siteUrl = visual.dataset.faviconSite;
+  if (!image) return;
+  const candidates = [...new Set(options.candidates || getFaviconCandidates(siteUrl))].filter(url => typeof url === 'string' && url).slice(0,16);
+  let nextIndex = 0, timer = null, attempt = 0;
+  const binding = {cancel:()=>{clearTimeout(timer);image.onload=null;image.onerror=null;attempt++;}};
+  faviconBindings.set(visual,binding);
+  const current = () => visual.isConnected && faviconBindings.get(visual) === binding;
+  const next = () => {
+   const ticket=++attempt;
+   clearTimeout(timer);image.onload=null;image.onerror=null;image.hidden=true;visual.classList.remove('is-loaded');
+   if (!current()) return;
+   let candidate;
+   while(nextIndex < candidates.length) {
+    const value = candidates[nextIndex++];
+    if (!options.force && (faviconFailures.get(value) || 0) > Date.now()) continue;
+    candidate=value;break;
+   }
+   if (!candidate) {image.removeAttribute('src');return;}
+   const failed=()=>{
+    if (!current() || ticket !== attempt) return;
+    faviconFailures.set(candidate,Date.now()+5*60*1000);
+    if(faviconFailures.size>500)faviconFailures.delete(faviconFailures.keys().next().value);
+    next();
+   };
+   image.onload=()=>{
+    if (!current() || ticket !== attempt) return;
+    if (!image.naturalWidth) return failed();
+    clearTimeout(timer);image.onload=null;image.onerror=null;
+    faviconFailures.delete(candidate);image.hidden=false;visual.classList.add('is-loaded');
+    try {Promise.resolve(rememberFavicon(siteUrl,candidate)).catch(()=>{});} catch { /* A full cache must not hide a loaded icon. */ }
+   };
+   image.onerror=failed;
+   timer=setTimeout(failed,8000);
+   image.referrerPolicy='no-referrer';image.src=candidate;
+  };
+  next();
+ });
+}
+function linkPreviewIdentity(form) {
+ return `${form.elements.url.value.trim()}\n${form.elements.iconMode.value === 'text' ? 'text' : 'auto'}`;
+}
+function updateLinkPreview(form, options = {}) {
+ if (!form?.isConnected) return;
+ const identity=linkPreviewIdentity(form), mode=form.elements.iconMode.value === 'text' ? 'text' : 'auto';
+ let view=faviconFormStates.get(form);
+ if (!view || view.identity !== identity) {
+  view={identity,url:safeUrl(form.elements.url.value),mode,request:++faviconRequestSequence,busy:false,candidates:null,message:''};
+  faviconFormStates.set(form,view);
+ }
+ const preview=$('#link-preview-icon',form), button=$('[data-action="extract-favicon"]',form), status=$('#favicon-status',form);
+ const item={url:view.url,iconMode:mode,icon:form.elements.icon.value,title:form.elements.title.value};
+ $('#link-preview-title',form).textContent=item.title || '一个常去的地方';
+ $('#link-preview-url',form).textContent=form.elements.url.value || '把喜欢的网站，放在触手可及的地方';
+ preview.style.background=form.elements.color.value;
+ preview.style.setProperty('--tile-ink',tileInk(form.elements.color.value));
+ const markup=siteGlyph(item);
+ if(view.rendered!==markup || view.preview!==preview){preview.innerHTML=markup;view.rendered=markup;view.preview=preview;}
+ bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates});
+ button.disabled=view.busy || mode === 'text' || !view.url;
+ button.textContent=view.busy ? '正在提取…' : '智能提取';
+ status.textContent=view.message || (mode === 'text' ? '使用下方的文字 / Emoji 与背景色。' : '自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。');
+}
+function isLinkPreviewCurrent(form, view, request) {
+ return form.isConnected && dialog.open && faviconFormStates.get(form) === view && view.request === request && view.identity === linkPreviewIdentity(form);
+}
+async function extractLinkFavicon(button) {
+ const form=button.closest('#link-form');
+ if (!form || button.disabled || form.elements.iconMode.value === 'text') return;
+ const url=safeUrl(form.elements.url.value);
+ if (!url) return;
+ // Invoke synchronously from the click handler so Chrome keeps the user gesture
+ // needed by the per-site optional permission request inside discoverFavicon.
+ const pending=discoverFavicon(url,{requestPermission:true,force:true});
+ updateLinkPreview(form);
+ const view=faviconFormStates.get(form), request=++faviconRequestSequence;
+ view.request=request;view.busy=true;view.message='正在读取网站图标声明…';
+ updateLinkPreview(form);
+ try {
+  const result=await pending;
+  if (!isLinkPreviewCurrent(form,view,request)) return;
+  view.busy=false;
+  view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
+  view.message=result.warning || (view.candidates.length ? '已更新候选图标，加载成功后会保存在本机缓存。' : '暂时没有可用图标，已保留文字回退。');
+  updateLinkPreview(form,{force:true});
+ } catch(err) {
+  if (!isLinkPreviewCurrent(form,view,request)) return;
+  view.busy=false;view.message=err.message || '提取未完成，已保留文字图标，可稍后重试。';
+  updateLinkPreview(form);
+ }
 }
 function toast(message, undo, actionLabel='撤销') {
  clearTimeout(lastToastTimer); const el = $('#toast');
@@ -2975,6 +3521,7 @@ function renderDesktop() {
  $('#done-editing').hidden = !editing; $('#edit-hint').hidden = !editing;
  const items = state.items.filter(i=>i.groupId === group.id && !i.folderId);
  $('#desktop').innerHTML = items.map(renderTile).join('') + `<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="添加网站或组件">${icon('plus')}</button><span class="tile-label">添加</span></div>`;
+ bindFaviconImages($('#desktop'));
  widgetsCleanup = bindWidgets($('#desktop'), { getState:()=>state, save:persist, openDialog, toast, rerender:renderDesktop, applyWallpaper:applyOnlineWallpaper, wallpaperEnabledChanged:applySettings });
  updateGrid(); refreshLiveWidgets($('#desktop'), state);
 }
@@ -3001,7 +3548,8 @@ function suggestions() {
  $('#engine-menu').hidden = true;
  if (!q) return $('#search-suggestions').hidden = true;
  const found = findItems(q).slice(0,4);
- $('#search-suggestions').innerHTML = `<div class="suggestion-label">${found.length?'我的收藏':'聚合搜索'}</div>` + found.map(i=>`<button class="suggestion" data-suggestion="${esc(i.id)}">${icon('link')}<span><strong>${esc(i.title)}</strong><small>${esc(i.url)}</small></span><span class="suggestion-arrow">↗</span></button>`).join('') + `<button class="suggestion" data-action="submit-search">${icon('search')}<span><strong>使用 ${esc(currentEngine().name)} 搜索「${esc(q.slice(0,48))}」</strong></span><span class="suggestion-arrow">↵</span></button>`;
+ $('#search-suggestions').innerHTML = `<div class="suggestion-label">${found.length?'我的收藏':'聚合搜索'}</div>` + found.map(i=>`<button class="suggestion" data-suggestion="${esc(i.id)}"><span class="suggestion-site" style="--tile-color:${esc(i.color || COLORS[0])};--tile-ink:${tileInk(i.color)}">${siteGlyph(i)}</span><span><strong>${esc(i.title)}</strong><small>${esc(i.url)}</small></span><span class="suggestion-arrow">↗</span></button>`).join('') + `<button class="suggestion" data-action="submit-search">${icon('search')}<span><strong>使用 ${esc(currentEngine().name)} 搜索「${esc(q.slice(0,48))}」</strong></span><span class="suggestion-arrow">↵</span></button>`;
+ bindFaviconImages($('#search-suggestions'));
  $('#search-suggestions').hidden = false;
 }
 function submitSearch() {
@@ -3040,6 +3588,8 @@ function openDialog(kind,data={}) {
  else return;
  $('#dialog-content').innerHTML = html;
  if (!dialog.open) dialog.showModal();
+ bindFaviconImages($('#dialog-content'));
+ if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else $('input:not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
@@ -3049,7 +3599,7 @@ function addDialog(tab,data) {
  let content = '';
  if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">编辑桌面时，把网站图标拖进文件夹即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
- else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])}">${esc(item?.icon || '↗')}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${field('icon','图标文字 / Emoji',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="field"><span>图标颜色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
+ else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
  return dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'网站、组件、文件夹，一起组成你的个人桌面。') + (item?'':`<div class="tab-bar">${[{id:'link',name:'网站',icon:'link'},{id:'widgets',name:'小组件',icon:'grid'},{id:'folder',name:'文件夹',icon:'folder'}].map(t=>`<button class="tab-button ${tab===t.id?'active':''}" data-add-tab="${t.id}">${icon(t.icon)}${t.name}</button>`).join('')}</div>`) + `<div class="dialog-body">${content}</div>`;
 }
 function groupDialog(id) {
@@ -3065,7 +3615,7 @@ function settingsDialog(tab) {
  else if(tab==='search') content = `${selectField('searchEngine','默认搜索引擎',state.settings.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}<div class="section-label">已添加的搜索引擎</div><div>${allEngines().map(e=>`<div class="engine-list-row"><span class="engine-letter" style="color:${esc(e.color || '#89cbae')}">${esc(e.letter || e.name[0])}</span><div><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div>${state.settings.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="删除${esc(e.name)}">${icon('trash')}</button>`:''}</div>`).join('')}</div><div class="section-label">自定义引擎</div><form id="engine-form">${field('name','引擎名称','',{required:true,maxlength:20,placeholder:'例如：我的搜索'})}${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表搜索关键词。地址必须使用 http 或 https。'})}<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
  else if(tab==='data') content = `<div class="data-card"><div><strong>导出完整备份</strong><p>包含网址、分组、布局、组件数据和本地壁纸。</p></div><button class="secondary-button" data-action="export">${icon('download')}导出 JSON</button></div><div class="data-card"><div><strong>恢复已有备份</strong><p>导入前会显示内容摘要。确认后替换当前桌面。</p></div><button class="secondary-button" data-action="import">${icon('upload')}导入备份</button></div><div class="data-card"><div><strong>导入浏览器书签</strong><p>选择要复制到当前分组的网站，保留原有书签。</p></div><button class="secondary-button" data-action="import-bookmarks">${icon('bookmark')}选择书签</button></div><p class="help-text">桌面默认保存在当前浏览器，无需注册账号。跨设备同步可在“同步”中连接自己的 WebDAV；备份文件不包含 WebDAV 密码。</p><div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
- else content = `<div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.0 · 无需账号</span></div><div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div><p class="about-note">栖页参考组件式新标签页的使用方式，使用独立代码与原创品牌。桌面、搜索和日常小组件开箱即用。在线壁纸来自公开图片 API；跨设备同步直接连接你自己的 WebDAV。栖页不设账号系统。</p><p class="about-note">天气启用后，城市坐标会发送至 Open-Meteo 以获取预报。网址、笔记和待办默认保存在本机；启用 WebDAV 后会同步至你填写的服务。书签和历史记录权限在使用时授权。</p><div class="button-row"><button class="secondary-button" data-action="export">${icon('download')}备份我的桌面</button></div>`;
+ else content = `<div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.1 · 无需账号</span></div><div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div><p class="about-note">栖页参考组件式新标签页的使用方式，使用独立代码与原创品牌。桌面、搜索和日常小组件开箱即用。在线壁纸来自公开图片 API；跨设备同步直接连接你自己的 WebDAV。栖页不设账号系统。</p><p class="about-note">网站图标从对应站点加载；智能提取只在点击时读取页面图标声明。天气启用后，城市坐标会发送至 Open-Meteo。网址、笔记和待办默认保存在本机；启用 WebDAV 后会同步至你填写的服务。书签和历史记录权限在使用时授权。</p><div class="button-row"><button class="secondary-button" data-action="export">${icon('download')}备份我的桌面</button></div>`;
  return dialogHeader('设置','把栖页调成你喜欢的样子。') + `<div class="tab-bar">${[{id:'general',name:'常规'},{id:'appearance',name:'外观'},{id:'search',name:'搜索'},{id:'sync',name:'同步'},{id:'data',name:'数据'},{id:'about',name:'关于'}].map(t=>`<button class="tab-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}">${t.name}</button>`).join('')}</div><div class="dialog-body">${content}</div>`;
 }
 function wallpaperDialog() {
@@ -3091,7 +3641,8 @@ function renderLocalResults(query) {
  const target=$('#local-results'); if(!target) return;
  const q=query.trim().toLocaleLowerCase();
  const result = (localScope==='desktop'?findItems(q):localExtra.filter(i=>`${i.title} ${i.url}`.toLocaleLowerCase().includes(q))).slice(0,50);
- target.innerHTML = result.length ? result.map(i=>`<button class="suggestion" data-url="${esc(i.url)}">${icon(localScope==='history'?'history':'link')}<span><strong>${esc(i.title || i.url)}</strong><small>${esc(i.url)}</small></span><span class="suggestion-arrow">↗</span></button>`).join('') : `<div class="local-empty">${q?'没有找到匹配的网站。':'这里还没有可显示的内容。'}<br>试试另一个关键词，或切换搜索范围。</div>`;
+ target.innerHTML = result.length ? result.map(i=>`<button class="suggestion" data-url="${esc(i.url)}"><span class="suggestion-site" style="--tile-color:${esc(i.color || COLORS[0])};--tile-ink:${tileInk(i.color)}">${siteGlyph(i)}</span><span><strong>${esc(i.title || i.url)}</strong><small>${esc(i.url)}</small></span><span class="suggestion-arrow">↗</span></button>`).join('') : `<div class="local-empty">${q?'没有找到匹配的网站。':'这里还没有可显示的内容。'}<br>试试另一个关键词，或切换搜索范围。</div>`;
+ bindFaviconImages(target);
 }
 async function chooseLocalScope(scope) {
  localScope=scope; localExtra=[]; $$('.scope-button',dialog).forEach(b=>b.classList.toggle('active',b.dataset.scope===scope));
@@ -3194,7 +3745,7 @@ document.addEventListener('click', async event=>{
  if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab});
  if(target.dataset.addWidget)return await addWidget(target.dataset.addWidget);
  if(target.dataset.settingsTab)return openDialog('settings',{tab:target.dataset.settingsTab});
- if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});$('#link-preview-icon')?.style.setProperty('background',target.dataset.color);return;}
+ if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});if(form.id==='link-form')updateLinkPreview(form);return;}
  if(target.dataset.groupIcon){$('input[name=icon]',dialog).value=target.dataset.groupIcon;$$('[data-group-icon]',dialog).forEach(b=>b.classList.toggle('selected',b===target));return;}
  if(target.dataset.theme){state.settings.theme=target.dataset.theme;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
  if(target.dataset.wallpaper){state.settings.wallpaper=target.dataset.wallpaper;state.settings.customWallpaper=null;state.settings.remoteWallpaper=null;state.settings.dailyWallpaper=false;await persist();applySettings();openDialog('wallpaper');return;}
@@ -3220,6 +3771,7 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='extract-favicon')return await extractLinkFavicon(target);
  if(action?.startsWith('webdav-'))return await syncController.handleAction(action);
  if(action==='open-sync')return openDialog('settings',{tab:'sync'});
  if(action==='add-wallpaper-widget'){
@@ -3261,7 +3813,7 @@ dialog.addEventListener('submit',async event=>{
    const url=safeUrl(value('url'));if(!url)throw new Error('请输入有效的 http 或 https 网站地址。');
    if(!value('title'))throw new Error('请填写网站名称。');
    const old=state.items.find(i=>i.id===form.dataset.id),groupId=value('groupId');
-   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
+   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
    if(old)state.items[state.items.indexOf(old)]=item;else state.items.push(item);
    await commit();closeDialog();toast(old?'网站已更新。':'已添加到桌面。');
   }else if(form.id==='folder-form'){
@@ -3293,7 +3845,7 @@ dialog.addEventListener('submit',async event=>{
   }else if(form.id==='bookmarks-form'){
    const selected=data.getAll('bookmark').map(Number);if(!selected.length)throw new Error('请至少选择一个网站。');
    const groupId=value('groupId');let count=0;
-   for(const index of selected){const b=dialogData.bookmarks[index];if(!b || state.items.some(i=>i.groupId===groupId&&i.url===b.url))continue;state.items.push({id:uid(),groupId,type:'link',title:b.title || new URL(b.url).hostname,url:b.url,icon:(b.title || new URL(b.url).hostname).slice(0,2),color:COLORS[count%COLORS.length],size:'1x1',folderId:null});count++;}
+   for(const index of selected){const b=dialogData.bookmarks[index];if(!b || state.items.some(i=>i.groupId===groupId&&i.url===b.url))continue;state.items.push({id:uid(),groupId,type:'link',title:b.title || new URL(b.url).hostname,url:b.url,icon:(b.title || new URL(b.url).hostname).slice(0,2),iconMode:'auto',color:COLORS[count%COLORS.length],size:'1x1',folderId:null});count++;}
    await commit();closeDialog();toast(`已导入 ${count} 个网站，相同分组内的重复网址已跳过。`);
   }
  }catch(err){const area=$('#form-error',form);if(area){area.textContent=err.message || '保存失败，请检查填写内容。';area.hidden=false;}else toast(err.message);}
@@ -3305,13 +3857,12 @@ document.addEventListener('input', event=>{
  if(input.id==='search-input')suggestions();
  if(input.id==='local-query')renderLocalResults(input.value);
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
- if(input.closest('#link-form')){
-  const form=input.form;$('#link-preview-title').textContent=form.elements.title.value || '一个常去的地方';$('#link-preview-url').textContent=form.elements.url.value || '把喜欢的网站，放在触手可及的地方';$('#link-preview-icon').textContent=form.elements.icon.value || form.elements.title.value.slice(0,2) || '↗';$('#link-preview-icon').style.background=form.elements.color.value;
- }
+ if(input.closest('#link-form'))updateLinkPreview(input.form);
 });
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
+  if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(input.dataset.setting==='wallpaperApiEnabled')renderDesktop();return;}
   if(input.dataset.range){await persist();return;}
   if(input.name==='searchEngine'&&dialogKind==='settings'){state.settings.searchEngine=input.value;await persist();renderEngine();return;}
@@ -3381,6 +3932,7 @@ async function init() {
   refreshPanel:()=>{if(dialogKind==='settings'&&dialogData.tab==='sync')openDialog('settings',{tab:'sync'});}
  });
  await syncController.init();
+ await faviconCacheReady;
  $$('[data-action=add-group]').forEach(e=>e.innerHTML=icon('plus'));
  $$('.sidebar-bottom [data-action=local-search]').forEach(e=>e.innerHTML=icon('search'));
  $$('.sidebar-bottom [data-action=settings]').forEach(e=>e.innerHTML=icon('settings'));

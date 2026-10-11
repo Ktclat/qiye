@@ -32,8 +32,8 @@ function deepFreeze(value) {
 
 export const ENGINES = deepFreeze(BASE_ENGINES);
 
-function link(id, groupId, title, url, icon, color, folderId = null) {
-  return { id, groupId, type: 'link', title, url, icon, color, size: '1x1', folderId };
+function link(id, groupId, title, url, icon, color, folderId = null, iconMode = 'auto') {
+  return { id, groupId, type: 'link', title, url, icon, iconMode, color, size: '1x1', folderId };
 }
 
 function widget(id, widgetType, title, size = '2x2', config = {}, groupId = 'home') {
@@ -310,7 +310,7 @@ export function validateImport(raw) {
     const path = `items[${i}]`;
     plain(item, path);
     const type = enumeration(item.type, ['link', 'folder', 'widget'], `${path}.type`);
-    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
+    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
     keys(item, allowed, path);
     const groupId = id(item.groupId, `${path}.groupId`);
     if (!groupIds.has(groupId)) invalid(`${path}.groupId`, '对应分组不存在');
@@ -323,7 +323,9 @@ export function validateImport(raw) {
     }
     const appearance = { icon: string(maybe(item.icon, type === 'folder' ? 'folder' : item.title.slice(0, 1)), `${path}.icon`, 80), color: color(maybe(item.color, '#6BA39A'), `${path}.color`), size };
     if (type === 'folder') return { ...base, ...appearance };
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    // Old backups acquire automatic discovery without losing their text fallback.
+    const iconMode = enumeration(maybe(item.iconMode, 'auto'), ['auto', 'text'], `${path}.iconMode`);
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
@@ -496,6 +498,7 @@ export async function saveState(state, options = {}) {
 export async function appendLink(linkData, groupId) {
   const checkedUrl = safeUrl(linkData?.url);
   if (!checkedUrl) throw new Error('只能添加 http 或 https 网页。浏览器内部页面无法收藏到栖页。');
+  const iconMode = enumeration(maybe(linkData.iconMode, 'auto'), ['auto', 'text'], 'link.iconMode');
   const title = typeof linkData.title === 'string' && linkData.title.trim() ? linkData.title.trim().slice(0, 120) : new URL(checkedUrl).hostname;
   return withWriteLock(async () => {
     const state = await loadState();
@@ -503,7 +506,7 @@ export async function appendLink(linkData, groupId) {
     if (!state.groups.some(group => group.id === targetGroup)) throw new Error('目标分组已不存在，请重新选择。');
     const existing = state.items.find(item => item.type === 'link' && item.groupId === targetGroup && item.url === checkedUrl && !item.folderId);
     if (existing) return { state, item: clone(existing), duplicate: true };
-    const item = link(uid(), targetGroup, title, checkedUrl, title.slice(0, 1), '#6BA39A');
+    const item = link(uid(), targetGroup, title, checkedUrl, title.slice(0, 1), '#6BA39A', null, iconMode);
     state.items.push(item);
     const saved = await persistValidated(validateImport(state));
     return { state: saved, item: clone(item), duplicate: false };

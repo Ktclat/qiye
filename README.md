@@ -5,11 +5,13 @@
 <h1 align="center">栖页 Qiye</h1>
 
 <p align="center"><strong>让每一次打开，都有一处喜欢的风景。</strong></p>
-<p align="center">v0.2.0 · Chrome / Edge · Manifest V3 · 无栖页账号 · 自有 WebDAV</p>
+<p align="center">v0.2.1 · Chrome / Edge · Manifest V3 · 无栖页账号 · 自有 WebDAV</p>
 
-栖页是一款可以自由编排的浏览器新标签页扩展：把常用网站、搜索、日常小组件和喜欢的壁纸放在一起。布局与交互参考 iTab，以独立的名称、代码和图标实现；当前功能范围与验收状态见下文。
+栖页是一款可以自由编排的浏览器新标签页扩展：把常用网站、搜索、日常小组件和喜欢的壁纸放在一起。布局与交互参考 iTab，栖页品牌、界面图标和代码独立实现；网站卡片按网址加载目标网站的图标。当前功能范围与验收状态见下文。
 
-**[打开公开演示](https://qiye-newtab-preview.koesloratu.chatgpt.site)** · [源码仓库](https://github.com/Ktclat/qiye) · [安装扩展](#安装与更新) · [WebDAV 配置](#webdav-同步) · [开发指南](#本地开发) · [隐私说明](docs/PRIVACY.md)
+**[GitHub Pages](https://ktclat.github.io/qiye/)** · [源码仓库](https://github.com/Ktclat/qiye) · [安装扩展](#安装与更新) · [WebDAV 配置](#webdav-同步) · [开发指南](#本地开发) · [隐私说明](docs/PRIVACY.md)
+
+> GitHub Pages 发布文件已准备好。首次上线需要在仓库 **Settings → Pages** 选择 **Deploy from a branch → main → /(root)** 并保存；实际状态以部署结果为准。[部署与域名迁移说明](docs/DEPLOYMENT.md)。
 
 公开演示无需登录。每位访问者的桌面保存在自己的浏览器中，访问同一个演示链接不会共享便签、网址或同步配置。
 
@@ -18,6 +20,7 @@
 | 能力 | 当前实现 |
 | --- | --- |
 | 自由编排桌面 | 侧栏分组、网站与文件夹、跨组移动、编辑模式拖拽、复制、删除与撤销 |
+| 网站真实图标 | 默认自动加载对应网站图标；可主动智能提取网站声明的图标，或改用文字模式 |
 | 多尺寸卡片 | 网站与文件夹支持 `1×1`、`2×1`、`2×2`、`4×2`；组件支持 `2×2`、`4×2` |
 | 搜索与收藏 | 必应、百度、Google、DuckDuckGo、哔哩哔哩；自定义 `{q}` 搜索模板；查找本机收藏 |
 | 浏览器集成 | 按需授权书签导入与查找、历史查询；工具栏与右键菜单收藏网页或链接 |
@@ -63,7 +66,7 @@ git clone https://github.com/Ktclat/qiye.git
 cd qiye
 ```
 
-更新前可在“设置 → 数据”导出备份。保留原安装目录，更新其中的源码，再到扩展管理页点击“重新加载”。v0.2.0 支持已有的 v0.1 备份，旧桌面布局会保留；新壁纸卡片可通过“壁纸 → 打开小组件”添加。
+更新前可在“设置 → 数据”导出备份。保留原安装目录，更新其中的源码，再到扩展管理页点击“重新加载”。v0.2.1 支持已有的 v0.1 / v0.2 备份，旧桌面布局会保留；缺少图标模式的旧网站卡片默认使用自动模式，并保留原文字或内置图标作为回退。新壁纸卡片可通过“壁纸 → 打开小组件”添加。
 
 ### 网页与扩展有什么区别？
 
@@ -74,10 +77,30 @@ cd qiye
 | 桌面存储 | 当前来源的 `localStorage` | `chrome.storage.local` |
 | JSON 导入导出 | 支持 | 支持 |
 | WebDAV | 服务须允许当前网页跨域访问（CORS） | 按需申请所填服务站点的访问权限 |
+| 网站图标 | 可显示站点图片；读取网页提取图标受 CORS 限制 | 主动提取时按站点请求访问权限，可使用浏览器图标回退 |
 | 书签、历史、工具栏与右键收藏 | 无扩展接口 | 按功能使用或授权 |
 | `Alt+C` 扩展快捷键 | 不支持 | 打开新的栖页本地搜索页 |
 
 仓库内的 `Qiye-preview.html` 可直接打开，包含桌面所需的脚本和样式；联网功能仍需网络。公开网站、独立 HTML 与扩展各自保存数据，可通过 JSON 备份迁移，或配置同一份 WebDAV 文件同步。直接打开本地 HTML 时，持久化与跨域访问还受浏览器对本地文件的策略影响。
+
+网页更换域名后，需要从原页面导出 JSON 并在新页面导入，或重新连接同一 WebDAV 文件；WebDAV 凭据需要在新页面重新填写。GitHub Pages 的发布配置与迁移步骤见 [部署指南](docs/DEPLOYMENT.md)。
+
+## 网站图标与智能提取
+
+网站卡片默认选择“自动获取网站图标”。它优先使用本机已成功加载或提取的候选，再尝试目标站点的 `/favicon.ico`、`/apple-touch-icon.png`；扩展版还会尝试浏览器提供的图标。候选依次加载，真正加载成功后才显示图片；全部失败时仍显示原文字、Emoji 或内置图标。这里直接使用网站自身或其声明的图片地址，不接入第三方 favicon 代理服务。
+
+在“新增网站”或“编辑网站”中，可以选择两种模式：
+
+| 图标显示 | 行为 |
+| --- | --- |
+| 自动获取网站图标（`auto`） | 尝试网站真实图标，失败时使用下方的文字回退 |
+| 使用文字 / Emoji（`text`） | 显示“文字 / Emoji 回退”和背景色，不为该卡片主动加载远端图标 |
+
+需要查找更合适的图标时，填好网站地址、选择自动模式，再点击 **“智能提取”**。扩展会按需请求该网站的读取权限。提取器读取页面 HTML 中的 `rel="icon"`、`apple-touch-icon` 等声明，结合尺寸和格式选择候选；HTML 图标不足时，会读取页面声明的**同源 Web App Manifest** 并补充其中的 `icons`。它只解析元数据，不执行页面脚本或把抓取的 HTML 插入界面。按钮返回候选后仍需完成图片加载，候选提取成功不代表图片一定可用。
+
+页面和清单读取保留地址路径，去掉查询参数与片段；仅处理公开域名的 HTTPS 地址，HTTP 网址会尝试 HTTPS。localhost、IP 地址、自定义端口或跨来源跳转不会被用于读取提取。**GitHub Pages 等网页版受目标站点的 CORS 策略限制**：不能读取 HTML 时会提示并回退到常规图标地址，图片本身仍可能正常显示。扩展拒绝站点权限、超时或遇到不支持的页面时也保留文字回退，可继续使用该网址。
+
+已提取的候选与成功加载的图标地址在本机缓存 **7 天**，最多保存 **200 个页面**；提取失败暂避 **10 分钟**，图片加载失败在当前页面暂避 **5 分钟**。主动点击“智能提取”可以重新尝试。缓存保存的是地址与状态，图片文件由浏览器正常加载和缓存。图标模式和原文字回退会随 JSON 备份 / WebDAV 同步，提取缓存不会同步；新设备可重新提取。
 
 ## WebDAV 同步
 
@@ -115,7 +138,7 @@ cd qiye
 
 | 配置项 | 要求 |
 | --- | --- |
-| 允许来源 | 使用中的栖页网页来源，例如 `https://qiye-newtab-preview.koesloratu.chatgpt.site` |
+| 允许来源 | GitHub Pages 使用 `https://ktclat.github.io`，来源中不包含 `/qiye/` 路径；其他部署使用对应网页来源 |
 | 允许方法 | `GET`、`PUT`、`OPTIONS` |
 | 允许请求头 | `Authorization`、`Content-Type`、`If-Match`、`If-None-Match` |
 | 暴露响应头 | `Access-Control-Expose-Headers: ETag` |
@@ -132,14 +155,14 @@ cd qiye
 
 ### 数据保存与权限
 
-桌面、网址、便签、待办和设置默认保存在本机。栖页没有账号服务器、广告脚本或行为遥测，也不从 CDN 加载运行脚本。在线壁纸、天气与 WebDAV 在对应功能启用或用户操作后访问外部服务；搜索提交与网址点击会访问所选网站。
+桌面、网址、便签、待办和设置默认保存在本机。栖页没有账号服务器、广告脚本或行为遥测，也不从 CDN 加载运行脚本。网站卡片默认使用自动图标，会向对应站点或该站点声明的图片 CDN 加载图标；在线壁纸、天气与 WebDAV 在对应功能启用或用户操作后访问外部服务。搜索提交与网址点击会访问所选网站。
 
 WebDAV 地址、用户名、密码及同步基线单独保存在本机，**不包含在 JSON 导出或远端同步文件中**。本机凭据未另行加密；远端桌面是普通 JSON，**未提供端到端加密**，应保存到自己的私有目录。同步内容会包含便签、网址等个人桌面数据，以及所选本地壁纸素材。
 
 | 项目 | 说明 |
 | --- | --- |
-| 基础权限 | `storage` 保存数据；`activeTab`、`contextMenus` 用于主动收藏页面或链接 |
-| 可选权限 | 书签、历史按需授权；WebDAV 按所填来源申请访问权限 |
+| 基础权限 | `storage` 保存数据；`activeTab`、`contextMenus` 用于主动收藏页面或链接；`favicon` 用于浏览器图标回退 |
+| 可选权限 | 书签、历史按需授权；WebDAV 按所填来源申请访问权限；智能提取按目标站点申请访问权限 |
 | 图片权限 | Picsum 使用固定站点权限，功能默认关闭 |
 | 天气 | 主动开启后发送所选城市经纬度，不读取设备精确定位 |
 | 大小限制 | 单个本地图片/视频最大 **4 MiB**，JSON 备份最大 **6 MiB**；网页还受存储配额限制 |
@@ -190,6 +213,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | `index.html`、`styles.css` | 页面结构与桌面样式 |
 | `src/app.js` | 桌面交互、弹层、布局与保存流程 |
 | `src/core.js` | 共享状态、持久化、备份校验及浏览器数据接口 |
+| `src/favicons.js` | 网站图标候选、网页与清单提取、按需权限、缓存与加载回退 |
 | `src/widgets.js`、`src/widgets.css` | 13 类组件的渲染、交互与样式 |
 | `src/wallpapers.js` | Picsum 请求、元数据校验、图库翻页与请求状态 |
 | `src/webdav.js` | WebDAV 配置、条件请求、版本比较与同步协议 |
@@ -197,15 +221,28 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | `src/icons.js`、`icons/` | 界面图标与栖页应用图标 |
 | `background.js`、`popup.*` | 扩展菜单、快捷键与工具栏收藏入口 |
 | `scripts/build-preview.py` | 生成独立 `Qiye-preview.html` |
+| `.nojekyll`、`docs/DEPLOYMENT.md` | GitHub Pages 静态发布标记、启用与迁移指南 |
 | `tests/` | 使用 Node.js 内置测试运行器的逻辑与集成测试 |
 | `docs/` | 功能范围、隐私说明与验收记录 |
 | `CONTRIBUTING.md` | 提交问题、开发验证与贡献约定 |
 
+### 图标模块接口
+
+`src/favicons.js` 与桌面状态分开管理图标缓存。渲染前可等待 `faviconCacheReady` 加载本机缓存；读取网页声明应由明确的用户点击触发。
+
+| 接口 | 返回值与用途 |
+| --- | --- |
+| `getFaviconCandidates(siteUrl)` | 同步返回候选 URL 数组；不读取页面 HTML |
+| `discoverFavicon(siteUrl, { requestPermission, force })` | 异步返回 `{ url, candidates, source, warning? }`；`url` 是首个候选，`source` 为 `html`、`manifest`、`cache` 或 `fallback` |
+| `rememberFavicon(siteUrl, iconUrl)` | 图片 `load` 成功后记录可用地址；返回是否接受该地址，浏览器内部图标 URL 不持久保存 |
+
+桌面里的 `iconMode` 仅允许 `auto` / `text`，缺失时规范化为 `auto`。远端图标 URL、HTML 和缓存对象不能写入桌面 JSON；本机图标缓存使用独立的 `qiye.favicons.local.v1` 记录。
+
 ### 验证状态
 
-v0.2.0 在 **2026-10-11** 的验证记录为 **101 项通过、0 失败、0 跳过**。覆盖状态与备份校验、跨标签保存、组件、壁纸请求、WebDAV 条件写入/冲突，以及同步面板调用次序；同时检查了 JavaScript 语法、Manifest 与资源路径、独立预览生成和交付 ZIP 完整性。
+v0.2.1 在 **2026-10-11（UTC）** 的验证记录为 **124 项通过、0 失败、0 跳过**。覆盖状态与备份校验、旧图标模式迁移、网站图标提取与加载回退、跨标签保存、组件、壁纸请求、WebDAV 条件写入/冲突，以及同步面板调用次序；同时检查了 JavaScript 语法、Manifest 与资源路径、独立预览生成及 GitHub Pages 项目路径兼容性。
 
-测试使用受控网络、DOM 和存储替身运行实际生产函数。以下真实环境验收仍待完成：Chrome / Edge 实装与权限弹窗、真实 WebDAV 账户读写、公开壁纸与天气的完整网络链路、图片/视频播放、不同窗口尺寸的视觉与拖拽/键盘交互。**公开部署成功不代表这些项目已经通过。** 完整记录与可执行验收路径见 [QA.md](docs/QA.md)。
+测试使用受控网络、DOM 和存储替身运行实际生产函数。以下真实环境验收仍待完成：Chrome / Edge 实装与权限弹窗、不同站点的图标提取与回退、真实 WebDAV 账户读写、公开壁纸与天气的完整网络链路、图片/视频播放、不同窗口尺寸的视觉与拖拽/键盘交互。**公开部署成功不代表这些项目已经通过。** 完整记录与可执行验收路径见 [QA.md](docs/QA.md)。
 
 ## 项目范围与反馈
 
@@ -219,6 +256,7 @@ v0.2.0 在 **2026-10-11** 的验证记录为 **101 项通过、0 失败、0 跳�
 
 - [Chrome：加载已解压的扩展](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked)
 - [Chrome：Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage)
+- [Chrome：获取网站图标](https://developer.chrome.com/docs/extensions/how-to/ui/favicons)
 - [RFC 4918 §8.6：WebDAV 与 ETag](https://www.rfc-editor.org/rfc/rfc4918#section-8.6)
 - [RFC 9110 §13.1：HTTP 条件请求](https://www.rfc-editor.org/rfc/rfc9110#section-13.1)
 - [Lorem Picsum：公开摄影 API](https://picsum.photos/)

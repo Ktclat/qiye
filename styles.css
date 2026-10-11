@@ -93,3 +93,32 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @media(max-width:700px){.top-tools{top:17px;right:19px}.app-dialog{width:calc(100% - 26px);max-height:calc(100dvh - 26px)}.dialog-head{padding:21px 21px 18px}.dialog-body{padding-right:21px;padding-left:21px}.tab-bar{margin-left:21px;margin-right:21px}.search-form{height:49px}.search-form input{font-size:12px}.date{font-size:11px}.engine-menu{grid-template-columns:repeat(3,minmax(0,1fr))}.engine-option{padding:10px 8px;font-size:11px}}
 @media(max-width:560px){.sidebar{width:52px}.brand{margin-top:22px;margin-bottom:15px}.group-button{width:40px;min-height:51px;font-size:9px}.group-button.active:before{left:-6px}.groups{gap:6px}.side-button{width:35px;height:35px}.sidebar-bottom{padding-bottom:13px;gap:5px}main{margin-left:52px;padding:0 16px 88px}.hero{padding-top:80px}.clock{font-size:clamp(48px,12vw,70px);letter-spacing:-2px}.search-wrapper{margin-top:24px}.search-form{height:46px}.engine-button{width:49px;padding-left:10px}.engine-button:after{top:14px;bottom:14px}.search-form input{padding-left:9px;font-size:11px}.search-submit{width:35px}.desktop-wrap{margin-top:23px}.desktop-heading{margin-bottom:10px}.tile-label{font-size:10px}.daily-quote{left:68px;right:16px;bottom:36px;font-size:9px}.wallpaper-credit{right:13px;bottom:10px;max-width:calc(100vw - 78px);font-size:9px}.app-dialog{border-radius:19px}.tab-button{font-size:11px;padding:8px 7px}.dialog-head h2{font-size:18px}.dialog-head p{font-size:11px}.toast{bottom:56px;left:50%;font-size:11px}.context-menu{width:196px}}
 @media(max-width:390px){.two-columns{grid-template-columns:1fr}.tab-bar{gap:1px}.tab-button{padding:8px 5px}.clock{font-size:52px}.date{letter-spacing:0;font-size:10px}.theme-options{gap:5px}}
+
+/* Site icons are image resources only; the text fallback remains until load. */
+.site-visual{position:relative;display:grid;place-items:center;width:100%;height:100%;min-width:0;border-radius:inherit;overflow:hidden}
+.site-visual.is-loaded{background:rgba(250,252,253,.96)}
+.site-fallback{display:grid;place-items:center;width:100%;height:100%;color:inherit}
+.site-visual.is-loaded>.site-fallback{visibility:hidden}
+.site-visual>.site-favicon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:60%;height:60%;max-width:38px;max-height:38px;object-fit:contain;background:transparent;pointer-events:none}
+.site-visual>.site-favicon[hidden]{display:none}
+.site-fallback>.icon{width:30px;height:30px}
+.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{max-width:60px;max-height:60px}
+.tile-link[data-size="2x2"] .site-fallback>.icon,.tile-link[data-size="4x2"] .site-fallback>.icon{width:48px;height:48px}
+.mini-site .site-favicon{max-width:30px;max-height:30px}
+.mini-site .site-glyph{font-size:21px}
+.mini-site .site-glyph.small{font-size:15px}
+.folder-site .site-visual,.folder-site .site-fallback{max-width:none;overflow:visible}
+.folder-site .site-visual{overflow:hidden}
+.folder-site .site-glyph{font-size:26px}
+.folder-site .site-glyph.small{font-size:19px}
+.suggestion-site{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:8px;background:var(--tile-color,#486c91);color:var(--tile-ink,#fff);overflow:hidden}
+.suggestion-site .site-favicon{width:72%;height:72%;max-width:24px;max-height:24px}
+.suggestion-site .site-glyph,.suggestion-site .site-glyph.small{font-size:13px;letter-spacing:0}
+.suggestion-site .site-fallback>.icon,.suggestion-site>.icon{width:17px;height:17px;opacity:1}
+.form-preview .preview-icon{overflow:hidden;color:var(--tile-ink,#fff)}
+.form-preview .preview-icon .site-glyph{font-size:28px}
+.favicon-controls{display:flex;gap:13px;align-items:center;margin:-3px 0 18px}
+.favicon-controls .secondary-button{flex:none;min-width:95px}
+.favicon-controls .help-text{margin:0;min-width:0}
+.favicon-controls .secondary-button:disabled{opacity:.48;cursor:default;filter:none}
+@media(max-width:390px){.favicon-controls{align-items:flex-start;gap:10px}.favicon-controls .secondary-button{min-width:85px;padding-right:12px;padding-left:12px}}
