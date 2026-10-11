@@ -73,6 +73,8 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
   const checked = validateImport(DEFAULT_STATE);
   assert.equal(checked.settings.gridSize, 74);
   assert.equal(checked.settings.weatherEnabled, false);
+  assert.equal(checked.settings.pinClock, true);
+  assert.equal(checked.settings.pinSearch, true);
   assert.equal(checked.groups.length, 6);
   for (const groupId of ['home', 'code', 'design', 'work', 'ai', 'life']) {
     assert.ok(checked.groups.some(group => group.id === groupId));
@@ -90,6 +92,71 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
   assert.equal(DEFAULT_STATE.settings.theme, 'dark');
   assert.ok(Object.isFrozen(DEFAULT_STATE.items));
   assert.ok(ENGINES.every(engine => safeUrl(engine.url.replace('{q}', 'test'))));
+});
+
+test('missing pin settings enable both controls while preserving legacy desktop layouts', async () => {
+  const legacy = fresh();
+  delete legacy.settings.pinClock;
+  delete legacy.settings.pinSearch;
+  legacy.settings.gridSize = 90;
+  legacy.settings.theme = 'light';
+  legacy.groups.reverse();
+  legacy.items.reverse();
+  legacy.activeGroupId = 'design';
+  legacy.notes = '保留旧桌面的布局与内容';
+  const fixture = extensionFixture(legacy);
+  const loaded = await loadState();
+  assert.deepEqual(loaded, {
+    ...legacy,
+    settings: { ...legacy.settings, pinClock: true, pinSearch: true }
+  });
+  assert.equal(loaded.schemaVersion, 1);
+  assert.equal(fixture.writes, 0, 'loading a legacy record must not silently replace it');
+  assert.deepEqual(fixture.records[STORAGE_KEY], legacy);
+  assert.deepEqual(validateImport(exportState(loaded)), loaded);
+  for (const missing of ['pinClock', 'pinSearch']) {
+    const partial = fresh();
+    const other = missing === 'pinClock' ? 'pinSearch' : 'pinClock';
+    delete partial.settings[missing];
+    partial.settings[other] = false;
+    const normalized = validateImport(partial);
+    assert.equal(normalized.settings[missing], true);
+    assert.equal(normalized.settings[other], false, 'an existing opt-out remains independent');
+  }
+});
+
+test('independent pin choices survive storage and backup round trips', async () => {
+  const fixture = extensionFixture();
+  let current = await loadState();
+  assert.equal(current.settings.pinClock, true);
+  assert.equal(current.settings.pinSearch, true);
+  for (const [pinClock, pinSearch] of [[true, false], [false, true], [false, false], [true, true]]) {
+    current.settings.pinClock = pinClock;
+    current.settings.pinSearch = pinSearch;
+    current = await saveState(current);
+    const loaded = await loadState();
+    assert.equal(loaded.settings.pinClock, pinClock);
+    assert.equal(loaded.settings.pinSearch, pinSearch);
+    assert.deepEqual(loaded, current);
+    assert.deepEqual(validateImport(exportState(loaded)), current);
+  }
+  assert.equal(fixture.writes, 4);
+});
+
+test('explicit non-boolean pin settings cannot overwrite stored desktop data', async () => {
+  const fixture = extensionFixture(fresh());
+  const original = copy(fixture.records[STORAGE_KEY]);
+  for (const key of ['pinClock', 'pinSearch']) {
+    for (const value of [undefined, null, 0, 1, 'true', 'false', [], {}]) {
+      const state = fresh();
+      state.settings[key] = value;
+      const expected = new RegExp(`settings\\.${key}.*布尔值`);
+      assert.throws(() => validateImport(state), expected);
+      await assert.rejects(saveState(state), expected);
+    }
+  }
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], original);
 });
 
 test('legacy backups gain automatic icons while text choices survive storage and backup round trips', async () => {

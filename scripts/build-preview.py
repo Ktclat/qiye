@@ -7,7 +7,7 @@ modules=[]
 def inline_imports(source):
  return re.sub(r"import\s*\{([^}]+)\}\s*from\s*'\./([a-z-]+)\.js';", lambda m:'const {'+m[1]+'} = __'+m[2].replace('-','_')+';', source)
 
-for name in ('favicons','wallpapers','core','webdav','widgets','icons','sync-ui'):
+for name in ('favicons','wallpapers','core','webdav','widgets','icons','sync-ui','drag'):
  source=(root/'src'/f'{name}.js').read_text(encoding='utf-8')
  exports=re.findall(r'^export\s+(?:async\s+)?(?:function|const|let|class)\s+(\w+)',source,re.M)
  if not exports: raise SystemExit('No exports in '+name)

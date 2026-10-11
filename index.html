@@ -31,9 +31,10 @@
     <button class="tool-button add-main" data-action="add" title="添加网站或组件" aria-label="添加网站或组件"></button>
   </div>
   <main id="main">
-    <header class="hero">
+    <header id="clock-block" class="clock-block">
       <button id="clock" class="clock" title="点击切换极简模式" aria-label="切换极简模式"><span id="clock-time">00:00</span><span id="clock-seconds"></span><span id="clock-period"></span></button>
       <div id="date" class="date"></div>
+    </header>
       <div class="search-wrapper">
         <form id="search-form" class="search-form" role="search">
           <button type="button" id="engine-button" class="engine-button" aria-label="切换搜索引擎" aria-expanded="false"></button>
@@ -44,12 +45,11 @@
         <div id="engine-menu" class="engine-menu" hidden></div>
         <div id="search-suggestions" class="search-suggestions" hidden></div>
       </div>
-    </header>
     <section class="desktop-wrap" aria-label="个人桌面">
-      <div class="desktop-heading"><span id="group-heading">主页</span><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或左侧分组收纳 · 右键调整卡片</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
+      <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或左侧分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
       <div id="desktop" class="desktop"></div>
     </section>
-    <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span><span class="quote-credit">栖页 · 从这里开始</span></footer>
+    <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span></footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
   <div id="context-menu" class="context-menu" role="menu" hidden></div>

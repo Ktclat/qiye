@@ -118,7 +118,7 @@ GitHub Pages 的网页来源仍为 **`https://ktclat.github.io`**，来源中不
 
 ## 上线验收
 
-README 中的截图和 v0.2.1 浏览器验证记录来自此前的网页部署。本次同仓库 `gh-pages` 部署已成功；每次更新后，应针对当前地址 `https://ktclat.github.io/qiye/` 核对以下项目：
+README 中的 v0.2.2 截图和浏览器验证记录来自当前同仓库的 GitHub Pages 部署；旧版本记录另列在 QA 文档的历史部分。每次更新后，应针对当前地址 `https://ktclat.github.io/qiye/` 核对以下项目：
 
 - 访问 Pages 设置中提供的地址，确认显示栖页而非 404 页面。
 - 检查时钟、分组、卡片、设置弹层及图标，确认脚本和样式正常加载。

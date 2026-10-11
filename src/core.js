@@ -45,7 +45,7 @@ export const DEFAULT_STATE = deepFreeze({
   updatedAt: 0,
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
-    blur: 0, dim: 14, showSeconds: false, hour12: false, minimal: false, openNewTab: true,
+    blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: true, pinSearch: true, minimal: false, openNewTab: true,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 78,
     searchEngine: 'bing', customEngines: [], weatherCity: { name: '香港', latitude: 22.32, longitude: 114.17 },
     weatherEnabled: false, dailyWallpaper: false, quote: true,
@@ -238,6 +238,7 @@ function validateSettings(raw) {
     customWallpaper: validateMedia(v.customWallpaper, customWallpaperType), customWallpaperType,
     blur: number(v.blur, 'settings.blur', 0, 40), dim: number(v.dim, 'settings.dim', 0, 90),
     showSeconds: bool(v.showSeconds, 'settings.showSeconds'), hour12: bool(v.hour12, 'settings.hour12'),
+    pinClock: bool(v.pinClock, 'settings.pinClock'), pinSearch: bool(v.pinSearch, 'settings.pinSearch'),
     minimal: bool(v.minimal, 'settings.minimal'), openNewTab: bool(v.openNewTab, 'settings.openNewTab'),
     gridSize: number(v.gridSize, 'settings.gridSize', 48, 120), gap: number(v.gap, 'settings.gap', 8, 40),
     radius: number(v.radius, 'settings.radius', 0, 48), showLabels: bool(v.showLabels, 'settings.showLabels'),

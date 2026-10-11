@@ -134,39 +134,183 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .favicon-controls .secondary-button:disabled{opacity:.48;cursor:default;filter:none}
 @media(max-width:390px){.favicon-controls{align-items:flex-start;gap:10px}.favicon-controls .secondary-button{min-width:85px;padding-right:12px;padding-left:12px}}
 
+/* Independent sticky clock/search. Both are direct children of the full page,
+   so either can remain visible beyond the initial header area. */
+:root{--header-pin-top:16px;--pinned-clock-height:0px;--search-surface:rgba(23,33,43,.92);--search-focus:rgba(30,44,57,.98);--header-surface:rgba(23,33,43,.92)}
+html[data-theme=light]{color-scheme:light;--search-surface:rgba(246,249,247,.9);--search-focus:rgba(252,254,253,.98);--header-surface:rgba(245,248,248,.92)}
+html[data-theme=dark]{color-scheme:dark}
+main{padding-top:clamp(54px,7vh,90px)}
+.clock-block{position:relative;z-index:20;width:fit-content;max-width:100%;margin:0 auto;padding:8px 20px 12px;text-align:center;border:1px solid transparent;border-radius:24px;transition:background .18s,box-shadow .18s,border-color .18s}
+.clock{white-space:nowrap}
+#clock-seconds{font-size:1em;font-weight:200;letter-spacing:inherit;opacity:.6;padding-left:.14em}
+#clock-seconds:empty{display:none}
+.search-wrapper{z-index:21;margin-top:22px}
+.pin-clock .clock-block{position:sticky;top:var(--header-pin-top)}
+.pin-search .search-wrapper{position:sticky;top:var(--header-pin-top)}
+.pin-clock.pin-search .search-wrapper{top:calc(var(--header-pin-top) + var(--pinned-clock-height) + 12px)}
+.clock-block.is-stuck{background:var(--header-surface);border-color:var(--panel-border);backdrop-filter:blur(28px);box-shadow:0 8px 30px #07132126}
+.clock-block.is-stuck .clock{color:var(--fg);text-shadow:none}
+.clock-block.is-stuck .date{color:var(--muted)}
+.search-form{background:var(--search-surface);border-color:var(--panel-border);color:var(--fg)}
+.search-form:focus-within{background:var(--search-focus)}
+.search-form input,.search-submit{color:var(--fg)}
+.search-form input::placeholder{color:var(--muted);opacity:.9}
+.search-shortcut{color:var(--muted);border-color:var(--panel-border);opacity:1}
+.engine-button:after{background:var(--panel-border)}
+.desktop{grid-auto-flow:row}
+.desktop-heading{justify-content:space-between;height:auto;min-height:27px;gap:12px}
+.desktop-heading #edit-hint{line-height:1.6}
+.desktop-wrap{margin-top:34px}
+.daily-quote{position:static;margin:clamp(30px,5vh,64px) 0 0;display:block;padding-bottom:8px}
+.minimal main{padding-top:24vh}
+.minimal .desktop-wrap{display:none}
+
+/* Provider logos use the same image/caching pipeline as site cards. */
+.engine-mark{display:grid;place-items:center;width:23px;height:23px;flex:0 0 23px;color:var(--engine-color);border-radius:5px;overflow:hidden}
+.engine-mark .site-visual{width:100%;height:100%}
+.engine-mark .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+.engine-mark .site-glyph,.engine-mark .site-glyph.small{font-size:19px;line-height:1;font-weight:650;letter-spacing:0}
+.engine-option .engine-mark{width:21px;height:21px;flex-basis:21px}
+.engine-list-row{gap:12px}
+.engine-list-row>.engine-mark{width:26px;height:26px;flex-basis:26px}
+.engine-list-copy{flex:1;min-width:0}
+.engine-list-row small{max-width:100%}
+.engine-list-row .engine-extract-button{flex-shrink:0;margin-left:0;padding:7px 9px;border:1px solid var(--panel-border);border-radius:8px;font-size:11px;color:var(--fg);background:var(--panel-2)}
+.engine-list-row .engine-extract-button:hover{border-color:var(--accent)}
+.engine-list-row>[data-delete-engine]{margin-left:0;padding:6px}
+
+/* Pointer dragging keeps widget editing and touch scrolling intact. */
+.tile-drag-handle{position:absolute;z-index:4;left:50%;bottom:0;transform:translateX(-50%);display:grid;place-items:center;width:30px;height:22px;padding:4px 8px;border-radius:7px;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);box-shadow:0 2px 8px #07132124;cursor:grab;touch-action:none;opacity:0;transition:opacity .15s,background .15s}
+.tile-drag-handle svg{width:13px;height:13px;transform:rotate(90deg)}
+.tile:hover>.tile-drag-handle,.tile:focus-within>.tile-drag-handle,.editing .tile-drag-handle,.tile-widget>.tile-drag-handle{opacity:1}
+.tile-drag-handle:hover,.tile-drag-handle:focus-visible{color:var(--fg);background:var(--panel-2)}
+.tile-widget>.tile-drag-handle{left:auto;right:5px;bottom:3px;transform:none;width:27px;height:19px;padding:3px 7px}
+.tile-widget>.tile-label{max-width:calc(100% - 50px)}
+.tile-link:hover>.tile-label,.tile-folder:hover>.tile-label{opacity:0}
+.tile-link:focus-within>.tile-label,.tile-folder:focus-within>.tile-label{opacity:0}
+.editing .group-button{touch-action:none;cursor:grab}
+.editing .tile-actions{right:3px;top:3px;gap:2px}
+.tile.dragging{opacity:.28}
+body.is-dragging,body.is-dragging *{cursor:grabbing!important;user-select:none!important}
+body.is-dragging .tile-drag-handle{opacity:1}
+body.is-dragging .tile-body{transform:none!important}
+.drop-before>.tile-body,.drop-after>.tile-body{box-shadow:0 0 0 2px #a9e3d333}
+.drop-inside{outline:3px solid var(--accent)!important;outline-offset:3px;border-radius:var(--radius)}
+.group-button.drop-inside{background:var(--accent-strong);color:#fff}
+.drag-preview{position:fixed;z-index:100;pointer-events:none;display:flex;flex-direction:column;gap:3px;min-width:125px;max-width:235px;padding:12px 16px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);color:var(--fg);box-shadow:0 12px 35px #04142240}
+.drag-preview small{font-size:10px;color:var(--muted)}
+.drag-preview strong{font-size:13px;font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drag-indicator{position:fixed;z-index:99;pointer-events:none;background:var(--accent);border-radius:8px;box-shadow:0 0 0 2px #142a2944,0 0 16px #93e2cf66}
+html[data-theme=dark] .tile-folder .tile-body{background:rgba(34,49,61,.86);border-color:var(--panel-border)}
+html[data-theme=dark] .tile-add .tile-body{background:rgba(26,41,52,.64);border-color:#adbfce55}
+html[data-theme=light] .tile-folder .tile-body{background:rgba(239,246,244,.75);border-color:#ffffff7a}
+@media(min-width:1700px){main{padding-top:8vh}}
+@media(max-width:900px){main{padding-top:64px}.desktop-wrap{margin-top:28px}}
+@media(max-width:560px){
+ :root{--header-pin-top:54px}
+ main{padding-top:72px}
+ .clock-block{padding:7px 10px 10px;border-radius:20px}
+ .clock{font-size:clamp(38px,10.8vw,64px);letter-spacing:-1.8px}
+ #clock-period{font-size:.22em;padding-left:5px}
+ .search-wrapper{margin-top:17px}
+ .desktop-wrap{margin-top:25px}
+ .daily-quote{margin-top:32px;font-size:10px}
+ .engine-mark{width:20px;height:20px;flex-basis:20px}
+ .engine-list-row{gap:8px}
+ .engine-list-row .engine-extract-button{padding:6px;font-size:10px}
+ .desktop-heading{align-items:flex-start}
+ .desktop-heading #edit-hint{font-size:10px}
+ .desktop-heading .pill-button{white-space:nowrap;flex-shrink:0}
+}
+@media(hover:none),(pointer:coarse){
+ .tile-drag-handle{opacity:1;left:auto;right:0;bottom:0;transform:none;width:25px;height:22px}
+ .tile-widget>.tile-drag-handle{right:0;bottom:0;width:30px;height:25px}
+ .tile-link>.tile-label,.tile-folder>.tile-label{max-width:calc(100% - 26px);align-self:flex-start}
+ .tile-link:hover>.tile-label,.tile-folder:hover>.tile-label{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){.clock-block,.tile-drag-handle{transition:none}}
+
 </style>
   <style>
-.widget-inner{position:relative;display:flex;flex-direction:column;box-sizing:border-box;width:100%;height:100%;min-height:0;padding:12px;overflow:hidden;border-radius:inherit;color:#354354;background:#fbfcff;font-size:11px;line-height:1.4;text-align:left;container-type:inline-size;isolation:isolate}
+/* The app resolves light / dark / system onto html[data-theme]. Each card keeps
+   its own palette; controls and secondary text share that card's theme tokens. */
+.widget-inner{
+  --w-bg:#fbfcff;--w-fg:#354354;--w-heading:#54657b;--w-muted:#5e6c80;
+  --w-border:#6b829a29;--w-control:#7186a314;--w-hover:#7186a326;
+  --w-input:#fff;--w-input-border:#9eaac0;--w-scrollbar:#6e83a752;
+  --w-accent:#518473;--w-accent-ink:#fff;--w-accent-hover:#3d6d5d;
+  --w-decor:#7c90a226;--w-error:#b64558;
+  position:relative;display:flex;flex-direction:column;box-sizing:border-box;width:100%;height:100%;min-height:0;padding:12px;overflow:hidden;border-radius:inherit;color:var(--w-fg);background:var(--w-bg);font-size:11px;line-height:1.4;text-align:left;container-type:inline-size;isolation:isolate;color-scheme:light
+}
+.w-wallpaper{--w-bg:linear-gradient(135deg,#4f7168,#456e65);--w-fg:#fff;--w-heading:#fff;--w-muted:#e8f2ec;--w-hover:#ffffff29;--w-accent:#f2f8f0;--w-accent-ink:#2e5546;--w-accent-hover:#fff}
+.w-weather{--w-bg:linear-gradient(145deg,#d9e7ff 0%,#dce3ff 50%,#eee3ff 100%);--w-fg:#334c74;--w-heading:#435a80;--w-muted:#4d6289;--w-border:#708fbd40;--w-control:#6488c21c;--w-hover:#6488c230;--w-error:#9b493c}
+.w-calendar{--w-bg:#fff;--w-fg:#495060;--w-muted:#6b7486;--w-accent:#c94b63;--w-accent-ink:#fff;--w-weekend:#b4596e;--w-decor:#d3667c26}
+.w-notes,.w-notes-yellow{--w-bg:#fff4c8;--w-fg:#716338;--w-muted:#796a37;--w-hover:#9581551f;--w-scrollbar:#8e804052;--w-decor:#95815526}
+.w-notes-pink{--w-bg:#ffe5e8;--w-fg:#8b5265;--w-muted:#8b5767;--w-hover:#9966761f;--w-scrollbar:#99667652;--w-decor:#99667626}
+.w-notes-mint{--w-bg:#ddf1dc;--w-fg:#456b46;--w-muted:#4b7051;--w-hover:#5076501f;--w-scrollbar:#50765052;--w-decor:#50765026}
+.w-todo{--w-bg:#fdfdff;--w-fg:#526072;--w-heading:#5a6780;--w-muted:#627089;--w-control:#eaf0f8;--w-accent:#5a917f}
+.w-countdown{--w-bg:linear-gradient(135deg,#ffeddf,#f9dbc9);--w-fg:#83573f;--w-heading:#93664f;--w-muted:#805940;--w-accent:#9e674a;--w-border:#a8806330;--w-decor:#a8806352}
+.w-focus{--w-bg:radial-gradient(ellipse at 100% 0,#dcece5,transparent 75%),#f0f5f6;--w-fg:#3c5a59;--w-heading:#4a6767;--w-muted:#536d6e;--w-border:#859e943d;--w-accent:#588b7a;--w-accent-hover:#447665}
+.w-workday{--w-bg:linear-gradient(145deg,#d4ebe3,#eaf4dc);--w-fg:#406859;--w-heading:#4f7766;--w-muted:#4e6c5b;--w-border:#6d9d8b38}
+.w-quote{--w-bg:linear-gradient(115deg,#edeaf7,#f7f4fc);--w-fg:#695578;--w-heading:#78658a;--w-muted:#756181;--w-accent:#82708f}
+.w-hotlinks{--w-bg:#f9fbfe;--w-fg:#4a5770;--w-heading:#566b85;--w-muted:#5e7089;--w-hover:#e6edf7}
+.w-calculator{--w-bg:#e9ecf2;--w-fg:#435470;--w-key:#f9fbff;--w-key-ink:#546078;--w-operator:#d7deee;--w-operator-ink:#566b8d;--w-hover:#e0e7f4;--w-accent:#607dad;--w-accent-hover:#4f6c9e;--w-error:#b54254}
+.w-habit{--w-bg:linear-gradient(135deg,#f1f8e8,#eaf4e5);--w-fg:#557547;--w-heading:#637f53;--w-muted:#5a7548;--w-accent:#658747;--w-input:#ffffff4a;--w-input-border:#8aa17685;--w-border:#88a37238;--w-decor:#668e4220}
+.w-clock{--w-bg:radial-gradient(ellipse at 90% 0,#dae3f0,transparent 70%),#eff3f9;--w-fg:#435873;--w-heading:#526781;--w-muted:#576c87;--w-border:#8499b32e}
+
+html[data-theme=dark] .widget-inner{
+  --w-bg:#242c38;--w-fg:#e1e8f1;--w-heading:#d7e1ee;--w-muted:#a7b5c8;
+  --w-border:#9cacc52c;--w-control:#849bb520;--w-hover:#a7bdd32c;
+  --w-input:#1b2330;--w-input-border:#7e91a8;--w-scrollbar:#b1c3db54;
+  --w-accent:#a2cabb;--w-accent-ink:#203d33;--w-accent-hover:#b5decd;
+  --w-decor:#a3b8ce24;--w-error:#f4a3aa;color-scheme:dark
+}
+html[data-theme=dark] .w-wallpaper{--w-bg:linear-gradient(135deg,#31483f,#263f39);--w-fg:#fff;--w-heading:#fff;--w-muted:#e8f2ec;--w-hover:#ffffff29;--w-accent:#d8e8db;--w-accent-ink:#264738;--w-accent-hover:#f0f7ef}
+html[data-theme=dark] .w-wallpaper-shade{background:linear-gradient(180deg,#081b20a3,transparent 40%,#061715c9)}
+html[data-theme=dark] .w-weather{--w-bg:linear-gradient(145deg,#273e63 0%,#2e3b60 50%,#383453 100%);--w-fg:#ecf2ff;--w-heading:#dce5fa;--w-muted:#b2c1df;--w-border:#b0c5ff38;--w-control:#a2bbec1c;--w-hover:#adc5f32d;--w-error:#ffdea1}
+html[data-theme=dark] .w-calendar{--w-bg:#292a36;--w-fg:#e0dfec;--w-muted:#a6a7bb;--w-accent:#eda0af;--w-accent-ink:#3d1d2a;--w-weekend:#d8a0b0;--w-decor:#eda0af26}
+html[data-theme=dark] .w-notes,html[data-theme=dark] .w-notes-yellow{--w-bg:#39352a;--w-fg:#ecddb0;--w-muted:#c2b38c;--w-hover:#dcc9971f;--w-scrollbar:#dcc99752;--w-decor:#dcc99726}
+html[data-theme=dark] .w-notes-pink{--w-bg:#3d2b36;--w-fg:#eed1dc;--w-muted:#c6a4b5;--w-hover:#e0b2c91f;--w-scrollbar:#e0b2c952;--w-decor:#e0b2c926}
+html[data-theme=dark] .w-notes-mint{--w-bg:#2a3a31;--w-fg:#c9e4cb;--w-muted:#a3c2ab;--w-hover:#b1d9b91f;--w-scrollbar:#b1d9b952;--w-decor:#b1d9b926}
+html[data-theme=dark] .w-todo{--w-bg:#252e3b;--w-fg:#dce5f1;--w-heading:#c9d6ea;--w-muted:#a9b8ce;--w-control:#324156;--w-input:#1c2532;--w-input-border:#7b8caa;--w-accent:#92c5b1;--w-accent-ink:#203b30}
+html[data-theme=dark] .w-countdown{--w-bg:linear-gradient(135deg,#40302a,#34272d);--w-fg:#f3d1bd;--w-heading:#dfb7a3;--w-muted:#c8a390;--w-accent:#f0b89a;--w-border:#d4aa8830;--w-decor:#d4aa8852}
+html[data-theme=dark] .w-focus{--w-bg:radial-gradient(ellipse at 100% 0,#39455a,transparent 75%),#252e40;--w-fg:#e1e9f3;--w-heading:#c8d7e6;--w-muted:#acbad0;--w-border:#a3b6d130;--w-accent:#a2cbbb;--w-accent-ink:#273e3d;--w-accent-hover:#b9dfd0}
+html[data-theme=dark] .w-workday{--w-bg:linear-gradient(145deg,#263d37,#303c2c);--w-fg:#d2e7d9;--w-heading:#b7d5c5;--w-muted:#a8bfac;--w-border:#aac8b330}
+html[data-theme=dark] .w-quote{--w-bg:linear-gradient(115deg,#342d41,#2d2938);--w-fg:#e7d9f3;--w-heading:#cfc0df;--w-muted:#bba9ce;--w-accent:#c0a5d5}
+html[data-theme=dark] .w-hotlinks{--w-bg:#252e3a;--w-fg:#e3eaf5;--w-heading:#bdcde2;--w-muted:#a3b4c9;--w-hover:#354357}
+html[data-theme=dark] .w-calculator{--w-bg:#282d3a;--w-fg:#e7ecf6;--w-key:#353c4c;--w-key-ink:#e0e7f3;--w-operator:#424d65;--w-operator-ink:#d5e2ff;--w-hover:#49556c;--w-accent:#abc1ea;--w-accent-ink:#213754;--w-accent-hover:#bad0f7;--w-error:#ffabb7}
+html[data-theme=dark] .w-habit{--w-bg:linear-gradient(135deg,#2c382a,#26342d);--w-fg:#d3e7c7;--w-heading:#c1d6b4;--w-muted:#a6be98;--w-accent:#a2c48e;--w-accent-ink:#2b4024;--w-input:#203025;--w-input-border:#839d749e;--w-border:#a7bf9430;--w-decor:#a2c48e20}
+html[data-theme=dark] .w-clock{--w-bg:radial-gradient(ellipse at 90% 0,#45556e,transparent 70%),#303b50;--w-fg:#e4eaf5;--w-heading:#c4ccdc;--w-muted:#bfcbdf;--w-border:#b3c6de24}
 .widget-inner *{box-sizing:border-box}
 .widget-inner button,.widget-inner input,.widget-inner textarea{font:inherit}
 .widget-inner button{cursor:pointer;color:inherit;border:0;background:none;padding:0}
 .widget-inner button:disabled{cursor:wait;opacity:.7}
 .widget-inner button:focus-visible,.widget-inner a:focus-visible,.widget-inner input:focus-visible,.widget-inner textarea:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .widget-inner input,.widget-inner textarea{min-width:0;color:inherit}
-.widget-inner input::placeholder,.widget-inner textarea::placeholder{color:currentColor;opacity:.43}
+.widget-inner input::placeholder,.widget-inner textarea::placeholder{color:var(--w-muted);opacity:.9}
 .widget-icon{display:block;width:15px;height:15px;flex:none;vertical-align:middle}
 .widget-heading{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:18px;flex:none;font-size:10px;font-weight:550;letter-spacing:.2px}
 .widget-heading>span:first-child{display:flex;align-items:center;gap:5px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .widget-heading>span:first-child>.widget-icon{width:13px;height:13px;opacity:.7}
 .widget-heading-actions{display:flex;align-items:center;gap:2px}
-.widget-inner .widget-icon-button{display:grid;place-items:center;flex:none;width:21px;height:21px;border-radius:6px;opacity:.63;transition:background .15s,opacity .15s}
-.widget-inner .widget-icon-button:hover{opacity:1;background:currentColor}
-.widget-inner .widget-icon-button:hover>.widget-icon{filter:brightness(1.7)}
-.widget-inner .widget-icon-button:hover{background:#61758316}
+.widget-inner .widget-icon-button{display:grid;place-items:center;flex:none;width:21px;height:21px;border-radius:6px;opacity:.76;transition:background .15s,opacity .15s}
+.widget-inner .widget-icon-button:hover{opacity:1;background:var(--w-hover)}
 .widget-icon-button>.widget-icon{width:13px;height:13px}
 .widget-heading .widget-config{margin-right:-5px;margin-top:-3px;margin-bottom:-3px}
 .widget-heading-actions .widget-config{margin-left:0}
-.widget-inner .w-inline-form{display:flex;align-items:center;gap:4px;flex:none;margin-top:auto;padding-top:5px;border-top:1px solid #52687913;height:27px}
+.widget-inner .w-inline-form{display:flex;align-items:center;gap:4px;flex:none;margin-top:auto;padding-top:5px;border-top:1px solid var(--w-border);height:27px}
+.widget-inner .w-inline-form:focus-within{border-top-color:var(--w-accent)}
 .w-inline-form input{border:0;outline:0;background:none;flex:1;width:100%;height:22px;font-size:10px!important;padding:0}
 .w-inline-form input:focus-visible{outline:none}
-.widget-inner .w-inline-form button{background:#65778d0c;border-radius:6px;width:20px;height:20px}
-.w-empty-list{display:grid;place-items:center;min-height:52px;text-align:center;line-height:1.8;font-size:10px;color:#7d8798}
-.widget-inner .w-row-delete{width:17px;height:20px;opacity:0;margin-right:-2px;color:#82909c}
+.widget-inner .w-inline-form button{background:var(--w-control);border-radius:6px;width:20px;height:20px}
+.widget-inner .w-inline-form button:hover{background:var(--w-hover)}
+.w-empty-list{display:grid;place-items:center;min-height:52px;text-align:center;line-height:1.8;font-size:10px;color:var(--w-muted)}
+.widget-inner .w-row-delete{width:17px;height:20px;opacity:0;margin-right:-2px;color:var(--w-muted)}
 .widget-inner li:hover .w-row-delete,.widget-inner .w-row-delete:focus-visible{opacity:.75}
-.widget-inner ul{list-style:none;padding:0;margin:0;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#48566d25 transparent}
+.widget-inner ul{list-style:none;padding:0;margin:0;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--w-scrollbar) transparent}
 
 /* Public photos are requested only after enabling this card. */
-.w-wallpaper{padding:0;background:linear-gradient(135deg,#90aaa0,#759990);color:#fff;overflow:hidden}
+.w-wallpaper{padding:0;overflow:hidden}
 .w-wallpaper-landscape,.w-wallpaper-photo,.w-wallpaper-shade{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .w-wallpaper-landscape{opacity:.8}
 .w-wallpaper-photo{opacity:0;transition:opacity .3s ease;z-index:1}
@@ -174,15 +318,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .w-wallpaper.has-wallpaper-error .w-wallpaper-photo{display:none}
 .w-wallpaper-shade{z-index:2;background:linear-gradient(180deg,#14282475,transparent 40%,#071815b3)}
 .w-wallpaper-content{position:relative;z-index:3;display:flex;flex-direction:column;width:100%;height:100%;padding:12px 13px;text-shadow:0 1px 9px #14352a30}
-.w-wallpaper .widget-heading{font-size:10px;color:#fff}
+.w-wallpaper .widget-heading{font-size:10px;color:var(--w-heading)}
 .w-wallpaper .widget-icon-button{opacity:.8;border-radius:50%;width:22px;height:22px}
-.w-wallpaper .widget-icon-button:hover{background:#ffffff29;opacity:1}
+.w-wallpaper .widget-icon-button:hover{background:var(--w-hover);opacity:1}
 .w-wallpaper-provider-tag{font-size:7px;font-weight:450;letter-spacing:1.5px;opacity:.7}
 .w-wallpaper-invite{display:flex;flex:1;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:0}
 .w-wallpaper-invite strong{font-size:17px;font-weight:500;line-height:1.6;letter-spacing:.25px}
 .w-wallpaper-invite>span{font-size:9px;color:#f2fff4cc}
-.widget-inner .w-wallpaper-primary{display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;white-space:nowrap;font-size:9px;font-weight:550;min-height:26px;padding:6px 11px;background:#f2f8f0;color:#2e5546;border:1px solid #fff8;border-radius:7px;text-shadow:none;box-shadow:0 2px 8px #173c2912}
-.widget-inner .w-wallpaper-primary:hover{background:#fff;box-shadow:0 2px 10px #173c292a}
+.widget-inner .w-wallpaper-primary{display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;white-space:nowrap;font-size:9px;font-weight:550;min-height:26px;padding:6px 11px;background:var(--w-accent);color:var(--w-accent-ink);border:1px solid #fff8;border-radius:7px;text-shadow:none;box-shadow:0 2px 8px #173c2912}
+.widget-inner .w-wallpaper-primary:hover{background:var(--w-accent-hover);box-shadow:0 2px 10px #173c292a}
 .widget-inner .w-wallpaper-primary:disabled{cursor:default;opacity:.6}
 .w-wallpaper-primary>.widget-icon{width:11px;height:11px}
 .w-wallpaper-invite .w-wallpaper-primary{margin-top:8px}
@@ -220,163 +364,158 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @media(prefers-reduced-motion:reduce){.w-wallpaper-spinner{animation:none}.w-wallpaper-photo{transition:none}}
 
 /* Weather: the card stays explicit about enabling, cached data, and errors. */
-.w-weather{color:#fff;background:linear-gradient(145deg,#799ada 0%,#748ed2 50%,#b1a3e0 100%);padding-bottom:10px}
+.w-weather{padding-bottom:10px}
 .w-weather:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;top:-100px;right:-65px;background:#f2eaff13;pointer-events:none}
 .w-weather .widget-heading{font-weight:500}
-.w-weather .widget-icon-button:hover{background:#ffffff1a}
+.w-weather .widget-icon-button:hover{background:var(--w-hover)}
 .w-weather-current{position:relative;display:flex;align-items:center;justify-content:space-between;height:66px;flex:1;min-height:47px;margin-top:2px}
 .w-weather-current>strong{font-size:49px;letter-spacing:-3px;font-weight:400;line-height:1;position:relative;z-index:1}
 .w-weather-current>strong sup{vertical-align:top;font-size:31px;line-height:1.2;font-weight:300;position:relative;left:2px}
 .w-weather-art{width:73px;height:67px;flex:none;filter:drop-shadow(0 4px 8px #34447716);overflow:visible}
 .w-weather-current>.w-weather-art{position:absolute;right:-4px;bottom:-1px;width:73px;height:68px}
 .w-weather-description{font-size:10px;position:relative;margin-top:1px;white-space:nowrap;opacity:.95}
-.w-weather-details{display:flex;gap:9px;font-size:9px;opacity:.65;margin-top:4px;min-height:13px}
-.w-weather .w-weather-update{display:block;text-align:left;font-size:8px;opacity:.59;white-space:nowrap;margin-top:auto;padding-top:6px;flex:none}
+.w-weather-details{display:flex;gap:9px;font-size:9px;color:var(--w-muted);margin-top:4px;min-height:13px}
+.w-weather .w-weather-update{display:block;text-align:left;font-size:8px;color:var(--w-muted);opacity:1;white-space:nowrap;margin-top:auto;padding-top:6px;flex:none}
 .w-weather .w-weather-update:hover{opacity:.95}
-.w-weather .w-weather-update.is-error{color:#fff2b5;opacity:.92;font-size:8px}
+.w-weather .w-weather-update.is-error{color:var(--w-error);opacity:1;font-size:8px}
 .w-weather-off{display:flex;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 .w-weather-off>.w-weather-art{height:51px;width:58px;margin:-2px 0 -3px}
-.w-weather-off>span{font-size:10px;color:#f6f8ffe0}
-.widget-inner .w-weather-enable{padding:5px 11px;border-radius:7px;background:#f6f8ff28;color:#fff;border:1px solid #ffffff2c;font-size:10px;line-height:1.2}
-.widget-inner .w-weather-enable:hover{background:#f6f8ff40}
-.w-weather-source{font-size:7px;letter-spacing:.1px;opacity:.55;text-align:center;margin-top:7px;flex:none}
+.w-weather-off>span{font-size:10px;color:var(--w-muted)}
+.widget-inner .w-weather-enable{padding:5px 11px;border-radius:7px;background:var(--w-control);color:var(--w-fg);border:1px solid var(--w-border);font-size:10px;line-height:1.2}
+.widget-inner .w-weather-enable:hover{background:var(--w-hover)}
+.w-weather-source{font-size:7px;letter-spacing:.1px;color:var(--w-muted);text-align:center;margin-top:7px;flex:none}
 .w-weather-unavailable{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;flex:1;min-height:0;text-align:center}
 .w-weather-unavailable>.widget-icon{width:30px;height:30px;opacity:.7;margin:2px 0}
 .w-weather-unavailable>strong{font-size:10px;font-weight:500}
-.w-weather-unavailable>span:not(.w-weather-loading){font-size:8px;opacity:.65;line-height:1.5;max-width:100%}
-.w-weather-loading{width:12px;height:12px;border:1.5px solid #ffffff40;border-top-color:#fff;border-radius:50%;animation:w-spin 1s linear infinite}
+.w-weather-unavailable>span:not(.w-weather-loading){font-size:8px;color:var(--w-muted);line-height:1.5;max-width:100%}
+.w-weather-loading{width:12px;height:12px;border:1.5px solid var(--w-border);border-top-color:var(--w-fg);border-radius:50%;animation:w-spin 1s linear infinite}
 @keyframes w-spin{to{transform:rotate(360deg)}}
 
 /* The calendar keeps a real six-week month inside a compact tile. */
-.w-calendar{background:#fff;color:#495060;padding:10px 11px 8px}
+.w-calendar{padding:10px 11px 8px}
 .w-calendar-top{display:flex;align-items:center;justify-content:space-between;flex:none;height:22px;margin-bottom:4px}
 .w-calendar-top>span{display:flex;align-items:baseline;gap:7px}
-.w-calendar-top strong{font-weight:700;font-size:20px;letter-spacing:-.7px;color:#ec6c7b}
+.w-calendar-top strong{font-weight:700;font-size:20px;letter-spacing:-.7px;color:var(--w-accent)}
 .w-calendar-top strong small{font-weight:500;font-size:9px;margin-left:3px;letter-spacing:0}
-.w-calendar-top em{font-size:9px;font-style:normal;color:#a5a8b3;letter-spacing:.5px}
+.w-calendar-top em{font-size:9px;font-style:normal;color:var(--w-muted);letter-spacing:.5px}
 .w-calendar-top>div{display:flex;align-items:center;gap:0;margin-right:-5px}
-.w-calendar-top .widget-icon-button{width:18px;height:21px;color:#6f7584}
+.w-calendar-top .widget-icon-button{width:18px;height:21px;color:var(--w-muted)}
 .w-calendar-top .widget-icon-button .widget-icon{width:11px;height:11px}
 .w-calendar-top .w-calendar-today-button{font-size:9px}
 .w-calendar-weekdays,.w-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));text-align:center;gap:0}
-.w-calendar-weekdays{font-size:8px;flex:none;height:16px;color:#a2a6b3;align-items:center}
-.w-calendar-weekdays>span:nth-last-child(-n+2){color:#d6a4ac}
+.w-calendar-weekdays{font-size:8px;flex:none;height:16px;color:var(--w-muted);align-items:center}
+.w-calendar-weekdays>span:nth-last-child(-n+2){color:var(--w-weekend)}
 .w-calendar-grid{flex:1;min-height:0;grid-template-rows:repeat(var(--calendar-rows,5),minmax(0,1fr));align-items:center;font-size:9px;line-height:1}
 .w-calendar-day{display:grid;place-items:center;width:17px;height:17px;justify-self:center;border-radius:6px;font-variant-numeric:tabular-nums}
-.w-calendar-day.is-weekend{color:#ca8793}
-.w-calendar-day.is-outside{opacity:.27}
-.w-calendar-day.is-today{background:#ef7a89;color:white;font-weight:650;box-shadow:0 3px 7px #ef7a892a}
-.w-calendar-lunar{flex:none;text-align:center;color:#a3a8b3;font-size:8px;margin-top:5px;border-top:1px solid #eff0f4;padding-top:5px;line-height:1}
+.w-calendar-day.is-weekend{color:var(--w-weekend)}
+.w-calendar-day.is-outside{opacity:.42}
+.w-calendar-day.is-today{background:var(--w-accent);color:var(--w-accent-ink);font-weight:650;box-shadow:0 3px 7px var(--w-decor)}
+.w-calendar-lunar{flex:none;text-align:center;color:var(--w-muted);font-size:8px;margin-top:5px;border-top:1px solid var(--w-border);padding-top:5px;line-height:1}
 
 /* Notes retain their native textarea and selection across every clock tick. */
-.w-notes,.w-notes-yellow{background:#fff4c8;color:#716338}
-.w-notes-pink{background:#ffe5e8;color:#996676}
-.w-notes-mint{background:#ddf1dc;color:#507650}
 .w-notes .widget-heading{color:inherit;opacity:.78}
-.w-notes-input{display:block;flex:1;min-height:0;width:100%;resize:none;outline:none!important;border:0;background:transparent;padding:8px 0 2px;font-size:11px!important;line-height:1.8!important;scrollbar-width:thin;scrollbar-color:#8e80402c transparent;white-space:pre-wrap;overflow-wrap:anywhere}
-.w-notes-footer{position:relative;flex:none;height:10px;font-size:7px;opacity:.48;margin-top:4px}
-.w-notes-fold{position:absolute;right:-12px;bottom:-12px;border-top:18px solid #95815520;border-right:18px solid transparent;width:0;height:0;transform:rotate(180deg)}
+.w-notes-input{display:block;flex:1;min-height:0;width:100%;resize:none;outline:none!important;border:0;background:transparent;padding:8px 0 2px;font-size:11px!important;line-height:1.8!important;scrollbar-width:thin;scrollbar-color:var(--w-scrollbar) transparent;white-space:pre-wrap;overflow-wrap:anywhere}
+.w-notes-footer{position:relative;flex:none;height:10px;font-size:7px;color:var(--w-muted);margin-top:4px}
+.w-notes-fold{position:absolute;right:-12px;bottom:-12px;border-top:18px solid var(--w-decor);border-right:18px solid transparent;width:0;height:0;transform:rotate(180deg)}
 
-.w-todo{background:#fdfdff;color:#526072}
-.w-todo .widget-heading{color:#5a6780}
-.w-todo-summary{font-size:9px;line-height:16px;background:#eaf0f8;color:#8391a6;padding:1px 6px;border-radius:5px;font-weight:500;letter-spacing:1px}
+.w-todo .widget-heading{color:var(--w-heading)}
+.w-todo-summary{font-size:9px;line-height:16px;background:var(--w-control);color:var(--w-muted);padding:1px 6px;border-radius:5px;font-weight:500;letter-spacing:1px}
 .w-todo-list{flex:1;margin:5px 0!important}
 .w-todo-row{display:flex;align-items:center;justify-content:space-between;gap:3px;min-height:27px}
 .w-todo-row label{display:flex;align-items:center;gap:6px;min-width:0;flex:1;cursor:pointer;font-size:10px}
 .w-todo-row label>span{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;line-height:1.5}
-.w-todo-row input{appearance:none;width:12px;height:12px;margin:0;border:1.3px solid #c6cdd9;border-radius:4px;cursor:pointer;flex:none;position:relative;background:#fff}
-.w-todo-row input:checked{background:#83b3a4;border-color:#83b3a4}
-.w-todo-row input:checked:after{content:"";display:block;width:6px;height:3px;border-left:1.3px solid white;border-bottom:1.3px solid white;transform:translate(2px,2px) rotate(-45deg)}
-.w-todo-row.is-done label>span{text-decoration:line-through;text-decoration-color:#a3abb9;opacity:.5}
+.w-todo-row input{appearance:none;width:12px;height:12px;margin:0;border:1.3px solid var(--w-input-border);border-radius:4px;cursor:pointer;flex:none;position:relative;background:var(--w-input)}
+.w-todo-row input:hover{border-color:var(--w-accent)}
+.w-todo-row input:checked{background:var(--w-accent);border-color:var(--w-accent)}
+.w-todo-row input:checked:after{content:"";display:block;width:6px;height:3px;border-left:1.3px solid var(--w-accent-ink);border-bottom:1.3px solid var(--w-accent-ink);transform:translate(2px,2px) rotate(-45deg)}
+.w-todo-row.is-done label>span{text-decoration:line-through;text-decoration-color:var(--w-muted);color:var(--w-muted);opacity:.8}
 
-.w-countdown{background:linear-gradient(135deg,#ffeddf,#f9dbc9);color:#a47257}
-.w-countdown .widget-heading{color:#a27e68}
-.w-countdown-title{position:relative;z-index:1;text-align:center;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:9px;color:#946c59}
-.w-countdown-caption{text-align:center;font-size:8px;opacity:.66;margin-top:4px}
+.w-countdown .widget-heading{color:var(--w-heading)}
+.w-countdown-title{position:relative;z-index:1;text-align:center;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:9px;color:var(--w-fg)}
+.w-countdown-caption{text-align:center;font-size:8px;color:var(--w-muted);margin-top:4px}
 .w-countdown-number{position:relative;z-index:1;text-align:center;white-space:nowrap;flex:1;display:flex;justify-content:center;align-items:center;gap:5px;min-height:32px;margin:2px 0}
-.w-countdown-number strong{font-size:44px;line-height:1;font-weight:500;letter-spacing:-2px;color:#b17a5d;font-variant-numeric:tabular-nums}
+.w-countdown-number strong{font-size:44px;line-height:1;font-weight:500;letter-spacing:-2px;color:var(--w-accent);font-variant-numeric:tabular-nums}
 .w-countdown-number span{font-size:10px;align-self:flex-end;margin-bottom:6px;opacity:.75}
-.w-countdown-date{text-align:center;font-size:9px;letter-spacing:1px;opacity:.55;position:relative;z-index:1;margin-top:1px}
-.w-countdown-orbit{position:absolute;right:-25px;top:52px;width:100px;height:100px;border:1px solid #ffffff44;border-radius:50%;transform:rotate(20deg);z-index:0}
-.w-countdown-orbit:after{content:"";position:absolute;width:5px;height:5px;background:#ffffff7d;border-radius:50%;top:8px;left:18px}
+.w-countdown-date{text-align:center;font-size:9px;letter-spacing:1px;color:var(--w-muted);position:relative;z-index:1;margin-top:1px}
+.w-countdown-orbit{position:absolute;right:-25px;top:52px;width:100px;height:100px;border:1px solid var(--w-border);border-radius:50%;transform:rotate(20deg);z-index:0}
+.w-countdown-orbit:after{content:"";position:absolute;width:5px;height:5px;background:var(--w-decor);border-radius:50%;top:8px;left:18px}
 
-.w-focus{background:radial-gradient(ellipse at 100% 0,#39455a,transparent 75%),#252e40;color:#dce4f1;padding-bottom:10px}
-.w-focus .widget-heading{color:#c8d1e1}
-.w-focus .widget-heading>.widget-icon-button{color:#b9c5d9}
+.w-focus{padding-bottom:10px}
+.w-focus .widget-heading{color:var(--w-heading)}
+.w-focus .widget-heading>.widget-icon-button{color:var(--w-muted)}
 .w-focus-ring{position:relative;display:grid;place-items:center;flex:1;min-height:66px;width:100%;margin:3px 0}
-.w-focus-ring:before{content:"";position:absolute;height:83px;width:83px;border-radius:50%;background:conic-gradient(from -90deg,#a5cdbf calc(var(--focus-progress,1) * 360deg),#c8d3e114 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px));mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px))}
+.w-focus-ring:before{content:"";position:absolute;height:83px;width:83px;border-radius:50%;background:conic-gradient(from -90deg,var(--w-accent) calc(var(--focus-progress,1) * 360deg),var(--w-border) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px));mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px))}
 .w-focus-ring>div{text-align:center}
 .w-focus-ring strong{display:block;font-size:25px;letter-spacing:-.6px;font-weight:400;font-variant-numeric:tabular-nums;line-height:1.25}
-.w-focus-ring span{display:block;font-size:6px;letter-spacing:.3px;color:#9babc0;margin-top:4px}
+.w-focus-ring span{display:block;font-size:6px;letter-spacing:.3px;color:var(--w-muted);margin-top:4px}
 .w-focus-controls{display:flex;justify-content:center;align-items:center;gap:9px;flex:none;height:23px}
-.widget-inner .w-focus-start{display:flex;align-items:center;justify-content:center;gap:5px;font-size:9px;background:#a2cbbb;color:#273e3d;border-radius:7px;padding:5px 12px;height:24px;min-width:65px}
+.widget-inner .w-focus-start{display:flex;align-items:center;justify-content:center;gap:5px;font-size:9px;background:var(--w-accent);color:var(--w-accent-ink);border-radius:7px;padding:5px 12px;height:24px;min-width:65px}
+.widget-inner .w-focus-start:hover{background:var(--w-accent-hover)}
 .w-focus-start .widget-icon{width:11px;height:11px;fill:currentColor;stroke-width:1.8px}
 .w-focus-start [data-running="true"] .widget-icon{fill:none;stroke-width:2.5px}
-.w-focus-controls>.widget-icon-button{background:#c6d4e510;width:24px;height:24px;border-radius:7px;color:#a8b6c9}
-.w-focus .widget-icon-button:hover{background:#ffffff16}
+.w-focus-controls>.widget-icon-button{background:var(--w-control);width:24px;height:24px;border-radius:7px;color:var(--w-muted)}
+.w-focus .widget-icon-button:hover{background:var(--w-hover)}
 
-.w-workday{background:linear-gradient(145deg,#d4ebe3,#eaf4dc);color:#467367}
-.w-workday .widget-heading{color:#608479}
-.w-workday-caption{font-size:8px;text-align:center;margin-top:auto;opacity:.67;padding-top:7px}
+.w-workday .widget-heading{color:var(--w-heading)}
+.w-workday-caption{font-size:8px;text-align:center;margin-top:auto;color:var(--w-muted);padding-top:7px}
 .w-workday-time{display:block;white-space:nowrap;text-align:center;font-size:26px;line-height:1.15;letter-spacing:-1px;font-weight:500;font-variant-numeric:tabular-nums;margin-top:5px}
-.w-workday-finish{text-align:center;font-size:8px;opacity:.56;margin-top:6px}
-.w-workday-pay{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-top:8px;border-top:1px solid #6d9d8b21;margin-top:auto;min-height:22px;font-size:8px}
-.w-workday-pay>span{opacity:.65}
+.w-workday-finish{text-align:center;font-size:8px;color:var(--w-muted);margin-top:6px}
+.w-workday-pay{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-top:8px;border-top:1px solid var(--w-border);margin-top:auto;min-height:22px;font-size:8px}
+.w-workday-pay>span{color:var(--w-muted)}
 .w-workday-pay>strong{font-size:9px;font-weight:550}
 
-.w-quote{background:linear-gradient(115deg,#edeaf7,#f7f4fc);color:#746387;padding:13px 16px}
-.w-quote .widget-heading{color:#8e829e;font-size:9px}
+.w-quote{padding:13px 16px}
+.w-quote .widget-heading{color:var(--w-heading);font-size:9px}
 .w-quote-text{position:relative;z-index:1;margin:auto 0;font-size:15px;font-weight:400;line-height:1.9;letter-spacing:.3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
-.w-quote-author{position:relative;text-align:right;z-index:1;color:#a299ae;font-size:8px;padding-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.w-quote-decoration{position:absolute;right:10px;bottom:-40px;font-family:Georgia,serif;font-size:180px;line-height:1;opacity:.065;color:#82708f;pointer-events:none;z-index:0}
+.w-quote-author{position:relative;text-align:right;z-index:1;color:var(--w-muted);font-size:8px;padding-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-quote-decoration{position:absolute;right:10px;bottom:-40px;font-family:Georgia,serif;font-size:180px;line-height:1;opacity:.12;color:var(--w-accent);pointer-events:none;z-index:0}
 
-.w-hotlinks{background:#f9fbfe;color:#4a5770}
-.w-hotlinks .widget-heading{color:#657389}
-.w-hotlinks-tag{font-size:7px;font-weight:400;color:#a0aab9}
+.w-hotlinks .widget-heading{color:var(--w-heading)}
+.w-hotlinks-tag{font-size:7px;font-weight:400;color:var(--w-muted)}
 .w-hotlinks-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;flex:1;align-content:center;margin:5px 0 2px}
 .w-hotlink{display:flex;align-items:center;gap:6px;min-width:0;text-decoration:none;color:inherit;border-radius:7px;padding:4px 3px;font-size:10px;transition:background .15s}
-.w-hotlink:hover{background:#e6edf7}
+.w-hotlink:hover{background:var(--w-hover)}
 .w-hotlink>span:nth-child(2){white-space:nowrap;text-overflow:ellipsis;overflow:hidden;flex:1}
 .w-hotlink-logo{width:23px;height:23px;display:grid;place-items:center;flex:none;border-radius:7px;background:var(--platform-color);color:white;font-size:11px;font-weight:650;box-shadow:inset 0 1px 0 #ffffff40}
 .w-hotlink>.widget-icon{width:10px;height:10px;opacity:.24}
-.w-hotlinks-footer{text-align:center;font-size:7px;color:#a9b1bf;letter-spacing:.1px;margin-top:3px;flex:none}
+.w-hotlinks-footer{text-align:center;font-size:7px;color:var(--w-muted);letter-spacing:.1px;margin-top:3px;flex:none}
 
-.w-calculator{background:#e9ecf2;color:#526078;padding:10px;gap:5px}
+.w-calculator{padding:10px;gap:5px}
 .w-calculator-screen{position:relative;flex:none;height:29px;padding-bottom:4px}
 .w-calculator-input{display:block;width:100%;height:25px;text-align:right;border:0;background:transparent;outline:0;font-size:23px!important;font-weight:400!important;line-height:1!important;font-variant-numeric:tabular-nums;padding:0 3px;letter-spacing:-.5px}
 .w-calculator-input::placeholder{opacity:1!important}
 .w-calculator-input:focus-visible{outline:none!important}
-.w-calculator-error{position:absolute;bottom:-1px;left:0;right:0;font-size:7px;color:#cf6673;line-height:1;white-space:nowrap;text-align:right;background:#e9ecf2}
+.w-calculator-error{position:absolute;bottom:-1px;left:0;right:0;font-size:7px;color:var(--w-error);line-height:1;white-space:nowrap;text-align:right;background:var(--w-bg)}
 .w-calculator-keys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:4px;flex:1;min-height:0}
-.widget-inner .w-calculator-key{display:grid;place-items:center;border-radius:6px;background:#fff9;color:#647086;font-size:11px;min-height:0;line-height:1;box-shadow:0 1px 2px #47526906}
-.widget-inner .w-calculator-key:hover{background:#fff}
+.widget-inner .w-calculator-key{display:grid;place-items:center;border-radius:6px;background:var(--w-key);color:var(--w-key-ink);font-size:11px;min-height:0;line-height:1;box-shadow:0 1px 2px #47526906}
+.widget-inner .w-calculator-key:hover{background:var(--w-hover)}
 .widget-inner .w-calculator-key:active{transform:translateY(1px)}
-.widget-inner .w-calculator-key.is-operator{background:#d7deee;color:#7485a4}
-.widget-inner .w-calculator-key.is-equal{background:#9cafd3;color:white}
-.widget-inner .w-calculator-key.is-equal:hover{background:#879fc7}
+.widget-inner .w-calculator-key.is-operator{background:var(--w-operator);color:var(--w-operator-ink)}
+.widget-inner .w-calculator-key.is-operator:hover{background:var(--w-hover)}
+.widget-inner .w-calculator-key.is-equal{background:var(--w-accent);color:var(--w-accent-ink)}
+.widget-inner .w-calculator-key.is-equal:hover{background:var(--w-accent-hover)}
 
-.w-habit{background:linear-gradient(135deg,#f1f8e8,#eaf4e5);color:#668353}
-.w-habit .widget-heading{color:#7b916a}
-.w-habit-today{font-size:7px;font-weight:450;letter-spacing:1px;opacity:.6}
+.w-habit .widget-heading{color:var(--w-heading)}
+.w-habit-today{font-size:7px;font-weight:450;letter-spacing:1px;color:var(--w-muted)}
 .w-habit-list{flex:1;margin:5px 0!important}
 .w-habit-row{display:flex;align-items:center;gap:6px;min-height:37px}
-.widget-inner .w-habit-check{display:grid;place-items:center;width:22px;height:22px;border:1px solid #9cba8859;border-radius:7px;flex:none;background:#fafff84a;color:#9bb786}
+.widget-inner .w-habit-check{display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--w-input-border);border-radius:7px;flex:none;background:var(--w-input);color:var(--w-muted)}
+.widget-inner .w-habit-check:hover{border-color:var(--w-accent)}
 .w-habit-check>.widget-icon{width:12px;height:12px;opacity:.2}
-.widget-inner .w-habit-check.is-done{background:#99b986;color:#fff;border-color:#99b986;box-shadow:0 3px 5px #668e4212}
+.widget-inner .w-habit-check.is-done{background:var(--w-accent);color:var(--w-accent-ink);border-color:var(--w-accent);box-shadow:0 3px 5px var(--w-decor)}
 .w-habit-check.is-done>.widget-icon{opacity:1;stroke-width:2}
 .w-habit-name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;flex:1;line-height:1.3}
-.w-habit-name>small{display:block;font-size:7px;opacity:.55;margin-top:3px;letter-spacing:.2px}
-.w-habit .w-inline-form{border-top-color:#88a37220}
-.w-habit .w-empty-list{color:#8ba078}
+.w-habit-name>small{display:block;font-size:7px;color:var(--w-muted);margin-top:3px;letter-spacing:.2px}
+.w-habit .w-inline-form{border-top-color:var(--w-border)}
+.w-habit .w-empty-list{color:var(--w-muted)}
 
-.w-clock{background:radial-gradient(ellipse at 90% 0,#45556e,transparent 70%),#303b50;color:#e4eaf5}
-.w-clock .widget-heading{color:#c4ccdc}
-.w-clock .widget-icon-button:hover{background:#ffffff12}
+.w-clock .widget-heading{color:var(--w-heading)}
+.w-clock .widget-icon-button:hover{background:var(--w-hover)}
 .w-clock-time{display:block;font-size:28px;line-height:1;letter-spacing:-1px;font-weight:400;font-variant-numeric:tabular-nums;text-align:center;margin:auto 0 0;padding-top:7px}
-.w-clock-date{text-align:center;font-size:8px;color:#97a6bd;margin-top:9px;margin-bottom:auto;padding-bottom:8px}
-.w-clock-world{display:flex;align-items:center;justify-content:space-between;gap:6px;flex:none;padding-top:8px;border-top:1px solid #ffffff0c}
-.w-clock-world>span{font-size:8px;color:#9aa9bf;display:flex;gap:5px;align-items:center}
-.w-clock-world strong{font-size:10px;line-height:1;font-weight:450;color:#c6d2e4;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+.w-clock-date{text-align:center;font-size:8px;color:var(--w-muted);margin-top:9px;margin-bottom:auto;padding-bottom:8px}
+.w-clock-world{display:flex;align-items:center;justify-content:space-between;gap:6px;flex:none;padding-top:8px;border-top:1px solid var(--w-border)}
+.w-clock-world>span{font-size:8px;color:var(--w-muted);display:flex;gap:5px;align-items:center}
+.w-clock-world strong{font-size:10px;line-height:1;font-weight:450;color:var(--w-fg);letter-spacing:.2px;font-variant-numeric:tabular-nums}
 
 @container (max-width:175px){
   .w-hotlinks-grid{column-gap:4px;row-gap:6px}
@@ -430,9 +569,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
     <button class="tool-button add-main" data-action="add" title="添加网站或组件" aria-label="添加网站或组件"></button>
   </div>
   <main id="main">
-    <header class="hero">
+    <header id="clock-block" class="clock-block">
       <button id="clock" class="clock" title="点击切换极简模式" aria-label="切换极简模式"><span id="clock-time">00:00</span><span id="clock-seconds"></span><span id="clock-period"></span></button>
       <div id="date" class="date"></div>
+    </header>
       <div class="search-wrapper">
         <form id="search-form" class="search-form" role="search">
           <button type="button" id="engine-button" class="engine-button" aria-label="切换搜索引擎" aria-expanded="false"></button>
@@ -443,12 +583,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
         <div id="engine-menu" class="engine-menu" hidden></div>
         <div id="search-suggestions" class="search-suggestions" hidden></div>
       </div>
-    </header>
     <section class="desktop-wrap" aria-label="个人桌面">
-      <div class="desktop-heading"><span id="group-heading">主页</span><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或左侧分组收纳 · 右键调整卡片</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
+      <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或左侧分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
       <div id="desktop" class="desktop"></div>
     </section>
-    <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span><span class="quote-credit">栖页 · 从这里开始</span></footer>
+    <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span></footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
   <div id="context-menu" class="context-menu" role="menu" hidden></div>
@@ -1076,7 +1215,7 @@ const DEFAULT_STATE = deepFreeze({
   updatedAt: 0,
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
-    blur: 0, dim: 14, showSeconds: false, hour12: false, minimal: false, openNewTab: true,
+    blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: true, pinSearch: true, minimal: false, openNewTab: true,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 78,
     searchEngine: 'bing', customEngines: [], weatherCity: { name: '香港', latitude: 22.32, longitude: 114.17 },
     weatherEnabled: false, dailyWallpaper: false, quote: true,
@@ -1269,6 +1408,7 @@ function validateSettings(raw) {
     customWallpaper: validateMedia(v.customWallpaper, customWallpaperType), customWallpaperType,
     blur: number(v.blur, 'settings.blur', 0, 40), dim: number(v.dim, 'settings.dim', 0, 90),
     showSeconds: bool(v.showSeconds, 'settings.showSeconds'), hour12: bool(v.hour12, 'settings.hour12'),
+    pinClock: bool(v.pinClock, 'settings.pinClock'), pinSearch: bool(v.pinSearch, 'settings.pinSearch'),
     minimal: bool(v.minimal, 'settings.minimal'), openNewTab: bool(v.openNewTab, 'settings.openNewTab'),
     gridSize: number(v.gridSize, 'settings.gridSize', 48, 120), gap: number(v.gap, 'settings.gap', 8, 40),
     radius: number(v.radius, 'settings.radius', 0, 48), showLabels: bool(v.showLabels, 'settings.showLabels'),
@@ -3242,6 +3382,381 @@ function createSyncController(context) {
 
 return {createSyncController};
 })();
+const __drag = (() => {
+/**
+ * Grid dragging for Qiye. Pointer events are the only drop authority: native
+ * browser drags are suppressed for our cards, never interpreted as app data.
+ *
+ * Cards use [data-item] / [data-item-type], sidebar buttons use [data-group].
+ * Every card may expose a button[data-drag-handle]. Widget contents and normal
+ * touch scrolling remain interactive because only handles start their drags.
+ * The handle needs CSS touch-action:none; group buttons need it while editable.
+ */
+
+const DRAG_THRESHOLD = 7;
+const CLICK_GUARD_MS = 550;
+const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside'];
+
+/** Return an ordered copy without changing item objects or unrelated entries. */
+function reorderById(entries, sourceId, targetId, position = 'before') {
+ if (position !== 'before' && position !== 'after') throw new TypeError('Unknown drop position.');
+ const from = entries.findIndex(entry => entry.id === sourceId);
+ const target = entries.findIndex(entry => entry.id === targetId);
+ if (from < 0 || target < 0 || from === target) return entries;
+ const insertion = target - (from < target ? 1 : 0) + (position === 'after' ? 1 : 0);
+ if (insertion === from) return entries;
+ const ordered = [...entries], [source] = ordered.splice(from, 1);
+ ordered.splice(insertion, 0, source);
+ return ordered;
+}
+
+function dropPosition(rect, point, vertical = false) {
+ if (!rect) return 'before';
+ if (vertical) return point.y < rect.top + rect.height / 2 ? 'before' : 'after';
+ if (point.y < rect.top) return 'before';
+ if (point.y > rect.bottom) return 'after';
+ return point.x < rect.left + rect.width / 2 ? 'before' : 'after';
+}
+
+/** Resolve valid moves from current state, rather than trusting dragged HTML. */
+function resolveDropIntent({ state, source, target, point }) {
+ if (!source || !target || !state || !point) return null;
+ const groups = state.groups || [], items = state.items || [];
+ const groupExists = id => groups.some(group => group.id === id);
+ if (source.kind === 'group') {
+  if (target.kind !== 'group' || source.id === target.id || !groupExists(source.id) || !groupExists(target.id)) return null;
+  return { kind:'group-reorder', groupId:source.id, targetId:target.id, position:dropPosition(target.rect, point, true) };
+ }
+ const item = items.find(entry => entry.id === source.id);
+ if (!item || !groupExists(item.groupId)) return null;
+ if (target.kind === 'group') {
+  if (!groupExists(target.id) || (item.groupId === target.id && !item.folderId)) return null;
+  return { kind:'group', itemId:item.id, groupId:target.id };
+ }
+ if (target.kind === 'desktop') {
+  if (!groupExists(target.id)) return null;
+  const visible = items.filter(entry => entry.groupId === target.id && !entry.folderId);
+  if (item.groupId === target.id && !item.folderId && visible.at(-1)?.id === item.id) return null;
+  return { kind:'append', itemId:item.id, groupId:target.id };
+ }
+ if (target.kind !== 'item') return null;
+ const destination = items.find(entry => entry.id === target.id);
+ if (!destination || item.id === destination.id || item.groupId !== destination.groupId || item.folderId || destination.folderId) return null;
+ const rect = target.rect;
+ // The folder's center collects websites; its outer edges still permit order.
+ if (item.type === 'link' && destination.type === 'folder' && rect &&
+     point.x > rect.left + rect.width * .24 && point.x < rect.right - rect.width * .24 &&
+     point.y > rect.top + rect.height * .2 && point.y < rect.bottom - rect.height * .2) {
+  return { kind:'folder', itemId:item.id, groupId:destination.groupId, folderId:destination.id };
+ }
+ return { kind:'reorder', itemId:item.id, targetId:destination.id, position:dropPosition(rect, point) };
+}
+
+/** Vertical edge speed, in pixels/frame; no movement outside the scroll area. */
+function edgeScrollDelta(position, start, end, edge = 64, maxSpeed = 20) {
+ if (![position, start, end].every(Number.isFinite) || end <= start || position < start || position > end) return 0;
+ const band = Math.min(edge, (end - start) / 3);
+ if (band <= 0) return 0;
+ if (position < start + band) return -maxSpeed * ((start + band - position) / band) ** 2;
+ if (position > end - band) return maxSpeed * ((position - end + band) / band) ** 2;
+ return 0;
+}
+
+/**
+ * onDrop receives one of resolveDropIntent's intents and may return a Promise.
+ * The caller owns state mutation/persistence and should handle it atomically.
+ * cancel() is safe before any desktop rerender or modal opening. destroy()
+ * removes the delegated listeners. All desktop nodes may be freely rerendered.
+ */
+function createDesktopDragController({
+ document: doc = globalThis.document,
+ getState,
+ getActiveGroupId = () => getState().activeGroupId,
+ onDrop,
+ canDragGroups = () => false,
+ isBlocked = () => false,
+ onError = () => {},
+ onStart = () => {}
+}) {
+ if (!doc || typeof getState !== 'function' || typeof onDrop !== 'function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
+ const win = doc.defaultView || globalThis;
+ let session = null, frame = null, indicator = null, preview = null, marked = null;
+ let suppression = null, busy = false, destroyed = false;
+ const listeners = [];
+ const listen = (node, type, callback, options = true) => {
+  node.addEventListener(type, callback, options);
+  listeners.push(() => node.removeEventListener(type, callback, options));
+ };
+ const element = target => target?.nodeType === 3 ? target.parentElement : target;
+ const desktop = () => doc.getElementById('desktop');
+ const groupList = () => doc.getElementById('groups');
+ const now = () => Date.now();
+
+ function sourceAt(event) {
+  const target = element(event.target);
+  if (!target?.closest) return null;
+  const tile = target.closest('[data-item]'), handle = target.closest('[data-drag-handle]');
+  if (tile && desktop()?.contains(tile)) {
+   const item = getState().items.find(entry => entry.id === tile.dataset.item);
+   if (!item || item.folderId || item.groupId !== getActiveGroupId()) return null;
+   const ownHandle = handle && tile.contains(handle);
+   if (!ownHandle) {
+    if (item.type === 'widget' || (event.pointerType && event.pointerType !== 'mouse')) return null;
+    if (target.closest('input,textarea,select,[contenteditable],[data-no-drag]')) return null;
+    const control = target.closest('button,a');
+    if (control && !(item.type === 'link' && control.dataset.openLink === item.id) &&
+        !(item.type === 'folder' && control.dataset.openFolder === item.id)) return null;
+   }
+   if (ownHandle && handle.disabled) return null;
+   return { kind:'item', id:item.id, element:tile, handle:ownHandle ? handle : null, title:item.title, type:item.type };
+  }
+  const group = target.closest('[data-group]');
+  if (group && groupList()?.contains(group) && canDragGroups()) {
+   const item = getState().groups.find(entry => entry.id === group.dataset.group);
+   if (item) return { kind:'group', id:item.id, element:group, handle:group, title:item.name, type:'group' };
+  }
+  return null;
+ }
+
+ function clearMark() {
+  marked?.classList.remove(...DROP_CLASSES);
+  marked = null;
+  if (indicator) indicator.hidden = true;
+ }
+
+ function armClickGuard(drag, waitForRelease) {
+  suppression = { pointerId:drag.pointerId, x:drag.x, y:drag.y, until:now() + CLICK_GUARD_MS, waitForRelease };
+ }
+
+ function clean(waitForRelease = false, guard = true) {
+  const previous = session;
+  session = null;
+  if (frame !== null) win.cancelAnimationFrame(frame);
+  frame = null;
+  if (previous?.active && guard) armClickGuard(previous, waitForRelease);
+  previous?.source.element.classList.remove('dragging');
+  doc.body.classList.remove('is-dragging');
+  clearMark();
+  indicator?.remove(); preview?.remove(); indicator = null; preview = null;
+  if (previous?.capture) {
+   try { previous.capture.releasePointerCapture(previous.pointerId); } catch { /* Pointer may already have ended. */ }
+  }
+ }
+
+ function cancel() { clean(true); }
+
+ function sourceStillValid() {
+  if (!session?.source.element.isConnected || isBlocked()) return false;
+  const source = session.source, state = getState();
+  if (source.kind === 'group') return canDragGroups() && state.groups.some(group => group.id === source.id);
+  return state.items.some(item => item.id === source.id && item.groupId === getActiveGroupId() && !item.folderId);
+ }
+
+ function movePreview() {
+  if (!preview || !session) return;
+  const width = preview.offsetWidth || 190, height = preview.offsetHeight || 62;
+  const left = Math.max(8, Math.min(session.x + 16, win.innerWidth - width - 8));
+  const top = Math.max(8, Math.min(session.y + 16, win.innerHeight - height - 8));
+  preview.style.transform = `translate3d(${left}px,${top}px,0)`;
+ }
+
+ function begin() {
+  const drag = session;
+  if (!drag || !sourceStillValid()) return clean();
+  drag.active = true;
+  drag.source.element.classList.add('dragging');
+  doc.body.classList.add('is-dragging');
+  try {
+   drag.capture = drag.source.handle || drag.source.element;
+   drag.capture.setPointerCapture(drag.pointerId);
+  } catch { drag.capture = null; }
+  doc.getSelection?.()?.removeAllRanges();
+  preview = doc.createElement('div'); preview.className = 'drag-preview';
+  preview.setAttribute('aria-hidden', 'true');
+  preview.style.position = 'fixed'; preview.style.left = '0'; preview.style.top = '0'; preview.style.pointerEvents = 'none';
+  const hint = doc.createElement('small'), title = doc.createElement('strong');
+  hint.textContent = ({link:'移动网站',folder:'移动文件夹',widget:'移动组件',group:'移动分组'})[drag.source.type] || '移动项目';
+  title.textContent = drag.source.title || '未命名';
+  preview.append(hint, title); doc.body.append(preview);
+  indicator = doc.createElement('div'); indicator.className = 'drag-indicator'; indicator.hidden = true;
+  indicator.setAttribute('aria-hidden', 'true'); indicator.style.position = 'fixed'; indicator.style.pointerEvents = 'none';
+  doc.body.append(indicator);
+  movePreview();
+  try { onStart(); } catch (error) { onError(error); }
+  if (session === drag && drag.active) frame = win.requestAnimationFrame(tick);
+ }
+
+ function targetAt(point) {
+  const grid = desktop(), hit = doc.elementFromPoint(point.x, point.y);
+  if (!hit?.closest || point.x < 0 || point.y < 0 || point.x > win.innerWidth || point.y > win.innerHeight) return null;
+  const group = hit.closest('[data-group]');
+  if (group && groupList()?.contains(group)) return { kind:'group', id:group.dataset.group, element:group, rect:group.getBoundingClientRect() };
+  if (session.source.kind === 'group' || !grid) return null;
+  const tile = hit.closest('[data-item]');
+  if (tile && grid.contains(tile)) return { kind:'item', id:tile.dataset.item, element:tile, rect:tile.getBoundingClientRect() };
+  const rect = grid.getBoundingClientRect();
+  if (!grid.contains(hit) || point.x < rect.left || point.x > rect.right || point.y < rect.top || point.y > rect.bottom) return null;
+  const tiles = [...grid.querySelectorAll('[data-item]')].filter(node => node.dataset.item !== session.source.id);
+  const add = hit.closest('.tile-add');
+  const last = tiles.at(-1);
+  const belowAll = tiles.length && point.y > Math.max(...tiles.map(node => node.getBoundingClientRect().bottom)) + 6;
+  if (add || !tiles.length || belowAll) {
+   const marker = add || last || grid;
+   return { kind:'desktop', id:getActiveGroupId(), element:marker, rect:marker.getBoundingClientRect(), appendBefore:!!add };
+  }
+  let nearest = null, distance = Infinity;
+  for (const node of tiles) {
+   const bounds = node.getBoundingClientRect();
+   const dx = Math.max(bounds.left - point.x, 0, point.x - bounds.right);
+   const dy = Math.max(bounds.top - point.y, 0, point.y - bounds.bottom);
+   const value = dx * dx + dy * dy;
+   if (value < distance) { nearest = { kind:'item', id:node.dataset.item, element:node, rect:bounds }; distance = value; }
+  }
+  return nearest;
+ }
+
+ function drawTarget(target, intent) {
+  clearMark();
+  if (!target || !intent) return;
+  marked = target.element;
+  if (intent.kind === 'folder' || intent.kind === 'group') {
+   marked.classList.add('drop-inside');
+   return;
+  }
+  const position = intent.kind === 'append' ? (target.appendBefore ? 'before' : 'after') : intent.position;
+  marked.classList.add(position === 'before' ? 'drop-before' : 'drop-after');
+  const rect = target.rect, vertical = intent.kind === 'group-reorder';
+  indicator.dataset.axis = vertical ? 'y' : 'x';
+  indicator.hidden = false;
+  indicator.style.left = `${vertical ? rect.left + 3 : (position === 'before' ? rect.left : rect.right) - 2}px`;
+  indicator.style.top = `${vertical ? (position === 'before' ? rect.top : rect.bottom) - 2 : rect.top + 3}px`;
+  indicator.style.width = `${vertical ? Math.max(16, rect.width - 6) : 4}px`;
+  indicator.style.height = `${vertical ? 4 : Math.max(18, rect.height - 6)}px`;
+ }
+
+ function updateTarget() {
+  if (!session?.active) return;
+  if (!sourceStillValid()) return cancel();
+  const point = { x:session.x, y:session.y }, target = targetAt(point);
+  const intent = resolveDropIntent({ state:getState(), source:session.source, target, point });
+  session.intent = intent;
+  drawTarget(target, intent);
+  movePreview();
+ }
+
+ function scrollElement(node, bounds) {
+  if (!session || session.x < bounds.left || session.x > bounds.right) return false;
+  const delta = edgeScrollDelta(session.y, bounds.top, bounds.bottom);
+  const before = node.scrollTop, limit = Math.max(0, node.scrollHeight - node.clientHeight);
+  if (!delta || limit <= 0) return false;
+  node.scrollTop = Math.max(0, Math.min(limit, before + delta));
+  return node.scrollTop !== before;
+ }
+
+ function autoScroll() {
+  let node = doc.elementFromPoint(session.x, session.y);
+  const page = doc.scrollingElement || doc.documentElement;
+  while (node && node !== doc.body && node !== page) {
+   if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(win.getComputedStyle(node).overflowY)) {
+    const rect = node.getBoundingClientRect();
+    const bounds = {left:rect.left,right:rect.right,top:Math.max(0,rect.top),bottom:Math.min(win.innerHeight,rect.bottom)};
+    if (scrollElement(node, bounds)) return true;
+   }
+   node = node.parentElement;
+  }
+  return scrollElement(page, {left:0,right:win.innerWidth,top:0,bottom:win.innerHeight});
+ }
+
+ function tick() {
+  frame = null;
+  if (!session?.active) return;
+  if (!sourceStillValid()) return cancel();
+  if (autoScroll()) updateTarget();
+  if (session?.active) frame = win.requestAnimationFrame(tick);
+ }
+
+ function pointerDown(event) {
+  if (event.isPrimary === false || (event.button !== undefined && event.button !== 0)) return;
+  // A fresh gesture is intentional; only a previous drag's synthetic click is blocked.
+  suppression = null;
+  if (session) clean();
+  if (destroyed || busy || isBlocked()) return;
+  const source = sourceAt(event);
+  if (!source) return;
+  session = { source, pointerId:event.pointerId, startX:event.clientX, startY:event.clientY, x:event.clientX, y:event.clientY, active:false, intent:null, capture:null };
+  if (source.handle) event.preventDefault();
+ }
+
+ function pointerMove(event) {
+  if (!session || event.pointerId !== session.pointerId) return;
+  if (event.buttons === 0 && event.pointerType === 'mouse') return cancel();
+  session.x = event.clientX; session.y = event.clientY;
+  if (!session.active && Math.hypot(session.x - session.startX, session.y - session.startY) >= DRAG_THRESHOLD) begin();
+  if (!session?.active) return;
+  event.preventDefault();
+  updateTarget();
+ }
+
+ function pointerUp(event) {
+  if (suppression?.waitForRelease && event.pointerId === suppression.pointerId) {
+   suppression.x = event.clientX; suppression.y = event.clientY;
+   suppression.waitForRelease = false; suppression.until = now() + CLICK_GUARD_MS;
+  }
+  if (!session || event.pointerId !== session.pointerId) return;
+  if (!session.active) return clean(false, false);
+  event.preventDefault();
+  session.x = event.clientX; session.y = event.clientY;
+  updateTarget();
+  const intent = session?.intent;
+  clean(false);
+  if (!intent) return;
+  busy = true;
+  Promise.resolve().then(() => onDrop(intent)).catch(error => onError(error)).finally(() => { busy = false; });
+ }
+
+ function guardClick(event) {
+  if (!suppression || event.detail === 0) return;
+  if (!suppression.waitForRelease && now() > suppression.until) { suppression = null; return; }
+  if (Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 28) return;
+  if (event.pointerId !== undefined && event.pointerId !== suppression.pointerId) return;
+  event.preventDefault(); event.stopImmediatePropagation(); suppression = null;
+ }
+
+ listen(doc, 'pointerdown', pointerDown);
+ listen(doc, 'pointermove', pointerMove, { capture:true, passive:false });
+ listen(doc, 'pointerup', pointerUp);
+ listen(doc, 'pointercancel', event => { if (session?.pointerId === event.pointerId) clean(false); });
+ listen(doc, 'lostpointercapture', event => {
+  // Capture may transfer from the pressed child (an anchor, for example) to
+  // its card. Losing that previous target is not losing our current capture.
+  if (session?.active && session.pointerId === event.pointerId && event.target === session.capture) clean(false);
+ });
+ listen(doc, 'click', guardClick);
+ listen(doc, 'contextmenu', event => {
+  // A touch handle can produce a long-press menu while a drag is pending.
+  // Other right clicks and long presses keep the app's normal context menu.
+  if (!session || (!session.active && !session.source.handle)) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+ });
+ listen(doc, 'keydown', event => {
+  if (event.key !== 'Escape' || !session) return;
+  const active = session.active;
+  cancel();
+  if (active) { event.preventDefault(); event.stopImmediatePropagation(); }
+ });
+ listen(doc, 'selectstart', event => { if (session) event.preventDefault(); });
+ listen(doc, 'dragstart', event => { if (sourceAt({ target:event.target, pointerType:'mouse' })) event.preventDefault(); });
+ listen(doc, 'visibilitychange', () => { if (doc.hidden) cancel(); });
+ listen(win, 'blur', cancel);
+ return {
+  cancel,
+  isDragging:() => !!session?.active,
+  destroy:() => { if (destroyed) return; destroyed = true; clean(false, false); suppression = null; listeners.splice(0).forEach(remove => remove()); }
+ };
+}
+
+return {reorderById, resolveDropIntent, edgeScrollDelta, createDesktopDragController};
+})();
 const { DEFAULT_STATE, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } = __core;
 const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets, chineseLunarDate } = __widgets;
 const { icon, iconNames } = __icons;
@@ -3249,6 +3764,7 @@ const { normalizeWallpaperPhoto } = __wallpapers;
 const { webDAVStateFingerprint } = __webdav;
 const { createSyncController } = __sync_ui;
 const { getFaviconCandidates, discoverFavicon, rememberFavicon, faviconCacheReady } = __favicons;
+const { createDesktopDragController, reorderById } = __drag;
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -3268,7 +3784,7 @@ let state = clone(DEFAULT_STATE);
 let persistedState = clone(DEFAULT_STATE), saveQueue = Promise.resolve(), saveGeneration = 0;
 let editing = false, widgetsCleanup = () => {}, saving = 0, revision = 0, blockedStorage = false, syncController = null;
 let dialogKind = '', dialogData = {}, lastDialogFocus = null, lastToastTimer, undoAction = null;
-let dragId = null, draggedGroup = null, localScope = 'desktop', localExtra = [], searchToken = 0;
+let desktopDrag = null, localScope = 'desktop', localExtra = [], searchToken = 0;
 let currentMedia = null, lastDate = '', renderedGroup = '', currentGridColumns = 14;
 const faviconBindings = new WeakMap(), faviconFailures = new Map(), faviconFormStates = new WeakMap();
 let faviconRequestSequence = 0;
@@ -3302,6 +3818,42 @@ async function applySyncedDesktop(remote, expectedFingerprint) {
  const saved=await persist({fromSync:true});renderDesktop();return saved;
 }
 function currentEngine() { return allEngines().find(e => e.id === state.settings.searchEngine) || ENGINES[0]; }
+function engineSiteUrl(engine) {
+ // Resolve only the provider origin: templates and search text are never sent
+ // to the favicon loader or page-discovery request.
+ if (typeof engine?.url !== 'string') return null;
+ const url = safeUrl(engine.url.replace(/\{q\}/g, ''));
+ if (!url) return null;
+ try {
+  const origin = new URL(url).origin;
+  // This known search subdomain uses its main site's icon; other origins stay exact.
+  return origin === 'https://search.bilibili.com' ? 'https://www.bilibili.com/' : origin + '/';
+ } catch { return null; }
+}
+function engineGlyph(engine) {
+ return `<span class="engine-mark" style="--engine-color:${esc(engine.color || '#237fa4')}">${siteGlyph({url:engineSiteUrl(engine),title:engine.name,icon:engine.letter || engine.name?.slice(0,1),iconMode:'auto'})}</span>`;
+}
+async function extractEngineFavicon(button) {
+ const engine = allEngines().find(e => e.id === button.dataset.extractEngineIcon);
+ const url = engineSiteUrl(engine);
+ if (!url || button.disabled) return;
+ // Keep the permission request inside the original click gesture.
+ const pending = discoverFavicon(url, {requestPermission:true, force:true});
+ button.disabled = true; button.textContent = '正在提取…';
+ try {
+  const result = await pending;
+  // A provider may have been deleted, or its settings dialog closed meanwhile.
+  // Update matching provider images only; never rebuild a partially typed form.
+  $$('.engine-mark').forEach(mark => {
+   if ($('.site-visual',mark)?.dataset.faviconSite === url) bindFaviconImages(mark,{force:true,candidates:result.candidates?.length ? result.candidates : getFaviconCandidates(url)});
+  });
+  if (button.isConnected) toast(result.warning || '已更新引擎图标，加载成功后会保存在本机缓存。');
+ } catch (err) {
+  if (button.isConnected) toast(err.message || '图标暂时无法提取，已保留文字回退。');
+ } finally {
+  if (button.isConnected) { button.disabled = false; button.textContent = '提取图标'; }
+ }
+}
 function currentGroup() { return state.groups.find(g => g.id === state.activeGroupId) || state.groups[0]; }
 function tileInk(color) {
  const hex=(color || '').replace('#','');
@@ -3466,6 +4018,14 @@ function renderClock() {
   $('#date').textContent = `${now.getMonth()+1}月${now.getDate()}日　${new Intl.DateTimeFormat('zh-CN',{weekday:'long'}).format(now)}${lunar ? '　'+lunar : ''}`;
  }
 }
+function updatePinnedHeader() {
+ const clock = $('#clock-block');
+ const clockRect = clock.getBoundingClientRect();
+ const clockHeight = state.settings.pinClock ? clockRect.height : 0;
+ document.documentElement.style.setProperty('--pinned-clock-height', `${clockHeight}px`);
+ const pinTop = parseFloat(getComputedStyle(clock).getPropertyValue('--header-pin-top')) || 16;
+ clock.classList.toggle('is-stuck', state.settings.pinClock && window.scrollY > 8 && clockRect.top <= pinTop + 1);
+}
 function applySettings() {
  const s = state.settings;
  const theme = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : s.theme;
@@ -3478,6 +4038,8 @@ function applySettings() {
  document.documentElement.style.setProperty('--wallpaper-dim', String(s.dim / 100));
  document.body.classList.toggle('minimal', !!s.minimal);
  document.body.classList.toggle('no-labels', !s.showLabels);
+  document.body.classList.toggle('pin-clock', s.pinClock);
+  document.body.classList.toggle('pin-search', s.pinSearch);
  $('#daily-quote').hidden = !s.quote;
  let wallpaper = WALLPAPERS.find(w=>w.id === s.wallpaper) || WALLPAPERS[0];
  const remote = s.wallpaperApiEnabled && normalizeWallpaperPhoto(s.remoteWallpaper);
@@ -3500,7 +4062,7 @@ function applySettings() {
   const photoUrl = s.customWallpaper || remote?.url;
   $('#wallpaper').style.backgroundImage = photoUrl ? `url("${photoUrl.replace(/["\\\n\r]/g, '\\$&')}"), ${wallpaper.background}` : wallpaper.background;
  }
- updateGrid(); renderClock(); renderEngine();
+ updateGrid(); renderClock(); renderEngine(); updatePinnedHeader();
 }
 function updateGrid() {
  const wrap = $('.desktop-wrap');
@@ -3510,12 +4072,14 @@ function updateGrid() {
  $$('.tile[data-size]').forEach(el => { const [w,h] = el.dataset.size.split('x').map(Number); el.style.gridColumn = `span ${Math.min(w,currentGridColumns)}`; el.style.gridRow = `span ${h}`; });
 }
 function renderGroups() {
- $('#groups').innerHTML = state.groups.map(g=>`<button class="group-button ${g.id === currentGroup().id?'active':''}" data-group="${esc(g.id)}" aria-label="${esc(g.name)}分组" ${g.id===currentGroup().id?'aria-current="page"':''} title="${esc(g.name)} · 右键编辑" draggable="${editing}">${icon(g.icon)}<span>${esc(g.name)}</span></button>`).join('');
+ $('#groups').innerHTML = state.groups.map(g=>`<button class="group-button ${g.id === currentGroup().id?'active':''}" data-group="${esc(g.id)}" aria-label="${esc(g.name)}分组" ${g.id===currentGroup().id?'aria-current="page"':''} title="${esc(g.name)} · 右键编辑" draggable="false">${icon(g.icon)}<span>${esc(g.name)}</span></button>`).join('');
 }
 function renderDesktop() {
+ desktopDrag?.cancel();
  widgetsCleanup(); applySettings(); renderGroups();
  const group = currentGroup(); state.activeGroupId = group.id; renderedGroup = group.id;
- $('#group-heading').textContent = group.name;
+ $('.desktop-wrap').setAttribute('aria-label', `${group.name}桌面`);
+ $('.desktop-heading').hidden = !editing;
  document.body.classList.toggle('editing', editing);
  $('#edit-button').classList.toggle('active',editing); $('#edit-button').setAttribute('aria-pressed',String(editing));
  $('#done-editing').hidden = !editing; $('#edit-hint').hidden = !editing;
@@ -3531,15 +4095,17 @@ function renderTile(item) {
  if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
  else if (item.type === 'folder') {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
-  body = `<button class="tile-body" data-open-folder="${esc(item.id)}" aria-label="打开文件夹：${esc(item.title)}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
- } else body = `<a class="tile-body" href="${esc(safeUrl(item.url) || '#')}" data-open-link="${esc(item.id)}" style="--tile-color:${esc(item.color || '#486c91')};--tile-ink:${tileInk(item.color)}" aria-label="打开${esc(item.title)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer">${siteGlyph(item)}</a>`;
- return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height}" draggable="${editing}" aria-label="${esc(item.title)}"><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="编辑${esc(item.title)}" title="编辑">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="移除${esc(item.title)}" title="移除">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
+  body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="打开文件夹：${esc(item.title)}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
+ } else body = `<a class="tile-body" draggable="false" href="${esc(safeUrl(item.url) || '#')}" data-open-link="${esc(item.id)}" style="--tile-color:${esc(item.color || '#486c91')};--tile-ink:${tileInk(item.color)}" aria-label="打开${esc(item.title)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer">${siteGlyph(item)}</a>`;
+ return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height}" draggable="false" aria-label="${esc(item.title)}"><button type="button" class="tile-drag-handle" data-drag-handle aria-label="拖动${esc(item.title)}" title="拖动以调整位置"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h0m6 0h0M5 8h0m6 0h0M5 13h0m6 0h0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="编辑${esc(item.title)}" title="编辑">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="移除${esc(item.title)}" title="移除">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
 }
 function renderEngine() {
  const e = currentEngine();
- $('#engine-button').innerHTML = `<span class="engine-letter" style="color:${esc(e.color || '#237fa4')}">${esc(e.letter || e.name.slice(0,1))}</span>${icon('chevron')}`;
+ $('#engine-button').innerHTML = `${engineGlyph(e)}${icon('chevron')}`;
  $('#engine-button').title = `${e.name} · 点击切换搜索引擎`;
- $('#engine-menu').innerHTML = allEngines().map(en=>`<button class="engine-option ${en.id===e.id?'active':''}" data-engine="${esc(en.id)}"><span class="engine-letter" style="color:${esc(en.color || '#88cfb5')}">${esc(en.letter || en.name.slice(0,1))}</span><span>${esc(en.name)}</span></button>`).join('') + '<button class="engine-manage" data-action="search-settings">管理搜索引擎 · 支持自定义</button>';
+ $('#engine-button').setAttribute('aria-label',`切换搜索引擎，当前为${e.name}`);
+ $('#engine-menu').innerHTML = allEngines().map(en=>`<button class="engine-option ${en.id===e.id?'active':''}" data-engine="${esc(en.id)}">${engineGlyph(en)}<span>${esc(en.name)}</span></button>`).join('') + '<button class="engine-manage" data-action="search-settings">管理搜索引擎 · 支持自定义</button>';
+ bindFaviconImages($('#engine-button')); bindFaviconImages($('#engine-menu'));
 }
 function hideSearchMenus() { $('#engine-menu').hidden = true; $('#engine-button').setAttribute('aria-expanded','false'); $('#search-suggestions').hidden = true; }
 function findItems(query) { const q = query.trim().toLocaleLowerCase(); return state.items.filter(i=>i.type==='link' && (!q || `${i.title} ${i.url}`.toLocaleLowerCase().includes(q))); }
@@ -3567,6 +4133,7 @@ function formActions(label='保存') { return `<div id="form-error" class="inlin
 function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})); }
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="图标颜色 ${c}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="自定义图标颜色" value="${esc(selected || COLORS[0])}"></div>`; }
 function openDialog(kind,data={}) {
+ desktopDrag?.cancel();
  hideSearchMenus(); $('#context-menu').hidden = true;
  if (!dialog.open) lastDialogFocus = document.activeElement;
  dialogKind = kind; dialogData = data;
@@ -3598,7 +4165,7 @@ function addDialog(tab,data) {
  const item = data.item;
  let content = '';
  if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
- else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">编辑桌面时，把网站图标拖进文件夹即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
+ else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
  else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
  return dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'网站、组件、文件夹，一起组成你的个人桌面。') + (item?'':`<div class="tab-bar">${[{id:'link',name:'网站',icon:'link'},{id:'widgets',name:'小组件',icon:'grid'},{id:'folder',name:'文件夹',icon:'folder'}].map(t=>`<button class="tab-button ${tab===t.id?'active':''}" data-add-tab="${t.id}">${icon(t.icon)}${t.name}</button>`).join('')}</div>`) + `<div class="dialog-body">${content}</div>`;
 }
@@ -3610,12 +4177,12 @@ function settingSwitch(key,title,help='') { return `<label class="setting-row"><
 function settingRange(key,title,min,max,unit='px') { return `<div class="range-setting"><header><label for="range-${key}">${title}</label><output id="output-${key}">${state.settings[key]}${unit}</output></header><input id="range-${key}" type="range" min="${min}" max="${max}" value="${state.settings[key]}" data-range="${key}" data-unit="${unit}"></div>`; }
 function settingsDialog(tab) {
  let content = '';
- if (tab==='general') content = `<div class="section-label">让使用更顺手</div>${settingSwitch('openNewTab','在新标签页打开','网站和搜索结果都保留当前桌面。')}${settingSwitch('showSeconds','时钟显示秒数')}${settingSwitch('hour12','使用 12 小时制')}${settingSwitch('quote','显示页底短句')}${settingSwitch('minimal','极简模式','只保留时间、搜索与壁纸，也可直接点击时间切换。')}<div class="section-label">快捷键</div><div class="keyboard-list"><span>聚焦搜索<kbd>/</kbd></span><span>切换引擎<kbd>Tab</kbd></span><span>搜索收藏<kbd>Ctrl / ⌘ K</kbd></span><span>搜索收藏<kbd>Ctrl / ⌘ F</kbd></span><span>编辑桌面<kbd>E</kbd></span><span>关闭弹层<kbd>Esc</kbd></span></div><p class="help-text">安装扩展后，Alt + C 会打开栖页的本地搜索。可在浏览器扩展快捷键页面调整。</p>`;
- else if(tab==='appearance') content = `<div class="section-label">面板主题</div><div class="theme-options">${[{id:'light',title:'浅色',icon:'sun'},{id:'dark',title:'深色',icon:'moon'},{id:'auto',title:'跟随系统',icon:'globe'}].map(t=>`<button class="theme-option ${state.settings.theme===t.id?'selected':''}" data-theme="${t.id}">${icon(t.icon)}${t.title}</button>`).join('')}</div>${settingRange('gridSize','图标与网格尺寸',56,100)}${settingRange('gap','图标间距',10,30)}${settingRange('radius','卡片圆角',6,30)}${settingRange('clockSize','时钟大小',48,120)}${settingSwitch('showLabels','显示图标名称')}<div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
- else if(tab==='search') content = `${selectField('searchEngine','默认搜索引擎',state.settings.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}<div class="section-label">已添加的搜索引擎</div><div>${allEngines().map(e=>`<div class="engine-list-row"><span class="engine-letter" style="color:${esc(e.color || '#89cbae')}">${esc(e.letter || e.name[0])}</span><div><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div>${state.settings.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="删除${esc(e.name)}">${icon('trash')}</button>`:''}</div>`).join('')}</div><div class="section-label">自定义引擎</div><form id="engine-form">${field('name','引擎名称','',{required:true,maxlength:20,placeholder:'例如：我的搜索'})}${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表搜索关键词。地址必须使用 http 或 https。'})}<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
+ if (tab==='general') content = `<div class="section-label">让使用更顺手</div>${settingSwitch('openNewTab','在新标签页打开','网站和搜索结果都保留当前桌面。')}${settingSwitch('pinClock','滚动时固定时间','向下浏览桌面时，时间和日期仍保持可见。')}${settingSwitch('pinSearch','滚动时固定搜索框','独立于时间开关，可单独保留搜索入口。')}${settingSwitch('showSeconds','时钟显示秒数','秒与时分大小相同，以较细字重和颜色区分。')}${settingSwitch('hour12','使用 12 小时制')}${settingSwitch('quote','显示页底短句')}${settingSwitch('minimal','极简模式','只保留时间、搜索与壁纸，也可直接点击时间切换。')}<div class="section-label">快捷键</div><div class="keyboard-list"><span>聚焦搜索<kbd>/</kbd></span><span>切换引擎<kbd>Tab</kbd></span><span>搜索收藏<kbd>Ctrl / ⌘ K</kbd></span><span>搜索收藏<kbd>Ctrl / ⌘ F</kbd></span><span>编辑桌面<kbd>E</kbd></span><span>关闭弹层<kbd>Esc</kbd></span></div><p class="help-text">安装扩展后，Alt + C 会打开栖页的本地搜索。可在浏览器扩展快捷键页面调整。</p>`;
+ else if(tab==='appearance') content = `<div class="section-label">显示主题</div><div class="theme-options">${[{id:'light',title:'浅色',icon:'sun'},{id:'dark',title:'深色',icon:'moon'},{id:'auto',title:'跟随系统',icon:'globe'}].map(t=>`<button class="theme-option ${state.settings.theme===t.id?'selected':''}" data-theme="${t.id}">${icon(t.icon)}${t.title}</button>`).join('')}</div>${settingRange('gridSize','图标与网格尺寸',56,100)}${settingRange('gap','图标间距',10,30)}${settingRange('radius','卡片圆角',6,30)}${settingRange('clockSize','时钟大小',48,120)}${settingSwitch('showLabels','显示图标名称')}<div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
+ else if(tab==='search') content = `${selectField('searchEngine','默认搜索引擎',state.settings.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}<div class="section-label">已添加的搜索引擎</div><div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="提取${esc(e.name)}图标">提取图标</button>${state.settings.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="删除${esc(e.name)}">${icon('trash')}</button>`:''}</div>`).join('')}</div><div class="section-label">自定义引擎</div><form id="engine-form">${field('name','引擎名称','',{required:true,maxlength:20,placeholder:'例如：我的搜索'})}${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表搜索关键词。地址必须使用 http 或 https。'})}<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
  else if(tab==='data') content = `<div class="data-card"><div><strong>导出完整备份</strong><p>包含网址、分组、布局、组件数据和本地壁纸。</p></div><button class="secondary-button" data-action="export">${icon('download')}导出 JSON</button></div><div class="data-card"><div><strong>恢复已有备份</strong><p>导入前会显示内容摘要。确认后替换当前桌面。</p></div><button class="secondary-button" data-action="import">${icon('upload')}导入备份</button></div><div class="data-card"><div><strong>导入浏览器书签</strong><p>选择要复制到当前分组的网站，保留原有书签。</p></div><button class="secondary-button" data-action="import-bookmarks">${icon('bookmark')}选择书签</button></div><p class="help-text">桌面默认保存在当前浏览器，无需注册账号。跨设备同步可在“同步”中连接自己的 WebDAV；备份文件不包含 WebDAV 密码。</p><div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
- else content = `<div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.1 · 无需账号</span></div><div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div><p class="about-note">栖页参考组件式新标签页的使用方式，使用独立代码与原创品牌。桌面、搜索和日常小组件开箱即用。在线壁纸来自公开图片 API；跨设备同步直接连接你自己的 WebDAV。栖页不设账号系统。</p><p class="about-note">网站图标从对应站点加载；智能提取只在点击时读取页面图标声明。天气启用后，城市坐标会发送至 Open-Meteo。网址、笔记和待办默认保存在本机；启用 WebDAV 后会同步至你填写的服务。书签和历史记录权限在使用时授权。</p><div class="button-row"><button class="secondary-button" data-action="export">${icon('download')}备份我的桌面</button></div>`;
+ else content = `<div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.2 · 无需账号</span></div><div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div><p class="about-note">栖页参考组件式新标签页的使用方式，使用独立代码与原创品牌。桌面、搜索和日常小组件开箱即用。在线壁纸来自公开图片 API；跨设备同步直接连接你自己的 WebDAV。栖页不设账号系统。</p><p class="about-note">网站图标从对应站点加载；智能提取只在点击时读取页面图标声明。天气启用后，城市坐标会发送至 Open-Meteo。网址、笔记和待办默认保存在本机；启用 WebDAV 后会同步至你填写的服务。书签和历史记录权限在使用时授权。</p><div class="button-row"><button class="secondary-button" data-action="export">${icon('download')}备份我的桌面</button></div>`;
  return dialogHeader('设置','把栖页调成你喜欢的样子。') + `<div class="tab-bar">${[{id:'general',name:'常规'},{id:'appearance',name:'外观'},{id:'search',name:'搜索'},{id:'sync',name:'同步'},{id:'data',name:'数据'},{id:'about',name:'关于'}].map(t=>`<button class="tab-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}">${t.name}</button>`).join('')}</div><div class="dialog-body">${content}</div>`;
 }
 function wallpaperDialog() {
@@ -3656,7 +4223,7 @@ async function chooseLocalScope(scope) {
 function folderDialog(id) {
  const folder=state.items.find(i=>i.id===id); if(!folder)return dialogHeader('文件夹已移除');
  const items=state.items.filter(i=>i.folderId===id);
- return dialogHeader(folder.title,`${items.length} 个网站 · 点击右上角箭头可移回桌面`) + `<div class="dialog-body"><div class="folder-grid">${items.map(i=>`<div class="folder-item"><a class="folder-site" data-open-link="${esc(i.id)}" href="${esc(i.url)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer" style="--tile-color:${esc(i.color)}" aria-label="打开${esc(i.title)}">${siteGlyph(i)}</a><span>${esc(i.title)}</span><button class="remove-folder-item" data-unfolder="${esc(i.id)}" title="移回桌面" aria-label="将${esc(i.title)}移回桌面">${icon('upload')}</button></div>`).join('')}</div>${!items.length?'<div class="local-empty">文件夹还是空的。<br>进入编辑桌面，把网站拖到这个文件夹。</div>':''}<div class="button-row"><button class="secondary-button" data-edit-item="${esc(id)}">${icon('edit')}编辑文件夹</button><button class="primary-button" data-close>完成</button></div></div>`;
+ return dialogHeader(folder.title,`${items.length} 个网站 · 点击右上角箭头可移回桌面`) + `<div class="dialog-body"><div class="folder-grid">${items.map(i=>`<div class="folder-item"><a class="folder-site" data-open-link="${esc(i.id)}" href="${esc(i.url)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer" style="--tile-color:${esc(i.color)}" aria-label="打开${esc(i.title)}">${siteGlyph(i)}</a><span>${esc(i.title)}</span><button class="remove-folder-item" data-unfolder="${esc(i.id)}" title="移回桌面" aria-label="将${esc(i.title)}移回桌面">${icon('upload')}</button></div>`).join('')}</div>${!items.length?'<div class="local-empty">文件夹还是空的。<br>把网站拖到这个文件夹中央即可收纳。</div>':''}<div class="button-row"><button class="secondary-button" data-edit-item="${esc(id)}">${icon('edit')}编辑文件夹</button><button class="primary-button" data-close>完成</button></div></div>`;
 }
 function moveDialog(id) {
  const item=state.items.find(i=>i.id===id);if(!item)return '';
@@ -3735,6 +4302,8 @@ document.addEventListener('click', async event=>{
  if(!target) { if(!event.target.closest('.search-wrapper'))hideSearchMenus(); $('#context-menu').hidden=true; return; }
  try {
  if(target.matches('[data-close]'))return closeDialog();
+ if(target.hasAttribute('data-drag-handle'))return;
+ if(target.dataset.extractEngineIcon)return await extractEngineFavicon(target);
  if(target.dataset.group){state.activeGroupId=target.dataset.group;await commit();return;}
  if(target.dataset.engine){state.settings.searchEngine=target.dataset.engine;await persist();renderEngine();hideSearchMenus();$('#search-input').focus();return;}
  if(target.dataset.suggestion){const item=state.items.find(i=>i.id===target.dataset.suggestion);if(item)navigate(item.url);hideSearchMenus();return;}
@@ -3902,33 +4471,45 @@ document.addEventListener('keydown',event=>{
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
 dialog.addEventListener('close',()=>{searchToken++;dialogKind='';});
 document.addEventListener('contextmenu',event=>{if(dialog.open || /INPUT|TEXTAREA/.test(event.target.tagName))return;const tile=event.target.closest('[data-item]'),group=event.target.closest('[data-group]');openContext(event,{itemId:tile?.dataset.item,groupId:group?.dataset.group});});
-document.addEventListener('dragstart',event=>{
- if(!editing){event.preventDefault();return;}const tile=event.target.closest('[data-item]'),group=event.target.closest('[data-group]');
- dragId=tile?.dataset.item || null;draggedGroup=group?.dataset.group || null;
- if(!dragId&&!draggedGroup)return;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',dragId || draggedGroup);tile?.classList.add('dragging');
-});
-document.addEventListener('dragover',event=>{if(!dragId&&!draggedGroup)return;const target=event.target.closest('[data-item],[data-group]');if(!target)return;event.preventDefault();event.dataTransfer.dropEffect='move';$$('.drop-target').forEach(e=>e.classList.remove('drop-target'));target.classList.add('drop-target');});
-document.addEventListener('drop',async event=>{
- if(!dragId&&!draggedGroup)return;event.preventDefault();const target=event.target.closest('[data-item],[data-group]');if(!target)return;
- const sourceId=dragId,sourceGroup=draggedGroup;dragId=null;draggedGroup=null;
- try{
-  if(sourceGroup&&target.dataset.group&&sourceGroup!==target.dataset.group){const source=state.groups.find(g=>g.id===sourceGroup);state.groups=state.groups.filter(g=>g.id!==sourceGroup);state.groups.splice(state.groups.findIndex(g=>g.id===target.dataset.group),0,source);await commit();return;}
-  const item=state.items.find(i=>i.id===sourceId);if(!item)return;
-  if(target.dataset.group){await moveItem(sourceId,target.dataset.group);toast('已移动到所选分组。');return;}
-  const to=state.items.find(i=>i.id===target.dataset.item);if(!to || to.id===sourceId)return;
-  if(to.type==='folder'&&item.type==='link'){await moveItem(sourceId,to.groupId,to.id);toast('已收进文件夹。');return;}
-  const fromIndex=state.items.indexOf(item);state.items.splice(fromIndex,1);state.items.splice(state.items.indexOf(to),0,item);await commit();
- }catch(err){if(!err.notified)toast(err.message);}
- finally{$$('.drop-target,.dragging').forEach(e=>e.classList.remove('drop-target','dragging'));}
-});
-document.addEventListener('dragend',()=>{dragId=null;draggedGroup=null;$$('.drop-target,.dragging').forEach(e=>e.classList.remove('drop-target','dragging'));});
+async function applyDesktopDrop(intent) {
+ if (intent.kind === 'group-reorder') {
+  const ordered = reorderById(state.groups,intent.groupId,intent.targetId,intent.position);
+  if (ordered === state.groups) return;
+  state.groups = ordered; await commit(); return;
+ }
+ const item = state.items.find(entry => entry.id === intent.itemId);
+ if (!item) return;
+ if (intent.kind === 'reorder') {
+  const target = state.items.find(entry => entry.id === intent.targetId);
+  if (!target || item.groupId !== target.groupId || item.folderId || target.folderId) return;
+  const ordered = reorderById(state.items,item.id,target.id,intent.position);
+  if (ordered === state.items) return;
+  state.items = ordered; await commit(); return;
+ }
+ if (!state.groups.some(group => group.id === intent.groupId)) return;
+ if (intent.kind === 'folder') {
+  const folder = state.items.find(entry => entry.id === intent.folderId && entry.type === 'folder' && entry.groupId === intent.groupId);
+  if (!folder || item.type !== 'link') return;
+  await moveItem(item.id,folder.groupId,folder.id); toast('已收进文件夹。'); return;
+ }
+ if (intent.kind === 'group') {
+  await moveItem(item.id,intent.groupId); toast('已移动到所选分组。'); return;
+ }
+ if (intent.kind === 'append') {
+  item.groupId = intent.groupId;
+  if (item.type === 'link') item.folderId = null;
+  if (item.type === 'folder') state.items.forEach(child => { if (child.folderId === item.id) child.groupId = intent.groupId; });
+  state.items = [...state.items.filter(entry => entry.id !== item.id),item];
+  await commit();
+ }
+}
 
 async function init() {
  try{state=await loadState();persistedState=clone(state);}catch(err){blockedStorage=true;toast(err.message);}
  syncController=createSyncController({
   getState:()=>clone(state), beforeSync:async()=>{await saveQueue;if(blockedStorage)throw new Error('请先恢复本机桌面数据，再进行同步。');if(JSON.stringify(state)!==JSON.stringify(persistedState))await persist({fromSync:true});},
   applyRemote:applySyncedDesktop,toast,openDialog,closeDialog,exportBackup,
-  isEditing:()=>dialog.open || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || ''),
+  isEditing:()=>dialog.open || desktopDrag?.isDragging() || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || ''),
   refreshPanel:()=>{if(dialogKind==='settings'&&dialogData.tab==='sync')openDialog('settings',{tab:'sync'});}
  });
  await syncController.init();
@@ -3940,9 +4521,18 @@ async function init() {
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));
  $$('.top-tools [data-action=add]').forEach(e=>e.innerHTML=icon('plus'));
  $('#search-submit').innerHTML=icon('search');
+ desktopDrag=createDesktopDragController({
+  document, getState:()=>state, getActiveGroupId:()=>currentGroup().id,
+  canDragGroups:()=>editing, isBlocked:()=>dialog.open || blockedStorage || state.settings.minimal,
+  onStart:()=>{hideSearchMenus();$('#context-menu').hidden=true;},
+  onDrop:applyDesktopDrop,
+  onError:err=>{renderDesktop();if(!err.notified)toast(err.message || '移动未保存，请重试。');}
+ });
  renderDesktop();
  subscribeState(incoming=>{if(saving || !incoming || incoming.updatedAt===state.updatedAt)return;state=incoming;persistedState=clone(incoming);if(!dialog.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName || ''))renderDesktop();});
  new ResizeObserver(updateGrid).observe($('.desktop-wrap'));
+ new ResizeObserver(updatePinnedHeader).observe($('#clock-block'));
+ window.addEventListener('scroll',updatePinnedHeader,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);
  setInterval(()=>{renderClock();if(!document.hidden)refreshLiveWidgets($('#desktop'),state);},1000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderClock();refreshLiveWidgets($('#desktop'),state);syncController.onVisible();}});
