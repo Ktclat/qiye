@@ -1,6 +1,6 @@
 # 栖页 Qiye · GitHub Pages
 
-栖页 v0.2.1 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
+栖页 v0.2.2 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
 
 **[打开栖页](https://ktclat.github.io/qiye/)** · **[完整源码与扩展安装](https://github.com/Ktclat/qiye/tree/main)**
 
