@@ -52,6 +52,18 @@ test('group moves, group ordering, append and invalid targets are resolved from 
  assert.equal(intent({kind:'item',id:'a'},{kind:'group',id:'work'},{x:150,y:150},deleted),null);
 });
 
+test('top navigation reorders groups around their horizontal midpoint; either sidebar keeps vertical ordering', () => {
+ const state=initial(), source={kind:'group',id:'home'}, target={kind:'group',id:'work',rect:bounds(200,10,100,60)};
+ state.settings={navigationMode:'top'};
+ assert.equal(intent(source,target,{x:205,y:65},state).position,'before','the lower left is still before a top navigation group');
+ assert.equal(intent(source,target,{x:295,y:15},state).position,'after','the upper right is after a top navigation group');
+ for(const sidebarPosition of ['left','right']) {
+  state.settings={navigationMode:'sidebar',sidebarPosition};
+  assert.equal(intent(source,target,{x:295,y:15},state).position,'before');
+  assert.equal(intent(source,target,{x:205,y:65},state).position,'after');
+ }
+});
+
 test('edge scrolling is bounded and leaves the center or outside the viewport still', () => {
  assert.equal(edgeScrollDelta(400,0,800),0);
  assert.equal(edgeScrollDelta(-1,0,800),0);
@@ -78,7 +90,8 @@ class Node {
  constructor(tag='div',dataset={},rect=bounds(0,0)){
   this.tagName=tag.toUpperCase();this.dataset={...dataset};this.rect=rect;this.children=[];this.parentElement=null;this.nodeType=1;this.style={};this.attributes={};this.classes=new Set();this.hidden=false;
   this.classList={add:(...values)=>values.forEach(v=>this.classes.add(v)),remove:(...values)=>values.forEach(v=>this.classes.delete(v)),contains:value=>this.classes.has(value)};
-  this.scrollTop=0;this.scrollHeight=100;this.clientHeight=100;this.overflowY='visible';this.capture=new Set();
+  this.scrollTop=0;this.scrollHeight=100;this.clientHeight=100;this.overflowY='visible';
+  this.scrollLeft=0;this.scrollWidth=100;this.clientWidth=100;this.overflowX='visible';this.capture=new Set();
  }
  get isConnected(){return !!this.rootConnected||!!this.parentElement?.isConnected;}
  set className(value){this.classes=new Set(value.split(/\s+/).filter(Boolean));}
@@ -105,7 +118,7 @@ class Node {
 function harness(){
  const state=initial(), doc=new Hub(), win=new Hub(), frames=new Map(), drops=[], errors=[];let seq=0,editing=false;
  win.innerWidth=1000;win.innerHeight=800;
- win.requestAnimationFrame=fn=>{frames.set(++seq,fn);return seq;};win.cancelAnimationFrame=id=>frames.delete(id);win.getComputedStyle=node=>({overflowY:node.overflowY});
+ win.requestAnimationFrame=fn=>{frames.set(++seq,fn);return seq;};win.cancelAnimationFrame=id=>frames.delete(id);win.getComputedStyle=node=>({overflowY:node.overflowY,overflowX:node.overflowX});
  const page=new Node('html',{},bounds(0,0,1000,800));page.rootConnected=true;page.clientHeight=800;page.scrollHeight=1600;
  const body=new Node('body');page.append(body);
  const grid=new Node('div',{},bounds(100,200,750,400)), groups=new Node('nav',{},bounds(0,180,65,300));body.append(grid,groups);
@@ -224,4 +237,48 @@ test('dragging at the page edge scrolls continuously and cancellation stops the 
  const [id,frame]=[...h.frames.entries()][0];h.frames.delete(id);frame();
  assert.ok(h.page.scrollTop>0);
  h.controller.cancel();assert.equal(h.frames.size,0);h.controller.destroy();
+});
+
+test('top group dragging shows a vertical insertion line and commits horizontal order',async()=>{
+ const h=harness();h.state.settings={navigationMode:'top'};h.setEditing(true);
+ h.groups.rect=bounds(100,12,400,64);
+ h.nodes.home.rect=bounds(110,20,90,48);h.nodes.work.rect=bounds(220,20,90,48);
+ h.hit(h.nodes.work);
+ h.pointer('pointerdown',h.nodes.home,130,32);h.pointer('pointermove',h.nodes.home,235,58);
+ assert.equal(h.controller.isDragging(),true);
+ assert.equal(h.nodes.work.classList.contains('drop-before'),true);
+ const indicator=h.doc.body.querySelectorAll('.drag-indicator')[0];
+ assert.equal(indicator.dataset.axis,'x');
+ assert.equal(indicator.style.left,'218px');assert.equal(indicator.style.top,'23px');
+ assert.equal(indicator.style.width,'4px');assert.equal(indicator.style.height,'42px');
+ h.pointer('pointerup',h.nodes.home,235,58);await h.flush();
+ assert.deepEqual(h.drops,[{kind:'group-reorder',groupId:'home',targetId:'work',position:'before'}]);
+ h.controller.destroy();
+});
+
+test('top navigation auto-scrolls left and right without moving the page, and stops on cancellation',()=>{
+ const h=harness();h.state.settings={navigationMode:'top'};h.setEditing(true);
+ h.groups.rect=bounds(100,12,400,64);h.groups.clientWidth=400;h.groups.scrollWidth=1200;h.groups.overflowX='auto';
+ h.nodes.home.rect=bounds(110,20,90,48);h.nodes.work.rect=bounds(220,20,90,48);
+ h.page.scrollTop=160;h.hit(h.groups);
+ h.pointer('pointerdown',h.nodes.home,130,32);h.pointer('pointermove',h.nodes.home,493,44);
+ const tick=()=>{const [id,frame]=[...h.frames.entries()][0];h.frames.delete(id);frame();};
+ tick();assert.ok(h.groups.scrollLeft>0);assert.equal(h.page.scrollTop,160);
+ h.pointer('pointermove',h.nodes.home,102,44);tick();
+ assert.equal(h.groups.scrollLeft,0);assert.equal(h.page.scrollTop,160);
+ tick();assert.equal(h.page.scrollTop,160,'hitting the horizontal limit must not scroll the page instead');
+ h.controller.cancel();assert.equal(h.frames.size,0);h.controller.destroy();
+});
+
+test('a right sidebar retains horizontal insertion lines and vertical overflow scrolling',()=>{
+ const h=harness();h.state.settings={navigationMode:'sidebar',sidebarPosition:'right'};h.setEditing(true);
+ h.groups.rect=bounds(935,180,65,300);h.groups.clientHeight=300;h.groups.scrollHeight=600;h.groups.overflowY='auto';
+ h.nodes.home.rect=bounds(941,200,52,58);h.nodes.work.rect=bounds(941,270,52,58);
+ h.hit(h.nodes.work);h.pointer('pointerdown',h.nodes.home,961,220);h.pointer('pointermove',h.nodes.home,961,320);
+ const indicator=h.doc.body.querySelectorAll('.drag-indicator')[0];
+ assert.equal(indicator.dataset.axis,'y');assert.equal(indicator.style.height,'4px');
+ h.hit(h.groups);h.pointer('pointermove',h.nodes.home,961,475);
+ const [id,frame]=[...h.frames.entries()][0];h.frames.delete(id);frame();
+ assert.ok(h.groups.scrollTop>0);assert.equal(h.groups.scrollLeft,0);
+ h.controller.cancel();h.controller.destroy();
 });

@@ -17,7 +17,7 @@
   <video id="wallpaper-video" class="wallpaper-video" muted loop playsinline aria-hidden="true"></video>
   <div class="wallpaper-shade" aria-hidden="true"></div>
   <aside class="sidebar" aria-label="桌面分组">
-    <button class="brand" id="brand-button" title="关于栖页" aria-label="关于栖页"><span class="brand-mark">q</span><span>栖页</span></button>
+    <button class="brand" id="brand-button" title="打开设置 · 可自定义头像" aria-label="打开设置"><span class="brand-mark">q</span></button>
     <nav id="groups" class="groups"></nav>
     <button class="side-button add-group" data-action="add-group" title="添加分组" aria-label="添加分组"></button>
     <div class="sidebar-bottom">
@@ -25,10 +25,28 @@
       <button class="side-button" data-action="settings" title="设置" aria-label="设置"></button>
     </div>
   </aside>
+  <button id="navigation-reveal" class="navigation-reveal" aria-label="展开分组导航" title="展开分组导航" aria-expanded="false" hidden></button>
   <div class="top-tools" aria-label="桌面工具">
+    <div class="toolbar-actions">
     <button class="tool-button" data-action="wallpaper" title="更换壁纸" aria-label="更换壁纸"></button>
     <button class="tool-button" data-action="edit" id="edit-button" title="编辑桌面" aria-label="编辑桌面" aria-pressed="false"></button>
     <button class="tool-button add-main" data-action="add" title="添加网站或组件" aria-label="添加网站或组件"></button>
+    </div>
+    <div class="toolbar-utilities">
+      <button class="tool-button" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
+      <div class="shortcuts-control">
+        <button class="tool-button" id="shortcuts-button" aria-label="快捷键说明" aria-describedby="shortcuts-tooltip" aria-expanded="false"></button>
+        <div id="shortcuts-tooltip" class="shortcuts-tooltip" role="tooltip">
+          <strong>快捷键</strong>
+          <span>聚焦搜索<kbd>/</kbd></span>
+          <span>切换搜索引擎<kbd>Tab / Shift Tab</kbd></span>
+          <span>搜索桌面收藏<kbd>Ctrl / ⌘ K 或 F</kbd></span>
+          <span>编辑桌面<kbd>E</kbd></span>
+          <span>退出 / 取消拖动<kbd>Esc</kbd></span>
+          <small>安装扩展后可用 Alt + C 打开本地搜索。Tab 切换仅在搜索框内生效。</small>
+        </div>
+      </div>
+    </div>
   </div>
   <main id="main">
     <header id="clock-block" class="clock-block">
@@ -46,7 +64,7 @@
         <div id="search-suggestions" class="search-suggestions" hidden></div>
       </div>
     <section class="desktop-wrap" aria-label="个人桌面">
-      <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或左侧分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
+      <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
       <div id="desktop" class="desktop"></div>
     </section>
     <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span></footer>

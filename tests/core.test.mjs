@@ -5,12 +5,27 @@ import {
   safeUrl, uid, validateImport, exportState, loadState, saveState,
   subscribeState, appendLink, addCurrentTab, requestBookmarks, searchHistory
 } from '../src/core.js';
+import { MAX_AVATAR_BYTES } from '../src/avatar.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const fresh = () => copy(DEFAULT_STATE);
 const originalChrome = globalThis.chrome;
 const originalLocalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 const cleanups = [];
+const avatarPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMI6LkDAALoAbn/7VoOAAAAAElFTkSuQmCC';
+const v023Settings = {
+  searchNewTab: true, rememberGroup: true, scrollGroups: true,
+  sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
+  sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
+  toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
+  reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, clockWeight: 400,
+  clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
+  searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
+  showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
+  iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
+  desktopMaxWidth: 1350, themeColor: '#79d7b4',
+  showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false
+};
 
 afterEach(() => {
   for (const cleanup of cleanups.splice(0)) cleanup();
@@ -75,6 +90,7 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
   assert.equal(checked.settings.weatherEnabled, false);
   assert.equal(checked.settings.pinClock, true);
   assert.equal(checked.settings.pinSearch, true);
+  assert.equal(checked.settings.clockSize, 70);
   assert.equal(checked.groups.length, 6);
   for (const groupId of ['home', 'code', 'design', 'work', 'ai', 'life']) {
     assert.ok(checked.groups.some(group => group.id === groupId));
@@ -157,6 +173,182 @@ test('explicit non-boolean pin settings cannot overwrite stored desktop data', a
   }
   assert.equal(fixture.writes, 0);
   assert.deepEqual(fixture.records[STORAGE_KEY], original);
+});
+
+test('v0.2.2 layouts migrate appearance preferences without writing or replacing user data', async () => {
+  const legacy = fresh();
+  for (const key of Object.keys(v023Settings)) delete legacy.settings[key];
+  legacy.settings.pinClock = false;
+  legacy.settings.pinSearch = false;
+  legacy.settings.theme = 'light';
+  legacy.settings.clockSize = 160;
+  legacy.groups.reverse();
+  legacy.items.reverse();
+  legacy.activeGroupId = 'design';
+  const fixture = extensionFixture(legacy);
+  const migrated = await loadState();
+  assert.deepEqual(migrated, { ...legacy, settings: { ...legacy.settings, ...v023Settings } });
+  assert.equal(migrated.schemaVersion, 1);
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], legacy);
+  assert.deepEqual(validateImport(exportState(migrated)), migrated);
+});
+
+test('independent layout, material and avatar choices survive storage and backup round trips', async () => {
+  const fixture = extensionFixture(fresh());
+  const state = await loadState();
+  Object.assign(state.settings, {
+    searchNewTab: false, rememberGroup: false, scrollGroups: false,
+    sidebarWidth: 41, sidebarOpacity: 0, sidebarPosition: 'right', navigationMode: 'top',
+    sidebarVisibility: 'hidden', sidebarLabels: false, avatar: avatarPng,
+    toolbarVisibility: 'auto', surfaceStyle: 'mica', surfaceOpacity: 30, surfaceBlur: 0,
+    reducedEffects: true, animateGroups: false, uiFont: 'system', uiScale: 115, clockWeight: 600,
+    clockOffsetX: -12, clockOffsetY: 56, searchOffsetX: 10, searchOffsetY: -20,
+    searchWidth: 820, searchHeight: 60, searchOpacity: 45,
+    searchRadius: 0, showSearchHistory: true, showWeekday: false, showLunar: false, showWallpaperButton: false,
+    iconOpacity: 65, labelSize: 16, labelColor: '#ABCDEF', clockColor: '#123456',
+    desktopMaxWidth: 1800, themeColor: '#88aAcC',
+    showClock: false, showDate: false, showSearch: false, clockFollowTheme: true, showAddTile: true
+  });
+  const saved = await saveState(state);
+  assert.deepEqual(await loadState(), saved);
+  assert.deepEqual(validateImport(exportState(saved)), saved);
+  for (const key of Object.keys(v023Settings)) assert.deepEqual(saved.settings[key], state.settings[key], key);
+  assert.equal(fixture.writes, 1);
+});
+
+test('legacy search-tab behavior is inherited once and later search choices remain independent', async () => {
+  for (const openNewTab of [false, true]) {
+    const legacy = fresh();
+    legacy.settings.openNewTab = openNewTab;
+    delete legacy.settings.searchNewTab;
+    const fixture = extensionFixture(legacy);
+    const migrated = await loadState();
+    assert.equal(migrated.settings.searchNewTab, openNewTab);
+    assert.equal(migrated.settings.openNewTab, openNewTab);
+    assert.equal(fixture.writes, 0);
+    assert.deepEqual(fixture.records[STORAGE_KEY], legacy);
+    assert.deepEqual(validateImport(exportState(migrated)), migrated);
+    migrated.settings.searchNewTab = !openNewTab;
+    const saved = await saveState(migrated);
+    const restored = validateImport(exportState(saved));
+    assert.equal(restored.settings.searchNewTab, !openNewTab);
+    assert.equal(restored.settings.openNewTab, openNewTab);
+    assert.deepEqual(await loadState(), saved);
+  }
+  const ancient = fresh();
+  delete ancient.settings.openNewTab;
+  delete ancient.settings.searchNewTab;
+  const defaults = validateImport(ancient).settings;
+  assert.equal(defaults.openNewTab, true);
+  assert.equal(defaults.searchNewTab, true);
+});
+
+test('explicit invalid layout booleans and selections never overwrite a stored desktop', async () => {
+  const fixture = extensionFixture(fresh());
+  const original = copy(fixture.records[STORAGE_KEY]);
+  const choices = {
+    sidebarPosition: ['left', 'right'], navigationMode: ['sidebar', 'top'],
+    sidebarVisibility: ['always', 'auto', 'hidden'], toolbarVisibility: ['always', 'auto'],
+    surfaceStyle: ['solid', 'glass', 'acrylic', 'mica'], uiFont: ['inter', 'system']
+  };
+  for (const key of ['sidebarLabels', 'reducedEffects', 'animateGroups', 'showClock', 'showDate', 'showSearch', 'clockFollowTheme', 'showAddTile',
+    'showSearchHistory', 'showWeekday', 'showLunar', 'showWallpaperButton', 'searchNewTab', 'rememberGroup', 'scrollGroups']) {
+    for (const value of [undefined, null, 0, 1, 'true', 'false', [], {}]) {
+      const state = fresh(); state.settings[key] = value;
+      await assert.rejects(saveState(state), new RegExp(`settings\\.${key}.*布尔值`));
+    }
+  }
+  for (const [key, values] of Object.entries(choices)) {
+    for (const value of values) {
+      const state = fresh(); state.settings[key] = value;
+      assert.equal(validateImport(state).settings[key], value);
+    }
+    for (const value of [undefined, null, 0, true, 'unsupported', [], {}]) {
+      const state = fresh(); state.settings[key] = value;
+      await assert.rejects(saveState(state), new RegExp(`settings\\.${key}`));
+    }
+  }
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], original);
+});
+
+test('layout numeric bounds reject invalid CSS and preserve exact supported endpoints', async () => {
+  const fixture = extensionFixture(fresh());
+  const original = copy(fixture.records[STORAGE_KEY]);
+  const ranges = {
+    sidebarWidth: [40, 120], sidebarOpacity: [0, 100], surfaceOpacity: [20, 100], surfaceBlur: [0, 24],
+    uiScale: [85, 120], clockWeight: [200, 700], clockOffsetX: [-30, 30], clockOffsetY: [-60, 160],
+    searchOffsetX: [-30, 30], searchOffsetY: [-40, 160], searchWidth: [360, 960],
+    searchHeight: [36, 64], searchOpacity: [20, 100], searchRadius: [0, 50],
+    iconOpacity: [20, 100], labelSize: [10, 20], desktopMaxWidth: [720, 2000], clockSize: [30, 160]
+  };
+  for (const [key, [min, max]] of Object.entries(ranges)) {
+    for (const value of [min, (min + max) / 2, max]) {
+      const state = fresh(); state.settings[key] = value;
+      assert.equal(validateImport(state).settings[key], value);
+    }
+    for (const value of [min - 0.1, max + 0.1, undefined, null, NaN, Infinity, String(min), '0; background:url(https://example.org)', {}, []]) {
+      const state = fresh(); state.settings[key] = value;
+      await assert.rejects(saveState(state), new RegExp(`settings\\.${key}`));
+    }
+  }
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], original);
+});
+
+test('text and theme colors require explicit opaque six-digit hex values', async () => {
+  const fixture = extensionFixture(fresh());
+  const original = copy(fixture.records[STORAGE_KEY]);
+  for (const key of ['labelColor', 'clockColor', 'themeColor']) {
+    for (const value of ['#000000', '#ffffff', '#012345', '#aBcDeF']) {
+      const state = fresh(); state.settings[key] = value;
+      assert.equal(validateImport(state).settings[key], value);
+    }
+    for (const value of [undefined, null, {}, [], 0, '#fff', '#ffff', '#ffffffff', 'white',
+      'rgba(255,255,255,0.5)', '#12345g', '#123456; background:url(https://example.org)']) {
+      const state = fresh(); state.settings[key] = value;
+      await assert.rejects(saveState(state), new RegExp(`settings\\.${key}.*六位十六进制颜色`));
+    }
+  }
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], original);
+});
+
+test('unsafe, animated, malformed or oversized avatars cannot enter persistent state', async () => {
+  const fixture = extensionFixture(fresh());
+  const original = copy(fixture.records[STORAGE_KEY]);
+  for (const value of [undefined, '', {}, 'https://example.org/avatar.png', 'blob:https://example.org/id',
+    'data:image/svg+xml;base64,PHN2Zy8+', 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBA==',
+    'data:text/html;base64,PHNjcmlwdD4=', 'data:image/png;base64,aGVsbG8=',
+    `data:image/png;base64,${Buffer.alloc(MAX_AVATAR_BYTES + 1).toString('base64')}`]) {
+    const state = fresh(); state.settings.avatar = value;
+    assert.throws(() => validateImport(state), /settings\.avatar/);
+    await assert.rejects(saveState(state), /settings\.avatar/);
+  }
+  assert.equal(fixture.writes, 0);
+  assert.deepEqual(fixture.records[STORAGE_KEY], original);
+  const state = fresh(); state.settings.avatar = avatarPng;
+  assert.equal(validateImport(exportState(state)).settings.avatar, avatarPng);
+  state.settings.avatar = null;
+  assert.equal(validateImport(state).settings.avatar, null);
+});
+
+test('avatar data counts toward the existing complete backup size limit', () => {
+  const state = fresh();
+  state.settings.customWallpaper = `data:image/png;base64,${Buffer.alloc(MAX_MEDIA_BYTES).toString('base64')}`;
+  state.todos = Array.from({ length: 500 }, (_, i) => ({ id: `large-todo-${i}`, text: 'a'.repeat(1000), done: false }));
+  assert.ok(JSON.stringify(state).length < MAX_BACKUP_BYTES);
+  assert.doesNotThrow(() => validateImport(state));
+  // A bounded PNG ancillary chunk stands in for an avatar with more image data.
+  const png = Buffer.from(avatarPng.split(',')[1], 'base64');
+  const chunk = Buffer.alloc(MAX_AVATAR_BYTES - png.length);
+  chunk.writeUInt32BE(chunk.length - 12, 0);
+  chunk.write('tEXt', 4);
+  state.settings.avatar = `data:image/png;base64,${Buffer.concat([png.subarray(0, 33), chunk, png.subarray(33)]).toString('base64')}`;
+  assert.ok(JSON.stringify(state).length > MAX_BACKUP_BYTES);
+  assert.throws(() => validateImport(state), /6 MiB/);
+  assert.throws(() => exportState(state), /6 MiB/);
 });
 
 test('legacy backups gain automatic icons while text choices survive storage and backup round trips', async () => {

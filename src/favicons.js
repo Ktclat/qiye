@@ -8,6 +8,9 @@ const MAX_CANDIDATES = 12;
 const HTML_LIMIT = 384 * 1024;
 const MANIFEST_LIMIT = 128 * 1024;
 const REQUEST_TIMEOUT = 8_000;
+const UPGRADE_TTL = 24 * 60 * 60 * 1000;
+const MAX_UPGRADE_CANDIDATES = 3;
+const MAX_TARGET_SIZE = 256;
 const cache = new Map();
 const pending = new Map();
 const WARNINGS = Object.freeze({
@@ -61,14 +64,23 @@ function sitePageUrl(value) {
 
 function unique(values) { return [...new Set(values.filter(Boolean))].slice(0, MAX_CANDIDATES); }
 
-function browserFavicon(pageUrl) {
+function requestedSize({ targetSize = 64, pixelRatio = 1 } = {}) {
+  const cssSize = Number.isFinite(targetSize) && targetSize > 0 ? Math.min(targetSize, MAX_TARGET_SIZE) : 64;
+  const ratio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? Math.min(pixelRatio, 4) : 1;
+  return Math.min(MAX_TARGET_SIZE, Math.max(16, Math.ceil(cssSize * ratio)));
+}
+
+function browserFavicon(pageUrl, options) {
   try {
     const runtime = extensionRuntime();
     if (!runtime) return null;
     const url = new URL(runtime.getURL('/_favicon/'));
     if (url.protocol !== 'chrome-extension:' || url.hostname !== runtime.id) return null;
     url.searchParams.set('pageUrl', pageUrl);
-    url.searchParams.set('size', '64');
+    // Request enough physical pixels for this surface; Chrome may still return
+    // a smaller cached source, which the caller measures after image load.
+    const required = requestedSize(options);
+    url.searchParams.set('size', String([16, 32, 64, 128, 256].find(size => size >= required)));
     return url.href;
   } catch { return null; }
 }
@@ -80,17 +92,95 @@ function currentEntry(pageUrl) {
   return null;
 }
 
-/** Synchronous image candidates: known working icon, discovered declarations,
- * site-owned conventional paths, then Chrome's local favicon service. */
-export function getFaviconCandidates(siteUrl) {
+function dimension(value) { return Number.isInteger(value) && value > 0 && value <= 8192 ? value : 0; }
+
+function iconQuality(detail = {}, options = {}) {
+  const requiredSize = requestedSize(options);
+  const suppliedWidth = dimension(options.width), suppliedHeight = dimension(options.height);
+  const observed = detail.measuredAt + CACHE_TTL > Date.now() && detail.actualWidth && detail.actualHeight;
+  const measured = !!(suppliedWidth && suppliedHeight || observed);
+  const width = suppliedWidth && suppliedHeight ? suppliedWidth : observed ? detail.actualWidth : detail.width || 0;
+  const height = suppliedWidth && suppliedHeight ? suppliedHeight : observed ? detail.actualHeight : detail.height || 0;
+  const size = Math.min(width || 0, height || 0);
+  const scalable = detail.scalable === true;
+  const shapePenalty = width && height ? Math.abs(width - height) / Math.max(width, height) * 100 : 0;
+  const adequate = scalable || size >= requiredSize;
+  // Prefer a vector or the smallest sufficient bitmap over a needlessly large
+  // image. Unknown sources can be tried ahead of a measured undersized bitmap.
+  let score = scalable ? 1300 : size >= requiredSize ? 1000 - Math.min(100, Math.log2(size / requiredSize) * 25)
+    : size ? 300 + size / requiredSize * 180 : 550;
+  score += detail.kind === 'html' ? 20 : detail.kind === 'apple' ? 10 : 0;
+  score -= shapePenalty + (detail.maskable ? 60 : 0);
+  return { size, requiredSize, scalable, adequate, score, measured };
+}
+
+function detailFor(entry, url) {
+  const detail = entry?.details?.find(item => item.url === url);
+  if (detail) return detail;
+  let scalable = false;
+  try { scalable = /\.svg$/i.test(new URL(url).pathname); } catch { /* No inferred metadata. */ }
+  return { url, scalable, kind: /\/apple-touch-icon\.png(?:\?|$)/i.test(url) ? 'apple' : 'fallback' };
+}
+
+/** The caller supplies naturalWidth/naturalHeight after load. Declared sizes
+ * help choose candidates; observed dimensions take precedence for bitmaps. */
+export function getFaviconQuality(siteUrl, iconUrl, options = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  return iconQuality(detailFor(pageUrl ? currentEntry(pageUrl) : null, iconUrl), options);
+}
+
+/** Synchronous only: no page fetches and no permission prompts during render.
+ * SVG/touch icons and useful declarations precede a small conventional ICO. */
+export function getFaviconCandidates(siteUrl, options = {}) {
   const pageUrl = sitePageUrl(siteUrl);
   if (!pageUrl) return [];
   const entry = currentEntry(pageUrl);
   const origin = new URL(pageUrl).origin;
   const known = entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : [];
   const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
-  const extracted = unique([preferred, ...known]).slice(0, MAX_CANDIDATES - 3);
-  return unique([...extracted, `${origin}/favicon.ico`, `${origin}/apple-touch-icon.png`, browserFavicon(pageUrl)]);
+  const qualityOptions = { targetSize: options.targetSize, pixelRatio: options.pixelRatio };
+  const conventional = [`${origin}/favicon.svg`, `${origin}/apple-touch-icon.png`, `${origin}/favicon.ico`, browserFavicon(pageUrl, options)].filter(Boolean);
+  const extracted = unique([preferred, ...known]);
+  const sorted = extracted.map((url, order) => ({ url, order, ...iconQuality(detailFor(entry, url), qualityOptions) }))
+    .sort((a, b) => b.score - a.score || a.order - b.order).map(item => item.url);
+  const declared = sorted.filter(url => !conventional.includes(url));
+  // Known declarations come first, then conventional paths. A known tiny ICO
+  // cannot hide a discovered SVG or a touch icon with sufficient resolution.
+  const preferredQuality = preferred ? iconQuality(detailFor(entry, preferred), qualityOptions) : null;
+  const coolingDown = entry?.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= requestedSize(options);
+  let keepPreferred = false;
+  if (preferred && (preferredQuality.adequate || !preferredQuality.measured || coolingDown)) {
+    const best = declared.find(url => iconQuality(detailFor(entry, url), qualityOptions).score > preferredQuality.score);
+    keepPreferred = !best || coolingDown || !preferredQuality.measured;
+  }
+  const first = keepPreferred ? [preferred, ...declared.filter(url => url !== preferred)] : declared;
+  const last = conventional.filter(url => !keepPreferred || url !== preferred);
+  return unique([...first.slice(0, MAX_CANDIDATES - last.length), ...last]);
+}
+
+/** Claim one bounded background quality upgrade. Keep the current image visible
+ * while trying these candidates. A day-long, size-aware cooldown avoids probing
+ * the same low-resolution-only site on every render; explicit extraction resets
+ * it. This function returns URLs only and never performs any network request. */
+export function takeFaviconUpgradeCandidates(siteUrl, iconUrl, options = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  const entry = pageUrl && currentEntry(pageUrl);
+  if (!entry) return [];
+  const current = getFaviconQuality(pageUrl, iconUrl, options);
+  if (current.adequate) return [];
+  if (!options.force && entry.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= current.requiredSize) return [];
+  const candidates = getFaviconCandidates(pageUrl, options);
+  entry.upgradeAt = Date.now();
+  entry.upgradeSize = current.requiredSize;
+  cache.set(pageUrl, entry);
+  persistCache();
+  const attempted = new Set(Array.isArray(options.attempted) ? options.attempted.slice(0, MAX_CANDIDATES) : []);
+  attempted.add(iconUrl);
+  return candidates.filter(url => {
+    if (attempted.has(url)) return false;
+    const quality = getFaviconQuality(pageUrl, url, { targetSize: options.targetSize, pixelRatio: options.pixelRatio });
+    return !quality.measured || quality.score > current.score;
+  }).slice(0, MAX_UPGRADE_CANDIDATES);
 }
 
 function trimCache() {
@@ -109,7 +199,7 @@ async function readCache() {
       const json = globalThis.localStorage?.getItem(FAVICON_CACHE_KEY);
       if (typeof json === 'string' && json.length <= 1024 * 1024) raw = JSON.parse(json);
     }
-    if (!raw || raw.version !== 1 || !Array.isArray(raw.entries)) return;
+    if (!raw || ![1, 2].includes(raw.version) || !Array.isArray(raw.entries)) return;
     const now = Date.now();
     for (const item of raw.entries.slice(0, MAX_ENTRIES)) {
       if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
@@ -123,7 +213,25 @@ async function readCache() {
         failedUntil: Number.isFinite(item.failedUntil) && item.failedUntil >= 0 && item.failedUntil <= now + FAILURE_TTL ? item.failedUntil : 0,
         errorCode: Object.hasOwn(WARNINGS, item.errorCode) ? item.errorCode : '',
         source: ['html', 'manifest', 'fallback'].includes(item.source) ? item.source : 'fallback',
+        details: [], upgradeAt: time(item.upgradeAt),
+        upgradeSize: Number.isInteger(item.upgradeSize) && item.upgradeSize >= 16 && item.upgradeSize <= MAX_TARGET_SIZE ? item.upgradeSize : 0,
       };
+      if (raw.version === 2 && Array.isArray(item.details)) {
+        for (const detail of item.details.slice(0, MAX_CANDIDATES)) {
+          if (!detail || typeof detail !== 'object' || Array.isArray(detail)) continue;
+          const url = safeImageUrl(detail.url);
+          if (!url || entry.details.some(known => known.url === url)) continue;
+          const measuredAt = time(detail.measuredAt);
+          const actualWidth = dimension(detail.actualWidth), actualHeight = dimension(detail.actualHeight);
+          entry.details.push({
+            url, width: dimension(detail.width), height: dimension(detail.height),
+            scalable: detail.scalable === true,
+            kind: ['html', 'apple', 'manifest'].includes(detail.kind) ? detail.kind : 'fallback',
+            maskable: detail.maskable === true,
+            actualWidth, actualHeight, measuredAt: actualWidth && actualHeight ? measuredAt : 0,
+          });
+        }
+      }
       if (!cache.has(pageUrl) && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > now) cache.set(pageUrl, entry);
     }
     trimCache();
@@ -142,7 +250,7 @@ function persistCache() {
     writes = writes.catch(() => {}).then(async () => {
       await faviconCacheReady;
       trimCache();
-      const value = { version: 1, entries: [...cache].map(([pageUrl, entry]) => ({ pageUrl, ...entry })) };
+      const value = { version: 2, entries: [...cache].map(([pageUrl, entry]) => ({ pageUrl, ...entry })) };
       try {
         if (extensionRuntime() && globalThis.chrome?.storage?.local) await globalThis.chrome.storage.local.set({ [FAVICON_CACHE_KEY]: value });
         else globalThis.localStorage?.setItem(FAVICON_CACHE_KEY, JSON.stringify(value));
@@ -152,13 +260,25 @@ function persistCache() {
 }
 
 /** Call only after an <img> load succeeds. Internal Chrome URLs never persist. */
-export function rememberFavicon(siteUrl, iconUrl) {
+export function rememberFavicon(siteUrl, iconUrl, { width = 0, height = 0 } = {}) {
   const pageUrl = sitePageUrl(siteUrl);
   const safe = safeImageUrl(iconUrl);
   if (!pageUrl || !safe) return false;
-  const entry = currentEntry(pageUrl) || { candidates: [], preferred: '', checkedAt: 0, loadedAt: 0, failedUntil: 0, errorCode: '', source: 'fallback' };
-  if (entry.preferred === safe && entry.loadedAt + CACHE_TTL / 2 > Date.now()) return true;
-  entry.preferred = safe;
+  const entry = currentEntry(pageUrl) || { candidates: [], details: [], preferred: '', checkedAt: 0, loadedAt: 0, failedUntil: 0, errorCode: '', source: 'fallback', upgradeAt: 0, upgradeSize: 0 };
+  const actualWidth = dimension(width), actualHeight = dimension(height);
+  const existing = detailFor(entry, safe);
+  const sameDimensions = !actualWidth || !actualHeight || actualWidth === (existing.actualWidth || 0) && actualHeight === (existing.actualHeight || 0);
+  if (entry.preferred === safe && sameDimensions && entry.loadedAt + CACHE_TTL / 2 > Date.now()) return true;
+  const detail = {
+    ...existing,
+    ...(actualWidth && actualHeight ? { actualWidth, actualHeight, measuredAt: Date.now() } : {}),
+  };
+  entry.details = [detail, ...(entry.details || []).filter(item => item.url !== safe)].slice(0, MAX_CANDIDATES);
+  const previous = iconQuality(detailFor(entry, entry.preferred));
+  const next = iconQuality(detail);
+  // Remember every successful measurement, but a later small fallback must not
+  // displace a sharper working source. Calls without dimensions remain compatible.
+  if (!entry.preferred || entry.preferred === safe || !actualWidth || !actualHeight || !previous.measured && !previous.scalable || next.score > previous.score) entry.preferred = safe;
   entry.loadedAt = Date.now();
   cache.set(pageUrl, entry);
   persistCache();
@@ -232,29 +352,27 @@ function metadataTags(html) {
   return tags;
 }
 
-function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, order) {
+function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, order, options) {
   const mime = String(type).toLowerCase().split(';')[0].trim();
   if (mime && !/^image\/(?:png|jpeg|gif|webp|avif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/.test(mime)) return null;
   const purposes = String(purpose).toLowerCase().split(/\s+/);
   if (purposes.includes('monochrome') && !purposes.includes('any') && !purposes.includes('maskable')) return null;
-  const scalable = /(?:^|\s)any(?:$|\s)/i.test(sizes) || mime === 'image/svg+xml' || /\.svg$/i.test(new URL(url).pathname);
-  let quality = scalable ? 1000 : 350;
-  let adequate = scalable;
+  const scalable = mime === 'image/svg+xml' || /\.svg$/i.test(new URL(url).pathname);
+  const detail = { url, width: 0, height: 0, scalable, kind, maskable: purposes.includes('maskable') && !purposes.includes('any') };
+  let bestScore = -Infinity;
   for (const token of String(sizes).slice(0, 250).split(/\s+/)) {
     const dimensions = /^(\d{1,4})x(\d{1,4})$/i.exec(token);
     if (!dimensions) continue;
     const width = Number(dimensions[1]), height = Number(dimensions[2]);
     if (!width || !height || width > 8192 || height > 8192) continue;
-    const size = Math.min(width, height);
-    const shapePenalty = Math.abs(width - height) / Math.max(width, height) * 200;
-    const score = (size >= 64 ? 600 + Math.min(size, 192) : size >= 32 ? 400 + size : 200 + size) - shapePenalty;
-    quality = Math.max(quality, score);
-    if (size >= 128 && shapePenalty < 20) adequate = true;
+    const { score } = iconQuality({ ...detail, width, height }, options);
+    if (score > bestScore) { bestScore = score; detail.width = width; detail.height = height; }
   }
-  return { url, score: quality + (kind === 'html' ? 20 : kind === 'apple' ? 10 : 0), adequate, source: kind === 'manifest' ? 'manifest' : 'html', order };
+  const { score, adequate } = iconQuality(detail, options);
+  return { ...detail, score, adequate, source: kind === 'manifest' ? 'manifest' : 'html', order };
 }
 
-function parseHtmlIcons(html, pageUrl) {
+function parseHtmlIcons(html, pageUrl, options) {
   const tags = metadataTags(html);
   const firstBase = tags.find(tag => tag.tag === 'base' && Object.hasOwn(tag.attrs, 'href'));
   const base = firstBase ? safeImageUrl(firstBase.attrs.href, pageUrl) || pageUrl : pageUrl;
@@ -267,7 +385,7 @@ function parseHtmlIcons(html, pageUrl) {
     if (!url) continue;
     const kind = rel.includes('icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
     if (kind) {
-      const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length);
+      const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length, options);
       if (icon) icons.push(icon);
     }
     if (!manifest && rel.includes('manifest') && new URL(url).origin === new URL(pageUrl).origin) manifest = sitePageUrl(url);
@@ -275,7 +393,7 @@ function parseHtmlIcons(html, pageUrl) {
   return { icons, manifest };
 }
 
-function parseManifestIcons(text, manifestUrl, offset) {
+function parseManifestIcons(text, manifestUrl, offset, options) {
   let value;
   try { value = JSON.parse(text); } catch { throw new Error('content'); }
   if (!value || typeof value !== 'object' || !Array.isArray(value.icons)) return [];
@@ -283,7 +401,7 @@ function parseManifestIcons(text, manifestUrl, offset) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
     const url = safeImageUrl(item.src, manifestUrl);
     if (!url) return [];
-    const icon = rankIcon({ url, sizes: item.sizes, type: item.type, purpose: item.purpose, kind: 'manifest' }, offset + index);
+    const icon = rankIcon({ url, sizes: item.sizes, type: item.type, purpose: item.purpose, kind: 'manifest' }, offset + index, options);
     return icon ? [icon] : [];
   });
 }
@@ -339,17 +457,18 @@ async function fetchMetadata(url, kind, signal) {
   throw new Error('redirect');
 }
 
-function resultFor(pageUrl, source, errorCode = '') {
-  const candidates = pageUrl ? getFaviconCandidates(pageUrl) : [];
+function resultFor(pageUrl, source, errorCode = '', options) {
+  const candidates = pageUrl ? getFaviconCandidates(pageUrl, options) : [];
   return { url: candidates[0] || null, candidates, source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
 }
 
 /** Explicit user action only. When requested, the permission API is invoked
  * synchronously, before cache initialization or any asynchronous work. Web pages
  * can read only sites that opt into CORS; no proxy bypass is attempted. */
-export function discoverFavicon(siteUrl, { requestPermission = false, force = false } = {}) {
+export function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1 } = {}) {
+  const options = { targetSize, pixelRatio };
   const pageUrl = sitePageUrl(siteUrl);
-  if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe'));
+  if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe', options));
   if (pending.has(pageUrl)) return pending.get(pageUrl);
   const runtime = extensionRuntime();
   const origins = [`${new URL(pageUrl).origin}/*`];
@@ -364,12 +483,12 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
       let granted = false;
       try { granted = permission ? await permission : await globalThis.chrome?.permissions?.contains?.({ origins }); }
       catch { /* A revoked or unavailable permission is an ordinary fallback. */ }
-      if (granted !== true) return resultFor(pageUrl, 'fallback', 'permission');
+      if (granted !== true) return resultFor(pageUrl, 'fallback', 'permission', options);
     }
     const previous = currentEntry(pageUrl);
     if (!force && previous) {
-      if (previous.failedUntil > Date.now()) return resultFor(pageUrl, 'fallback', previous.errorCode || 'network');
-      if (previous.checkedAt + CACHE_TTL > Date.now() && previous.candidates.length) return resultFor(pageUrl, 'cache');
+      if (previous.failedUntil > Date.now()) return resultFor(pageUrl, 'fallback', previous.errorCode || 'network', options);
+      if (previous.checkedAt + CACHE_TTL > Date.now() && previous.candidates.length) return resultFor(pageUrl, 'cache', '', options);
     }
     const controller = new AbortController();
     let timer;
@@ -377,13 +496,19 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
     try {
       const operation = (async () => {
         const html = await fetchMetadata(pageUrl, 'html', controller.signal);
-        const metadata = parseHtmlIcons(html.text, html.url);
-        let icons = metadata.icons;
+        const metadata = parseHtmlIcons(html.text, html.url, options);
+        const measuredIcon = icon => {
+          const observed = previous?.details?.find(detail => detail.url === icon.url && detail.measuredAt);
+          const detail = observed ? { ...icon, actualWidth: observed.actualWidth, actualHeight: observed.actualHeight, measuredAt: observed.measuredAt } : icon;
+          const { score, adequate } = iconQuality(detail, options);
+          return { ...detail, score, adequate };
+        };
+        let icons = metadata.icons.map(measuredIcon);
         let manifestError = '';
         if (metadata.manifest && !icons.some(icon => icon.adequate)) {
           try {
             const manifest = await fetchMetadata(metadata.manifest, 'manifest', controller.signal);
-            icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length)];
+            icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length, options).map(measuredIcon)];
           } catch (error) { manifestError = Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network'; }
         }
         if (!icons.length) throw new Error(manifestError || 'missing');
@@ -391,15 +516,22 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
         return icons;
       })();
       const icons = await Promise.race([operation, deadline]);
-      cache.set(pageUrl, { preferred: '', candidates: unique(icons.map(icon => icon.url)), checkedAt: Date.now(), loadedAt: 0, failedUntil: 0, errorCode: '', source: icons[0].source });
+      const candidates = unique(icons.map(icon => icon.url));
+      const details = [];
+      for (const icon of [...icons, ...(previous?.details || [])]) {
+        if (details.some(detail => detail.url === icon.url) || details.length >= MAX_CANDIDATES) continue;
+        const { score: _score, adequate: _adequate, order: _order, source: _source, ...detail } = icon;
+        details.push(detail);
+      }
+      cache.set(pageUrl, { preferred: previous?.preferred || '', candidates, details, checkedAt: Date.now(), loadedAt: previous?.loadedAt || 0, failedUntil: 0, errorCode: '', source: icons[0].source, upgradeAt: 0, upgradeSize: 0 });
       persistCache();
-      return resultFor(pageUrl, icons[0].source);
+      return resultFor(pageUrl, icons[0].source, '', options);
     } catch (error) {
       const code = controller.signal.aborted ? 'timeout' : Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network';
       const entry = currentEntry(pageUrl) || { preferred: '', candidates: [], loadedAt: 0, source: 'fallback' };
       cache.set(pageUrl, { ...entry, checkedAt: entry.checkedAt || Date.now(), failedUntil: Date.now() + FAILURE_TTL, errorCode: code });
       persistCache();
-      return resultFor(pageUrl, 'fallback', code);
+      return resultFor(pageUrl, 'fallback', code, options);
     } finally {
       clearTimeout(timer);
       controller.abort(); // Also stop unread bodies rejected by their headers.

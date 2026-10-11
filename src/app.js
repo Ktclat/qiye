@@ -4,7 +4,10 @@ import { icon, iconNames } from './icons.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { webDAVStateFingerprint } from './webdav.js';
 import { createSyncController } from './sync-ui.js';
-import { getFaviconCandidates, discoverFavicon, rememberFavicon, faviconCacheReady } from './favicons.js';
+import { getFaviconCandidates, discoverFavicon, faviconCacheReady } from './favicons.js';
+import { bindFaviconImages } from './favicon-view.js';
+import { normalizeAvatarFile } from './avatar.js';
+import { readSearchHistory, rememberSearch, clearSearchHistory } from './search-history.js';
 import { createDesktopDragController, reorderById } from './drag.js';
 
 const $ = (s, root = document) => root.querySelector(s);
@@ -27,8 +30,9 @@ let editing = false, widgetsCleanup = () => {}, saving = 0, revision = 0, blocke
 let dialogKind = '', dialogData = {}, lastDialogFocus = null, lastToastTimer, undoAction = null;
 let desktopDrag = null, localScope = 'desktop', localExtra = [], searchToken = 0;
 let currentMedia = null, lastDate = '', renderedGroup = '', currentGridColumns = 14;
-const faviconBindings = new WeakMap(), faviconFailures = new Map(), faviconFormStates = new WeakMap();
+const faviconFormStates = new WeakMap();
 let faviconRequestSequence = 0;
+let avatarRequestSequence = 0, renderedAvatar, renderedEngineKey = '', lastGroupWheel = 0;
 
 function allEngines() { return [...ENGINES, ...(state.settings.customEngines || [])]; }
 async function applyOnlineWallpaper(value) {
@@ -79,7 +83,7 @@ async function extractEngineFavicon(button) {
  const url = engineSiteUrl(engine);
  if (!url || button.disabled) return;
  // Keep the permission request inside the original click gesture.
- const pending = discoverFavicon(url, {requestPermission:true, force:true});
+ const pending = discoverFavicon(url, {requestPermission:true, force:true, targetSize:26, pixelRatio:globalThis.devicePixelRatio || 1});
  button.disabled = true; button.textContent = '正在提取…';
  try {
   const result = await pending;
@@ -109,48 +113,7 @@ function siteGlyph(item) {
  if (!url) return fallback;
  return `<span class="site-visual" data-favicon-site="${esc(url)}"><span class="site-fallback" aria-hidden="true">${fallback}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
-function bindFaviconImages(root = document, options = {}) {
- $$('.site-visual[data-favicon-site]',root).forEach(visual => {
-  if (faviconBindings.has(visual) && !options.force) return;
-  faviconBindings.get(visual)?.cancel();
-  const image = $('.site-favicon',visual), siteUrl = visual.dataset.faviconSite;
-  if (!image) return;
-  const candidates = [...new Set(options.candidates || getFaviconCandidates(siteUrl))].filter(url => typeof url === 'string' && url).slice(0,16);
-  let nextIndex = 0, timer = null, attempt = 0;
-  const binding = {cancel:()=>{clearTimeout(timer);image.onload=null;image.onerror=null;attempt++;}};
-  faviconBindings.set(visual,binding);
-  const current = () => visual.isConnected && faviconBindings.get(visual) === binding;
-  const next = () => {
-   const ticket=++attempt;
-   clearTimeout(timer);image.onload=null;image.onerror=null;image.hidden=true;visual.classList.remove('is-loaded');
-   if (!current()) return;
-   let candidate;
-   while(nextIndex < candidates.length) {
-    const value = candidates[nextIndex++];
-    if (!options.force && (faviconFailures.get(value) || 0) > Date.now()) continue;
-    candidate=value;break;
-   }
-   if (!candidate) {image.removeAttribute('src');return;}
-   const failed=()=>{
-    if (!current() || ticket !== attempt) return;
-    faviconFailures.set(candidate,Date.now()+5*60*1000);
-    if(faviconFailures.size>500)faviconFailures.delete(faviconFailures.keys().next().value);
-    next();
-   };
-   image.onload=()=>{
-    if (!current() || ticket !== attempt) return;
-    if (!image.naturalWidth) return failed();
-    clearTimeout(timer);image.onload=null;image.onerror=null;
-    faviconFailures.delete(candidate);image.hidden=false;visual.classList.add('is-loaded');
-    try {Promise.resolve(rememberFavicon(siteUrl,candidate)).catch(()=>{});} catch { /* A full cache must not hide a loaded icon. */ }
-   };
-   image.onerror=failed;
-   timer=setTimeout(failed,8000);
-   image.referrerPolicy='no-referrer';image.src=candidate;
-  };
-  next();
- });
-}
+
 function linkPreviewIdentity(form) {
  return `${form.elements.url.value.trim()}\n${form.elements.iconMode.value === 'text' ? 'text' : 'auto'}`;
 }
@@ -185,7 +148,7 @@ async function extractLinkFavicon(button) {
  if (!url) return;
  // Invoke synchronously from the click handler so Chrome keeps the user gesture
  // needed by the per-site optional permission request inside discoverFavicon.
- const pending=discoverFavicon(url,{requestPermission:true,force:true});
+ const pending=discoverFavicon(url,{requestPermission:true,force:true,targetSize:64,pixelRatio:globalThis.devicePixelRatio || 1});
  updateLinkPreview(form);
  const view=faviconFormStates.get(form), request=++faviconRequestSequence;
  view.request=request;view.busy=true;view.message='正在读取网站图标声明…';
@@ -241,9 +204,9 @@ async function persist(options = {}) {
  return job;
 }
 async function commit(render = true) { await persist(); if (render) renderDesktop(); }
-function navigate(url, forceNew = false) {
+function navigate(url, forceNew = false, searchResult = false) {
  const target = safeUrl(url); if (!target) return toast('这个网址无效，请使用 http 或 https 网址。');
- if (forceNew || state.settings.openNewTab) window.open(target, '_blank', 'noopener,noreferrer');
+ if (forceNew || (searchResult ? state.settings.searchNewTab : state.settings.openNewTab)) window.open(target, '_blank', 'noopener,noreferrer');
  else window.location.assign(target);
 }
 function renderClock() {
@@ -253,35 +216,147 @@ function renderClock() {
  $('#clock-time').textContent = `${String(hour).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
  $('#clock-seconds').textContent = s.showSeconds ? String(now.getSeconds()).padStart(2,'0') : '';
  $('#clock-period').textContent = s.hour12 ? period : '';
- if (lastDate !== now.toDateString()) {
-  lastDate = now.toDateString();
-  const lunar = chineseLunarDate(now);
-  $('#date').textContent = `${now.getMonth()+1}月${now.getDate()}日　${new Intl.DateTimeFormat('zh-CN',{weekday:'long'}).format(now)}${lunar ? '　'+lunar : ''}`;
+ const dateKey = `${now.toDateString()}|${s.showWeekday}|${s.showLunar}`;
+ if (lastDate !== dateKey) {
+  lastDate = dateKey;
+  const parts = [`${now.getMonth()+1}月${now.getDate()}日`];
+  if (s.showWeekday) parts.push(new Intl.DateTimeFormat('zh-CN',{weekday:'long'}).format(now));
+  if (s.showLunar) { const lunar = chineseLunarDate(now); if(lunar) parts.push(lunar); }
+  $('#date').textContent = parts.join('　');
  }
 }
 function updatePinnedHeader() {
- const clock = $('#clock-block');
- const clockRect = clock.getBoundingClientRect();
- const clockHeight = state.settings.pinClock ? clockRect.height : 0;
+ const clock = $('#clock-block'), search = $('.search-wrapper');
+ const rect = clock.getBoundingClientRect();
+ const clockHeight = state.settings.pinClock && !clock.hidden ? rect.height : 0;
  document.documentElement.style.setProperty('--pinned-clock-height', `${clockHeight}px`);
  const pinTop = parseFloat(getComputedStyle(clock).getPropertyValue('--header-pin-top')) || 16;
- clock.classList.toggle('is-stuck', state.settings.pinClock && window.scrollY > 8 && clockRect.top <= pinTop + 1);
+ clock.classList.toggle('is-stuck', state.settings.pinClock && !clock.hidden && window.scrollY > 8 && rect.top <= pinTop + 1);
+ search.classList.toggle('is-stuck', state.settings.pinSearch && !search.hidden && window.scrollY > 8 && search.getBoundingClientRect().top <= pinTop + clockHeight + 13);
+}
+function updateHeaderPlacement() {
+ const main = $('#main'), bounds = main.getBoundingClientRect(), css = getComputedStyle(main);
+ const left = bounds.left + parseFloat(css.paddingLeft || 0), right = bounds.right - parseFloat(css.paddingRight || 0);
+ const clockText = $('#clock');
+ clockText.style.fontSize='';
+ const available = Math.max(1,right-left-32);
+ if (!clockText.hidden && clockText.scrollWidth > available) clockText.style.fontSize=(parseFloat(getComputedStyle(clockText).fontSize)*available/clockText.scrollWidth)+'px';
+ for (const [selector,key] of [['#clock-block','clock'],['.search-wrapper','search']]) {
+  const el = $(selector), property = `--${key}-shift`;
+  const previous = parseFloat(el.style.getPropertyValue(property)) || 0;
+  const rect = el.getBoundingClientRect();
+  if (el.hidden || !rect.width) { el.style.setProperty(property,'0px'); continue; }
+  const baseLeft = rect.left - previous, baseRight = rect.right - previous;
+  const desired = state.settings[key+'OffsetX'] * window.innerWidth / 100;
+  const offset = Math.max(left - baseLeft, Math.min(right - baseRight, desired));
+  el.style.setProperty(property, `${Math.round(offset*100)/100}px`);
+ }
+ // Sticky controls reserve the toolbar row only if their horizontal regions
+ // intersect; desktop-wide layouts keep the compact 16px pin position.
+ const tools = $('.top-tools').getBoundingClientRect();
+ const navSpace = state.settings.navigationMode==='top' && state.settings.sidebarVisibility==='always' ? 64 : 0;
+ let pinTop = 16 + navSpace;
+ if (!state.settings.minimal) {
+  const toolbarLeft = tools.right - Math.max(tools.width,192), floor = tools.bottom + 12;
+  const overlaps = el => {const rect=el.getBoundingClientRect();return rect.right>toolbarLeft && rect.left<tools.right;};
+  const clock = $('#clock-block'), search = $('.search-wrapper');
+  const clockHeight = state.settings.pinClock && !clock.hidden ? clock.getBoundingClientRect().height : 0;
+  if (clockHeight && overlaps(clock)) pinTop = Math.max(pinTop,floor);
+  if (state.settings.pinSearch && !search.hidden && overlaps(search)) pinTop = Math.max(pinTop,floor-(clockHeight ? clockHeight+12 : 0));
+ }
+ document.documentElement.style.setProperty('--header-pin-top',pinTop+'px');
+ updatePinnedHeader();
+}
+function renderAvatar() {
+ const avatar = state.settings.avatar;
+ if (avatar !== renderedAvatar) {
+  $('#brand-button').innerHTML = avatar ? `<img class="brand-avatar" src="${esc(avatar)}" alt="" draggable="false">` : '<span class="brand-mark">q</span>';
+  renderedAvatar = avatar;
+ }
+ const preview = $('#avatar-preview',dialog);
+ if (preview) preview.innerHTML = avatar ? `<img class="brand-avatar" src="${esc(avatar)}" alt="当前头像">` : '<span class="brand-mark">q</span>';
+}
+async function uploadAvatar(file,panel) {
+ const request = ++avatarRequestSequence, previous = state.settings.avatar, originalState = state;
+ const status = $('#avatar-status',panel);
+ status.textContent = '正在裁切头像…';
+ try {
+  if (blockedStorage) throw new Error('请先恢复本机桌面数据，再修改头像。');
+  const avatar = await normalizeAvatarFile(file);
+  if (request !== avatarRequestSequence || !panel.isConnected || !dialog.open) return;
+  if (state !== originalState || state.settings.avatar !== previous) { status.textContent = '桌面已更新，请重新选择头像。'; return; }
+  state.settings.avatar = avatar;
+  await persist();
+  renderAvatar();
+  if (request === avatarRequestSequence && panel.isConnected) status.textContent = '已保存头像。点击侧栏头像即可打开设置。';
+ } catch (error) {
+  if (request !== avatarRequestSequence || !panel.isConnected) return;
+  renderAvatar();
+  status.textContent = error.message || '头像未能保存，请重试。';
+ }
+}
+async function resetAvatar() {
+ if (blockedStorage) throw new Error('请先恢复本机桌面数据，再修改头像。');
+ const request = ++avatarRequestSequence, panel = $('#avatar-panel',dialog);
+ const current = () => request === avatarRequestSequence && panel?.isConnected && dialog.open;
+ state.settings.avatar = null;
+ try {
+  await persist();
+  if (current()) $('#avatar-status',panel).textContent = '已恢复栖页默认图标。';
+ } catch (error) {
+  if (current()) $('#avatar-status',panel).textContent = error.message || '重置头像未能保存，请重试。';
+  throw error;
+ } finally { renderAvatar(); }
+}
+function updateToolbar() {
+ const auto = state.settings.toolbarVisibility === 'auto', button = $('#toolbar-visibility');
+ $('.top-tools').classList.toggle('auto-hide', auto);
+ button.innerHTML = icon(auto ? 'eyeOff' : 'eye');
+ button.setAttribute('aria-pressed',String(auto));
+ button.setAttribute('aria-label',auto ? '始终显示工具按钮' : '自动隐藏工具按钮');
+ button.title = auto ? '工具自动隐藏 · 点击改为始终显示' : '工具始终显示 · 点击改为自动隐藏';
+ $('.top-tools [data-action=wallpaper]').hidden = !state.settings.showWallpaperButton;
+ const reveal = $('#navigation-reveal');
+ reveal.hidden = state.settings.sidebarVisibility === 'always' || state.settings.minimal;
+ reveal.setAttribute('aria-expanded',String(document.body.classList.contains('navigation-open')));
 }
 function applySettings() {
  const s = state.settings;
  const theme = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : s.theme;
- document.documentElement.dataset.theme = theme;
- document.documentElement.style.setProperty('--gap', `${s.gap}px`);
- document.documentElement.style.setProperty('--tile-size', `${s.gridSize}px`);
- document.documentElement.style.setProperty('--radius', `${s.radius}px`);
- document.documentElement.style.setProperty('--clock-size', `${s.clockSize}px`);
- document.documentElement.style.setProperty('--wallpaper-blur', `${s.blur}px`);
- document.documentElement.style.setProperty('--wallpaper-dim', String(s.dim / 100));
+
+ const root = document.documentElement;
+ root.dataset.theme = theme;
+ root.dataset.material = s.surfaceStyle;
+ root.dataset.navigation = s.navigationMode;
+ root.dataset.sidebarPosition = s.sidebarPosition;
+ root.dataset.sidebarVisibility = s.sidebarVisibility;
+ root.dataset.font = s.uiFont;
+ const properties = {
+  '--gap':s.gap+'px','--tile-size':s.gridSize+'px','--radius':s.radius+'px',
+  '--clock-size':s.clockSize+'px','--clock-weight':s.clockWeight,
+  '--clock-offset-y':s.clockOffsetY+'px','--search-offset-y':s.searchOffsetY+'px',
+  '--search-width':s.searchWidth+'px','--search-height':s.searchHeight+'px','--search-radius':s.searchRadius+'px',
+  '--search-opacity':s.searchOpacity/100,'--sidebar-width':s.sidebarWidth+'px','--sidebar-opacity':s.sidebarOpacity/100,
+  '--surface-opacity':s.surfaceOpacity/100,'--surface-blur':s.surfaceBlur+'px','--ui-scale':s.uiScale/100,
+  '--icon-opacity':s.iconOpacity/100,'--label-size':s.labelSize+'px','--label-color':s.labelColor,
+  '--clock-color':s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':s.themeColor,
+  '--wallpaper-blur':s.blur+'px','--wallpaper-dim':s.dim/100
+ };
+ for (const [key,value] of Object.entries(properties)) root.style.setProperty(key,String(value));
  document.body.classList.toggle('minimal', !!s.minimal);
  document.body.classList.toggle('no-labels', !s.showLabels);
-  document.body.classList.toggle('pin-clock', s.pinClock);
-  document.body.classList.toggle('pin-search', s.pinSearch);
+ document.body.classList.toggle('no-sidebar-labels', !s.sidebarLabels);
+ document.body.classList.toggle('reduce-effects', !!s.reducedEffects);
+ document.body.classList.toggle('clock-theme-color', !!s.clockFollowTheme);
+ document.body.classList.toggle('pin-clock', s.pinClock && (s.showClock || s.showDate));
+ document.body.classList.toggle('pin-search', s.pinSearch && s.showSearch);
+ $('#clock-block').hidden = !s.showClock && !s.showDate;
+ $('#clock').hidden = !s.showClock;
+ $('#date').hidden = !s.showDate;
+ $('.search-wrapper').hidden = !s.showSearch;
+ if (!s.showSearch) hideSearchMenus();
  $('#daily-quote').hidden = !s.quote;
+ renderAvatar(); updateToolbar();
  let wallpaper = WALLPAPERS.find(w=>w.id === s.wallpaper) || WALLPAPERS[0];
  const remote = s.wallpaperApiEnabled && normalizeWallpaperPhoto(s.remoteWallpaper);
  if (s.dailyWallpaper && !s.customWallpaper && !remote) wallpaper = WALLPAPERS[Math.floor(Date.now()/86400000) % WALLPAPERS.length];
@@ -303,7 +378,7 @@ function applySettings() {
   const photoUrl = s.customWallpaper || remote?.url;
   $('#wallpaper').style.backgroundImage = photoUrl ? `url("${photoUrl.replace(/["\\\n\r]/g, '\\$&')}"), ${wallpaper.background}` : wallpaper.background;
  }
- updateGrid(); renderClock(); renderEngine(); updatePinnedHeader();
+ updateGrid(); renderClock(); renderEngine(); updateHeaderPlacement();
 }
 function updateGrid() {
  const wrap = $('.desktop-wrap');
@@ -313,24 +388,33 @@ function updateGrid() {
  $$('.tile[data-size]').forEach(el => { const [w,h] = el.dataset.size.split('x').map(Number); el.style.gridColumn = `span ${Math.min(w,currentGridColumns)}`; el.style.gridRow = `span ${h}`; });
 }
 function renderGroups() {
+ const groups = $('#groups'), oldScroll = [groups.scrollLeft,groups.scrollTop];
  $('#groups').innerHTML = state.groups.map(g=>`<button class="group-button ${g.id === currentGroup().id?'active':''}" data-group="${esc(g.id)}" aria-label="${esc(g.name)}分组" ${g.id===currentGroup().id?'aria-current="page"':''} title="${esc(g.name)} · 右键编辑" draggable="false">${icon(g.icon)}<span>${esc(g.name)}</span></button>`).join('');
+ groups.scrollLeft=oldScroll[0];groups.scrollTop=oldScroll[1];
+ $('.group-button.active',groups)?.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function renderDesktop() {
  desktopDrag?.cancel();
  widgetsCleanup(); applySettings(); renderGroups();
- const group = currentGroup(); state.activeGroupId = group.id; renderedGroup = group.id;
+ const group = currentGroup(), switched = renderedGroup && renderedGroup !== group.id;
+ state.activeGroupId = group.id; renderedGroup = group.id;
  $('.desktop-wrap').setAttribute('aria-label', `${group.name}桌面`);
  $('.desktop-heading').hidden = !editing;
  document.body.classList.toggle('editing', editing);
  $('#edit-button').classList.toggle('active',editing); $('#edit-button').setAttribute('aria-pressed',String(editing));
  $('#done-editing').hidden = !editing; $('#edit-hint').hidden = !editing;
  const items = state.items.filter(i=>i.groupId === group.id && !i.folderId);
- $('#desktop').innerHTML = items.map(renderTile).join('') + `<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="添加网站或组件">${icon('plus')}</button><span class="tile-label">添加</span></div>`;
+
+ const desktop = $('#desktop');
+ desktop.classList.toggle('group-enter', !!switched && state.settings.animateGroups && !state.settings.reducedEffects);
+ desktop.innerHTML = items.map((item,index)=>renderTile(item,index)).join('') +
+  (state.settings.showAddTile ? `<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="添加网站或组件">${icon('plus')}</button><span class="tile-label">添加</span></div>` : '');
+ if(!items.length && !state.settings.showAddTile) desktop.innerHTML = '<div class="desktop-empty"><span>给这一页留一些喜欢的内容</span><button class="text-button" data-action="add">添加网站或组件</button></div>';
  bindFaviconImages($('#desktop'));
  widgetsCleanup = bindWidgets($('#desktop'), { getState:()=>state, save:persist, openDialog, toast, rerender:renderDesktop, applyWallpaper:applyOnlineWallpaper, wallpaperEnabledChanged:applySettings });
  updateGrid(); refreshLiveWidgets($('#desktop'), state);
 }
-function renderTile(item) {
+function renderTile(item,index=0) {
  const [width,height] = (item.size || '1x1').split('x').map(Number);
  let body = '';
  if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
@@ -338,10 +422,12 @@ function renderTile(item) {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
   body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="打开文件夹：${esc(item.title)}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
  } else body = `<a class="tile-body" draggable="false" href="${esc(safeUrl(item.url) || '#')}" data-open-link="${esc(item.id)}" style="--tile-color:${esc(item.color || '#486c91')};--tile-ink:${tileInk(item.color)}" aria-label="打开${esc(item.title)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer">${siteGlyph(item)}</a>`;
- return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height}" draggable="false" aria-label="${esc(item.title)}"><button type="button" class="tile-drag-handle" data-drag-handle aria-label="拖动${esc(item.title)}" title="拖动以调整位置"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h0m6 0h0M5 8h0m6 0h0M5 13h0m6 0h0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="编辑${esc(item.title)}" title="编辑">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="移除${esc(item.title)}" title="移除">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
+ return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" aria-label="${esc(item.title)}"><button type="button" class="tile-drag-handle" data-drag-handle aria-label="拖动${esc(item.title)}" title="拖动以调整位置"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h0m6 0h0M5 8h0m6 0h0M5 13h0m6 0h0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="编辑${esc(item.title)}" title="编辑">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="移除${esc(item.title)}" title="移除">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
 }
 function renderEngine() {
- const e = currentEngine();
+ const e = currentEngine(), key = JSON.stringify([e.id,allEngines()]);
+ if (key === renderedEngineKey) return;
+ renderedEngineKey = key;
  $('#engine-button').innerHTML = `${engineGlyph(e)}${icon('chevron')}`;
  $('#engine-button').title = `${e.name} · 点击切换搜索引擎`;
  $('#engine-button').setAttribute('aria-label',`切换搜索引擎，当前为${e.name}`);
@@ -353,7 +439,14 @@ function findItems(query) { const q = query.trim().toLocaleLowerCase(); return s
 function suggestions() {
  const q = $('#search-input').value.trim();
  $('#engine-menu').hidden = true;
- if (!q) return $('#search-suggestions').hidden = true;
+
+ if (!q) {
+  const history = readSearchHistory(state.settings.showSearchHistory).slice(0,6);
+  $('#search-suggestions').innerHTML = history.length ? '<div class="suggestion-label">最近搜索</div>' + history.map(term=>`<button class="suggestion" data-search-history="${esc(term)}">${icon('history')}<span><strong>${esc(term)}</strong></span></button>`).join('') : '';
+  $('#search-suggestions').hidden = !history.length;
+  return;
+ }
+
  const found = findItems(q).slice(0,4);
  $('#search-suggestions').innerHTML = `<div class="suggestion-label">${found.length?'我的收藏':'聚合搜索'}</div>` + found.map(i=>`<button class="suggestion" data-suggestion="${esc(i.id)}"><span class="suggestion-site" style="--tile-color:${esc(i.color || COLORS[0])};--tile-ink:${tileInk(i.color)}">${siteGlyph(i)}</span><span><strong>${esc(i.title)}</strong><small>${esc(i.url)}</small></span><span class="suggestion-arrow">↗</span></button>`).join('') + `<button class="suggestion" data-action="submit-search">${icon('search')}<span><strong>使用 ${esc(currentEngine().name)} 搜索「${esc(q.slice(0,48))}」</strong></span><span class="suggestion-arrow">↵</span></button>`;
  bindFaviconImages($('#search-suggestions'));
@@ -365,7 +458,8 @@ function submitSearch() {
  if (/^https?:\/\//i.test(q) || /^(?:[\w-]+\.)+[\w-]{2,}(?:[\/:?#]|$)/.test(q)) url = safeUrl(q);
  else url = currentEngine().url.replace(/\{q\}/g,encodeURIComponent(q));
  if (!url) return toast('请输入有效的网址或搜索内容。');
- hideSearchMenus(); navigate(url);
+ rememberSearch(q,state.settings.showSearchHistory);
+ hideSearchMenus(); navigate(url,false,true);
 }
 function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2>${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="关闭">${icon('close')}</button></header>`; }
 function field(name,label,value='',options={}) { return `<label class="field"><span>${esc(label)}</span><input name="${esc(name)}" type="${options.type || 'text'}" value="${esc(value)}" ${options.required?'required':''} ${options.type==='number'?'step="any"':''} ${options.min!==undefined?`min="${options.min}"`:''} ${options.max!==undefined?`max="${options.max}"`:''} ${options.maxlength?`maxlength="${options.maxlength}"`:''} ${options.placeholder?`placeholder="${esc(options.placeholder)}"`:''}>${options.help?`<small>${esc(options.help)}</small>`:''}</label>`; }
@@ -377,7 +471,11 @@ function openDialog(kind,data={}) {
  desktopDrag?.cancel();
  hideSearchMenus(); $('#context-menu').hidden = true;
  if (!dialog.open) lastDialogFocus = document.activeElement;
+ avatarRequestSequence++;
  dialogKind = kind; dialogData = data;
+ dialog.classList.toggle('settings-dialog',kind === 'settings');
+ document.body.classList.remove('shortcuts-open');
+ $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'link',data);
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
@@ -397,11 +495,12 @@ function openDialog(kind,data={}) {
  $('#dialog-content').innerHTML = html;
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
+ if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else $('input:not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
-function closeDialog() { if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
+function closeDialog() { avatarRequestSequence++; if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
 function addDialog(tab,data) {
  const item = data.item;
  let content = '';
@@ -416,15 +515,142 @@ function groupDialog(id) {
 }
 function settingSwitch(key,title,help='') { return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong>${help?`<small>${help}</small>`:''}</span><input type="checkbox" class="switch" data-setting="${key}" ${state.settings[key]?'checked':''} aria-label="${title}"></label>`; }
 function settingRange(key,title,min,max,unit='px') { return `<div class="range-setting"><header><label for="range-${key}">${title}</label><output id="output-${key}">${state.settings[key]}${unit}</output></header><input id="range-${key}" type="range" min="${min}" max="${max}" value="${state.settings[key]}" data-range="${key}" data-unit="${unit}"></div>`; }
+
+function preferenceSelect(key,title,options,help='') {
+ return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong>${help?`<small>${help}</small>`:''}</span><select class="preference-select" data-preference="${key}" aria-label="${title}">${options.map(([value,label])=>`<option value="${value}" ${state.settings[key]===value?'selected':''}>${label}</option>`).join('')}</select></label>`;
+}
+function settingColor(key,title) {
+ return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong></span><span class="setting-color-value"><code id="color-value-${key}">${esc(state.settings[key])}</code><input type="color" class="color-input" data-setting-color="${key}" value="${esc(state.settings[key])}" aria-label="${title}"></span></label>`;
+}
 function settingsDialog(tab) {
+ const s = state.settings;
+ const tabs = [
+  {id:'general',name:'打开方式',icon:'link'}, {id:'search',name:'搜索栏',icon:'search'},
+  {id:'icons',name:'图标',icon:'grid'}, {id:'clock',name:'时间 / 日期',icon:'clock'},
+  {id:'appearance',name:'主题与材质',icon:'sun'}, {id:'layout',name:'布局',icon:'move'},
+  {id:'sidebar',name:'侧边栏',icon:'panel'}, {id:'sync',name:'WebDAV 同步',icon:'sync'},
+  {id:'data',name:'备份与恢复',icon:'download'}, {id:'about',name:'关于栖页',icon:'info'}
+ ];
+ if (!tabs.some(item=>item.id===tab)) tab='general';
  let content = '';
- if (tab==='general') content = `<div class="section-label">让使用更顺手</div>${settingSwitch('openNewTab','在新标签页打开','网站和搜索结果都保留当前桌面。')}${settingSwitch('pinClock','滚动时固定时间','向下浏览桌面时，时间和日期仍保持可见。')}${settingSwitch('pinSearch','滚动时固定搜索框','独立于时间开关，可单独保留搜索入口。')}${settingSwitch('showSeconds','时钟显示秒数','秒与时分大小相同，以较细字重和颜色区分。')}${settingSwitch('hour12','使用 12 小时制')}${settingSwitch('quote','显示页底短句')}${settingSwitch('minimal','极简模式','只保留时间、搜索与壁纸，也可直接点击时间切换。')}<div class="section-label">快捷键</div><div class="keyboard-list"><span>聚焦搜索<kbd>/</kbd></span><span>切换引擎<kbd>Tab</kbd></span><span>搜索收藏<kbd>Ctrl / ⌘ K</kbd></span><span>搜索收藏<kbd>Ctrl / ⌘ F</kbd></span><span>编辑桌面<kbd>E</kbd></span><span>关闭弹层<kbd>Esc</kbd></span></div><p class="help-text">安装扩展后，Alt + C 会打开栖页的本地搜索。可在浏览器扩展快捷键页面调整。</p>`;
- else if(tab==='appearance') content = `<div class="section-label">显示主题</div><div class="theme-options">${[{id:'light',title:'浅色',icon:'sun'},{id:'dark',title:'深色',icon:'moon'},{id:'auto',title:'跟随系统',icon:'globe'}].map(t=>`<button class="theme-option ${state.settings.theme===t.id?'selected':''}" data-theme="${t.id}">${icon(t.icon)}${t.title}</button>`).join('')}</div>${settingRange('gridSize','图标与网格尺寸',56,100)}${settingRange('gap','图标间距',10,30)}${settingRange('radius','卡片圆角',6,30)}${settingRange('clockSize','时钟大小',48,120)}${settingSwitch('showLabels','显示图标名称')}<div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
- else if(tab==='search') content = `${selectField('searchEngine','默认搜索引擎',state.settings.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}<div class="section-label">已添加的搜索引擎</div><div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="提取${esc(e.name)}图标">提取图标</button>${state.settings.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="删除${esc(e.name)}">${icon('trash')}</button>`:''}</div>`).join('')}</div><div class="section-label">自定义引擎</div><form id="engine-form">${field('name','引擎名称','',{required:true,maxlength:20,placeholder:'例如：我的搜索'})}${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表搜索关键词。地址必须使用 http 或 https。'})}<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
- else if(tab==='data') content = `<div class="data-card"><div><strong>导出完整备份</strong><p>包含网址、分组、布局、组件数据和本地壁纸。</p></div><button class="secondary-button" data-action="export">${icon('download')}导出 JSON</button></div><div class="data-card"><div><strong>恢复已有备份</strong><p>导入前会显示内容摘要。确认后替换当前桌面。</p></div><button class="secondary-button" data-action="import">${icon('upload')}导入备份</button></div><div class="data-card"><div><strong>导入浏览器书签</strong><p>选择要复制到当前分组的网站，保留原有书签。</p></div><button class="secondary-button" data-action="import-bookmarks">${icon('bookmark')}选择书签</button></div><p class="help-text">桌面默认保存在当前浏览器，无需注册账号。跨设备同步可在“同步”中连接自己的 WebDAV；备份文件不包含 WebDAV 密码。</p><div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
+ if (tab==='general') content = `
+  <div class="section-label">打开方式</div>
+  ${settingSwitch('openNewTab','新标签页打开网站','点击桌面图标时保留栖页。')}
+  ${settingSwitch('searchNewTab','新标签页打开搜索结果','可独立于网站图标的打开方式设置。')}
+  ${settingSwitch('rememberGroup','记住上次打开的分组','关闭后，每次打开栖页从第一个分组开始。')}
+  <div class="section-label">桌面工具</div>
+  ${preferenceSelect('toolbarVisibility','右上角工具按钮',[['always','始终显示'],['auto','自动隐藏']],'自动隐藏时，移入右上角或用键盘聚焦即可展开。')}
+  ${settingSwitch('showWallpaperButton','显示更换壁纸按钮')}
+  <div class="section-label">快捷键</div>
+  <div class="keyboard-list"><span>聚焦搜索<kbd>/</kbd></span><span>切换引擎<kbd>Tab / Shift Tab</kbd></span><span>搜索桌面收藏<kbd>Ctrl / ⌘ K</kbd></span><span>搜索桌面收藏<kbd>Ctrl / ⌘ F</kbd></span><span>编辑桌面<kbd>E</kbd></span><span>关闭 / 取消拖动<kbd>Esc</kbd></span></div>
+  <p class="help-text">Tab 切换仅在搜索框内生效。安装扩展后，Alt + C 可打开本地搜索；可在浏览器的扩展快捷键页面调整。</p>`;
+ else if (tab==='search') content = `
+  <div class="section-label">搜索栏</div>
+  ${settingSwitch('showSearch','显示搜索框')}
+  ${settingSwitch('pinSearch','滚动时固定搜索框','与时间分别设置，滚动桌面也能继续搜索。')}
+  ${settingRange('searchWidth','宽度',360,960)}
+  ${settingRange('searchHeight','高度',36,64)}
+  ${settingRange('searchRadius','圆角',0,50)}
+  ${settingRange('searchOpacity','透明度',20,100,'%')}
+  <p class="help-text">100% 为完全不透明。位置可在“布局”中调整，材质可在“主题与材质”中选择。</p>
+  ${settingSwitch('showSearchHistory','保存最近搜索','仅在本机记录最近 20 条。关闭后停止记录，也不再显示。')}
+  <div class="button-row"><button class="secondary-button" data-action="clear-search-history">清除最近搜索</button></div>
+  <div class="section-label">搜索引擎</div>
+  ${selectField('searchEngine','默认搜索引擎',s.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}
+  <div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="提取${esc(e.name)}图标">提取图标</button>${s.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="删除${esc(e.name)}">${icon('trash')}</button>`:''}</div>`).join('')}</div>
+  <div class="section-label">自定义引擎</div><form id="engine-form">
+  ${field('name','引擎名称','',{required:true,maxlength:20,placeholder:'例如：我的搜索'})}
+  ${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表关键词。支持 http 和 https 地址。'})}
+  <div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
+ else if(tab==='icons') content = `
+  <div class="section-label">网站图标与卡片</div>
+  ${settingRange('gridSize','图标与网格尺寸',48,120)}
+  ${settingRange('radius','卡片圆角',0,48)}
+  ${settingRange('iconOpacity','网站图标透明度',20,100,'%')}
+  ${settingRange('gap','图标间距',8,40)}
+  ${settingSwitch('showLabels','显示图标名称')}
+  ${settingRange('labelSize','名称字号',10,20)}
+  ${settingColor('labelColor','名称颜色')}
+  ${settingSwitch('showAddTile','在网格中显示添加按钮','也可以使用右上角 +，或在桌面空白处右键添加。')}
+  <p class="help-text">图标优先使用对应网站的 SVG 或清晰位图，失败时保留文字。右键网站 → 编辑 → 智能提取，可以重新读取该网站公开的图标声明。</p>`;
+ else if(tab==='clock') content = `
+  <div class="section-label">时间</div>
+  ${settingSwitch('showClock','显示时间')}
+  ${settingSwitch('pinClock','滚动时固定时间','时间与日期共同固定，独立于搜索框设置。')}
+  ${settingSwitch('showSeconds','显示秒数','秒与时分字号相同，以更细字重和较淡颜色区分。')}
+  ${settingSwitch('hour12','使用 12 小时制')}
+  ${settingRange('clockSize','时钟字号',30,160)}
+  ${settingRange('clockWeight','时钟字重',200,700,'')}
+  ${settingSwitch('clockFollowTheme','时间颜色跟随主题','关闭后使用下方的自定义颜色。')}
+  ${settingColor('clockColor','时间颜色')}
+  <div class="section-label">日期</div>
+  ${settingSwitch('showDate','显示月日')}
+  ${settingSwitch('showWeekday','显示星期')}
+  ${settingSwitch('showLunar','显示农历')}
+  <p class="help-text">点击时间可切换极简模式。字体在“主题与材质”中设置，位置在“布局”中设置。</p>`;
+ else if(tab==='appearance') content = `
+  <div class="section-label">主题</div>
+  <div class="theme-options">${[{id:'light',title:'浅色',icon:'sun'},{id:'dark',title:'深色',icon:'moon'},{id:'auto',title:'跟随系统',icon:'globe'}].map(t=>`<button class="theme-option ${s.theme===t.id?'selected':''}" data-theme="${t.id}" aria-pressed="${s.theme===t.id}">${icon(t.icon)}${t.title}</button>`).join('')}</div>
+  ${settingColor('themeColor','主题色')}
+  <div class="section-label">界面材质</div>
+  <div class="material-options">${[
+   ['solid','纯色','清爽的色块表面'],['glass','毛玻璃','通透、柔和的背景模糊'],
+   ['acrylic','亚克力','细微纹理与磨砂层次'],['mica','Mica 风格','柔和着色，无背景模糊']
+  ].map(([value,name,description])=>`<button class="material-option ${s.surfaceStyle===value?'selected':''}" data-material="${value}" aria-pressed="${s.surfaceStyle===value}"><span class="material-swatch swatch-${value}"></span><strong>${name}</strong><small>${description}</small></button>`).join('')}</div>
+  ${settingRange('surfaceOpacity','面板透明度',20,100,'%')}
+  ${settingRange('surfaceBlur','模糊强度',0,24)}
+  <p class="help-text">侧栏与搜索框可单独设置透明度。纯色和 Mica 风格不使用背景模糊；Mica 风格为网页中的柔和着色效果。</p>
+  ${settingSwitch('reducedEffects','减少视觉效果','关闭面板模糊和过渡动画，使用更实的底色。')}
+  <div class="section-label">字体</div>
+  ${preferenceSelect('uiFont','界面字体',[['inter','Inter + 系统中文'],['system','系统字体']],'Inter 随扩展提供；中文使用设备上的系统字体。')}
+  ${settingRange('uiScale','界面文字比例',85,120,'%')}
+  <div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
+ else if(tab==='layout') content = `
+  <div class="section-label">桌面布局</div>
+  ${settingSwitch('minimal','极简模式','只显示时间、搜索与壁纸；按 Esc 可恢复桌面。')}
+  ${settingSwitch('quote','显示页底短句')}
+  ${settingSwitch('animateGroups','分组切换动画','图标从下方向上轻滑入场。遵循系统的减少动态效果设置。')}
+  ${settingRange('desktopMaxWidth','内容最大宽度',720,2000)}
+  <div class="section-label">时间位置</div>
+  ${settingRange('clockOffsetX','时间水平偏移',-30,30,'vw')}
+  ${settingRange('clockOffsetY','时间垂直偏移',-60,160)}
+  <div class="section-label">搜索框位置</div>
+  ${settingRange('searchOffsetX','搜索水平偏移',-30,30,'vw')}
+  ${settingRange('searchOffsetY','搜索垂直偏移',-40,160)}
+  <p class="help-text">水平偏移以窗口宽度为基准，窄屏会自动限制在可见区域。垂直偏移调整排版间距，并保留最小间隔以避免重叠；滚动固定后使用顶部位置。</p>
+  <div class="button-row"><button class="secondary-button" data-action="reset-positions">恢复默认位置</button></div>`;
+ else if(tab==='sidebar') content = `
+  <div class="section-label">头像与设置入口</div>
+  <div class="avatar-panel" id="avatar-panel"><div class="avatar-row"><span id="avatar-preview" class="avatar-preview"></span><div><strong>用一张喜欢的图作头像</strong><p>PNG、JPEG、WebP，最大 4 MB。自动裁切成正方形。</p><div class="button-row"><button class="secondary-button" data-action="upload-avatar">${icon('upload')}选择图片</button><button class="text-button" data-action="reset-avatar">恢复默认图标</button></div></div></div><input id="avatar-file" type="file" accept="image/png,image/jpeg,image/webp" hidden><p class="help-text" id="avatar-status" role="status">头像保存在本机，并随桌面备份与 WebDAV 同步。点击头像即可打开设置。</p></div>
+  <div class="section-label">导航形式</div>
+  ${preferenceSelect('navigationMode','导航布局',[['sidebar','侧边栏'],['top','顶部导航']])}
+  ${preferenceSelect('sidebarPosition','侧边栏位置',[['left','左侧'],['right','右侧']],'左右位置仅用于侧边栏布局。')}
+  ${preferenceSelect('sidebarVisibility','导航显示方式',[['always','始终显示'],['auto','自动隐藏'],['hidden','收起']],'收起后可点击边缘的展开按钮；自动隐藏支持鼠标移入与键盘聚焦。')}
+  ${settingRange('sidebarWidth','侧边栏宽度',40,120)}
+  ${settingRange('sidebarOpacity','导航透明度',0,100,'%')}
+  ${settingSwitch('sidebarLabels','显示分组名称')}
+  ${settingSwitch('scrollGroups','滚轮切换分组','鼠标在分组栏上滚动即可切换，编辑时用于滚动列表。')}
+  <p class="help-text">分组支持右键重命名和编辑图标；编辑桌面时可拖动调整分组顺序。</p>`;
+ else if(tab==='data') content = `
+  <div class="data-card"><div><strong>导出完整备份</strong><p>包含网址、分组、布局、头像、组件数据和本地壁纸。</p></div><button class="secondary-button" data-action="export">${icon('download')}导出 JSON</button></div>
+  <div class="data-card"><div><strong>恢复已有备份</strong><p>导入前可查看内容摘要，确认后替换当前桌面。</p></div><button class="secondary-button" data-action="import">${icon('upload')}导入备份</button></div>
+  <div class="data-card"><div><strong>导入浏览器书签</strong><p>选择要复制到当前分组的网站，保留原有书签。</p></div><button class="secondary-button" data-action="import-bookmarks">${icon('bookmark')}选择书签</button></div>
+  <p class="help-text">无需注册账号。跨设备可连接自己的 WebDAV；备份不包含 WebDAV 密码、最近搜索或网站图标缓存。</p>
+  <div class="section-label">重置设置</div>
+  <div class="data-card"><div><strong>恢复默认设置</strong><p>还原显示、搜索、头像与壁纸偏好，保留网站、分组和组件内容。</p></div><button class="secondary-button" data-action="reset-preferences">重置设置</button></div>
+  <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
- else content = `<div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.2 · 无需账号</span></div><div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div><p class="about-note">栖页参考组件式新标签页的使用方式，使用独立代码与原创品牌。桌面、搜索和日常小组件开箱即用。在线壁纸来自公开图片 API；跨设备同步直接连接你自己的 WebDAV。栖页不设账号系统。</p><p class="about-note">网站图标从对应站点加载；智能提取只在点击时读取页面图标声明。天气启用后，城市坐标会发送至 Open-Meteo。网址、笔记和待办默认保存在本机；启用 WebDAV 后会同步至你填写的服务。书签和历史记录权限在使用时授权。</p><div class="button-row"><button class="secondary-button" data-action="export">${icon('download')}备份我的桌面</button></div>`;
- return dialogHeader('设置','把栖页调成你喜欢的样子。') + `<div class="tab-bar">${[{id:'general',name:'常规'},{id:'appearance',name:'外观'},{id:'search',name:'搜索'},{id:'sync',name:'同步'},{id:'data',name:'数据'},{id:'about',name:'关于'}].map(t=>`<button class="tab-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}">${t.name}</button>`).join('')}</div><div class="dialog-body">${content}</div>`;
+ else content = `
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.3 · 无需账号</span></div>
+  <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
+  <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
+  <p class="about-note">图标直接从对应网站加载；智能提取只在点击时读取页面图标声明。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
+  <p class="about-note">Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。</p>
+  <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
+ const current = tabs.find(item=>item.id===tab);
+ return dialogHeader('设置','把栖页调成你喜欢的样子。') + `
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.2.3</small></nav>
+ <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 function wallpaperDialog() {
  return dialogHeader('换一片风景','公开摄影壁纸、六款渐变背景，或你自己的照片与视频。') + `<div class="dialog-body"><div class="data-card"><div><strong>发现摄影壁纸</strong><p>免密钥公开图片 API，在小组件中浏览、换一张并应用。</p></div><button class="secondary-button" data-action="add-wallpaper-widget">${icon('wallpaper')}打开小组件</button></div><div class="wallpaper-grid">${WALLPAPERS.map(w=>`<button class="wallpaper-option ${w.id===state.settings.wallpaper&&!state.settings.customWallpaper&&!(state.settings.wallpaperApiEnabled&&state.settings.remoteWallpaper)?'selected':''}" style="background:${w.background}" data-wallpaper="${w.id}" aria-label="${w.name}壁纸"><span>${w.name} · ${w.tag}</span>${w.id===state.settings.wallpaper&&!state.settings.customWallpaper&&!(state.settings.wallpaperApiEnabled&&state.settings.remoteWallpaper)?`<i class="selected-badge">${icon('check')}</i>`:''}</button>`).join('')}</div><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>上传本地壁纸</strong><small>图片或 MP4 / WebM 视频，最大 4 MB</small></span></button>${state.settings.customWallpaper?'<p class="help-text">正在使用你的本地壁纸。选择上方任一背景即可切换。</p>':''}${settingRange('blur','背景模糊',0,20)}${settingRange('dim','背景暗度',0,70,'%')}${settingSwitch('wallpaperApiEnabled','允许公开图片 API','启用后，小组件可获取 Picsum 摄影壁纸；暂停后将显示本地背景。')}${state.settings.remoteWallpaper?`<p class="help-text">已选择在线壁纸：${esc(state.settings.remoteWallpaper.author)}。完整图片由 Picsum 加载。</p>`:''}${settingSwitch('dailyWallpaper','每日轮换内置背景','每天切换一款渐变背景；手动选择的本地或在线壁纸优先显示。')}</div>`;
@@ -539,14 +765,17 @@ function confirmDeleteGroup(id) {
 }
 
 document.addEventListener('click', async event=>{
+ if (!event.target.closest('.shortcuts-control')) { document.body.classList.remove('shortcuts-open'); $('#shortcuts-button').setAttribute('aria-expanded','false'); }
+ if (!event.target.closest('.sidebar,#navigation-reveal') && document.body.classList.contains('navigation-open')) { document.body.classList.remove('navigation-open'); updateToolbar(); }
  const target=event.target.closest('button,a');
  if(!target) { if(!event.target.closest('.search-wrapper'))hideSearchMenus(); $('#context-menu').hidden=true; return; }
  try {
  if(target.matches('[data-close]'))return closeDialog();
  if(target.hasAttribute('data-drag-handle'))return;
  if(target.dataset.extractEngineIcon)return await extractEngineFavicon(target);
- if(target.dataset.group){state.activeGroupId=target.dataset.group;await commit();return;}
+ if(target.dataset.group){state.activeGroupId=target.dataset.group;await commit();document.body.classList.remove('navigation-open');updateToolbar();return;}
  if(target.dataset.engine){state.settings.searchEngine=target.dataset.engine;await persist();renderEngine();hideSearchMenus();$('#search-input').focus();return;}
+ if(target.dataset.searchHistory){$('#search-input').value=target.dataset.searchHistory;submitSearch();return;}
  if(target.dataset.suggestion){const item=state.items.find(i=>i.id===target.dataset.suggestion);if(item)navigate(item.url);hideSearchMenus();return;}
  if(target.dataset.openLink){if(editing){event.preventDefault();openDialog('edit-item',{id:target.dataset.openLink});}return;}
  if(target.dataset.openFolder)return openDialog('folder',{id:target.dataset.openFolder});
@@ -558,6 +787,7 @@ document.addEventListener('click', async event=>{
  if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});if(form.id==='link-form')updateLinkPreview(form);return;}
  if(target.dataset.groupIcon){$('input[name=icon]',dialog).value=target.dataset.groupIcon;$$('[data-group-icon]',dialog).forEach(b=>b.classList.toggle('selected',b===target));return;}
  if(target.dataset.theme){state.settings.theme=target.dataset.theme;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
+ if(target.dataset.material){state.settings.surfaceStyle=target.dataset.material;applySettings();await persist();$$('[data-material]',dialog).forEach(button=>{const selected=button===target;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});return;}
  if(target.dataset.wallpaper){state.settings.wallpaper=target.dataset.wallpaper;state.settings.customWallpaper=null;state.settings.remoteWallpaper=null;state.settings.dailyWallpaper=false;await persist();applySettings();openDialog('wallpaper');return;}
  if(target.dataset.deleteEngine){state.settings.customEngines=state.settings.customEngines.filter(e=>e.id!==target.dataset.deleteEngine);if(state.settings.searchEngine===target.dataset.deleteEngine)state.settings.searchEngine=ENGINES[0].id;await persist();renderEngine();openDialog('settings',{tab:'search'});return;}
  if(target.dataset.scope)return await chooseLocalScope(target.dataset.scope);
@@ -581,6 +811,14 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
+ if(action==='reset-avatar')return await resetAvatar();
+ if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast('最近搜索已清除。');return;}
+ if(action==='reset-positions'){for(const key of ['clockOffsetX','clockOffsetY','searchOffsetX','searchOffsetY'])state.settings[key]=0;applySettings();await persist();openDialog('settings',{tab:'layout'});return;}
+ if(action==='reset-preferences')return openDialog('confirm',{title:'恢复默认设置？',message:'显示、搜索、头像和壁纸偏好将恢复默认。网站、分组、笔记与待办会保留。',label:'重置设置',callback:async()=>{
+  const previous=clone(state.settings);state.settings=clone(DEFAULT_STATE.settings);avatarRequestSequence++;
+  await commit();openDialog('settings');toast('已恢复默认设置。',async()=>{state.settings=previous;await commit();if(dialog.open)openDialog('settings');toast('已撤销重置设置。');});
+ }});
  if(action==='extract-favicon')return await extractLinkFavicon(target);
  if(action?.startsWith('webdav-'))return await syncController.handleAction(action);
  if(action==='open-sync')return openDialog('settings',{tab:'sync'});
@@ -607,7 +845,10 @@ document.addEventListener('click', async event=>{
  if(action==='reset')return openDialog('confirm',{title:'恢复初始桌面？',message:'当前网址、笔记、待办和壁纸将被初始内容替换。已开启的 WebDAV 自动同步会继续同步这一变化，建议先在数据设置中导出备份。',label:'恢复初始桌面',callback:async()=>{const backup=clone(state);state=clone(DEFAULT_STATE);blockedStorage=false;await persist({replace:true});renderDesktop();closeDialog();toast('已恢复初始桌面。',async()=>{backup.updatedAt=state.updatedAt;state=backup;await commit();toast('已撤销恢复。');});}});
  if(action==='confirm-callback'){const callback=dialogData.callback;if(callback)await callback();return;}
  if(target.id==='engine-button'){const menu=$('#engine-menu');menu.hidden=!menu.hidden;$('#search-suggestions').hidden=true;target.setAttribute('aria-expanded',String(!menu.hidden));return;}
- if(target.id==='brand-button')return openDialog('settings',{tab:'about'});
+ if(target.id==='brand-button')return openDialog('settings');
+ if(target.id==='toolbar-visibility'){state.settings.toolbarVisibility=state.settings.toolbarVisibility==='always'?'auto':'always';updateToolbar();await persist();return;}
+ if(target.id==='shortcuts-button'){const open=document.body.classList.toggle('shortcuts-open');document.body.classList.toggle('shortcuts-dismissed',!open);target.setAttribute('aria-expanded',String(open));return;}
+ if(target.id==='navigation-reveal'){document.body.classList.toggle('navigation-open');updateToolbar();return;}
  if(target.id==='done-editing'){editing=false;renderDesktop();return;}
  }catch(err){if(!err.notified)toast(err.message || '操作没有完成，请重试。');}
  if(!event.target.closest('.search-wrapper'))hideSearchMenus();
@@ -666,14 +907,18 @@ document.addEventListener('input', event=>{
  const input=event.target;
  if(input.id==='search-input')suggestions();
  if(input.id==='local-query')renderLocalResults(input.value);
+ if(input.dataset.settingColor){state.settings[input.dataset.settingColor]=input.value;const output=$('#color-value-'+input.dataset.settingColor);if(output)output.textContent=input.value;applySettings();}
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
  if(input.closest('#link-form'))updateLinkPreview(input.form);
 });
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
+  if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
+  if(input.dataset.preference){state.settings[input.dataset.preference]=input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
+  if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
-  if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(input.dataset.setting==='wallpaperApiEnabled')renderDesktop();return;}
+  if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
   if(input.dataset.range){await persist();return;}
   if(input.name==='searchEngine'&&dialogKind==='settings'){state.settings.searchEngine=input.value;await persist();renderEngine();return;}
   if(input.name==='cityPreset'&&input.value){const [name,lat,lon]=input.value.split('|');const f=input.form;f.elements.cityName.value=name;f.elements.latitude.value=lat;f.elements.longitude.value=lon;return;}
@@ -690,9 +935,21 @@ document.addEventListener('change',async event=>{
    try{await persist();}catch(err){state.settings=old;throw err;}
    applySettings();openDialog('wallpaper');toast('本地壁纸已保存。');
   }
- }catch(err){if(input.dataset.setting||input.dataset.range)renderDesktop();if(!err.notified)toast(err.message || '操作没有完成。');}
+ }catch(err){if(input.dataset.setting||input.dataset.range||input.dataset.preference||input.dataset.settingColor)renderDesktop();if(!err.notified)toast(err.message || '操作没有完成。');}
 });
 
+$('#search-input').addEventListener('focus',suggestions);
+$('.shortcuts-control').addEventListener('pointerenter',()=>document.body.classList.remove('shortcuts-dismissed'));
+$('#shortcuts-button').addEventListener('focus',()=>document.body.classList.remove('shortcuts-dismissed'));
+$('#groups').addEventListener('wheel',event=>{
+ if(!state.settings.scrollGroups || editing || dialog.open || desktopDrag?.isDragging() || event.ctrlKey || event.metaKey)return;
+ const delta=Math.abs(event.deltaY)>Math.abs(event.deltaX)?event.deltaY:event.deltaX;
+ if(Math.abs(delta)<3)return;
+ event.preventDefault();
+ const now=performance.now();if(now-lastGroupWheel<240)return;lastGroupWheel=now;
+ const index=state.groups.findIndex(group=>group.id===currentGroup().id),next=Math.max(0,Math.min(state.groups.length-1,index+(delta>0?1:-1)));
+ if(next!==index){state.activeGroupId=state.groups[next].id;commit().catch(error=>{if(!error.notified)toast(error.message);});}
+},{passive:false});
 $('#search-form').addEventListener('submit',event=>{event.preventDefault();submitSearch();});
 $('#search-input').addEventListener('keydown',async event=>{
  if(event.key==='Tab'){event.preventDefault();const list=allEngines(),index=list.findIndex(e=>e.id===currentEngine().id);state.settings.searchEngine=list[(index+(event.shiftKey?-1:1)+list.length)%list.length].id;await persist();renderEngine();if(event.target.value)suggestions();}
@@ -701,16 +958,16 @@ $('#search-input').addEventListener('keydown',async event=>{
 $('#search-suggestions').addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();const buttons=$$('button',$('#search-suggestions')),index=buttons.indexOf(document.activeElement),next=(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;buttons[next]?.focus();}});
 $('#clock').addEventListener('click',async()=>{state.settings.minimal=!state.settings.minimal;applySettings();await persist();});
 document.addEventListener('keydown',event=>{
- if(event.key==='Escape'){hideSearchMenus();$('#context-menu').hidden=true;if(dialog.open)return; if(editing){editing=false;renderDesktop();}else if(state.settings.minimal){state.settings.minimal=false;applySettings();persist().catch(()=>{});}return;}
+ if(event.key==='Escape'){document.body.classList.remove('shortcuts-open','navigation-open');document.body.classList.add('shortcuts-dismissed');$('#shortcuts-button').setAttribute('aria-expanded','false');updateToolbar();hideSearchMenus();$('#context-menu').hidden=true;if(dialog.open)return; if(editing){editing=false;renderDesktop();}else if(state.settings.minimal){state.settings.minimal=false;applySettings();persist().catch(()=>{});}return;}
  if(event.key==='Enter'&&event.target.id==='local-query'){event.preventDefault();if(localScope==='history')chooseLocalScope('history').catch(err=>toast(err.message));else renderLocalResults(event.target.value);return;}
  const typing=/INPUT|TEXTAREA|SELECT/.test(event.target.tagName)||event.target.isContentEditable;
  if((event.ctrlKey||event.metaKey)&&['k','f'].includes(event.key.toLowerCase())){event.preventDefault();openDialog('local-search');return;}
  if(typing||dialog.open)return;
- if(event.key==='/'){event.preventDefault();$('#search-input').focus();}
+ if(event.key==='/'){event.preventDefault();if(state.settings.showSearch)$('#search-input').focus();else openDialog('local-search');}
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
-dialog.addEventListener('close',()=>{searchToken++;dialogKind='';});
+dialog.addEventListener('close',()=>{avatarRequestSequence++;searchToken++;dialogKind='';});
 document.addEventListener('contextmenu',event=>{if(dialog.open || /INPUT|TEXTAREA/.test(event.target.tagName))return;const tile=event.target.closest('[data-item]'),group=event.target.closest('[data-group]');openContext(event,{itemId:tile?.dataset.item,groupId:group?.dataset.group});});
 async function applyDesktopDrop(intent) {
  if (intent.kind === 'group-reorder') {
@@ -746,7 +1003,7 @@ async function applyDesktopDrop(intent) {
 }
 
 async function init() {
- try{state=await loadState();persistedState=clone(state);}catch(err){blockedStorage=true;toast(err.message);}
+ try{state=await loadState();persistedState=clone(state);if(!state.settings.rememberGroup)state.activeGroupId=state.groups[0].id;}catch(err){blockedStorage=true;toast(err.message);}
  syncController=createSyncController({
   getState:()=>clone(state), beforeSync:async()=>{await saveQueue;if(blockedStorage)throw new Error('请先恢复本机桌面数据，再进行同步。');if(JSON.stringify(state)!==JSON.stringify(persistedState))await persist({fromSync:true});},
   applyRemote:applySyncedDesktop,toast,openDialog,closeDialog,exportBackup,
@@ -761,6 +1018,8 @@ async function init() {
  $$('.top-tools [data-action=wallpaper]').forEach(e=>e.innerHTML=icon('wallpaper'));
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));
  $$('.top-tools [data-action=add]').forEach(e=>e.innerHTML=icon('plus'));
+ $('#shortcuts-button').innerHTML=icon('keyboard');
+ $('#navigation-reveal').innerHTML=icon('panel');
  $('#search-submit').innerHTML=icon('search');
  desktopDrag=createDesktopDragController({
   document, getState:()=>state, getActiveGroupId:()=>currentGroup().id,
@@ -772,7 +1031,9 @@ async function init() {
  renderDesktop();
  subscribeState(incoming=>{if(saving || !incoming || incoming.updatedAt===state.updatedAt)return;state=incoming;persistedState=clone(incoming);if(!dialog.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName || ''))renderDesktop();});
  new ResizeObserver(updateGrid).observe($('.desktop-wrap'));
- new ResizeObserver(updatePinnedHeader).observe($('#clock-block'));
+ new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
+ window.addEventListener('resize',updateHeaderPlacement,{passive:true});
+ document.fonts?.ready.then(updateHeaderPlacement);
  window.addEventListener('scroll',updatePinnedHeader,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);
  setInterval(()=>{renderClock();if(!document.hidden)refreshLiveWidgets($('#desktop'),state);},1000);

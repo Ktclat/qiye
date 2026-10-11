@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { safeUrl } from '../src/core.js';
 import { icon, iconNames } from '../src/icons.js';
+import { bindFaviconImages } from '../src/favicon-view.js';
 
 const source=await readFile(new URL('../src/app.js',import.meta.url),'utf8');
 
@@ -22,40 +23,25 @@ const declaration=prefix=>{
  assert.ok(line,`missing declaration ${prefix}`);return line;
 };
 const code=[
- declaration('const esc ='),declaration('const faviconBindings ='),declaration('let faviconRequestSequence ='),
- ...['tileInk','siteGlyph','bindFaviconImages','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon'].map(extractFunction),
- 'globalThis.app={siteGlyph,bindFaviconImages,updateLinkPreview,extractLinkFavicon};'
+ declaration('const esc ='),declaration('const faviconFormStates ='),declaration('let faviconRequestSequence ='),
+ ...['tileInk','siteGlyph','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon'].map(extractFunction),
+ 'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon};'
 ].join('\n\n');
 function deferred() {
  let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};
 }
 function harness(extra={}) {
- const remembered=[],timers=new Map(),dialog={open:true};let sequence=0;
+ const dialog={open:true};
  const context=vm.createContext({
-  safeUrl,icon,iconNames,URL,Promise,Date,dialog,
+  safeUrl,icon,iconNames,URL,Promise,Date,dialog,bindFaviconImages,
   $:(selector,root)=>root.querySelector(selector),
   $$:(selector,root)=>[...root.querySelectorAll(selector)],
   getFaviconCandidates:()=>['https://example.com/favicon.ico'],
-  rememberFavicon:(site,url)=>remembered.push({site,url}),
   discoverFavicon:async()=>({candidates:[]}),
-  setTimeout:callback=>{timers.set(++sequence,callback);return sequence;},
-  clearTimeout:id=>timers.delete(id),
   ...extra
  });
  new vm.Script(code,{filename:'favicon-ui-extracted-from-app.js'}).runInContext(context);
- return {app:context.app,remembered,timers,dialog};
-}
-function visual(site='https://example.com/page') {
- const requests=[],classes=new Set();
- const image={hidden:true,naturalWidth:32,onload:null,onerror:null,referrerPolicy:'',
-  set src(value){requests.push(value);this.currentSource=value;},
-  get src(){return this.currentSource;},
-  removeAttribute(name){if(name==='src')this.currentSource=undefined;}
- };
- const element={isConnected:true,dataset:{faviconSite:site},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c)},
-  querySelector:()=>image
- };
- return {element,image,requests,classes,root:{querySelectorAll:()=>[element]}};
+ return {app:context.app,dialog};
 }
 function linkForm(url='https://example.com/') {
  const node=()=>({textContent:'',innerHTML:'',style:{setProperty(){}},querySelectorAll:()=>[]});
@@ -77,47 +63,6 @@ test('automatic icons use an inert image and escaped text; text mode and unsafe 
  assert.doesNotMatch(app.siteGlyph({url:'https://example.com',icon:'🌿',iconMode:'text'}),/<img/);
  assert.doesNotMatch(app.siteGlyph({url:'javascript:alert(1)',icon:'A'}),/<img/);
  assert.doesNotMatch(app.siteGlyph({url:'https://name:password@example.com',icon:'A'}),/<img/);
-});
-
-test('failed image candidates advance once, a successful image is cached, and repeated hydration is inert',()=>{
- const first='https://example.com/missing.ico',second='https://example.com/real.png';
- const h=harness({getFaviconCandidates:()=>[first,first,second]});
- const v=visual();h.app.bindFaviconImages(v.root);
- assert.deepEqual(v.requests,[first]);assert.equal(v.image.hidden,true);
- const staleLoad=v.image.onload;
- v.image.onerror();
- assert.deepEqual(v.requests,[first,second]);
- staleLoad();
- assert.equal(h.remembered.length,0,'a late event from the failed candidate cannot cache the current candidate');
- v.image.onload();
- assert.equal(v.image.hidden,false);assert.equal(v.classes.has('is-loaded'),true);
- assert.deepEqual(h.remembered,[{site:'https://example.com/page',url:second}]);
- h.app.bindFaviconImages(v.root);
- assert.deepEqual(v.requests,[first,second]);
- assert.equal(h.timers.size,0);
- const rerendered=visual();h.app.bindFaviconImages(rerendered.root);
- assert.deepEqual(rerendered.requests,[second],'known failed URL is skipped across a repeated desktop render');
- rerendered.image.onload();
-});
-
-test('exhaustion, timeouts, and stale events leave the text fallback visible without a broken image',()=>{
- const h=harness();const v=visual();h.app.bindFaviconImages(v.root);
- const staleLoad=v.image.onload;const timeout=[...h.timers.values()][0];timeout();
- assert.equal(v.image.hidden,true);assert.equal(v.image.src,undefined);
- assert.equal(v.classes.has('is-loaded'),false);assert.equal(h.remembered.length,0);
- staleLoad();
- assert.equal(h.remembered.length,0);assert.equal(v.image.hidden,true);
- h.app.bindFaviconImages(v.root,{force:true});
- assert.equal(v.requests.length,2,'an explicit extraction may retry a previous failure');
- v.image.onload();assert.equal(h.remembered.length,1);
-});
-
-test('detached images cannot commit a success or advance to another request',()=>{
- const h=harness({getFaviconCandidates:()=>['https://example.com/a.png','https://example.com/b.png']});
- const v=visual();h.app.bindFaviconImages(v.root);v.element.isConnected=false;
- v.image.onerror();
- assert.equal(v.requests.length,1);assert.equal(h.remembered.length,0);
- v.image.onload();assert.equal(h.remembered.length,0);
 });
 
 test('smart extraction starts the optional permission operation synchronously and renders safe status text',async()=>{

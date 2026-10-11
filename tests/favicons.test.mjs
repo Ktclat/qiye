@@ -33,7 +33,7 @@ async function setup(t, { fetchImpl, chrome, initialCache, waitForCache = true }
 test('candidates use site-owned HTTPS endpoints and reject local, credentialed, or executable URLs', async t => {
   const { api } = await setup(t);
   assert.deepEqual(api.getFaviconCandidates('http://example.com/app?token=secret#private'), [
-    'https://example.com/favicon.ico', 'https://example.com/apple-touch-icon.png',
+    'https://example.com/favicon.svg', 'https://example.com/apple-touch-icon.png', 'https://example.com/favicon.ico',
   ]);
   for (const url of ['javascript:alert(1)', 'data:image/svg+xml,<svg/>', 'file:///tmp/a.html', 'https://user:password@example.com/', 'https://example.com:8443/', 'https://localhost/', 'https://foo.local/', 'https://router.home/', 'https://127.0.0.1/', 'https://2130706433/', 'https://0x7f000001/', 'https://169.254.169.254/', 'https://10.0.0.1/', 'https://[::1]/', 'https://[::ffff:127.0.0.1]/', 'https://example.com\\@localhost/', 'https://example.com/\nprivate']) {
     assert.deepEqual(api.getFaviconCandidates(url), [], url);
@@ -86,7 +86,7 @@ test('small HTML icons are upgraded from a same-origin manifest with safe relati
       { src: 'https://cdn.example.com/script', type: 'application/javascript', sizes: 'any' },
     ] });
   } });
-  const result = await api.discoverFavicon('https://example.com/app/page');
+  const result = await api.discoverFavicon('https://example.com/app/page', { targetSize: 64, pixelRatio: 2 });
   assert.deepEqual(requested, ['https://example.com/app/page', 'https://example.com/app/site.webmanifest']);
   assert.equal(result.url, 'https://example.com/images/icon-192.png');
   assert.equal(result.source, 'manifest');
@@ -115,12 +115,17 @@ test('duplicate declarations remain unique and conventional paths plus Chrome st
   const result = await api.discoverFavicon('https://example.com/?secret=value');
   assert.equal(new Set(result.candidates).size, result.candidates.length);
   assert.ok(result.candidates.length <= 12);
-  assert.deepEqual(result.candidates.slice(-3, -1), ['https://example.com/favicon.ico', 'https://example.com/apple-touch-icon.png']);
+  assert.deepEqual(result.candidates.slice(-4, -1), ['https://example.com/favicon.svg', 'https://example.com/apple-touch-icon.png', 'https://example.com/favicon.ico']);
   const chromeUrl = new URL(result.candidates.at(-1));
   assert.equal(chromeUrl.protocol, 'chrome-extension:');
   assert.equal(chromeUrl.searchParams.get('pageUrl'), 'https://example.com/');
   assert.equal(chromeUrl.searchParams.get('size'), '64');
   assert.equal(api.rememberFavicon('https://example.com/', chromeUrl.href), false);
+  api.rememberFavicon('https://example.com/', 'https://cdn.example.com/legacy-working.png');
+  const legacyPreferred = api.getFaviconCandidates('https://example.com/');
+  assert.equal(legacyPreferred.length, 12);
+  assert.equal(legacyPreferred[0], 'https://cdn.example.com/legacy-working.png');
+  assert.equal(legacyPreferred.at(-1), chromeUrl.href, 'adding an older preferred image cannot evict the reserved Chrome fallback');
 });
 
 test('concurrent extraction coalesces; successful declarations have a seven-day TTL', async t => {
@@ -157,7 +162,8 @@ test('CORS failures produce a sanitized fallback and ten-minute negative cache, 
   t.after(() => { Date.now = actualNow; });
   const { api } = await setup(t, { fetchImpl: async () => { calls++; throw new TypeError('secret endpoint authorization token=abc'); } });
   const result = await api.discoverFavicon('https://example.com/');
-  assert.equal(result.url, 'https://example.com/favicon.ico');
+  assert.equal(result.url, 'https://example.com/favicon.svg');
+  assert.ok(result.candidates.includes('https://example.com/favicon.ico'));
   assert.match(result.warning, /CORS/);
   assert.doesNotMatch(result.warning, /secret|abc/);
   await api.discoverFavicon('https://example.com/');
@@ -177,7 +183,7 @@ test('successful image cache persists separately, strips page queries, and rejec
     { pageUrl: 'https://future.example.com/', preferred: 'https://example.com/future.png', loadedAt: now + 99_999_999 },
   ] } });
   assert.equal(api.getFaviconCandidates('https://example.com/?secret=1')[0], 'https://cdn.example.com/cached.png');
-  assert.deepEqual(api.getFaviconCandidates('https://future.example.com/'), ['https://future.example.com/favicon.ico', 'https://future.example.com/apple-touch-icon.png']);
+  assert.deepEqual(api.getFaviconCandidates('https://future.example.com/'), ['https://future.example.com/favicon.svg', 'https://future.example.com/apple-touch-icon.png', 'https://future.example.com/favicon.ico']);
   assert.equal(api.rememberFavicon('https://example.com/?secret=2#fragment', 'https://cdn.example.com/new.png'), true);
   assert.equal(api.rememberFavicon('https://example.com/', 'https://user:secret@example.com/x.png'), false);
   await flush();
@@ -262,6 +268,152 @@ test('extraction deadline aborts an in-flight request and returns usable fallbac
     const result = await api.discoverFavicon('https://example.com/');
     assert.match(result.warning, /超时/);
     assert.equal(signal.aborted, true);
-    assert.equal(result.url, 'https://example.com/favicon.ico');
+    assert.equal(result.url, 'https://example.com/favicon.svg');
+    assert.ok(result.candidates.includes('https://example.com/favicon.ico'));
   } finally { globalThis.setTimeout = actualSetTimeout; }
+});
+
+test('Chrome favicon requests scale with the rendered target and DPR, are capped, and never fetch page HTML', async t => {
+  let fetches = 0;
+  const { api } = await setup(t, { chrome: { runtime }, fetchImpl: async () => { fetches++; return htmlResponse(''); } });
+  const requested = options => new URL(api.getFaviconCandidates('https://example.com/?search=private', options).at(-1));
+  assert.equal(requested({ targetSize: 24, pixelRatio: 2 }).searchParams.get('size'), '64');
+  assert.equal(requested({ targetSize: 64, pixelRatio: 2 }).searchParams.get('size'), '128');
+  assert.equal(requested({ targetSize: 96, pixelRatio: 3 }).searchParams.get('size'), '256');
+  assert.equal(requested({ targetSize: 100000, pixelRatio: 100000 }).searchParams.get('size'), '256');
+  assert.equal(requested({ targetSize: NaN, pixelRatio: -1 }).searchParams.get('size'), '64');
+  assert.equal(requested({}).searchParams.get('pageUrl'), 'https://example.com/');
+  assert.equal(fetches, 0);
+});
+
+test('bitmap declarations choose the nearest adequate size for each target while SVG remains scalable', async t => {
+  let fetches = 0;
+  const { api } = await setup(t, { fetchImpl: async () => {
+    fetches++;
+    return htmlResponse([32, 64, 128, 192, 512].map(size => `<link rel=icon type=image/png sizes=${size}x${size} href=/icon-${size}.png>`).join(''));
+  } });
+  const result = await api.discoverFavicon('https://example.com/', { targetSize: 64, pixelRatio: 2 });
+  assert.equal(result.url, 'https://example.com/icon-128.png');
+  assert.equal(api.getFaviconCandidates('https://example.com/', { targetSize: 24, pixelRatio: 1 })[0], 'https://example.com/icon-32.png');
+  assert.equal(api.getFaviconCandidates('https://example.com/', { targetSize: 96, pixelRatio: 2 })[0], 'https://example.com/icon-192.png');
+  assert.equal(fetches, 1, 'candidate reranking cannot trigger metadata requests');
+  assert.equal(api.getFaviconQuality('https://example.com/', 'https://example.com/mark.svg', { width: 16, height: 16, targetSize: 128, pixelRatio: 2 }).adequate, true);
+  const bitmap = api.getFaviconQuality('https://example.com/', 'https://example.com/icon-32.png', { width: 32, height: 32, targetSize: 32, pixelRatio: 2 });
+  assert.equal(bitmap.requiredSize, 64);
+  assert.equal(bitmap.size, 32);
+  assert.equal(bitmap.adequate, false);
+});
+
+test('successful measurements survive reload and a smaller fallback cannot replace a sharper cached icon', async t => {
+  const { api, records } = await setup(t);
+  const site = 'https://example.com/', sharp = `${site}large.png`, small = `${site}favicon.ico`;
+  api.rememberFavicon(site, sharp, { width: 192, height: 192 });
+  api.rememberFavicon(site, small, { width: 16, height: 16 });
+  assert.equal(api.getFaviconCandidates(site, { targetSize: 64, pixelRatio: 2 })[0], sharp);
+  await flush();
+  const stored = JSON.parse(records.get('qiye.favicons.local.v1'));
+  assert.equal(stored.version, 2);
+  assert.equal(stored.entries[0].preferred, sharp);
+  assert.equal(stored.entries[0].details.find(detail => detail.url === small).actualWidth, 16);
+  const restored = await import(`../src/favicons.js?test=${++moduleId}`);
+  await restored.faviconCacheReady;
+  assert.equal(restored.getFaviconCandidates(site)[0], sharp);
+  assert.equal(restored.getFaviconQuality(site, small).measured, true);
+  assert.equal(restored.getFaviconQuality(site, small).adequate, false);
+  assert.equal(restored.getFaviconQuality(site, sharp, { targetSize: 64, pixelRatio: 2 }).adequate, true);
+});
+
+test('a measured small bitmap overrides an overstated declaration and permits a better manifest source', async t => {
+  const requests = [];
+  const { api } = await setup(t, { fetchImpl: async url => {
+    requests.push(url);
+    return url.endsWith('.webmanifest')
+      ? jsonResponse({ icons: [{ src: '/real-192.png', sizes: '192x192' }] })
+      : htmlResponse('<link rel=icon type=image/png sizes=512x512 href=/actually-small.png><link rel=manifest href=/site.webmanifest>');
+  } });
+  const site = 'https://example.com/', small = `${site}actually-small.png`;
+  assert.equal((await api.discoverFavicon(site, { targetSize: 64, pixelRatio: 2 })).url, small);
+  assert.equal(requests.length, 1);
+  api.rememberFavicon(site, small, { width: 32, height: 32 });
+  assert.equal(api.getFaviconQuality(site, small, { targetSize: 64, pixelRatio: 2 }).adequate, false);
+  const result = await api.discoverFavicon(site, { force: true, targetSize: 64, pixelRatio: 2 });
+  assert.equal(result.url, `${site}real-192.png`);
+  assert.deepEqual(requests, [site, site, `${site}site.webmanifest`]);
+});
+
+test('quality upgrades are bounded, skip attempted URLs, and persist a size-aware cooldown', async t => {
+  let now = Date.now(), fetches = 0;
+  const actualNow = Date.now;
+  Date.now = () => now;
+  t.after(() => { Date.now = actualNow; });
+  const site = 'https://example.com/', small = `${site}small.ico`;
+  const { api, records } = await setup(t, {
+    initialCache: { version: 1, entries: [{ pageUrl: site, preferred: small, loadedAt: now, checkedAt: now, candidates: ['/first.png', '/second.png', '/third.png', '/fourth.png'].map(path => new URL(path, site).href) }] },
+    fetchImpl: async () => { fetches++; return htmlResponse('<link rel=icon href=/fresh.svg>'); },
+  });
+  assert.equal(api.getFaviconCandidates(site)[0], small, 'legacy loaded icons remain visible until their dimensions can be measured');
+  api.rememberFavicon(site, small, { width: 16, height: 16 });
+  const options = { width: 16, height: 16, targetSize: 64, pixelRatio: 2, attempted: [`${site}first.png`] };
+  const upgrades = api.takeFaviconUpgradeCandidates(site, small, options);
+  assert.equal(upgrades.length, 3);
+  assert.ok(!upgrades.includes(small));
+  assert.ok(!upgrades.includes(`${site}first.png`));
+  assert.deepEqual(api.takeFaviconUpgradeCandidates(site, small, options), []);
+  assert.equal(api.getFaviconCandidates(site, options)[0], small, 'a new render uses the known working image during the cooldown');
+  await flush();
+  assert.equal(JSON.parse(records.get('qiye.favicons.local.v1')).entries[0].upgradeSize, 128);
+  const restored = await import(`../src/favicons.js?test=${++moduleId}`);
+  await restored.faviconCacheReady;
+  assert.deepEqual(restored.takeFaviconUpgradeCandidates(site, small, options), []);
+  assert.ok(restored.takeFaviconUpgradeCandidates(site, small, { ...options, targetSize: 128 }).length > 0, 'a larger surface may probe once more');
+  assert.equal(fetches, 0, 'neither the cache nor quality probes fetch webpage metadata');
+  now += 24 * 60 * 60 * 1000 + 1;
+  assert.ok(restored.takeFaviconUpgradeCandidates(site, small, options).length > 0);
+  await restored.discoverFavicon(site, { force: true });
+  assert.equal(fetches, 1);
+  assert.ok(restored.takeFaviconUpgradeCandidates(site, small, options).includes(`${site}fresh.svg`), 'explicit extraction resets the quality probe cooldown');
+});
+
+test('low-resolution-only icons keep a usable fallback and do not restart a completed probe sequence', async t => {
+  const { api } = await setup(t);
+  const site = 'https://example.com/', low = `${site}favicon.ico`;
+  api.rememberFavicon(site, low, { width: 16, height: 16 });
+  const candidates = api.getFaviconCandidates(site);
+  assert.ok(candidates.includes(low));
+  assert.deepEqual(api.takeFaviconUpgradeCandidates(site, low, { width: 16, height: 16, attempted: candidates }), []);
+  assert.deepEqual(api.takeFaviconUpgradeCandidates(site, low), []);
+  assert.equal(api.getFaviconCandidates(site)[0], low);
+  assert.equal(api.getFaviconQuality(site, low).adequate, false, 'a low-resolution source is never relabeled as high resolution');
+});
+
+test('regular artwork is preferred to maskable padding, and sizes=any alone cannot turn a bitmap into a vector', async t => {
+  const { api } = await setup(t, { fetchImpl: async url => url.endsWith('.webmanifest')
+    ? jsonResponse({ icons: [
+      { src: '/padded.png', type: 'image/png', sizes: '192x192', purpose: 'maskable' },
+      { src: '/full.png', type: 'image/png', sizes: '192x192', purpose: 'any' },
+    ] })
+    : htmlResponse('<link rel=icon type=image/png sizes=any href=/unknown.png><link rel=manifest href=/site.webmanifest>') });
+  const result = await api.discoverFavicon('https://example.com/', { targetSize: 64, pixelRatio: 2 });
+  assert.equal(result.url, 'https://example.com/full.png');
+  assert.ok(result.candidates.includes('https://example.com/padded.png'));
+  assert.equal(api.getFaviconQuality('https://example.com/', 'https://example.com/unknown.png', { width: 16, height: 16 }).scalable, false);
+});
+
+test('malformed quality-cache dimensions, future measurements, and non-public icon records are discarded', async t => {
+  const now = Date.now(), site = 'https://example.com/';
+  const { api, records } = await setup(t, { initialCache: { version: 2, entries: [{
+    pageUrl: site, preferred: `${site}unknown.png`, loadedAt: now, checkedAt: now,
+    candidates: [`${site}unknown.png`], upgradeAt: now + 100000, upgradeSize: 100000,
+    details: [
+      { url: `${site}unknown.png`, actualWidth: 1e9, actualHeight: 1e9, measuredAt: now },
+      { url: `${site}future.png`, actualWidth: 512, actualHeight: 512, measuredAt: now + 100000 },
+      { url: 'https://localhost/private.svg', scalable: true, actualWidth: 512, actualHeight: 512, measuredAt: now },
+    ],
+  }] } });
+  assert.equal(api.getFaviconQuality(site, `${site}unknown.png`).measured, false);
+  assert.equal(api.getFaviconQuality(site, `${site}future.png`).measured, false);
+  api.rememberFavicon(site, `${site}unknown.png`, { width: 16, height: 16 });
+  assert.ok(api.takeFaviconUpgradeCandidates(site, `${site}unknown.png`).length > 0);
+  await flush();
+  assert.doesNotMatch(records.get('qiye.favicons.local.v1'), /localhost|1000000000/);
 });

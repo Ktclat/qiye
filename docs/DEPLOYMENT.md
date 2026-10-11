@@ -4,7 +4,7 @@
 
 网页地址：**<https://ktclat.github.io/qiye/>**。
 
-**当前状态：Pages 已启用，`gh-pages` 分支的原生部署已成功。** 对应提交为 `d79d075`，可查看 [pages build and deployment 运行记录](https://github.com/Ktclat/qiye/actions/runs/38155464505)。
+**当前状态：Pages 已启用，`gh-pages` 分支的原生部署已成功。** v0.2.3 对应提交为 `188c2a0`，可查看 [pages build and deployment 运行记录](https://github.com/Ktclat/qiye/actions/runs/38161552070)。
 
 ## 当前发布配置
 
@@ -71,7 +71,7 @@ python3 scripts/build-pages.py /path/to/qiye-demo
 
 | 生成文件 | 用途 |
 | --- | --- |
-| `index.html` | 内联页面样式和生产 JavaScript 模块的网页入口 |
+| `index.html` | 内联样式、生产 JavaScript、本地 Inter 字体和完整字体许可的网页入口 |
 | `icons/icon32.png` | 网页标签图标，使用相对路径引用 |
 | `.nojekyll` | 直接发布静态文件 |
 | `README.md` | 演示分支说明及 `main` 源码入口 |
@@ -104,7 +104,7 @@ git -C ../qiye-demo push origin gh-pages
 
 网页桌面和 WebDAV 连接信息保存在当前网页来源的浏览器存储中。切换域名后，新站点不能直接读取旧站点的本机记录。
 
-1. 在原页面打开“设置 → 数据”，导出 JSON 备份。
+1. 在原页面打开“设置 → 备份与恢复”，导出 JSON 备份。
 2. 在 GitHub Pages 页面导入该备份，核对网址、布局和组件内容。
 3. 如需同步，在新页面重新填写 WebDAV 连接。凭据不包含在 JSON 备份中；已有远端文件应先比较并确认，再选择使用哪个版本。
 
@@ -118,7 +118,7 @@ GitHub Pages 的网页来源仍为 **`https://ktclat.github.io`**，来源中不
 
 ## 上线验收
 
-README 中的 v0.2.2 截图和浏览器验证记录来自当前同仓库的 GitHub Pages 部署；旧版本记录另列在 QA 文档的历史部分。每次更新后，应针对当前地址 `https://ktclat.github.io/qiye/` 核对以下项目：
+v0.2.3 的部署与实际浏览器观察记录见 [QA.md](QA.md)；旧版截图单独保留在 [历史记录](QA-v022.md)，不代替新版验收。每次更新后，应针对当前地址 `https://ktclat.github.io/qiye/` 核对以下项目：
 
 - 访问 Pages 设置中提供的地址，确认显示栖页而非 404 页面。
 - 检查时钟、分组、卡片、设置弹层及图标，确认脚本和样式正常加载。

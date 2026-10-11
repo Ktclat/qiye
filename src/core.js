@@ -1,4 +1,5 @@
 import { normalizeWallpaperPhoto } from './wallpapers.js';
+import { validateAvatarDataUrl } from './avatar.js';
 
 /**
  * Shared, dependency-free storage boundary for every Qiye extension surface.
@@ -46,7 +47,18 @@ export const DEFAULT_STATE = deepFreeze({
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: true, pinSearch: true, minimal: false, openNewTab: true,
-    gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 78,
+    searchNewTab: true, rememberGroup: true, scrollGroups: true,
+    gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
+    sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
+    sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
+    toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
+    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, clockWeight: 400,
+    clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
+    searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
+    showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
+    iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
+    desktopMaxWidth: 1350, themeColor: '#79d7b4',
+    showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false,
     searchEngine: 'bing', customEngines: [], weatherCity: { name: '香港', latitude: 22.32, longitude: 114.17 },
     weatherEnabled: false, dailyWallpaper: false, quote: true,
     wallpaperApiEnabled: false, remoteWallpaper: null
@@ -186,6 +198,7 @@ function bool(value, path) { if (typeof value !== 'boolean') invalid(path, '必�
 function enumeration(value, values, path) { if (!values.includes(value)) invalid(path, '包含不支持的值'); return value; }
 function array(value, path, max, min = 0) { if (!Array.isArray(value) || value.length < min || value.length > max) invalid(path, `必须是 ${min}–${max} 项的数组`); return value; }
 function color(value, path) { if (typeof value !== 'string' || !/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)) invalid(path, '必须是十六进制颜色'); return value; }
+function opaqueColor(value, path) { if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value)) invalid(path, '必须是六位十六进制颜色'); return value; }
 function url(value, path) { const result = safeUrl(value); if (!result) invalid(path, '只支持安全的 http / https 地址'); return result; }
 function date(value, path) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) invalid(path, '日期格式须为 YYYY-MM-DD');
@@ -214,6 +227,9 @@ function validateSettings(raw) {
   const defaults = DEFAULT_STATE.settings;
   keys(raw, Object.keys(defaults), 'settings');
   const v = { ...defaults, ...raw };
+  // Search previously shared openNewTab. Splitting this choice must preserve an
+  // old desktop's explicit same-tab preference, including restored backups.
+  if (!Object.hasOwn(raw, 'searchNewTab')) v.searchNewTab = v.openNewTab;
   const customEngines = array(v.customEngines, 'settings.customEngines', 12).map((engine, i) => {
     const path = `settings.customEngines[${i}]`;
     keys(engine, ['id', 'name', 'letter', 'color', 'url'], path);
@@ -232,6 +248,11 @@ function validateSettings(raw) {
   const remoteWallpaper = v.remoteWallpaper === null ? null : normalizeWallpaperPhoto(v.remoteWallpaper);
   if (v.remoteWallpaper !== null && !remoteWallpaper) invalid('settings.remoteWallpaper', '在线壁纸来源不受支持，请从壁纸小组件重新选择');
   const customWallpaperType = enumeration(v.customWallpaperType, ['image', 'video'], 'settings.customWallpaperType');
+  let avatar = null;
+  if (v.avatar !== null) {
+    try { avatar = validateAvatarDataUrl(v.avatar); }
+    catch (error) { invalid('settings.avatar', error.message); }
+  }
   return {
     theme: enumeration(v.theme, ['dark', 'light', 'auto'], 'settings.theme'),
     wallpaper: enumeration(v.wallpaper, ['aurora', 'sunset', 'ocean', 'forest', 'lavender', 'midnight'], 'settings.wallpaper'),
@@ -240,9 +261,47 @@ function validateSettings(raw) {
     showSeconds: bool(v.showSeconds, 'settings.showSeconds'), hour12: bool(v.hour12, 'settings.hour12'),
     pinClock: bool(v.pinClock, 'settings.pinClock'), pinSearch: bool(v.pinSearch, 'settings.pinSearch'),
     minimal: bool(v.minimal, 'settings.minimal'), openNewTab: bool(v.openNewTab, 'settings.openNewTab'),
+    searchNewTab: bool(v.searchNewTab, 'settings.searchNewTab'),
+    rememberGroup: bool(v.rememberGroup, 'settings.rememberGroup'), scrollGroups: bool(v.scrollGroups, 'settings.scrollGroups'),
     gridSize: number(v.gridSize, 'settings.gridSize', 48, 120), gap: number(v.gap, 'settings.gap', 8, 40),
     radius: number(v.radius, 'settings.radius', 0, 48), showLabels: bool(v.showLabels, 'settings.showLabels'),
-    clockSize: number(v.clockSize, 'settings.clockSize', 32, 160), searchEngine: v.searchEngine, customEngines,
+    clockSize: number(v.clockSize, 'settings.clockSize', 30, 160), searchEngine: v.searchEngine, customEngines,
+    sidebarWidth: number(v.sidebarWidth, 'settings.sidebarWidth', 40, 120),
+    sidebarOpacity: number(v.sidebarOpacity, 'settings.sidebarOpacity', 0, 100),
+    sidebarPosition: enumeration(v.sidebarPosition, ['left', 'right'], 'settings.sidebarPosition'),
+    navigationMode: enumeration(v.navigationMode, ['sidebar', 'top'], 'settings.navigationMode'),
+    sidebarVisibility: enumeration(v.sidebarVisibility, ['always', 'auto', 'hidden'], 'settings.sidebarVisibility'),
+    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), avatar,
+    toolbarVisibility: enumeration(v.toolbarVisibility, ['always', 'auto'], 'settings.toolbarVisibility'),
+    surfaceStyle: enumeration(v.surfaceStyle, ['solid', 'glass', 'acrylic', 'mica'], 'settings.surfaceStyle'),
+    surfaceOpacity: number(v.surfaceOpacity, 'settings.surfaceOpacity', 20, 100),
+    surfaceBlur: number(v.surfaceBlur, 'settings.surfaceBlur', 0, 24),
+    reducedEffects: bool(v.reducedEffects, 'settings.reducedEffects'),
+    animateGroups: bool(v.animateGroups, 'settings.animateGroups'),
+    uiFont: enumeration(v.uiFont, ['inter', 'system'], 'settings.uiFont'),
+    uiScale: number(v.uiScale, 'settings.uiScale', 85, 120),
+    clockWeight: number(v.clockWeight, 'settings.clockWeight', 200, 700),
+    clockOffsetX: number(v.clockOffsetX, 'settings.clockOffsetX', -30, 30),
+    clockOffsetY: number(v.clockOffsetY, 'settings.clockOffsetY', -60, 160),
+    searchOffsetX: number(v.searchOffsetX, 'settings.searchOffsetX', -30, 30),
+    searchOffsetY: number(v.searchOffsetY, 'settings.searchOffsetY', -40, 160),
+    searchWidth: number(v.searchWidth, 'settings.searchWidth', 360, 960),
+    searchHeight: number(v.searchHeight, 'settings.searchHeight', 36, 64),
+    searchOpacity: number(v.searchOpacity, 'settings.searchOpacity', 20, 100),
+    searchRadius: number(v.searchRadius, 'settings.searchRadius', 0, 50),
+    showSearchHistory: bool(v.showSearchHistory, 'settings.showSearchHistory'),
+    showWeekday: bool(v.showWeekday, 'settings.showWeekday'), showLunar: bool(v.showLunar, 'settings.showLunar'),
+    showWallpaperButton: bool(v.showWallpaperButton, 'settings.showWallpaperButton'),
+    iconOpacity: number(v.iconOpacity, 'settings.iconOpacity', 20, 100),
+    labelSize: number(v.labelSize, 'settings.labelSize', 10, 20),
+    labelColor: opaqueColor(v.labelColor, 'settings.labelColor'),
+    clockColor: opaqueColor(v.clockColor, 'settings.clockColor'),
+    desktopMaxWidth: number(v.desktopMaxWidth, 'settings.desktopMaxWidth', 720, 2000),
+    themeColor: opaqueColor(v.themeColor, 'settings.themeColor'),
+    showClock: bool(v.showClock, 'settings.showClock'), showDate: bool(v.showDate, 'settings.showDate'),
+    showSearch: bool(v.showSearch, 'settings.showSearch'),
+    clockFollowTheme: bool(v.clockFollowTheme, 'settings.clockFollowTheme'),
+    showAddTile: bool(v.showAddTile, 'settings.showAddTile'),
     weatherCity: { name: string(v.weatherCity.name, 'settings.weatherCity.name', 60), latitude: number(v.weatherCity.latitude, 'settings.weatherCity.latitude', -90, 90), longitude: number(v.weatherCity.longitude, 'settings.weatherCity.longitude', -180, 180) },
     weatherEnabled: bool(v.weatherEnabled, 'settings.weatherEnabled'), dailyWallpaper: bool(v.dailyWallpaper, 'settings.dailyWallpaper'), quote: bool(v.quote, 'settings.quote'),
     wallpaperApiEnabled: bool(v.wallpaperApiEnabled, 'settings.wallpaperApiEnabled'),

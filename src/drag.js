@@ -2,7 +2,7 @@
  * Grid dragging for Qiye. Pointer events are the only drop authority: native
  * browser drags are suppressed for our cards, never interpreted as app data.
  *
- * Cards use [data-item] / [data-item-type], sidebar buttons use [data-group].
+ * Cards use [data-item] / [data-item-type], navigation buttons use [data-group].
  * Every card may expose a button[data-drag-handle]. Widget contents and normal
  * touch scrolling remain interactive because only handles start their drags.
  * The handle needs CSS touch-action:none; group buttons need it while editable.
@@ -40,7 +40,7 @@ export function resolveDropIntent({ state, source, target, point }) {
  const groupExists = id => groups.some(group => group.id === id);
  if (source.kind === 'group') {
   if (target.kind !== 'group' || source.id === target.id || !groupExists(source.id) || !groupExists(target.id)) return null;
-  return { kind:'group-reorder', groupId:source.id, targetId:target.id, position:dropPosition(target.rect, point, true) };
+  return { kind:'group-reorder', groupId:source.id, targetId:target.id, position:dropPosition(target.rect, point, state.settings?.navigationMode !== 'top') };
  }
  const item = items.find(entry => entry.id === source.id);
  if (!item || !groupExists(item.groupId)) return null;
@@ -67,7 +67,7 @@ export function resolveDropIntent({ state, source, target, point }) {
  return { kind:'reorder', itemId:item.id, targetId:destination.id, position:dropPosition(rect, point) };
 }
 
-/** Vertical edge speed, in pixels/frame; no movement outside the scroll area. */
+/** Edge speed on either axis, in pixels/frame; no movement outside the area. */
 export function edgeScrollDelta(position, start, end, edge = 64, maxSpeed = 20) {
  if (![position, start, end].every(Number.isFinite) || end <= start || position < start || position > end) return 0;
  const band = Math.min(edge, (end - start) / 3);
@@ -240,7 +240,7 @@ export function createDesktopDragController({
   }
   const position = intent.kind === 'append' ? (target.appendBefore ? 'before' : 'after') : intent.position;
   marked.classList.add(position === 'before' ? 'drop-before' : 'drop-after');
-  const rect = target.rect, vertical = intent.kind === 'group-reorder';
+  const rect = target.rect, vertical = intent.kind === 'group-reorder' && getState().settings?.navigationMode !== 'top';
   indicator.dataset.axis = vertical ? 'y' : 'x';
   indicator.hidden = false;
   indicator.style.left = `${vertical ? rect.left + 3 : (position === 'before' ? rect.left : rect.right) - 2}px`;
@@ -259,18 +259,34 @@ export function createDesktopDragController({
   movePreview();
  }
 
- function scrollElement(node, bounds) {
-  if (!session || session.x < bounds.left || session.x > bounds.right) return false;
-  const delta = edgeScrollDelta(session.y, bounds.top, bounds.bottom);
-  const before = node.scrollTop, limit = Math.max(0, node.scrollHeight - node.clientHeight);
+ function scrollElement(node, bounds, horizontal = false) {
+  if (!session || (horizontal
+   ? session.y < bounds.top || session.y > bounds.bottom
+   : session.x < bounds.left || session.x > bounds.right)) return false;
+  const delta = horizontal
+   ? edgeScrollDelta(session.x, bounds.left, bounds.right)
+   : edgeScrollDelta(session.y, bounds.top, bounds.bottom);
+  const property = horizontal ? 'scrollLeft' : 'scrollTop';
+  const before = node[property], limit = Math.max(0, horizontal ? node.scrollWidth - node.clientWidth : node.scrollHeight - node.clientHeight);
   if (!delta || limit <= 0) return false;
-  node.scrollTop = Math.max(0, Math.min(limit, before + delta));
-  return node.scrollTop !== before;
+  node[property] = Math.max(0, Math.min(limit, before + delta));
+  return node[property] !== before;
  }
 
  function autoScroll() {
   let node = doc.elementFromPoint(session.x, session.y);
   const page = doc.scrollingElement || doc.documentElement;
+  const navigation = groupList();
+  if (getState().settings?.navigationMode === 'top' && navigation?.contains(node)) {
+   // A horizontal group bar must not scroll the page vertically while a user
+   // browses its off-screen groups, including when the bar reaches an edge.
+   if (!/auto|scroll/.test(win.getComputedStyle(navigation).overflowX)) return false;
+   const rect = navigation.getBoundingClientRect();
+   return scrollElement(navigation, {
+    left:Math.max(0,rect.left), right:Math.min(win.innerWidth,rect.right),
+    top:Math.max(0,rect.top), bottom:Math.min(win.innerHeight,rect.bottom)
+   }, true);
+  }
   while (node && node !== doc.body && node !== page) {
    if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(win.getComputedStyle(node).overflowY)) {
     const rect = node.getBoundingClientRect();
