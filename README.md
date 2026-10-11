@@ -9,11 +9,15 @@
 
 栖页是一款可以自由编排的浏览器新标签页扩展：把常用网站、搜索、日常小组件和喜欢的壁纸放在一起。布局与交互参考 iTab，栖页品牌、界面图标和代码独立实现；网站卡片按网址加载目标网站的图标。当前功能范围与验收状态见下文。
 
-**[GitHub Pages](https://ktclat.github.io/qiye/)** · [源码仓库](https://github.com/Ktclat/qiye) · [安装扩展](#安装与更新) · [WebDAV 配置](#webdav-同步) · [开发指南](#本地开发) · [隐私说明](docs/PRIVACY.md)
+**[在线演示 · GitHub Pages](https://ktclat.github.io/qiye.ktclat.github.io/)** · [源码仓库](https://github.com/Ktclat/qiye) · [安装扩展](#安装与更新) · [WebDAV 配置](#webdav-同步) · [开发指南](#本地开发) · [隐私说明](docs/PRIVACY.md)
 
-> GitHub Pages 发布文件已准备好。首次上线需要在仓库 **Settings → Pages** 选择 **Deploy from a branch → main → /(root)** 并保存；实际状态以部署结果为准。[部署与域名迁移说明](docs/DEPLOYMENT.md)。
+> 完整源码保存在本仓库；网页由 [Ktclat/qiye.ktclat.github.io](https://github.com/Ktclat/qiye.ktclat.github.io) 的 GitHub Pages 发布。两个版本使用同一份生产模块。[部署与域名迁移说明](docs/DEPLOYMENT.md)。
 
 公开演示无需登录。每位访问者的桌面保存在自己的浏览器中，访问同一个演示链接不会共享便签、网址或同步配置。
+
+![栖页在 GitHub Pages 上的实际运行界面](docs/screenshots/qiye-pages-20261011.jpg)
+
+*GitHub Pages 实际运行截图，拍摄于 2026-10-11（UTC）；页面时间按浏览器所在时区显示。*
 
 ## 功能一览
 
@@ -138,7 +142,7 @@ cd qiye
 
 | 配置项 | 要求 |
 | --- | --- |
-| 允许来源 | GitHub Pages 使用 `https://ktclat.github.io`，来源中不包含 `/qiye/` 路径；其他部署使用对应网页来源 |
+| 允许来源 | GitHub Pages 使用 `https://ktclat.github.io`，来源中不包含 `/qiye.ktclat.github.io/` 路径；其他部署使用对应网页来源 |
 | 允许方法 | `GET`、`PUT`、`OPTIONS` |
 | 允许请求头 | `Authorization`、`Content-Type`、`If-Match`、`If-None-Match` |
 | 暴露响应头 | `Access-Control-Expose-Headers: ETag` |
@@ -221,6 +225,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | `src/icons.js`、`icons/` | 界面图标与栖页应用图标 |
 | `background.js`、`popup.*` | 扩展菜单、快捷键与工具栏收藏入口 |
 | `scripts/build-preview.py` | 生成独立 `Qiye-preview.html` |
+| `scripts/build-pages.py` | 将相同生产模块生成为独立发布仓库的静态首页 |
 | `.nojekyll`、`docs/DEPLOYMENT.md` | GitHub Pages 静态发布标记、启用与迁移指南 |
 | `tests/` | 使用 Node.js 内置测试运行器的逻辑与集成测试 |
 | `docs/` | 功能范围、隐私说明与验收记录 |
@@ -242,7 +247,9 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 v0.2.1 在 **2026-10-11（UTC）** 的验证记录为 **124 项通过、0 失败、0 跳过**。覆盖状态与备份校验、旧图标模式迁移、网站图标提取与加载回退、跨标签保存、组件、壁纸请求、WebDAV 条件写入/冲突，以及同步面板调用次序；同时检查了 JavaScript 语法、Manifest 与资源路径、独立预览生成及 GitHub Pages 项目路径兼容性。
 
-测试使用受控网络、DOM 和存储替身运行实际生产函数。以下真实环境验收仍待完成：Chrome / Edge 实装与权限弹窗、不同站点的图标提取与回退、真实 WebDAV 账户读写、公开壁纸与天气的完整网络链路、图片/视频播放、不同窗口尺寸的视觉与拖拽/键盘交互。**公开部署成功不代表这些项目已经通过。** 完整记录与可执行验收路径见 [QA.md](docs/QA.md)。
+测试使用受控网络、DOM 和存储替身运行实际生产函数。GitHub Pages 已实际部署成功：核对了 HTTP 响应与发布文件一致，并在浏览器检查了首页、常用网站图标、智能提取的跨域失败提示和文字模式切换。
+
+以下真实环境验收仍待完成：Chrome / Edge 实装与权限弹窗、更多网站的图标提取与浏览器回退、真实 WebDAV 账户读写、公开壁纸与天气的完整网络链路、图片/视频播放、不同窗口尺寸的视觉与拖拽/键盘交互。**公开部署成功不代表这些项目已经通过。** 完整记录与可执行验收路径见 [QA.md](docs/QA.md)。
 
 ## 项目范围与反馈
 

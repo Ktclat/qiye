@@ -1,40 +1,82 @@
 # 使用 GitHub Pages 发布栖页
 
-栖页的网页入口是仓库根目录的 `index.html`。页面使用相对路径加载 `styles.css`、`src/` 和 `icons/`，可直接部署到 GitHub Pages 的 `/qiye/` 项目路径，无需构建或配置服务器。
+栖页使用两个仓库：**[Ktclat/qiye](https://github.com/Ktclat/qiye)** 保存完整源码、扩展文件和测试，**[Ktclat/qiye.ktclat.github.io](https://github.com/Ktclat/qiye.ktclat.github.io)** 保存生成后的网页文件，并通过 GitHub Pages 发布。
 
-## 本仓库的发布配置
+网页地址：**<https://ktclat.github.io/qiye.ktclat.github.io/>**。
+
+## 当前发布配置
 
 | 项目 | 配置 |
 | --- | --- |
-| 仓库 | [Ktclat/qiye](https://github.com/Ktclat/qiye) |
+| 源码仓库 | [Ktclat/qiye](https://github.com/Ktclat/qiye) |
+| 发布仓库 | [Ktclat/qiye.ktclat.github.io](https://github.com/Ktclat/qiye.ktclat.github.io) |
 | 发布方式 | **Deploy from a branch** |
 | 分支 | **main** |
 | 文件夹 | **/(root)** |
-| 入口文件 | `index.html` |
-| 预期访问地址 | <https://ktclat.github.io/qiye/> |
+| 入口文件 | 发布仓库根目录的 `index.html` |
+| 访问地址 | <https://ktclat.github.io/qiye.ktclat.github.io/> |
 
-仓库包含 `.nojekyll`，用于直接发布静态文件。该文件只控制发布处理方式，不能代替仓库中首次启用 Pages 的设置。
+发布仓库已启用 Pages，并已完成原生 **pages build and deployment** 运行。配置可在发布仓库的 [Settings → Pages](https://github.com/Ktclat/qiye.ktclat.github.io/settings/pages) 查看；每次更新生成文件后，在该仓库的 [Actions](https://github.com/Ktclat/qiye.ktclat.github.io/actions) 检查部署结果。
 
 ### 仓库名与访问地址
 
-普通项目仓库不需要以 `.github.io` 结尾。`Ktclat/qiye` 对应项目地址 `https://ktclat.github.io/qiye/`；只有名为 `Ktclat.github.io` 的仓库才对应该账户的根站点 `https://ktclat.github.io/`。给其他仓库名加上 `.github.io` 不会自动创建新的子域名，也不能代替启用 Pages。
+普通项目仓库不需要以 `.github.io` 结尾。当前发布仓库名是 `qiye.ktclat.github.io`，因此它仍是一个项目站点，完整仓库名成为 URL 路径：
 
-## 首次启用
+```text
+https://ktclat.github.io/qiye.ktclat.github.io/
+```
 
-1. 以仓库拥有者或具有 Pages 管理权限的身份，打开 [Settings → Pages](https://github.com/Ktclat/qiye/settings/pages)。
-2. 在 **Build and deployment → Source** 选择 **Deploy from a branch**。
-3. 在 **Branch** 选择 **main**，文件夹选择 **/(root)**，点击 **Save**。
-4. 在仓库 [Actions](https://github.com/Ktclat/qiye/actions) 查看 GitHub 自动生成的 Pages 构建与部署运行。运行成功后，使用设置页显示的站点地址访问。
+只有名为 `Ktclat.github.io` 的仓库才对应该账户的根站点 `https://ktclat.github.io/`。当前仓库名不会自动获得 `https://qiye.ktclat.github.io/` 子域名；如需其他域名，须另行配置自定义域名。
 
-这套配置直接发布已有的 HTML、CSS 和 JavaScript，不需要创建自定义 Actions 工作流。首次启用成功后，后续推送到 `main` 会触发站点更新。
+## 构建网页发布文件
 
-仓库中有发布文件并不代表 Pages 已经启用；请以 Pages 设置、部署运行结果和实际网页响应为准。
+在源码仓库根目录运行：
+
+```bash
+python3 scripts/build-pages.py /path/to/qiye-pages
+```
+
+将 `/path/to/qiye-pages` 替换为发布仓库的本地检出目录。脚本从生产源码生成网页，并输出以下文件：
+
+| 生成文件 | 用途 |
+| --- | --- |
+| `index.html` | 内联页面样式和生产 JavaScript 模块的网页入口 |
+| `icons/icon32.png` | 网页标签图标，使用相对路径引用 |
+| `.nojekyll` | 直接发布静态文件 |
+| `README.md` | 发布仓库说明及源码入口 |
+
+例如，将两个仓库检出到相邻目录：
+
+```bash
+git clone https://github.com/Ktclat/qiye.git
+git clone https://github.com/Ktclat/qiye.ktclat.github.io.git qiye-pages
+cd qiye
+python3 scripts/build-pages.py ../qiye-pages
+```
+
+扩展继续从源码仓库加载，无需为安装扩展运行此脚本。独立下载预览 `Qiye-preview.html` 仍由 `python3 scripts/build-preview.py` 生成；它与 Pages 文件都以生产源码为依据，修改界面时应编辑源码，再重新生成对应交付。
 
 ## 后续更新
 
-修改 `index.html`、样式或 `src/` 后，将修改提交并推送到 `main`。独立下载预览仍由 `python3 scripts/build-preview.py` 生成；运行该脚本并提交更新后的 `Qiye-preview.html`，可让离线预览与源码保持一致。GitHub Pages 首页直接使用 `index.html`，无需在两份 HTML 之间手动复制内容。
+1. 在 `Ktclat/qiye` 修改页面或模块，完成相应验证后提交源码。
+2. 更新发布仓库的本地检出，运行 `scripts/build-pages.py` 将网页生成到该目录。
+3. 检查生成文件的差异，将这些文件提交并推送到 **发布仓库的 `main` 分支**。
+4. 在发布仓库 [Actions](https://github.com/Ktclat/qiye.ktclat.github.io/actions) 等待 Pages 运行成功，再访问网页核对结果。
 
-保留 `.nojekyll` 以及现有相对资源路径。项目站点部署在 `/qiye/` 下，新增资源引用应使用 `src/example.js`、`./icons/example.png` 这类相对路径，避免把站点根路径写成 `/src/example.js`。
+沿用上面的相邻目录示例，可在源码仓库根目录执行：
+
+```bash
+git -C ../qiye-pages pull --ff-only origin main
+python3 scripts/build-pages.py ../qiye-pages
+git -C ../qiye-pages status --short
+git -C ../qiye-pages add index.html icons/icon32.png .nojekyll README.md
+git -C ../qiye-pages commit -m "Update Qiye web preview"
+git -C ../qiye-pages push origin main
+```
+
+**只向源码仓库 `Ktclat/qiye` 推送代码，不会自动更新另一个仓库或触发其 Pages 部署。** 当前流程需要生成文件并提交到发布仓库；部署由发布仓库现有的原生 Pages 流程处理，无需添加自定义 Actions 工作流。
+
+保留 `.nojekyll` 以及相对资源路径。项目站点部署在 `/qiye.ktclat.github.io/` 下，新增资源应随构建复制到发布目录，并使用 `./icons/example.png` 这类相对引用，避免写成 `/icons/example.png`。
 
 ## 从其他域名迁移桌面
 
@@ -48,7 +90,7 @@
 
 ### WebDAV 的新 CORS 来源
 
-GitHub Pages 的网页来源为 **`https://ktclat.github.io`**，来源中不包含 `/qiye/` 路径。
+GitHub Pages 的网页来源仍为 **`https://ktclat.github.io`**，来源中不包含 `/qiye.ktclat.github.io/` 路径。调整同一域名下的项目路径不会产生新的 CORS 来源；同一来源下的网页也会共享该来源的浏览器存储。
 
 服务端需允许此来源、`GET` / `PUT` / `OPTIONS` 方法和 `Authorization`、`Content-Type`、`If-Match`、`If-None-Match` 请求头，并通过 `Access-Control-Expose-Headers: ETag` 暴露版本信息。HTTPS 与强 ETag 条件写入要求继续适用，详见 [README 的同步说明](../README.md#webdav-同步)。
 
@@ -59,7 +101,7 @@ GitHub Pages 的网页来源为 **`https://ktclat.github.io`**，来源中不包
 - 刷新页面后核对本机修改能否保留。
 - 按需测试壁纸 API 与自己的 WebDAV 服务；公开网页部署成功不能替代这些服务的联调。
 
-发布失败时先查看 [Actions 运行记录](https://github.com/Ktclat/qiye/actions)，并确认 Source、Branch 和文件夹与上表一致。
+发布失败时先查看发布仓库的 [Actions 运行记录](https://github.com/Ktclat/qiye.ktclat.github.io/actions)，并确认 Source、Branch 和文件夹与上表一致。如果站点仍显示旧内容，检查生成文件是否已经提交到发布仓库，以及最新部署是否对应这次提交。
 
 ## 官方文档
 

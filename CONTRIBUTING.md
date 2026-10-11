@@ -17,7 +17,7 @@ python3 scripts/build-preview.py
 
 Windows 如未提供 `python3` 命令，可使用 `py -3 scripts/build-preview.py`。`Qiye-preview.html` 是提交到仓库的生成文件；请修改 `index.html`、样式及 `src/` 模块，再运行生成脚本，不要只修改生成结果。
 
-GitHub Pages 使用 `main` 分支根目录的 `index.html` 发布。保留 `.nojekyll` 和相对资源路径，部署和域名迁移说明见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+GitHub Pages 使用独立发布仓库 `Ktclat/qiye.ktclat.github.io` 的 `main` 分支根目录。运行 `python3 scripts/build-pages.py /path/to/qiye-pages` 生成发布文件后，提交到发布仓库；本源码仓库的推送不会自动跨仓库部署。保留相对资源路径和 `.nojekyll`，详见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
 ## 修改与验证
 

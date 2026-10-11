@@ -26,7 +26,18 @@
 - 检查 Manifest V3、版本号、扩展页面/图标/脚本、HTML 样式和模块导入路径。
 - 检查 GitHub Pages 项目路径下的相对资源引用与 `.nojekyll` 发布标记。
 
-这些检查已随 v0.2.1 更新执行，本次通过仓库交付源码与生成文件。网页发布目标已调整为 GitHub Pages，配置见 [DEPLOYMENT.md](DEPLOYMENT.md)。Pages 首次启用与实际站点访问须单独确认；部署结果不代表完成下列浏览器验收。
+这些检查已随 v0.2.1 更新执行，本次通过仓库交付源码与生成文件。网页由独立发布仓库的 GitHub Pages 托管，配置与构建方法见 [DEPLOYMENT.md](DEPLOYMENT.md)。
+
+## 已完成的 GitHub Pages 网页验收
+
+- 正式地址：[https://ktclat.github.io/qiye.ktclat.github.io/](https://ktclat.github.io/qiye.ktclat.github.io/)。
+- 发布提交：[`2544ce3`](https://github.com/Ktclat/qiye.ktclat.github.io/commit/2544ce3ab24699af8e199eed0908058f511dedda)。对应的原生 [Pages 构建与部署运行](https://github.com/Ktclat/qiye.ktclat.github.io/actions/runs/38154532696) 已成功完成。
+- 正式首页和网页标签图标均返回 **HTTP 200**。下载到的 HTML 与已验证发布文件逐字节一致（319,280 字节），标签图标也与源码一致。
+- 在浏览器实际打开正式地址，无需登录即可显示桌面、时钟、分组、卡片与新增网站弹层。留存了 [实际运行截图](screenshots/qiye-pages-20261011.jpg)。
+- 本次首页及文件夹预览的 12 个网站图标中，Google、哔哩哔哩、GitHub、ChatGPT、YouTube、知乎、豆瓣、DeepL、Unsplash、Excalidraw 的图片实际加载成功；Notion、Figma 使用文字回退。这是当前浏览器中的观察结果，不保证所有网络环境都相同。
+- 新增网站表单中，对 Google 执行智能提取，观察到网页版 CORS 失败提示并回退到站点图标；切换文字模式后预览变为文字，提取按钮停用。关闭表单时未添加测试网址。
+
+上述检查覆盖公开网页的一次实际运行，不替代扩展实装、真实 WebDAV 服务或完整交互验收。
 
 ## 尚未完成的真实环境验收
 
@@ -35,9 +46,9 @@
 3. 公开图片 API 清单、缩略图与完整背景在目标浏览器中的实际网络加载。
 4. 天气网络、背景图片/视频解码与自动播放。
 5. 不同窗口尺寸的视觉检查、拖拽手感、弹窗焦点与键盘操作。
-6. 不同实际网站的 favicon 加载、智能提取授权与 CORS 限制，以及浏览器内部图标回退。
+6. 更多实际网站的 favicon 加载与提取，以及扩展按站点授权、拒绝授权和浏览器内部图标回退。
 
-上述项目尚未进行真实浏览器验收。当前没有用于联调的真实 WebDAV 服务地址或账户；协议测试使用受控替身，没有将测试数据上传到用户的远端存储。
+上述项目尚未完成真实环境验收。当前没有用于联调的真实 WebDAV 服务地址或账户；协议测试使用受控替身，没有将测试数据上传到用户的远端存储。
 
 ## 安装后的验收路径
 
