@@ -3726,7 +3726,11 @@ function createDesktopDragController({
  listen(doc, 'pointermove', pointerMove, { capture:true, passive:false });
  listen(doc, 'pointerup', pointerUp);
  listen(doc, 'pointercancel', event => { if (session?.pointerId === event.pointerId) clean(false); });
- listen(doc, 'lostpointercapture', event => { if (session?.active && session.pointerId === event.pointerId) clean(false); });
+ listen(doc, 'lostpointercapture', event => {
+  // Capture may transfer from the pressed child (an anchor, for example) to
+  // its card. Losing that previous target is not losing our current capture.
+  if (session?.active && session.pointerId === event.pointerId && event.target === session.capture) clean(false);
+ });
  listen(doc, 'click', guardClick);
  listen(doc, 'contextmenu', event => {
   // A touch handle can produce a long-press menu while a drag is pending.
@@ -3820,7 +3824,11 @@ function engineSiteUrl(engine) {
  if (typeof engine?.url !== 'string') return null;
  const url = safeUrl(engine.url.replace(/\{q\}/g, ''));
  if (!url) return null;
- try { return new URL(url).origin + '/'; } catch { return null; }
+ try {
+  const origin = new URL(url).origin;
+  // This known search subdomain uses its main site's icon; other origins stay exact.
+  return origin === 'https://search.bilibili.com' ? 'https://www.bilibili.com/' : origin + '/';
+ } catch { return null; }
 }
 function engineGlyph(engine) {
  return `<span class="engine-mark" style="--engine-color:${esc(engine.color || '#237fa4')}">${siteGlyph({url:engineSiteUrl(engine),title:engine.name,icon:engine.letter || engine.name?.slice(0,1),iconMode:'auto'})}</span>`;
