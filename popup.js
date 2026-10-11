@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 import { loadState, addCurrentTab, safeUrl } from './src/core.js';
 
 const form = document.querySelector('#save-form');

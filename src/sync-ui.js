@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 import { loadWebDAVConfig, saveWebDAVConfig, clearWebDAVConfig, requestWebDAVPermission, testWebDAVConnection, syncWebDAV, completeWebDAVDownload, getWebDAVStatus } from './webdav.js';
 import { icon } from './icons.js';
 

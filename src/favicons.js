@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 /* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
 
 const FAVICON_CACHE_KEY = 'qiye.favicons.local.v1';

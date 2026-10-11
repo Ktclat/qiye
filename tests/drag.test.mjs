@@ -75,210 +75,111 @@ test('edge scrolling is bounded and leaves the center or outside the viewport st
  assert.equal(edgeScrollDelta(15,0,30),0,'a short panel keeps a neutral center');
 });
 
-// Small DOM boundary: no production implementation is copied into this harness.
+
+// Boundary fake: real reparenting, layout slot changes, event routing and rAF.
+// Real Chromium coverage of animated bounds and pointer input: tests/browser-e2e.py.
 class Hub {
  constructor(){this.listeners=new Map();}
- addEventListener(type,fn){const list=this.listeners.get(type)||[];list.push(fn);this.listeners.set(type,list);}
- removeEventListener(type,fn){this.listeners.set(type,(this.listeners.get(type)||[]).filter(item=>item!==fn));}
- emit(type,fields={}){
-  const event={type,defaultPrevented:false,stopped:false,preventDefault(){this.defaultPrevented=true;},stopImmediatePropagation(){this.stopped=true;},...fields};
-  for(const fn of this.listeners.get(type)||[]){fn(event);if(event.stopped)break;}
-  return event;
- }
+ addEventListener(t,f){this.listeners.set(t,[...(this.listeners.get(t)||[]),f]);}
+ removeEventListener(t,f){this.listeners.set(t,(this.listeners.get(t)||[]).filter(v=>v!==f));}
+ emit(type,fields={}){const e={type,defaultPrevented:false,stopped:false,preventDefault(){this.defaultPrevented=true;},stopImmediatePropagation(){this.stopped=true;},...fields};for(const f of this.listeners.get(type)||[]){f(e);if(e.stopped)break;}return e;}
 }
 class Node {
  constructor(tag='div',dataset={},rect=bounds(0,0)){
-  this.tagName=tag.toUpperCase();this.dataset={...dataset};this.rect=rect;this.children=[];this.parentElement=null;this.nodeType=1;this.style={};this.attributes={};this.classes=new Set();this.hidden=false;
-  this.classList={add:(...values)=>values.forEach(v=>this.classes.add(v)),remove:(...values)=>values.forEach(v=>this.classes.delete(v)),contains:value=>this.classes.has(value)};
-  this.scrollTop=0;this.scrollHeight=100;this.clientHeight=100;this.overflowY='visible';
-  this.scrollLeft=0;this.scrollWidth=100;this.clientWidth=100;this.overflowX='visible';this.capture=new Set();
+  this.tagName=tag.toUpperCase();this.dataset={...dataset};this.rect=rect;this.children=[];this.parentElement=null;this.nodeType=1;this.style={};this.attributes={};this.classes=new Set();this.capture=new Set();
+  this.classList={add:(...vs)=>vs.forEach(v=>this.classes.add(v)),remove:(...vs)=>vs.forEach(v=>this.classes.delete(v)),contains:v=>this.classes.has(v)};
+  this.scrollTop=0;this.scrollLeft=0;this.scrollHeight=100;this.clientHeight=100;this.scrollWidth=100;this.clientWidth=100;
  }
  get isConnected(){return !!this.rootConnected||!!this.parentElement?.isConnected;}
- set className(value){this.classes=new Set(value.split(/\s+/).filter(Boolean));}
- get className(){return [...this.classes].join(' ');}
- append(...nodes){for(const node of nodes){node.parentElement=this;this.children.push(node);}}
- remove(){if(this.parentElement)this.parentElement.children=this.parentElement.children.filter(node=>node!==this);this.parentElement=null;}
- contains(node){return node===this||this.children.some(child=>child.contains(node));}
- setAttribute(name,value){this.attributes[name]=value;}
- getBoundingClientRect(){return this.rect;}
+ get nextElementSibling(){const p=this.parentElement;return p?.children[p.children.indexOf(this)+1]||null;}
+ append(...ns){for(const n of ns){n.remove();n.parentElement=this;this.children.push(n);}}
+ insertBefore(n,next){n.remove();n.parentElement=this;const i=this.children.indexOf(next);this.children.splice(i<0?this.children.length:i,0,n);}
+ remove(){if(this.parentElement)this.parentElement.children=this.parentElement.children.filter(n=>n!==this);this.parentElement=null;}
+ contains(n){return n===this||this.children.some(c=>c.contains(n));}
+ setAttribute(k,v){this.attributes[k]=v;}
+ removeAttribute(k){delete this.attributes[k];if(k.startsWith('data-'))delete this.dataset[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())];}
+ getBoundingClientRect(){return this.parentElement?.layout?this.parentElement.layout(this):this.rect;}
  setPointerCapture(id){this.capture.add(id);}
  releasePointerCapture(id){this.capture.delete(id);}
- matches(selector){
-  return selector.split(',').some(raw=>{
-   const part=raw.trim();
-   if(part.startsWith('.'))return this.classes.has(part.slice(1));
-   if(part.startsWith('[data-')){const key=part.slice(6,-1).replace(/-([a-z])/g,(_,v)=>v.toUpperCase());return this.dataset[key]!==undefined;}
-   if(part.startsWith('['))return this.attributes[part.slice(1,-1)]!==undefined;
-   return this.tagName===part.toUpperCase();
-  });
- }
- closest(selector){return this.matches(selector)?this:this.parentElement?.closest(selector)||null;}
- querySelectorAll(selector){return this.children.flatMap(child=>[...(child.matches(selector)?[child]:[]),...child.querySelectorAll(selector)]);}
+ matches(selector){return selector.split(',').some(raw=>{const p=raw.trim();if(p==='*')return true;if(p.startsWith('.'))return this.classes.has(p.slice(1));if(p.startsWith('[data-'))return this.dataset[p.slice(6,-1).replace(/-([a-z])/g,(_,v)=>v.toUpperCase())]!==undefined;if(p.startsWith('['))return this.attributes[p.slice(1,-1)]!==undefined;return this.tagName===p.toUpperCase();});}
+ closest(s){return this.matches(s)?this:this.parentElement?.closest(s)||null;}
+ querySelectorAll(s){return this.children.flatMap(c=>[...(c.matches(s)?[c]:[]),...c.querySelectorAll(s)]);}
+ cloneNode(deep){const n=new Node(this.tagName,this.dataset,this.rect);n.classes=new Set(this.classes);if(deep)n.append(...this.children.map(c=>c.cloneNode(true)));return n;}
+ animate(keys,options){this.lastAnimation={keys,options};return {cancel(){}};}
+ focus(){this.focused=true;}
 }
 function harness(){
- const state=initial(), doc=new Hub(), win=new Hub(), frames=new Map(), drops=[], errors=[];let seq=0,editing=false;
- win.innerWidth=1000;win.innerHeight=800;
- win.requestAnimationFrame=fn=>{frames.set(++seq,fn);return seq;};win.cancelAnimationFrame=id=>frames.delete(id);win.getComputedStyle=node=>({overflowY:node.overflowY,overflowX:node.overflowX});
+ const state=initial(),doc=new Hub(),win=new Hub(),frames=new Map(),drops=[],errors=[];let seq=0,editing=false;
+ win.innerWidth=1000;win.innerHeight=800;win.requestAnimationFrame=f=>{frames.set(++seq,f);return seq;};win.cancelAnimationFrame=i=>frames.delete(i);win.matchMedia=()=>({matches:false});
  const page=new Node('html',{},bounds(0,0,1000,800));page.rootConnected=true;page.clientHeight=800;page.scrollHeight=1600;
- const body=new Node('body');page.append(body);
- const grid=new Node('div',{},bounds(100,200,750,400)), groups=new Node('nav',{},bounds(0,180,65,300));body.append(grid,groups);
- doc.body=body;doc.documentElement=page;doc.scrollingElement=page;doc.defaultView=win;doc.getElementById=id=>({desktop:grid,groups}[id]);doc.createElement=tag=>new Node(tag);doc.getSelection=()=>({removeAllRanges(){}});
+ const body=new Node('body');page.append(body);const grid=new Node('div',{},bounds(100,200,750,400)),groups=new Node('nav',{},bounds(0,180,65,300));body.append(grid,groups);
+ grid.layout=n=>bounds(100+grid.children.indexOf(n)*130,230,100,100);
+ groups.layout=n=>state.settings?.navigationMode==='top'?bounds(110+groups.children.indexOf(n)*110,20,90,48):bounds(6,200+groups.children.indexOf(n)*70,52,58);
+ doc.body=body;doc.documentElement=page;doc.scrollingElement=page;doc.defaultView=win;doc.getElementById=id=>({desktop:grid,groups}[id]);doc.querySelectorAll=s=>body.querySelectorAll(s);doc.querySelector=s=>doc.querySelectorAll(s)[0];doc.getSelection=()=>({removeAllRanges(){}});
  const nodes={};
- for(const [index,item] of state.items.filter(item=>item.groupId==='home'&&!item.folderId).entries()){
-  const tile=new Node('article',{item:item.id,itemType:item.type},bounds(100+index*130,230));
-  const handle=new Node('button',{dragHandle:''});
-  const control=new Node(item.type==='link'?'a':item.type==='folder'?'button':'textarea',item.type==='link'?{openLink:item.id}:item.type==='folder'?{openFolder:item.id}:{});
-  grid.append(tile);tile.append(control,handle);nodes[item.id]={tile,control,handle};
+ for(const item of state.items.filter(i=>i.groupId==='home'&&!i.folderId)){
+  const tile=new Node('article',{item:item.id,itemType:item.type}),control=new Node(item.type==='link'?'a':item.type==='folder'?'button':'textarea',item.type==='link'?{openLink:item.id}:item.type==='folder'?{openFolder:item.id}:{});
+  grid.append(tile);tile.append(control);nodes[item.id]={tile,control};
  }
- const add=new Node('div',{},bounds(620,230));add.className='tile-add';grid.append(add);
- for(const [index,group] of state.groups.entries()){const button=new Node('button',{group:group.id},bounds(6,200+index*70,52,58));groups.append(button);nodes[group.id]=button;}
+ for(const g of state.groups){const b=new Node('button',{group:g.id});groups.append(b);nodes[g.id]=b;}
  let hit=nodes.a.control;doc.elementFromPoint=()=>hit;
- const controller=createDesktopDragController({document:doc,getState:()=>state,getActiveGroupId:()=>state.activeGroupId,onDrop:value=>drops.push(value),onError:value=>errors.push(value),canDragGroups:()=>editing});
+ const controller=createDesktopDragController({document:doc,getState:()=>state,onDrop:v=>drops.push(v),onError:e=>errors.push(e),canDragGroups:()=>editing});
  const pointer=(type,target,x,y,extra={})=>doc.emit(type,{target,clientX:x,clientY:y,pointerId:1,pointerType:'mouse',isPrimary:true,button:0,buttons:type==='pointerup'?0:1,...extra});
- return {doc,win,state,nodes,grid,groups,add,page,frames,drops,errors,controller,pointer,hit:node=>{hit=node;},setEditing:value=>{editing=value;},flush:async()=>{await new Promise(resolve=>setImmediate(resolve));}};
+ const tick=()=>{const entry=[...frames.entries()][0];if(entry){frames.delete(entry[0]);entry[1]();}};
+ return {doc,win,state,nodes,grid,groups,page,frames,drops,errors,controller,pointer,tick,hit:n=>{hit=n;},setEditing:v=>{editing=v;},order:()=>grid.children.map(n=>n.dataset.item),flush:()=>new Promise(r=>setImmediate(r))};
 }
+function start(h,{source='a',x=315,y=265,hit=h.nodes.b.control}={}){h.hit(hit);const n=h.nodes[source].tile,r=n.getBoundingClientRect();h.pointer('pointerdown',n,r.left+20,r.top+20);h.pointer('pointermove',n,x,y);h.tick();}
 
-test('normal website clicks remain intact; a real drag works without edit mode and suppresses its release click', async () => {
- const h=harness(), source=h.nodes.a.control;
- h.pointer('pointerdown',source,120,260);
- h.pointer('pointermove',source,123,260);
- h.pointer('pointerup',source,123,260);
- assert.equal(h.doc.emit('click',{target:source,clientX:123,clientY:260,pointerId:1,detail:1}).defaultPrevented,false);
- h.hit(h.nodes.b.control);h.pointer('pointerdown',source,120,260);
- h.pointer('pointermove',source,315,265);
- assert.equal(h.controller.isDragging(),true);
- assert.equal(h.nodes.b.tile.classList.contains('drop-after'),true);
- assert.ok(h.frames.size);
- h.pointer('pointerup',source,315,265);await h.flush();
- assert.deepEqual(h.drops,[{kind:'reorder',itemId:'a',targetId:'b',position:'after'}]);
- assert.equal(h.controller.isDragging(),false);assert.equal(h.frames.size,0);
- assert.equal(h.doc.body.querySelectorAll('.drag-preview').length,0);
- assert.equal(h.nodes.b.tile.classList.contains('drop-after'),false);
- assert.equal(h.doc.emit('click',{target:source,clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,true);
- h.pointer('pointerdown',source,120,260);h.pointer('pointerup',source,120,260);
- assert.equal(h.doc.emit('click',{target:source,clientX:120,clientY:260,pointerId:1,detail:1}).defaultPrevented,false,'a fresh click is allowed immediately');
- h.controller.destroy();
+test('click threshold preserves website taps; live DOM reflow happens before the only commit',async()=>{
+ const h=harness(),n=h.nodes.a.control;h.pointer('pointerdown',n,120,250);h.pointer('pointermove',n,123,250);h.pointer('pointerup',n,123,250);
+ assert.equal(h.drops.length,0);assert.equal(h.controller.isDragging(),false);
+ start(h);assert.deepEqual(h.order(),['b','a','folder','note']);assert.equal(h.drops.length,0);assert.deepEqual(h.state.items.slice(0,2).map(i=>i.id),['a','b']);
+ assert.equal(h.doc.body.querySelectorAll('.drag-ghost').length,1);assert.ok(h.nodes.b.tile.lastAnimation);
+ h.pointer('pointerup',n,315,265);await h.flush();assert.deepEqual(h.drops,[{kind:'reorder',itemId:'a',targetId:'folder',position:'before'}]);
+ assert.equal(h.doc.emit('click',{target:n,clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,true);
+ h.pointer('pointerdown',n,315,265);h.pointer('pointerup',n,315,265);assert.equal(h.doc.emit('click',{target:n,clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,false);h.controller.destroy();
 });
-
-test('widget text and touch scrolling are protected, while an explicit handle supports touch dragging',async()=>{
- const h=harness();
- for(const [target,pointerType] of [[h.nodes.note.control,'mouse'],[h.nodes.a.control,'touch']]){
-  h.hit(h.nodes.b.control);h.pointer('pointerdown',target,120,260,{pointerType});h.pointer('pointermove',target,290,270,{pointerType});
-  assert.equal(h.controller.isDragging(),false);h.pointer('pointerup',target,290,270,{pointerType});
+test('widget inputs remain interactive; noninteractive widget surfaces drag without a handle',async()=>{
+ const h=harness();h.pointer('pointerdown',h.nodes.note.control,510,250);h.pointer('pointermove',h.nodes.note.control,240,265);assert.equal(h.controller.isDragging(),false);
+ start(h,{source:'note',x:240});assert.equal(h.controller.isDragging(),true);assert.deepEqual(h.order(),['a','note','b','folder']);h.pointer('pointerup',h.nodes.note.tile,240,265);await h.flush();assert.equal(h.drops.length,1);h.controller.destroy();
+});
+test('touch swipe scrolls; holding the surface arms touch sorting',async()=>{
+ const h=harness(),n=h.nodes.a.tile;h.pointer('pointerdown',n,120,250,{pointerType:'touch'});h.pointer('pointermove',n,150,260,{pointerType:'touch'});assert.equal(h.controller.isDragging(),false);
+ h.pointer('pointerup',n,150,260,{pointerType:'touch'});h.pointer('pointerdown',n,120,250,{pointerType:'touch'});await new Promise(r=>setTimeout(r,350));
+ assert.equal(h.controller.isDragging(),true);assert.equal(h.doc.emit('touchmove',{}).defaultPrevented,true);h.controller.destroy();
+});
+test('Escape restores original DOM and suppresses only the later release click',async()=>{
+ const h=harness();start(h);assert.notEqual(h.order()[0],'a');const e=h.doc.emit('keydown',{key:'Escape'});assert.equal(e.defaultPrevented,true);assert.deepEqual(h.order(),['a','b','folder','note']);
+ h.pointer('pointerup',h.nodes.a.tile,315,265);await h.flush();assert.equal(h.drops.length,0);assert.equal(h.frames.size,0);assert.equal(h.doc.emit('click',{clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,true);h.controller.destroy();
+});
+test('pointercancel restores order and leaves no ghost',()=>{const h=harness();start(h);h.pointer('pointercancel',h.nodes.a.tile,315,265);assert.deepEqual(h.order(),['a','b','folder','note']);assert.equal(h.doc.querySelectorAll('.drag-ghost').length,0);h.controller.destroy();});
+test('only the owning pointer may release; stale source cancels next frame',()=>{
+ const h=harness();start(h);h.pointer('pointerup',h.nodes.a.tile,315,265,{pointerId:2});assert.equal(h.controller.isDragging(),true);h.nodes.a.tile.remove();h.tick();assert.equal(h.controller.isDragging(),false);assert.equal(h.frames.size,0);h.controller.destroy();
+});
+test('capture transfer is allowed; losing current capture cancels',()=>{
+ const h=harness();start(h);h.doc.emit('lostpointercapture',{target:h.nodes.a.control,pointerId:1});assert.equal(h.controller.isDragging(),true);h.doc.emit('lostpointercapture',{target:h.grid,pointerId:1});assert.equal(h.controller.isDragging(),false);h.controller.destroy();
+});
+test('drop into a folder or another group commits exactly once',async()=>{
+ for(const [hit,x,y,kind] of [['folder',410,270,'folder'],['work',30,300,'group']]){
+  const h=harness();start(h,{x,y,hit:h.nodes[hit].control||h.nodes[hit]});h.pointer('pointerup',h.nodes.a.tile,x,y);await h.flush();assert.equal(h.drops.length,1);assert.equal(h.drops[0].kind,kind);h.controller.destroy();
  }
- assert.deepEqual(h.drops,[]);
- h.hit(h.nodes.b.control);h.pointer('pointerdown',h.nodes.note.handle,510,265,{pointerType:'touch'});
- assert.equal(h.doc.emit('contextmenu',{target:h.nodes.note.handle}).stopped,true,'a handle long press does not interrupt dragging with a menu');
- h.pointer('pointermove',h.nodes.note.handle,245,265,{pointerType:'touch'});
- assert.equal(h.controller.isDragging(),true);
- h.pointer('pointerup',h.nodes.note.handle,245,265,{pointerType:'touch'});await h.flush();
- assert.deepEqual(h.drops,[{kind:'reorder',itemId:'note',targetId:'b',position:'before'}]);
- assert.equal(h.nodes.note.handle.capture.size,0);h.controller.destroy();
 });
-
-test('Escape cancels the move and catches a later release click; pointer cancellation also cleans up',async()=>{
- const h=harness();h.hit(h.nodes.b.control);
- h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,270,270);
- const escape=h.doc.emit('keydown',{key:'Escape'});
- assert.equal(escape.defaultPrevented,true);assert.equal(escape.stopped,true);
- assert.equal(h.controller.isDragging(),false);assert.equal(h.frames.size,0);
- h.pointer('pointerup',h.nodes.a.control,270,270);await h.flush();
- assert.deepEqual(h.drops,[]);
- assert.equal(h.doc.emit('click',{target:h.nodes.a.control,clientX:270,clientY:270,pointerId:1,detail:1}).defaultPrevented,true);
- assert.equal(h.doc.emit('keydown',{key:'Escape'}).stopped,false,'unrelated Escape remains available to the app');
- h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,270,270);
- h.pointer('pointercancel',h.nodes.a.control,270,270);await h.flush();
- assert.equal(h.doc.body.classList.contains('is-dragging'),false);
- assert.equal(h.doc.body.querySelectorAll('.drag-indicator').length,0);assert.deepEqual(h.drops,[]);h.controller.destroy();
+test('native image dragging cannot compete and destroy removes document/window listeners',()=>{
+ const h=harness();assert.equal(h.doc.emit('dragstart',{target:h.nodes.a.control}).defaultPrevented,true);assert.equal(h.doc.emit('dragstart',{target:h.nodes.note.control}).defaultPrevented,false);start(h);h.controller.destroy();assert.ok([...h.doc.listeners.values(),...h.win.listeners.values()].every(a=>!a.length));assert.equal(h.frames.size,0);
 });
-
-test('stale DOM/state cancels a drag, and only the owning pointer may finish it',async()=>{
- const h=harness();h.hit(h.nodes.b.control);
- h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,270,270);
- h.pointer('pointerup',h.nodes.a.control,270,270,{pointerId:2});assert.equal(h.controller.isDragging(),true);
- h.state.items=h.state.items.filter(item=>item.id!=='b');h.pointer('pointerup',h.nodes.a.control,270,270);await h.flush();
- assert.deepEqual(h.drops,[],'a removed destination is never committed');
- h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,270,270);
- h.nodes.a.tile.remove();h.pointer('pointermove',h.nodes.a.control,300,270);
- assert.equal(h.controller.isDragging(),false);assert.equal(h.frames.size,0);h.controller.destroy();
+test('page edge scroll continues until cancellation',()=>{const h=harness();start(h,{y:792,hit:h.grid});assert.ok(h.page.scrollTop>0);h.tick();assert.ok(h.page.scrollTop>0);h.controller.cancel();assert.equal(h.frames.size,0);h.controller.destroy();});
+test('top navigation reorders actual group nodes horizontally',async()=>{
+ const h=harness();h.state.settings={navigationMode:'top'};h.setEditing(true);h.hit(h.nodes.work);h.pointer('pointerdown',h.nodes.home,130,32);h.pointer('pointermove',h.nodes.home,300,42);h.tick();assert.equal(h.groups.children[1],h.nodes.home);h.pointer('pointerup',h.nodes.home,300,42);await h.flush();assert.equal(h.drops[0].kind,'group-reorder');h.controller.destroy();
 });
-
-test('capture transfer from an anchor to its card does not cancel the drag, but losing the current capture does',async()=>{
- const h=harness();h.hit(h.nodes.b.control);
- h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,270,270);
- assert.equal(h.nodes.a.tile.capture.has(1),true);
- h.doc.emit('lostpointercapture',{target:h.nodes.a.control,pointerId:1});
- assert.equal(h.controller.isDragging(),true,'losing the previously pressed anchor is a capture transfer');
- assert.ok(h.frames.size);
- h.doc.emit('lostpointercapture',{target:h.nodes.a.tile,pointerId:1});
- assert.equal(h.controller.isDragging(),false,'losing the actual captured card aborts the gesture');
- assert.equal(h.frames.size,0);assert.equal(h.doc.body.querySelectorAll('.drag-preview').length,0);
- h.pointer('pointerup',h.nodes.a.control,270,270);await h.flush();
- assert.deepEqual(h.drops,[]);h.controller.destroy();
+test('top group edge scroll never leaks into page scrolling',()=>{
+ const h=harness();h.state.settings={navigationMode:'top'};h.setEditing(true);h.groups.rect=bounds(100,12,400,64);h.groups.clientWidth=400;h.groups.scrollWidth=1200;h.page.scrollTop=160;h.hit(h.groups);
+ h.pointer('pointerdown',h.nodes.home,130,32);h.pointer('pointermove',h.nodes.home,493,44);h.tick();assert.ok(h.groups.scrollLeft>0);assert.equal(h.page.scrollTop,160);h.pointer('pointermove',h.nodes.home,102,44);h.tick();assert.equal(h.groups.scrollLeft,0);h.tick();assert.equal(h.page.scrollTop,160);h.controller.destroy();
 });
-
-test('native app dragging cannot compete, sidebar group moves work, and drag listeners are removable',async()=>{
- const h=harness();
- assert.equal(h.doc.emit('dragstart',{target:h.nodes.a.control}).defaultPrevented,true);
- assert.equal(h.doc.emit('dragstart',{target:h.nodes.note.control}).defaultPrevented,false,'selected text in a widget retains its native behavior');
- h.hit(h.nodes.work);h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,30,300);
- assert.equal(h.nodes.work.classList.contains('drop-inside'),true);
- h.pointer('pointerup',h.nodes.a.control,30,300);await h.flush();
- assert.deepEqual(h.drops,[{kind:'group',itemId:'a',groupId:'work'}]);
- h.controller.destroy();
- assert.ok([...h.doc.listeners.values()].every(list=>list.length===0));
- assert.ok([...h.win.listeners.values()].every(list=>list.length===0));
+test('right navigation scrolls overflow vertically without a visible scrollbar',()=>{
+ const h=harness();h.state.settings={sidebarPosition:'right'};h.setEditing(true);h.groups.rect=bounds(935,180,65,300);h.groups.clientHeight=300;h.groups.scrollHeight=600;h.hit(h.groups);h.pointer('pointerdown',h.nodes.home,961,220);h.pointer('pointermove',h.nodes.home,961,475);h.tick();assert.ok(h.groups.scrollTop>0);assert.equal(h.groups.scrollLeft,0);h.controller.destroy();
 });
+test('reduced-effects mode disables neighbour animations but keeps reordering',()=>{const h=harness();h.state.settings={reducedEffects:true};start(h);assert.equal(h.order()[0],'b');assert.equal(h.nodes.b.tile.lastAnimation,undefined);h.controller.destroy();});
 
-test('dragging at the page edge scrolls continuously and cancellation stops the animation loop',()=>{
- const h=harness();h.hit(h.grid);
- h.pointer('pointerdown',h.nodes.a.control,120,260);h.pointer('pointermove',h.nodes.a.control,280,792);
- assert.equal(h.controller.isDragging(),true);
- const [id,frame]=[...h.frames.entries()][0];h.frames.delete(id);frame();
- assert.ok(h.page.scrollTop>0);
- h.controller.cancel();assert.equal(h.frames.size,0);h.controller.destroy();
-});
-
-test('top group dragging shows a vertical insertion line and commits horizontal order',async()=>{
- const h=harness();h.state.settings={navigationMode:'top'};h.setEditing(true);
- h.groups.rect=bounds(100,12,400,64);
- h.nodes.home.rect=bounds(110,20,90,48);h.nodes.work.rect=bounds(220,20,90,48);
- h.hit(h.nodes.work);
- h.pointer('pointerdown',h.nodes.home,130,32);h.pointer('pointermove',h.nodes.home,235,58);
- assert.equal(h.controller.isDragging(),true);
- assert.equal(h.nodes.work.classList.contains('drop-before'),true);
- const indicator=h.doc.body.querySelectorAll('.drag-indicator')[0];
- assert.equal(indicator.dataset.axis,'x');
- assert.equal(indicator.style.left,'218px');assert.equal(indicator.style.top,'23px');
- assert.equal(indicator.style.width,'4px');assert.equal(indicator.style.height,'42px');
- h.pointer('pointerup',h.nodes.home,235,58);await h.flush();
- assert.deepEqual(h.drops,[{kind:'group-reorder',groupId:'home',targetId:'work',position:'before'}]);
- h.controller.destroy();
-});
-
-test('top navigation auto-scrolls left and right without moving the page, and stops on cancellation',()=>{
- const h=harness();h.state.settings={navigationMode:'top'};h.setEditing(true);
- h.groups.rect=bounds(100,12,400,64);h.groups.clientWidth=400;h.groups.scrollWidth=1200;h.groups.overflowX='auto';
- h.nodes.home.rect=bounds(110,20,90,48);h.nodes.work.rect=bounds(220,20,90,48);
- h.page.scrollTop=160;h.hit(h.groups);
- h.pointer('pointerdown',h.nodes.home,130,32);h.pointer('pointermove',h.nodes.home,493,44);
- const tick=()=>{const [id,frame]=[...h.frames.entries()][0];h.frames.delete(id);frame();};
- tick();assert.ok(h.groups.scrollLeft>0);assert.equal(h.page.scrollTop,160);
- h.pointer('pointermove',h.nodes.home,102,44);tick();
- assert.equal(h.groups.scrollLeft,0);assert.equal(h.page.scrollTop,160);
- tick();assert.equal(h.page.scrollTop,160,'hitting the horizontal limit must not scroll the page instead');
- h.controller.cancel();assert.equal(h.frames.size,0);h.controller.destroy();
-});
-
-test('a right sidebar retains horizontal insertion lines and vertical overflow scrolling',()=>{
- const h=harness();h.state.settings={navigationMode:'sidebar',sidebarPosition:'right'};h.setEditing(true);
- h.groups.rect=bounds(935,180,65,300);h.groups.clientHeight=300;h.groups.scrollHeight=600;h.groups.overflowY='auto';
- h.nodes.home.rect=bounds(941,200,52,58);h.nodes.work.rect=bounds(941,270,52,58);
- h.hit(h.nodes.work);h.pointer('pointerdown',h.nodes.home,961,220);h.pointer('pointermove',h.nodes.home,961,320);
- const indicator=h.doc.body.querySelectorAll('.drag-indicator')[0];
- assert.equal(indicator.dataset.axis,'y');assert.equal(indicator.style.height,'4px');
- h.hit(h.groups);h.pointer('pointermove',h.nodes.home,961,475);
- const [id,frame]=[...h.frames.entries()][0];h.frames.delete(id);frame();
- assert.ok(h.groups.scrollTop>0);assert.equal(h.groups.scrollLeft,0);
- h.controller.cancel();h.controller.destroy();
+test('pointer capture lives on stable grid; child blur never cancels live reflow',()=>{
+ const h=harness();start(h);assert.equal(h.grid.capture.has(1),true);h.win.emit('blur',{target:h.nodes.a.control});assert.equal(h.controller.isDragging(),true);h.win.emit('blur',{target:h.win});assert.equal(h.controller.isDragging(),false);h.controller.destroy();
 });

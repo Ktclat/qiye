@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 import { appendLink, safeUrl } from './src/core.js';
 
 const ADD_MENU_ID = 'qiye-add-page';

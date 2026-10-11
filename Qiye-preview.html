@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Qiye Copyright 2026 Ktclat and contributors; GPL-3.0-only. Source: https://github.com/Ktclat/qiye -->
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -845,6 +846,119 @@ html[data-theme=dark] .w-clock{--w-bg:radial-gradient(ellipse at 90% 0,#45556e,t
 .sync-intro{display:flex;align-items:center;gap:15px;margin:0 0 20px}.sync-symbol{width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:16px;background:var(--accent-soft,rgba(128,204,179,.13));color:var(--accent,#8ecdb5)}.sync-symbol .icon{width:27px;height:27px}.sync-intro h3{font-size:17px;margin:0 0 6px;font-weight:600}.sync-intro p{font-size:12px;line-height:1.65;margin:0;color:var(--muted)}.sync-overview{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--panel-soft,rgba(128,128,128,.07));border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:20px;font-size:12px}.sync-overview span:last-child{color:var(--muted)}.sync-status{font-size:12px;line-height:1.75;border:1px solid var(--border);background:var(--panel-soft,rgba(128,128,128,.07));border-radius:12px;padding:12px 14px;margin:18px 0 14px;white-space:pre-wrap;overflow-wrap:anywhere}.sync-status[data-kind=success]{border-color:rgba(72,176,134,.38);color:var(--accent,#89cbae)}.sync-status[data-kind=error]{border-color:rgba(217,111,105,.4);color:var(--danger,#e58982)}.sync-status[data-kind=review]{border-color:rgba(221,177,96,.4);color:var(--text)}.sync-status[data-kind=busy]{opacity:.72}.sync-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.sync-actions .text-button{background:none;border:0;color:var(--muted);padding:8px 4px;cursor:pointer;font-size:12px}.sync-actions .text-button:hover{color:var(--text)}.sync-details{margin-top:20px;border-top:1px solid var(--border);padding-top:8px}.sync-details p{color:var(--muted);font-size:11px;line-height:1.9;margin:10px 0}.sync-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}.sync-review-card{border:1px solid var(--border);border-radius:15px;padding:18px;background:var(--panel-soft,rgba(128,128,128,.05))}.sync-review-card>strong{font-size:13px}.sync-review-card>div{margin:20px 0 10px;font-size:32px;font-weight:350}.sync-review-card small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:4px}.sync-review-card p{font-size:12px;color:var(--muted);line-height:1.9;margin-bottom:0}.sync-review-backups{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}#webdav-form input[type=url],#webdav-form input[name=davPath]{font-variant-ligatures:none}.sync-form-actions{margin-top:20px}@media(max-width:480px){.sync-review-grid{gap:8px}.sync-review-card{padding:14px}.sync-overview{font-size:11px}.sync-actions .primary-button{width:100%;justify-content:center}}
 
 </style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only
+   v0.3 — less chrome, predictable scrolling and transform-only interactions. */
+#clock-seconds{font-size:1em;font-weight:inherit;letter-spacing:inherit;opacity:1;padding-left:0;color:inherit}
+#clock-time,#clock-seconds{font-variant-numeric:tabular-nums}
+/* Never manufacture a white icon plate. The site's own pixels stay untouched. */
+.tile-link .tile-body:has(.site-visual.is-loaded),
+.folder-preview .mini-site:has(.site-visual.is-loaded),
+.folder-site:has(.site-visual.is-loaded){background:transparent!important;border:0;box-shadow:none!important;border-radius:0;overflow:visible}
+.site-visual.is-loaded{background:transparent;border:0;box-shadow:none;border-radius:0;overflow:visible}
+.site-visual>.site-favicon{width:92%;height:92%;max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto;border:0;box-shadow:none;background:transparent}
+.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{max-width:112px;max-height:112px}
+.mini-site .site-favicon{max-width:100%;max-height:100%}
+.engine-mark .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;padding:0}
+html[data-theme=dark] .tile-link .site-favicon{filter:drop-shadow(0 1px 2px rgb(230 243 255 / .20))}
+.tile-link:focus-within>.tile-label,.tile-link:hover>.tile-label,.tile-folder:focus-within>.tile-label,.tile-folder:hover>.tile-label{opacity:1}
+.tile-link>.tile-label,.tile-folder>.tile-label{max-width:100%;align-self:center}
+.tile-drag-handle{display:none!important}
+.tile{cursor:grab;touch-action:pan-y;user-select:none}
+.tile input,.tile textarea,.tile select,.tile [contenteditable]{user-select:text;cursor:auto;touch-action:auto}
+.tile button,.tile a{cursor:pointer}
+.editing .tile{touch-action:none}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:5px;border-radius:var(--radius)}
+/* The source remains in the layout as a moving gap. Neighbours use WAAPI FLIP. */
+body.is-dragging .tile,body.is-dragging .group-button{cursor:grabbing;transition:none;animation:none}
+body.is-dragging .tile.dragging{opacity:.16;outline:1px dashed var(--accent);outline-offset:1px}
+body.is-dragging .tile.dragging>.tile-body,body.is-dragging .tile.dragging>.tile-label{visibility:hidden}
+body.is-dragging .tile-body{transform:none!important;transition:none}
+body.is-dragging{cursor:grabbing;user-select:none}
+body.is-dragging .group-button.dragging{opacity:.2}
+.drag-ghost{opacity:.94;cursor:grabbing;pointer-events:none!important;transition:none!important;animation:none!important;filter:drop-shadow(0 12px 16px rgb(0 0 0 / .2));will-change:transform}
+.drag-ghost .tile-actions{display:none}
+.drag-ghost .tile-body{height:calc(100% - 22px)}
+.drag-ghost .tile-label{opacity:1;visibility:visible}
+.drop-inside{outline:2px solid var(--accent)!important;outline-offset:5px;border-radius:var(--radius)}
+/* Four actions hide together; the fifth, contextual eye only appears on hover/focus. */
+.top-tools{border:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:4px;gap:3px}
+.top-tools .toolbar-actions{display:flex;max-width:none;gap:5px;overflow:visible;opacity:1;visibility:visible;transition:opacity .16s ease}
+.top-tools .tool-button,.top-tools .tool-button.add-main{border:0!important;box-shadow:none;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--fg)}
+.top-tools .tool-button:hover{background:color-mix(in srgb,var(--fg) 9%,transparent);transform:none}
+.top-tools .tool-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top-tools .toolbar-mode{opacity:0;transition:opacity .16s;pointer-events:none}
+.top-tools:hover .toolbar-mode,.top-tools:focus-within .toolbar-mode{opacity:1;pointer-events:auto}
+.top-tools.auto-hide .toolbar-actions{max-width:none;opacity:0;visibility:visible;overflow:visible;pointer-events:none;transition-delay:.5s}
+.top-tools.auto-hide:hover .toolbar-actions,.top-tools.auto-hide:focus-within .toolbar-actions{max-width:none;opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+.top-tools.auto-hide:not(:hover):not(:focus-within) .shortcuts-tooltip{display:none}
+/* Invisible scrollbars never disable scrolling. Wheel routing is in app.js. */
+.groups{min-height:0;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none}
+.groups::-webkit-scrollbar{display:none;width:0;height:0}
+.group-button{flex-shrink:0}
+html.hide-content-scrollbar,html.hide-content-scrollbar body{scrollbar-width:none;-ms-overflow-style:none}
+html.hide-content-scrollbar::-webkit-scrollbar,html.hide-content-scrollbar body::-webkit-scrollbar{display:none;width:0;height:0}
+/* Stable quote position and enough bottom space for the last row to clear it. */
+main{padding-bottom:112px}
+.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:64px;overflow:hidden;line-height:1.5;text-wrap:balance}
+html[data-sidebar-position=right] .daily-quote{left:24px;right:calc(var(--sidebar-width) + 24px)}
+html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .daily-quote,.minimal .daily-quote{left:24px;right:24px}
+.wallpaper-credit{max-width:33vw;bottom:8px;z-index:10}
+.folder-site{position:relative}
+.folder-grid{gap:24px 20px}
+.folder-item:focus-within{outline:1px solid var(--accent);outline-offset:5px;border-radius:12px}
+/* Wallpaper entry: no automatic list requests on page load. */
+.w-wallpaper{isolation:isolate}
+.wallpaper-widget-art{position:absolute;inset:0;background:radial-gradient(ellipse at 82% 14%,#f5ddab 0 9%,transparent 9.5%),linear-gradient(140deg,#629b97,#0d403a 70%)}
+.wallpaper-widget-art:after{content:"";position:absolute;inset:26% -10% -25%;background:linear-gradient(140deg,#679285,#134c49);clip-path:polygon(0 90%,30% 5%,49% 50%,68% 17%,100% 100%)}
+.wallpaper-widget-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wallpaper-launcher{position:absolute;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:6px;padding:20px;color:#fff;background:linear-gradient(transparent,rgba(8,31,30,.65));width:100%;text-align:left}
+.wallpaper-launcher strong{font-size:21px;font-weight:550;letter-spacing:.02em}
+.wallpaper-launcher>span{font-size:11px;opacity:.82}
+.wallpaper-launcher .wallpaper-eyebrow{font-size:9px;letter-spacing:.16em;margin-bottom:auto}
+.wallpaper-launch-arrow{position:absolute;right:18px;top:16px;font-size:23px!important}
+/* Gallery is one dialog, not nested dialogs. Only the content column scrolls. */
+.app-dialog.wallpaper-dialog{width:min(1040px,calc(100vw - 40px));max-height:min(800px,calc(100dvh - 48px));padding:0;overflow:hidden}
+.wallpaper-dialog #dialog-content{display:flex;flex-direction:column;height:min(730px,calc(100dvh - 50px));min-height:0}
+.wallpaper-dialog .dialog-head{flex:none;padding:22px 26px 18px}
+.wallpaper-browser{display:grid;grid-template-columns:180px minmax(0,1fr);min-height:0;flex:1;border-top:1px solid var(--panel-border)}
+.wallpaper-nav{padding:18px 10px 14px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--panel-border);min-height:0;overflow:auto;scrollbar-width:none}
+.wallpaper-nav button{padding:12px 13px;text-align:left;border-radius:11px;color:var(--muted);font-size:13px;flex-shrink:0}
+.wallpaper-nav button:hover{background:var(--panel-2);color:var(--fg)}
+.wallpaper-nav button[aria-selected=true]{background:var(--accent-soft);color:var(--fg);font-weight:600}
+.wallpaper-nav small{font-size:10px;letter-spacing:.06em;padding:18px 13px 6px;color:var(--muted);opacity:.7}
+.wallpaper-nav .wallpaper-parameters{margin-top:auto;border-top:1px solid var(--panel-border);border-radius:0;padding-top:20px}
+.wallpaper-content{min-height:0;overflow:auto;overscroll-behavior:contain;padding:24px 26px 32px}
+.wallpaper-content h3{font-size:19px;letter-spacing:-.03em;margin:0 0 10px;font-weight:550}
+.wallpaper-content .help-text{margin:6px 0 22px}
+.wallpaper-content .wallpaper-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.wallpaper-content .wallpaper-option{height:auto;aspect-ratio:16/10;border-radius:14px;box-shadow:none}
+.wallpaper-photo-card{border:1px solid var(--panel-border);border-radius:14px;overflow:hidden;background:var(--panel-2);position:relative}
+.wallpaper-photo-card>button{width:100%;display:block;padding:0;background:none}
+.wallpaper-photo-card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;transition:transform .18s}
+.wallpaper-photo-card>button:hover img{transform:scale(1.035)}
+.wallpaper-photo-card>button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.wallpaper-photo-credit{padding:10px;display:flex;flex-direction:column;gap:4px;font-size:10px;line-height:1.5;color:var(--muted)}
+.wallpaper-photo-credit a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}
+.wallpaper-photo-credit a:hover{text-decoration:underline}
+.wallpaper-status{padding:12px 0;font-size:13px;color:var(--muted);line-height:1.7}
+.wallpaper-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:12px;font-size:12px}
+.wallpaper-permission{margin:28px auto;padding:28px;max-width:440px;background:var(--panel-2);border-radius:18px;line-height:1.8}
+.wallpaper-external{padding:22px;border:1px solid var(--panel-border);border-radius:16px;background:var(--panel-2)}
+@media(max-width:650px){
+ .app-dialog.wallpaper-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}
+ .wallpaper-dialog #dialog-content{height:calc(100dvh - 22px)}
+ .wallpaper-browser{grid-template-columns:108px minmax(0,1fr)}
+ .wallpaper-nav{padding:12px 5px}.wallpaper-nav button{padding:12px 8px;font-size:11px}.wallpaper-nav small{padding:14px 8px 5px}
+ .wallpaper-content{padding:18px 12px}.wallpaper-content .wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .wallpaper-permission{padding:16px}.wallpaper-photo-credit{font-size:9px;padding:7px}
+ .daily-quote{font-size:11px;bottom:max(22px,env(safe-area-inset-bottom));padding-left:2px;padding-right:2px}
+ .wallpaper-credit{max-width:80vw;font-size:9px;bottom:4px}
+}
+@media(prefers-reduced-motion:reduce){.wallpaper-photo-card img,.toolbar-mode,.toolbar-actions{transition:none!important}}
+body.reduce-effects .wallpaper-photo-card img{transition:none}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -961,9 +1075,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <button class="tool-button" data-action="wallpaper" title="更换壁纸" aria-label="更换壁纸"></button>
     <button class="tool-button" data-action="edit" id="edit-button" title="编辑桌面" aria-label="编辑桌面" aria-pressed="false"></button>
     <button class="tool-button add-main" data-action="add" title="添加网站或组件" aria-label="添加网站或组件"></button>
-    </div>
-    <div class="toolbar-utilities">
-      <button class="tool-button" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
       <div class="shortcuts-control">
         <button class="tool-button" id="shortcuts-button" aria-label="快捷键说明" aria-describedby="shortcuts-tooltip" aria-expanded="false"></button>
         <div id="shortcuts-tooltip" class="shortcuts-tooltip" role="tooltip">
@@ -972,11 +1083,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <span>切换搜索引擎<kbd>Tab / Shift Tab</kbd></span>
           <span>搜索桌面收藏<kbd>Ctrl / ⌘ K 或 F</kbd></span>
           <span>编辑桌面<kbd>E</kbd></span>
-          <span>退出 / 取消拖动<kbd>Esc</kbd></span>
+          <span>退出 / 取消拖动<kbd>Esc</kbd></span><span>卡片键盘排序<kbd>Alt + 方向键</kbd></span>
           <small>安装扩展后可用 Alt + C 打开本地搜索。Tab 切换仅在搜索框内生效。</small>
         </div>
       </div>
     </div>
+    <button class="tool-button toolbar-mode" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
   </div>
   <main id="main">
     <header id="clock-block" class="clock-block">
@@ -1007,6 +1119,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   <input id="wallpaper-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm" hidden>
   <script type="module">
 const __favicons = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 /* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
 
 const FAVICON_CACHE_KEY = 'qiye.favicons.local.v1';
@@ -1554,6 +1667,7 @@ function discoverFavicon(siteUrl, { requestPermission = false, force = false, ta
 return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon};
 })();
 const __favicon_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 const { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates } = __favicons;
 
 const faviconImageBindings = new WeakMap();
@@ -1750,6 +1864,7 @@ function bindFaviconImages(root = document, options = {}) {
 return {bindFaviconImages};
 })();
 const __wallpapers = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 /* Public wallpaper provider. No account, API key, or application server. */
 
 const wallpaperProviders = Object.freeze([
@@ -1789,6 +1904,7 @@ function wallpaperSourceUrl(value) {
 
 /** Safe, canonical data shared by the widget, background settings, and backups. */
 function normalizeWallpaperPhoto(value) {
+  if(value?.provider === 'commons') return normalizeCommonsPhoto(value);
   if (!value || typeof value !== 'object' || Array.isArray(value) || value.provider !== 'picsum') return null;
   const id = String(value.id ?? '');
   if (!PHOTO_ID.test(id)) return null;
@@ -1903,9 +2019,153 @@ function createWallpaperBrowser({ fetchPage = fetchWallpaperPage, initialPhoto =
   };
 }
 
-return {wallpaperProviders, isAllowedWallpaperUrl, normalizeWallpaperPhoto, parsePicsumResponse, fetchWallpaperPage, createWallpaperBrowser};
+// Wikimedia Commons integration: only bitmap files with recognized open
+// licences and upload.wikimedia.org URLs cross the storage boundary.
+const COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
+function commonsMediaUrl(value) {
+ if(typeof value!=='string' || value.length>2048)return null;
+ try{const u=new URL(value);return u.protocol==='https:' && u.hostname==='upload.wikimedia.org' && !u.username && !u.password && !u.port && !u.search && !u.hash && u.pathname.startsWith('/wikipedia/commons/') && /\.(?:jpe?g|png|webp)$/i.test(u.pathname)?u.href:null;}catch{return null;}
+}
+function commonsSourceUrl(value) {
+ try{const u=new URL(value);return u.protocol==='https:' && u.hostname==='commons.wikimedia.org' && !u.username && !u.password && !u.port && !u.search && !u.hash && u.pathname.startsWith('/wiki/File:')?u.href:null;}catch{return null;}
+}
+function commonsLicenseUrl(value) {
+ try{const u=new URL(value);return u.protocol==='https:' && u.hostname==='creativecommons.org' && !u.username && !u.password && !u.port && !u.search && !u.hash && /^\/(?:licenses\/(?:by|by-sa)\/[1-4]\.0|publicdomain\/(?:zero|mark)\/1\.0)\/$/.test(u.pathname)?u.href:null;}catch{return null;}
+}
+function normalizeCommonsPhoto(value) {
+ if(!value || value.provider!=='commons' || typeof value.id!=='string' || !/^File:.{1,500}$/u.test(value.id))return null;
+ const url=commonsMediaUrl(value.url),thumbnail=commonsMediaUrl(value.thumbnail),sourceUrl=commonsSourceUrl(value.sourceUrl),licenseUrl=commonsLicenseUrl(value.licenseUrl);
+ if(!url || !thumbnail || !sourceUrl || !licenseUrl)return null;
+ // The source must describe this very file, not an unrelated attribution page.
+ try{if(decodeURIComponent(new URL(sourceUrl).pathname.slice(6)).replaceAll('_',' ')!==value.id.replaceAll('_',' '))return null;}catch{return null;}
+ const width=Number(value.width),height=Number(value.height);
+ if(!Number.isFinite(width)||!Number.isFinite(height)||width<640||height<360||width>30000||height>30000)return null;
+ return {provider:'commons',id:value.id,url,thumbnail,sourceUrl,width,height,title:cleanWallpaperText(value.title,value.id.slice(5)),author:cleanWallpaperText(value.author,'见原始文件页',180),license:cleanWallpaperText(value.license,'见许可',60),licenseUrl};
+}
+function plainMetadata(value) {
+ return String(value?.value||'').replace(/<[^>]*>/g,'').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim().slice(0,300);
+}
+function parseCommonsResponse(raw) {
+ const pages=raw?.query?.pages;
+ if(!Array.isArray(pages) || pages.length>50)throw new Error('Commons 返回的图片清单不正确');
+ const result=[];
+ for(const p of pages){
+  const info=p?.imageinfo?.[0],m=info?.extmetadata;
+  if(!info || !m || !['image/jpeg','image/png','image/webp'].includes(info.mime) || info.width<1280 || info.height<720 || info.width<info.height)continue;
+  let licenseUrl=plainMetadata(m.LicenseUrl).replace(/^http:/,'https:');
+  const short=plainMetadata(m.LicenseShortName);
+  if(!licenseUrl && /^(?:public domain|CC0)$/i.test(short))licenseUrl=short==='CC0'?'https://creativecommons.org/publicdomain/zero/1.0/':'https://creativecommons.org/publicdomain/mark/1.0/';
+  const photo=normalizeCommonsPhoto({provider:'commons',id:p.title,url:info.thumburl,thumbnail:info.thumburl,sourceUrl:info.descriptionurl,width:info.width,height:info.height,title:p.title?.slice(5).replaceAll('_',' '),author:plainMetadata(m.Artist),license:short,licenseUrl});
+  if(photo)result.push(photo);
+ }
+ return {photos:result,continue:raw?.continue && typeof raw.continue==='object'?raw.continue:null};
+}
+async function commonsRequest(params,{signal,fetchImpl=globalThis.fetch}={}) {
+ const controller=new AbortController(),abort=()=>controller.abort();
+ if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+ const timer=setTimeout(abort,12000);
+ try{
+  const url=new URL(COMMONS_API);url.search=new URLSearchParams({action:'query',format:'json',formatversion:'2',origin:'*',...params});
+  const res=await fetchImpl(url.href,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}});
+  if(!res.ok)throw new Error(`Commons 暂不可用（${res.status}），可切换其他来源`);
+  if(Number(res.headers?.get?.('content-length'))>2*1024*1024)throw new Error('Commons 响应过大');
+  const text=await res.text();if(text.length>2*1024*1024)throw new Error('Commons 响应过大');
+  const body=JSON.parse(text);if(body.error)throw new Error('Commons 查询失败，请稍后重试');
+  return body;
+ }catch(e){if(controller.signal.aborted)throw new Error('壁纸请求已取消或超时');throw e;}
+ finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}
+async function fetchCommonsWallpaperPage({page=1,signal,fetchImpl=globalThis.fetch}={}) {
+ if(!Number.isInteger(page)||page<1||page>50)throw new Error('无效的壁纸页码');
+ const body=await commonsRequest({generator:'search',gsrsearch:'filetype:bitmap landscape nature',gsrnamespace:'6',gsrlimit:'18',gsroffset:String((page-1)*18),prop:'imageinfo',iiprop:'url|size|mime|extmetadata',iiurlwidth:'640',iiextmetadatafilter:'Artist|LicenseShortName|LicenseUrl'}, {signal,fetchImpl});
+ return parseCommonsResponse(body).photos;
+}
+async function resolveCommonsWallpaper(photo,{signal,fetchImpl=globalThis.fetch}={}) {
+ const safe=normalizeCommonsPhoto(photo);if(!safe)throw new Error('无效的 Commons 壁纸');
+ const body=await commonsRequest({titles:safe.id,prop:'imageinfo',iiprop:'url',iiurlwidth:'1920'}, {signal,fetchImpl});
+ const url=commonsMediaUrl(body?.query?.pages?.[0]?.imageinfo?.[0]?.thumburl);
+ if(!url)throw new Error('无法获取高清壁纸，原背景已保留');
+ return {...safe,url};
+}
+
+return {wallpaperProviders, isAllowedWallpaperUrl, normalizeWallpaperPhoto, parsePicsumResponse, fetchWallpaperPage, createWallpaperBrowser, normalizeCommonsPhoto, parseCommonsResponse, fetchCommonsWallpaperPage, resolveCommonsWallpaper};
+})();
+const __wallpaper_library = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { fetchWallpaperPage, fetchCommonsWallpaperPage, resolveCommonsWallpaper } = __wallpapers;
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WALLPAPER_SOURCES=Object.freeze([
+ {id:'custom',name:'自定义背景',section:'我的背景'},
+ {id:'official',name:'官方背景'},
+ {id:'picsum',name:'Lorem Picsum',section:'在线图库',endpoint:true,url:'https://picsum.photos/'},
+ {id:'commons',name:'Wikimedia Commons',endpoint:true,url:'https://commons.wikimedia.org/'},
+ {id:'unsplash',name:'Unsplash ↗',section:'更多灵感 · 网站入口',url:'https://unsplash.com/wallpapers',license:'https://unsplash.com/license'},
+ {id:'pexels',name:'Pexels ↗',url:'https://www.pexels.com/search/wallpaper/',license:'https://www.pexels.com/license/'}
+]);
+/** On-demand gallery with per-source pagination, bounded cache and cancellation.
+ * No API keys; no fetch is performed merely by creating or rendering it. */
+function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParameters,rerender,enable,apply,toast,
+ fetchers={picsum:fetchWallpaperPage,commons:fetchCommonsWallpaperPage},resolve=resolveCommonsWallpaper}) {
+ const state={tab:'official',page:1,photos:[],loading:false,applying:false,error:''};
+ const cache=new Map();let controller=null,sequence=0;
+ function stop(){sequence++;controller?.abort();controller=null;state.loading=false;state.applying=false;}
+ function refresh(){rerender();}
+ async function load(){
+  if(!getState().settings.wallpaperApiEnabled || !fetchers[state.tab])return;
+  stop();const token=sequence,key=`${state.tab}:${state.page}`;state.error='';
+  if(cache.has(key)){state.photos=cache.get(key);refresh();return;}
+  state.loading=true;state.photos=[];controller=new AbortController();refresh();
+  try{
+   const photos=await fetchers[state.tab]({page:state.page,signal:controller.signal});
+   if(sequence!==token)return;
+   state.photos=photos;cache.set(key,photos);if(cache.size>5)cache.delete(cache.keys().next().value);
+  }catch(e){if(sequence===token)state.error=e.message||'图片清单加载失败';}
+  finally{if(sequence===token){state.loading=false;refresh();}}
+ }
+ function render(){
+  const settings=getState().settings,tab=WALLPAPER_SOURCES.find(s=>s.id===state.tab);
+  let content='';
+  if(state.tab==='official')content=`<h3>官方背景</h3><p class="help-text">栖页内置渐变 · 离线可用 · 无需连接外部服务</p><div class="wallpaper-grid">${wallpapers.map(w=>`<button class="wallpaper-option ${settings.wallpaper===w.id&&!settings.customWallpaper&&!(settings.wallpaperApiEnabled&&settings.remoteWallpaper)?'selected':''}" style="background:${w.background}" data-wallpaper="${w.id}" aria-label="${w.name}壁纸"><span>${w.name} · ${w.tag}</span></button>`).join('')}</div>`;
+  else if(state.tab==='custom')content=renderCustom();
+  else if(state.tab==='parameters')content=renderParameters();
+  else if(!tab?.endpoint)content=`<h3>${esc(tab?.name)}</h3><div class="wallpaper-external"><p class="help-text">此来源提供网站入口，不会静默抓取图片，也不绕过 API 授权。请在原网站选择、下载获准使用的图片，再从“自定义背景”导入。</p><div class="button-row"><a class="primary-button" href="${tab.url}" target="_blank" rel="noopener noreferrer">访问 ${esc(tab.name.replace(' ↗',''))}</a><a class="text-button" href="${tab.license}" target="_blank" rel="noopener noreferrer">查看使用许可</a></div></div>`;
+  else{
+   const intro=state.tab==='commons'?'筛选具有明确 CC / 公共领域许可的横向图片，保留作者与每张图的许可。':'公开摄影图片接口，保留摄影师、原始照片及许可链接。';
+   content=`<h3>${esc(tab.name)}</h3><p class="help-text">${intro}</p>`;
+   if(!settings.wallpaperApiEnabled)content+=`<div class="wallpaper-permission"><strong>按需连接在线图库</strong><p>点击后，浏览器会直接连接 ${esc(tab.name)} 及其图片域名。不会发送桌面内容、搜索历史或同步凭据。</p><button class="primary-button" data-gallery-enable>启用并加载图片</button></div>`;
+   else content+=`<div class="wallpaper-status" role="status">${state.applying?'正在加载高清壁纸…':state.loading?'正在加载图片清单…':esc(state.error)||(!state.photos.length?'这一页暂无可用图片，可以翻页或重新加载。':'点击图片应用背景')}</div>${state.error?'<button class="secondary-button" data-gallery-retry>重新加载</button>':''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card"><button data-gallery-apply="${i}" aria-label="应用壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"></button><div class="wallpaper-photo-credit"><a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(p.author)}">${esc(p.author)}</a><a href="${esc(p.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.license)}</a></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>上一页</button><span>第 ${state.page} 页</span><button class="secondary-button" data-gallery-page="1" ${state.page>=50||state.loading||state.applying?'disabled':''}>下一页</button></div>`;
+  }
+  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="壁纸来源">${WALLPAPER_SOURCES.map(s=>`${s.section?`<small>${s.section}</small>`:''}<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content">${s.name}</button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}">壁纸参数</button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="壁纸内容">${content}</section></div>`;
+ }
+ async function handleClick(button){
+  if(button.dataset.galleryTab){
+   const tab=button.dataset.galleryTab;if(tab!=='parameters'&&!WALLPAPER_SOURCES.some(s=>s.id===tab))return true;
+   stop();state.tab=tab;state.page=1;state.photos=[];state.error='';refresh();await load();return true;
+  }
+  if(button.hasAttribute('data-gallery-enable')){await enable();await load();return true;}
+  if(button.hasAttribute('data-gallery-retry')){cache.delete(`${state.tab}:${state.page}`);await load();return true;}
+  if(button.dataset.galleryPage){state.page=Math.max(1,Math.min(50,state.page+Number(button.dataset.galleryPage)));await load();return true;}
+  if(button.hasAttribute('data-gallery-apply')){
+   if(state.applying || state.loading)return true;
+   const photo=state.photos[Number(button.dataset.galleryApply)];if(!photo)return true;
+   stop();const token=sequence;controller=new AbortController();state.applying=true;state.error='';refresh();
+   try{
+    const full=photo.provider==='commons'?await resolve(photo,{signal:controller.signal}):photo;
+    if(sequence!==token)return true;
+    await apply(full,{isCurrent:()=>sequence===token});
+   }catch(e){if(sequence===token){state.error=e.message||'应用失败，原壁纸已保留';toast(state.error);}}
+   finally{if(sequence===token){state.applying=false;refresh();}}
+   return true;
+  }
+  return false;
+ }
+ return {render,handleClick,close:stop,getState:()=>({...state,photos:[...state.photos]})};
+}
+
+return {WALLPAPER_SOURCES, createWallpaperLibrary};
 })();
 const __avatar = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 /** Local avatar decoding and storage boundary. No network requests are used. */
 const MAX_AVATAR_BYTES = 256 * 1024;
 const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
@@ -2092,6 +2352,7 @@ async function normalizeAvatarFile(file, { decodeImage = decodeLocalAvatar, crea
 return {MAX_AVATAR_BYTES, MAX_AVATAR_FILE_BYTES, AVATAR_SIZE, validateAvatarDataUrl, normalizeAvatarFile};
 })();
 const __core = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 const { normalizeWallpaperPhoto } = __wallpapers;
 const { validateAvatarDataUrl } = __avatar;
 
@@ -2141,7 +2402,7 @@ const DEFAULT_STATE = deepFreeze({
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: true, pinSearch: true, minimal: false, openNewTab: true,
-    searchNewTab: true, rememberGroup: true, scrollGroups: true,
+    searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
@@ -2357,6 +2618,8 @@ function validateSettings(raw) {
     minimal: bool(v.minimal, 'settings.minimal'), openNewTab: bool(v.openNewTab, 'settings.openNewTab'),
     searchNewTab: bool(v.searchNewTab, 'settings.searchNewTab'),
     rememberGroup: bool(v.rememberGroup, 'settings.rememberGroup'), scrollGroups: bool(v.scrollGroups, 'settings.scrollGroups'),
+    sidebarWheelMode: enumeration(v.sidebarWheelMode, ['scroll', 'switch'], 'settings.sidebarWheelMode'),
+    hideScrollbar: bool(v.hideScrollbar, 'settings.hideScrollbar'),
     gridSize: number(v.gridSize, 'settings.gridSize', 48, 120), gap: number(v.gap, 'settings.gap', 8, 40),
     radius: number(v.radius, 'settings.radius', 0, 48), showLabels: bool(v.showLabels, 'settings.showLabels'),
     clockSize: number(v.clockSize, 'settings.clockSize', 30, 160), searchEngine: v.searchEngine, customEngines,
@@ -2718,6 +2981,7 @@ async function addCurrentTab(options = {}) {
 return {STORAGE_KEY, MAX_BACKUP_BYTES, MAX_MEDIA_BYTES, ENGINES, DEFAULT_STATE, uid, safeUrl, validateImport, exportState, loadState, subscribeState, saveState, appendLink, requestBookmarks, searchHistory, addCurrentTab};
 })();
 const __webdav = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 const { validateImport, exportState, MAX_BACKUP_BYTES, loadState } = __core;
 
 /**
@@ -3215,6 +3479,7 @@ function completeWebDAVDownload(result, savedState) { return defaultWebDAVSync.c
 return {WEBDAV_LOCAL_KEY, DEFAULT_WEBDAV_CONFIG, WebDAVError, validateWebDAVConfig, webDAVTargetURL, webDAVOriginPattern, requestWebDAVPermission, webDAVStateFingerprint, createWebDAVSync, loadWebDAVConfig, saveWebDAVConfig, clearWebDAVConfig, getWebDAVStatus, testWebDAVConnection, syncWebDAV, completeWebDAVDownload};
 })();
 const __widgets = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
 
 const { createWallpaperBrowser, normalizeWallpaperPhoto } = __wallpapers;
@@ -3673,17 +3938,8 @@ function wallpaperStatus(current) {
 }
 
 function renderWallpaper(item, state) {
-  const enabled = state.settings?.wallpaperApiEnabled === true;
-  const current = enabled ? currentWallpaperBrowser(state).getState() : null;
-  const photo = current?.photo;
-  const disableButton = enabled ? `<button type="button" class="widget-icon-button" data-action="widget-wallpaper-disable" title="暂停在线壁纸" aria-label="暂停在线壁纸">${icon('pause')}</button>` : '';
-  const top = header('在线壁纸', 'image', `<div class="widget-heading-actions">${enabled ? `<button type="button" class="widget-icon-button" data-action="widget-wallpaper-refresh" title="换一组照片" aria-label="换一组照片"${current.status === 'loading' || current.applying ? ' disabled' : ''}>${icon('reset')}</button>` : '<span class="w-wallpaper-provider-tag">PICSUM</span>'}${disableButton}</div>`);
-  const landscape = '<svg class="w-wallpaper-landscape" viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle cx="309" cy="40" r="27" fill="#f5dca8"/><path d="M0 105 67 38 144 129 236 75 344 164 400 111V180H0Z" fill="#4d807b"/><path d="m0 152 103-70 97 79 84-43 116 38v24H0Z" fill="#285a57"/><path d="m0 172 140-45 125 53H0Z" fill="#1e4847"/></svg>';
-  if (!enabled) return `${landscape}<div class="w-wallpaper-content">${top}<div class="w-wallpaper-invite"><strong>给桌面换一处风景</strong><span>来自公开摄影图库 · 无需账号</span><button type="button" class="w-wallpaper-primary" data-action="widget-wallpaper-enable">浏览在线壁纸 ${icon('arrow')}</button></div><div class="w-wallpaper-disclosure">启用后向 Picsum 及其图片服务请求照片</div></div>`;
-  const status = wallpaperStatus(current);
-  if (!photo) return `${landscape}<div class="w-wallpaper-content">${top}<div class="w-wallpaper-empty" role="status">${current.status === 'error' ? icon('image') : '<span class="w-wallpaper-spinner" aria-hidden="true"></span>'}<strong>${current.status === 'error' ? '风景暂时没有到达' : '正在寻找下一处风景'}</strong><span>${escapeHtml(status || '等待公开图库返回照片')}</span>${current.status === 'error' ? '<button type="button" class="w-wallpaper-primary" data-action="widget-wallpaper-retry">重新加载</button>' : ''}</div><div class="w-wallpaper-disclosure"><a href="https://picsum.photos/" target="_blank" rel="noopener noreferrer">Lorem Picsum</a> · 公开摄影图库</div></div>`;
-  const applied = normalizeWallpaperPhoto(state.settings?.remoteWallpaper)?.id === photo.id;
-  return `${landscape}<img class="w-wallpaper-photo" src="${escapeHtml(photo.thumbnail)}" alt="${escapeHtml(photo.title)}" data-widget-image="wallpaper" data-photo-id="${escapeHtml(photo.id)}" referrerpolicy="no-referrer" draggable="false" decoding="async"><div class="w-wallpaper-shade"></div><div class="w-wallpaper-content">${top}<div class="w-wallpaper-status" role="status" data-live="wallpaper-status">${escapeHtml(status)}</div><div class="w-wallpaper-footer"><div class="w-wallpaper-credit"><a href="${escapeHtml(photo.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(`查看 ${photo.author} 的原始照片`)}">摄影 / ${escapeHtml(photo.author)}</a><span><a href="https://picsum.photos/" target="_blank" rel="noopener noreferrer">Picsum</a><span> · </span><a href="${photo.licenseUrl}" target="_blank" rel="noopener noreferrer">使用条款</a></span></div><div class="w-wallpaper-actions"><button type="button" class="w-wallpaper-next" data-action="widget-wallpaper-next"${current.status === 'loading' || current.applying ? ' disabled' : ''}>${icon('reset')}换一张</button><button type="button" class="w-wallpaper-primary" data-action="widget-wallpaper-apply"${current.imageStatus !== 'ready' || current.applying ? ' disabled' : ''}>${current.applying ? '应用中…' : applied ? '已设为壁纸' : '设为壁纸'}</button></div></div></div>`;
+ const photo = state.settings.wallpaperApiEnabled && normalizeWallpaperPhoto(state.settings.remoteWallpaper);
+ return `<div class="wallpaper-widget-art" aria-hidden="true"></div>${photo ? `<img class="wallpaper-widget-photo" src="${escapeHtml(photo.thumbnail)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">` : ''}<button class="wallpaper-launcher" data-action="wallpaper" aria-label="打开壁纸中心"><span class="wallpaper-eyebrow">WALLPAPERS</span><strong>换一片风景</strong><span>自定义 · 官方背景 · 摄影图库</span><span class="wallpaper-launch-arrow" aria-hidden="true">↗</span></button>`;
 }
 
 function updateWallpaperCards(binding) {
@@ -3715,17 +3971,7 @@ function syncWallpaperImages(binding) {
 }
 
 function ensureWallpapers(binding) {
-  if (!binding.alive || binding.wallpaperConsentPending || binding.context.getState().settings?.wallpaperApiEnabled !== true || !binding.container.querySelector('[data-widget="wallpaper"]')) return;
-  const browser = currentWallpaperBrowser(binding.context.getState());
-  if (browser.getState().status === 'idle') void browser.load();
-  for (const root of widgetRoots(binding.container, 'wallpaper')) {
-    const image = root.querySelector('[data-widget-image="wallpaper"]');
-    if (image?.complete === true && browser.getState().imageStatus === 'loading') {
-      if (image.naturalWidth > 0) browser.markImageReady(image.dataset.photoId);
-      else browser.markImageError(image.dataset.photoId);
-    }
-  }
-  syncWallpaperImages(binding);
+ // No implicit feed fetches. The gallery loads only after a user selects a source.
 }
 
 function renderWidget(item, state) {
@@ -4126,6 +4372,7 @@ function refreshLiveWidgets(container, state) {
 return {widgetCatalog, escapeHtml, localDateKey, daysUntil, chineseLunarDate, focusRemaining, workdayStatus, calculateExpression, habitStreak, parseWeatherResponse, renderWidget, bindWidgets, refreshLiveWidgets};
 })();
 const __icons = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 const paths = {
  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
  eyeOff: '<path d="m3 3 18 18M10.5 5.1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3.3 4.1M6.2 6.2A20 20 0 0 0 2 12s3.5 7 10 7a13 13 0 0 0 5.2-1.2M9.8 9.8a3.1 3.1 0 0 0 4.4 4.4"/>',
@@ -4187,6 +4434,7 @@ const iconNames = Object.keys(paths);
 return {icon, iconNames};
 })();
 const __sync_ui = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 const { loadWebDAVConfig, saveWebDAVConfig, clearWebDAVConfig, requestWebDAVPermission, testWebDAVConnection, syncWebDAV, completeWebDAVDownload, getWebDAVStatus } = __webdav;
 const { icon } = __icons;
 
@@ -4370,16 +4618,8 @@ function createSyncController(context) {
 return {createSyncController};
 })();
 const __drag = (() => {
-/**
- * Grid dragging for Qiye. Pointer events are the only drop authority: native
- * browser drags are suppressed for our cards, never interpreted as app data.
- *
- * Cards use [data-item] / [data-item-type], navigation buttons use [data-group].
- * Every card may expose a button[data-drag-handle]. Widget contents and normal
- * touch scrolling remain interactive because only handles start their drags.
- * The handle needs CSS touch-action:none; group buttons need it while editable.
- */
-
+// SPDX-License-Identifier: GPL-3.0-only
+// Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside'];
@@ -4450,317 +4690,231 @@ function edgeScrollDelta(position, start, end, edge = 64, maxSpeed = 20) {
 }
 
 /**
- * onDrop receives one of resolveDropIntent's intents and may return a Promise.
- * The caller owns state mutation/persistence and should handle it atomically.
- * cancel() is safe before any desktop rerender or modal opening. destroy()
- * removes the delegated listeners. All desktop nodes may be freely rerendered.
+ * Reorders live DOM, animating neighbours with FLIP; data is committed once on
+ * release. Escape/cancel restores the exact original order. Only transform and
+ * opacity animate. Widgets' inputs, links and buttons retain native behaviour.
  */
 function createDesktopDragController({
- document: doc = globalThis.document,
- getState,
- getActiveGroupId = () => getState().activeGroupId,
- onDrop,
- canDragGroups = () => false,
- isBlocked = () => false,
- onError = () => {},
- onStart = () => {}
+ document:doc=globalThis.document, getState, getActiveGroupId=()=>getState().activeGroupId,
+ onDrop, canDragGroups=()=>false, isBlocked=()=>false, onError=()=>{}, onStart=()=>{}
 }) {
- if (!doc || typeof getState !== 'function' || typeof onDrop !== 'function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
- const win = doc.defaultView || globalThis;
- let session = null, frame = null, indicator = null, preview = null, marked = null;
- let suppression = null, busy = false, destroyed = false;
- const listeners = [];
- const listen = (node, type, callback, options = true) => {
-  node.addEventListener(type, callback, options);
-  listeners.push(() => node.removeEventListener(type, callback, options));
- };
- const element = target => target?.nodeType === 3 ? target.parentElement : target;
- const desktop = () => doc.getElementById('desktop');
- const groupList = () => doc.getElementById('groups');
- const now = () => Date.now();
-
- function sourceAt(event) {
-  const target = element(event.target);
-  if (!target?.closest) return null;
-  const tile = target.closest('[data-item]'), handle = target.closest('[data-drag-handle]');
-  if (tile && desktop()?.contains(tile)) {
-   const item = getState().items.find(entry => entry.id === tile.dataset.item);
-   if (!item || item.folderId || item.groupId !== getActiveGroupId()) return null;
-   const ownHandle = handle && tile.contains(handle);
-   if (!ownHandle) {
-    if (item.type === 'widget' || (event.pointerType && event.pointerType !== 'mouse')) return null;
-    if (target.closest('input,textarea,select,[contenteditable],[data-no-drag]')) return null;
-    const control = target.closest('button,a');
-    if (control && !(item.type === 'link' && control.dataset.openLink === item.id) &&
-        !(item.type === 'folder' && control.dataset.openFolder === item.id)) return null;
-   }
-   if (ownHandle && handle.disabled) return null;
-   return { kind:'item', id:item.id, element:tile, handle:ownHandle ? handle : null, title:item.title, type:item.type };
+ if(!doc || typeof getState!=='function' || typeof onDrop!=='function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
+ const win=doc.defaultView || globalThis, listeners=[], animations=new Map();
+ let session=null, frame=null, holdTimer=null, ghost=null, suppression=null, busy=false, destroyed=false;
+ const listen=(node,type,fn,options=true)=>{node.addEventListener(type,fn,options);listeners.push(()=>node.removeEventListener(type,fn,options));};
+ const element=t=>t?.nodeType===3?t.parentElement:t;
+ const grid=()=>doc.getElementById('desktop'), groups=()=>doc.getElementById('groups');
+ const reduced=()=>getState().settings?.reducedEffects || win.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ const nodes=root=>[...root.querySelectorAll(root===groups()?'[data-group]':'[data-item]')];
+ const id=node=>node.dataset.item || node.dataset.group;
+ const boxes=list=>new Map(list.map(n=>[n,n.getBoundingClientRect()]));
+ const cancelAnimations=()=>{for(const a of animations.values())a.cancel?.();animations.clear();};
+ function animate(before,list){
+  for(const node of list){
+   const old=before.get(node),next=node.getBoundingClientRect();
+   if(!old || reduced() || !node.animate || node===session?.source.element)continue;
+   const x=old.left-next.left,y=old.top-next.top;
+   if(Math.abs(x)+Math.abs(y)<.5)continue;
+   const a=node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:190,easing:'cubic-bezier(.2,.75,.2,1)'});
+   animations.set(node,a);a.onfinish=()=>{if(animations.get(node)===a)animations.delete(node);};
   }
-  const group = target.closest('[data-group]');
-  if (group && groupList()?.contains(group) && canDragGroups()) {
-   const item = getState().groups.find(entry => entry.id === group.dataset.group);
-   if (item) return { kind:'group', id:item.id, element:group, handle:group, title:item.name, type:'group' };
+ }
+ function sourceAt(event){
+  const t=element(event.target);if(!t?.closest)return null;
+  const tile=t.closest('[data-item]'),g=t.closest('[data-group]');
+  if(tile && grid()?.contains(tile)){
+   const item=getState().items.find(i=>i.id===tile.dataset.item);
+   if(!item || item.folderId || item.groupId!==getActiveGroupId())return null;
+   if(t.closest('input,textarea,select,[contenteditable],[data-no-drag]'))return null;
+   const control=t.closest('button,a');
+   if(control && control.dataset.openLink!==item.id && control.dataset.openFolder!==item.id && !(item.widget==='wallpaper' && control.dataset.action==='wallpaper'))return null;
+   return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title};
   }
+  if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
   return null;
  }
-
- function clearMark() {
-  marked?.classList.remove(...DROP_CLASSES);
-  marked = null;
-  if (indicator) indicator.hidden = true;
+ function valid(){
+  if(!session?.source.element.isConnected || isBlocked())return false;
+  const s=session.source;
+  return s.kind==='group'?canDragGroups() && getState().groups.some(g=>g.id===s.id):getState().items.some(i=>i.id===s.id && !i.folderId && i.groupId===getActiveGroupId());
  }
-
- function armClickGuard(drag, waitForRelease) {
-  suppression = { pointerId:drag.pointerId, x:drag.x, y:drag.y, until:now() + CLICK_GUARD_MS, waitForRelease };
+ function unmark(){doc.querySelectorAll('.drop-inside').forEach(n=>n.classList.remove('drop-inside'));}
+ function restore(s){
+  if(!s?.original || !s.source.root.isConnected)return;
+  const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
+  // Only restore surviving original nodes, never resurrect a deleted card.
+  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)s.source.root.append(node);
+  animate(before,list);
  }
-
- function clean(waitForRelease = false, guard = true) {
-  const previous = session;
-  session = null;
-  if (frame !== null) win.cancelAnimationFrame(frame);
-  frame = null;
-  if (previous?.active && guard) armClickGuard(previous, waitForRelease);
-  previous?.source.element.classList.remove('dragging');
-  doc.body.classList.remove('is-dragging');
-  clearMark();
-  indicator?.remove(); preview?.remove(); indicator = null; preview = null;
-  if (previous?.capture) {
-   try { previous.capture.releasePointerCapture(previous.pointerId); } catch { /* Pointer may already have ended. */ }
+ function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
+  const s=session;session=null;clearTimeout(holdTimer);holdTimer=null;
+  if(frame!==null)win.cancelAnimationFrame(frame);frame=null;
+  if(s?.active && guard)suppression={x:s.x,y:s.y,pointerId:s.pointerId,until:Date.now()+CLICK_GUARD_MS,waitForRelease};
+  if(revert)restore(s);
+  const image=ghost;ghost=null;
+  s?.source.element.classList.remove('dragging');doc.body.classList.remove('is-dragging');unmark();
+  if(image){
+   const end=s?.source.element.getBoundingClientRect();
+   if(landing && end && !reduced() && image.animate){
+    const begin=image.getBoundingClientRect();
+    const a=image.animate([{transform:`translate3d(${begin.left}px,${begin.top}px,0) scale(1.015)`,opacity:.92},{transform:`translate3d(${end.left}px,${end.top}px,0) scale(1)`,opacity:0}],{duration:150,easing:'ease-out',fill:'forwards'});
+    a.onfinish=()=>image.remove();setTimeout(()=>image.remove(),200);
+   }else image.remove();
   }
+  if(s?.capture){try{s.capture.releasePointerCapture(s.pointerId);}catch{}}
  }
-
- function cancel() { clean(true); }
-
- function sourceStillValid() {
-  if (!session?.source.element.isConnected || isBlocked()) return false;
-  const source = session.source, state = getState();
-  if (source.kind === 'group') return canDragGroups() && state.groups.some(group => group.id === source.id);
-  return state.items.some(item => item.id === source.id && item.groupId === getActiveGroupId() && !item.folderId);
- }
-
- function movePreview() {
-  if (!preview || !session) return;
-  const width = preview.offsetWidth || 190, height = preview.offsetHeight || 62;
-  const left = Math.max(8, Math.min(session.x + 16, win.innerWidth - width - 8));
-  const top = Math.max(8, Math.min(session.y + 16, win.innerHeight - height - 8));
-  preview.style.transform = `translate3d(${left}px,${top}px,0)`;
- }
-
- function begin() {
-  const drag = session;
-  if (!drag || !sourceStillValid()) return clean();
-  drag.active = true;
-  drag.source.element.classList.add('dragging');
-  doc.body.classList.add('is-dragging');
-  try {
-   drag.capture = drag.source.handle || drag.source.element;
-   drag.capture.setPointerCapture(drag.pointerId);
-  } catch { drag.capture = null; }
+ const cancel=()=>clean({waitForRelease:true});
+ function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
+ function begin(){
+  if(!valid())return clean();
+  const s=session,rect=s.source.element.getBoundingClientRect();s.active=true;
+  s.original=[...s.source.root.children];s.offsetX=s.startX-rect.left;s.offsetY=s.startY-rect.top;s.lastSwap=0;
+  cancelAnimations();s.source.root.classList.remove('group-enter');
+  ghost=s.source.element.cloneNode(true);ghost.classList.remove('dragging');ghost.classList.add('drag-ghost');
+  for(const n of [ghost,...ghost.querySelectorAll('*')]){n.removeAttribute('id');n.removeAttribute('data-item');n.removeAttribute('data-group');n.removeAttribute('tabindex');}
+  ghost.setAttribute('aria-hidden','true');ghost.inert=true;
+  ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
+  doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
+  try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   doc.getSelection?.()?.removeAllRanges();
-  preview = doc.createElement('div'); preview.className = 'drag-preview';
-  preview.setAttribute('aria-hidden', 'true');
-  preview.style.position = 'fixed'; preview.style.left = '0'; preview.style.top = '0'; preview.style.pointerEvents = 'none';
-  const hint = doc.createElement('small'), title = doc.createElement('strong');
-  hint.textContent = ({link:'移动网站',folder:'移动文件夹',widget:'移动组件',group:'移动分组'})[drag.source.type] || '移动项目';
-  title.textContent = drag.source.title || '未命名';
-  preview.append(hint, title); doc.body.append(preview);
-  indicator = doc.createElement('div'); indicator.className = 'drag-indicator'; indicator.hidden = true;
-  indicator.setAttribute('aria-hidden', 'true'); indicator.style.position = 'fixed'; indicator.style.pointerEvents = 'none';
-  doc.body.append(indicator);
-  movePreview();
-  try { onStart(); } catch (error) { onError(error); }
-  if (session === drag && drag.active) frame = win.requestAnimationFrame(tick);
+  moveGhost();try{onStart();}catch(e){onError(e);}
+  if(session===s)frame=win.requestAnimationFrame(tick);
  }
-
- function targetAt(point) {
-  const grid = desktop(), hit = doc.elementFromPoint(point.x, point.y);
-  if (!hit?.closest || point.x < 0 || point.y < 0 || point.x > win.innerWidth || point.y > win.innerHeight) return null;
-  const group = hit.closest('[data-group]');
-  if (group && groupList()?.contains(group)) return { kind:'group', id:group.dataset.group, element:group, rect:group.getBoundingClientRect() };
-  if (session.source.kind === 'group' || !grid) return null;
-  const tile = hit.closest('[data-item]');
-  if (tile && grid.contains(tile)) return { kind:'item', id:tile.dataset.item, element:tile, rect:tile.getBoundingClientRect() };
-  const rect = grid.getBoundingClientRect();
-  if (!grid.contains(hit) || point.x < rect.left || point.x > rect.right || point.y < rect.top || point.y > rect.bottom) return null;
-  const tiles = [...grid.querySelectorAll('[data-item]')].filter(node => node.dataset.item !== session.source.id);
-  const add = hit.closest('.tile-add');
-  const last = tiles.at(-1);
-  const belowAll = tiles.length && point.y > Math.max(...tiles.map(node => node.getBoundingClientRect().bottom)) + 6;
-  if (add || !tiles.length || belowAll) {
-   const marker = add || last || grid;
-   return { kind:'desktop', id:getActiveGroupId(), element:marker, rect:marker.getBoundingClientRect(), appendBefore:!!add };
+ function swap(target,position){
+  const s=session,root=s.source.root,source=s.source.element;
+  const next=position==='before'?target:target.nextElementSibling;
+  if(next===source || source.nextElementSibling===next)return;
+  const list=nodes(root),before=boxes(list);cancelAnimations();root.insertBefore(source,next);
+  // Capture final layout before FLIP transforms affect hit testing.
+  s.layout=boxes(nodes(root));s.lastSwap=Date.now();
+  animate(before,list);s.changed=true;
+ }
+ function updateTarget(force=false){
+  if(!session?.active)return;
+  if(!valid())return cancel();
+  const s=session,point={x:s.x,y:s.y},hit=doc.elementFromPoint(s.x,s.y);unmark();
+  s.special=null;s.inside=false;
+  if(!hit?.closest)return;
+  const g=hit.closest('[data-group]');
+  if(g && groups()?.contains(g) && s.source.kind==='item'){
+   const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:'group',id:g.dataset.group,rect:g.getBoundingClientRect()},point});
+   if(intent){s.special=intent;g.classList.add('drop-inside');}return;
   }
-  let nearest = null, distance = Infinity;
-  for (const node of tiles) {
-   const bounds = node.getBoundingClientRect();
-   const dx = Math.max(bounds.left - point.x, 0, point.x - bounds.right);
-   const dy = Math.max(bounds.top - point.y, 0, point.y - bounds.bottom);
-   const value = dx * dx + dy * dy;
-   if (value < distance) { nearest = { kind:'item', id:node.dataset.item, element:node, rect:bounds }; distance = value; }
+  const root=s.source.root;
+  if(!root.contains(hit))return;
+  s.inside=true;
+  // Use untransformed current layout for stable FLIP hit testing. Compensate
+  // for document/nav scrolling without repeatedly forcing full grid layout.
+  const scrollY=root===groups()?root.scrollTop:(doc.scrollingElement?.scrollTop||0);
+  const scrollX=root===groups()?root.scrollLeft:0;
+  if(!s.layout || scrollY!==s.scrollY || scrollX!==s.scrollX){
+   const dy=(s.scrollY??scrollY)-scrollY,dx=(s.scrollX??scrollX)-scrollX;
+   if(s.layout)s.layout=new Map([...s.layout].map(([n,r])=>[n,{...r,left:r.left+dx,right:r.right+dx,top:r.top+dy,bottom:r.bottom+dy,width:r.width,height:r.height}]));
+   else s.layout=boxes(nodes(root));s.scrollY=scrollY;s.scrollX=scrollX;
   }
-  return nearest;
- }
-
- function drawTarget(target, intent) {
-  clearMark();
-  if (!target || !intent) return;
-  marked = target.element;
-  if (intent.kind === 'folder' || intent.kind === 'group') {
-   marked.classList.add('drop-inside');
-   return;
+  const own=s.layout.get(s.source.element);
+  if(own && s.x>=own.left && s.x<=own.right && s.y>=own.top && s.y<=own.bottom)return;
+  let dest=null,rect=null,best=Infinity;
+  for(const [node,r] of s.layout){
+   if(node===s.source.element)continue;
+   const dx=Math.max(r.left-s.x,0,s.x-r.right),dy=Math.max(r.top-s.y,0,s.y-r.bottom);
+   const d=dx*dx+dy*dy;
+   if(d<best){best=d;dest=node;rect=r;}
   }
-  const position = intent.kind === 'append' ? (target.appendBefore ? 'before' : 'after') : intent.position;
-  marked.classList.add(position === 'before' ? 'drop-before' : 'drop-after');
-  const rect = target.rect, vertical = intent.kind === 'group-reorder' && getState().settings?.navigationMode !== 'top';
-  indicator.dataset.axis = vertical ? 'y' : 'x';
-  indicator.hidden = false;
-  indicator.style.left = `${vertical ? rect.left + 3 : (position === 'before' ? rect.left : rect.right) - 2}px`;
-  indicator.style.top = `${vertical ? (position === 'before' ? rect.top : rect.bottom) - 2 : rect.top + 3}px`;
-  indicator.style.width = `${vertical ? Math.max(16, rect.width - 6) : 4}px`;
-  indicator.style.height = `${vertical ? 4 : Math.max(18, rect.height - 6)}px`;
+  if(!dest)return;
+  const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:s.source.kind==='group'?'group':'item',id:id(dest),rect},point});
+  if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
+  if(!intent)return;
+  if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
+  swap(dest,intent.position);
  }
-
- function updateTarget() {
-  if (!session?.active) return;
-  if (!sourceStillValid()) return cancel();
-  const point = { x:session.x, y:session.y }, target = targetAt(point);
-  const intent = resolveDropIntent({ state:getState(), source:session.source, target, point });
-  session.intent = intent;
-  drawTarget(target, intent);
-  movePreview();
+ function scroll(){
+  if(!session?.active)return false;
+  const s=session,hit=doc.elementFromPoint(s.x,s.y),nav=groups(),page=doc.scrollingElement||doc.documentElement;
+  let el=nav?.contains(hit)?nav:page;
+  const horizontal=el===nav && getState().settings?.navigationMode==='top';
+  const r=el===page?{left:0,right:win.innerWidth,top:0,bottom:win.innerHeight}:el.getBoundingClientRect();
+  const property=horizontal?'scrollLeft':'scrollTop',before=el[property];
+  const delta=edgeScrollDelta(horizontal?s.x:s.y,horizontal?r.left:Math.max(0,r.top),horizontal?r.right:Math.min(win.innerHeight,r.bottom));
+  const limit=Math.max(0,horizontal?el.scrollWidth-el.clientWidth:el.scrollHeight-el.clientHeight);
+  if(delta && limit)el[property]=Math.max(0,Math.min(limit,before+delta));
+  return el[property]!==before;
  }
-
- function scrollElement(node, bounds, horizontal = false) {
-  if (!session || (horizontal
-   ? session.y < bounds.top || session.y > bounds.bottom
-   : session.x < bounds.left || session.x > bounds.right)) return false;
-  const delta = horizontal
-   ? edgeScrollDelta(session.x, bounds.left, bounds.right)
-   : edgeScrollDelta(session.y, bounds.top, bounds.bottom);
-  const property = horizontal ? 'scrollLeft' : 'scrollTop';
-  const before = node[property], limit = Math.max(0, horizontal ? node.scrollWidth - node.clientWidth : node.scrollHeight - node.clientHeight);
-  if (!delta || limit <= 0) return false;
-  node[property] = Math.max(0, Math.min(limit, before + delta));
-  return node[property] !== before;
+ function tick(){
+  frame=null;if(!session?.active)return;if(!valid())return cancel();
+  const scrolled=scroll();
+  if(scrolled || session.dirty){session.dirty=false;updateTarget();moveGhost();}
+  if(session?.active)frame=win.requestAnimationFrame(tick);
  }
-
- function autoScroll() {
-  let node = doc.elementFromPoint(session.x, session.y);
-  const page = doc.scrollingElement || doc.documentElement;
-  const navigation = groupList();
-  if (getState().settings?.navigationMode === 'top' && navigation?.contains(node)) {
-   // A horizontal group bar must not scroll the page vertically while a user
-   // browses its off-screen groups, including when the bar reaches an edge.
-   if (!/auto|scroll/.test(win.getComputedStyle(navigation).overflowX)) return false;
-   const rect = navigation.getBoundingClientRect();
-   return scrollElement(navigation, {
-    left:Math.max(0,rect.left), right:Math.min(win.innerWidth,rect.right),
-    top:Math.max(0,rect.top), bottom:Math.min(win.innerHeight,rect.bottom)
-   }, true);
+ function down(e){
+  if(e.isPrimary===false || e.button!==undefined && e.button!==0)return;
+  suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
+  const source=sourceAt(e);if(!source)return;
+  session={source,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
+  if(e.pointerType==='touch'){
+   session.touch=true;holdTimer=setTimeout(()=>{holdTimer=null;if(session)begin();},330);
   }
-  while (node && node !== doc.body && node !== page) {
-   if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(win.getComputedStyle(node).overflowY)) {
-    const rect = node.getBoundingClientRect();
-    const bounds = {left:rect.left,right:rect.right,top:Math.max(0,rect.top),bottom:Math.min(win.innerHeight,rect.bottom)};
-    if (scrollElement(node, bounds)) return true;
-   }
-   node = node.parentElement;
+ }
+ function move(e){
+  if(!session || e.pointerId!==session.pointerId)return;
+  if(e.pointerType==='mouse' && e.buttons===0)return cancel();
+  session.x=e.clientX;session.y=e.clientY;
+  if(!session.active && Math.hypot(session.x-session.startX,session.y-session.startY)>=DRAG_THRESHOLD){
+   if(session.touch && holdTimer!==null)return clean({guard:false});begin();
   }
-  return scrollElement(page, {left:0,right:win.innerWidth,top:0,bottom:win.innerHeight});
+  if(session?.active){e.preventDefault();session.dirty=true;}
  }
-
- function tick() {
-  frame = null;
-  if (!session?.active) return;
-  if (!sourceStillValid()) return cancel();
-  if (autoScroll()) updateTarget();
-  if (session?.active) frame = win.requestAnimationFrame(tick);
+ function finalIntent(s){
+  if(s.special)return s.special;
+  if(!s.inside || !s.changed)return null;
+  const list=nodes(s.source.root),index=list.indexOf(s.source.element),next=list[index+1],previous=list[index-1];
+  const same=list.map(id).join('\0')===s.original.filter(n=>n.matches?.('[data-item],[data-group]')).map(id).join('\0');
+  if(same)return null;
+  const target=next||previous;if(!target)return null;
+  return s.source.kind==='group'?{kind:'group-reorder',groupId:s.source.id,targetId:id(target),position:next?'before':'after'}:{kind:'reorder',itemId:s.source.id,targetId:id(target),position:next?'before':'after'};
  }
-
- function pointerDown(event) {
-  if (event.isPrimary === false || (event.button !== undefined && event.button !== 0)) return;
-  // A fresh gesture is intentional; only a previous drag's synthetic click is blocked.
-  suppression = null;
-  if (session) clean();
-  if (destroyed || busy || isBlocked()) return;
-  const source = sourceAt(event);
-  if (!source) return;
-  session = { source, pointerId:event.pointerId, startX:event.clientX, startY:event.clientY, x:event.clientX, y:event.clientY, active:false, intent:null, capture:null };
-  if (source.handle) event.preventDefault();
+ function up(e){
+  if(suppression?.waitForRelease && e.pointerId===suppression.pointerId){Object.assign(suppression,{x:e.clientX,y:e.clientY,waitForRelease:false,until:Date.now()+CLICK_GUARD_MS});}
+  if(!session || e.pointerId!==session.pointerId)return;
+  if(!session.active)return clean({guard:false});
+  e.preventDefault();const moved=session.x!==e.clientX||session.y!==e.clientY;session.x=e.clientX;session.y=e.clientY;if(moved||session.dirty)updateTarget(true);
+  if(!session)return;
+  const intent=finalIntent(session);clean({revert:!intent,landing:!!intent});
+  if(!intent)return;
+  busy=true;Promise.resolve().then(()=>onDrop(intent)).catch(onError).finally(()=>{busy=false;});
  }
-
- function pointerMove(event) {
-  if (!session || event.pointerId !== session.pointerId) return;
-  if (event.buttons === 0 && event.pointerType === 'mouse') return cancel();
-  session.x = event.clientX; session.y = event.clientY;
-  if (!session.active && Math.hypot(session.x - session.startX, session.y - session.startY) >= DRAG_THRESHOLD) begin();
-  if (!session?.active) return;
-  event.preventDefault();
-  updateTarget();
- }
-
- function pointerUp(event) {
-  if (suppression?.waitForRelease && event.pointerId === suppression.pointerId) {
-   suppression.x = event.clientX; suppression.y = event.clientY;
-   suppression.waitForRelease = false; suppression.until = now() + CLICK_GUARD_MS;
-  }
-  if (!session || event.pointerId !== session.pointerId) return;
-  if (!session.active) return clean(false, false);
-  event.preventDefault();
-  session.x = event.clientX; session.y = event.clientY;
-  updateTarget();
-  const intent = session?.intent;
-  clean(false);
-  if (!intent) return;
-  busy = true;
-  Promise.resolve().then(() => onDrop(intent)).catch(error => onError(error)).finally(() => { busy = false; });
- }
-
- function guardClick(event) {
-  if (!suppression || event.detail === 0) return;
-  if (!suppression.waitForRelease && now() > suppression.until) { suppression = null; return; }
-  if (Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 28) return;
-  if (event.pointerId !== undefined && event.pointerId !== suppression.pointerId) return;
-  event.preventDefault(); event.stopImmediatePropagation(); suppression = null;
- }
-
- listen(doc, 'pointerdown', pointerDown);
- listen(doc, 'pointermove', pointerMove, { capture:true, passive:false });
- listen(doc, 'pointerup', pointerUp);
- listen(doc, 'pointercancel', event => { if (session?.pointerId === event.pointerId) clean(false); });
- listen(doc, 'lostpointercapture', event => {
-  // Capture may transfer from the pressed child (an anchor, for example) to
-  // its card. Losing that previous target is not losing our current capture.
-  if (session?.active && session.pointerId === event.pointerId && event.target === session.capture) clean(false);
+ listen(doc,'pointerdown',down);
+ listen(doc,'pointermove',move,{capture:true,passive:false});listen(doc,'pointerup',up);
+ listen(doc,'pointercancel',e=>{if(session?.pointerId===e.pointerId)clean();});
+ listen(doc,'lostpointercapture',e=>{if(session?.active && e.pointerId===session.pointerId && e.target===session.capture)cancel();});
+ listen(doc,'touchmove',e=>{if(session?.active)e.preventDefault();},{capture:true,passive:false});
+ listen(doc,'click',e=>{
+  if(!suppression || e.detail===0)return;
+  if(!suppression.waitForRelease && Date.now()>suppression.until){suppression=null;return;}
+  if(e.pointerId!==undefined && e.pointerId!==suppression.pointerId)return;
+  if(Math.hypot(e.clientX-suppression.x,e.clientY-suppression.y)>28)return;
+  e.preventDefault();e.stopImmediatePropagation();suppression=null;
  });
- listen(doc, 'click', guardClick);
- listen(doc, 'contextmenu', event => {
-  // A touch handle can produce a long-press menu while a drag is pending.
-  // Other right clicks and long presses keep the app's normal context menu.
-  if (!session || (!session.active && !session.source.handle)) return;
-  event.preventDefault(); event.stopImmediatePropagation();
+ listen(doc,'keydown',e=>{
+  if(e.key==='Escape' && session){const active=session.active;cancel();if(active){e.preventDefault();e.stopImmediatePropagation();}return;}
+  if(!e.altKey || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key) || busy || isBlocked())return;
+  const source=sourceAt({target:e.target});if(!source)return;
+  const list=nodes(source.root),i=list.indexOf(source.element),forward=['ArrowRight','ArrowDown'].includes(e.key),target=list[i+(forward?1:-1)];
+  if(!target)return;e.preventDefault();
+  const intent={kind:source.kind==='group'?'group-reorder':'reorder',[source.kind==='group'?'groupId':'itemId']:source.id,targetId:id(target),position:forward?'after':'before'};
+  busy=true;Promise.resolve(onDrop(intent)).then(()=>doc.querySelector(`[${source.kind==='group'?'data-group':'data-item'}="${source.id}"]`)?.focus()).catch(onError).finally(()=>{busy=false;});
  });
- listen(doc, 'keydown', event => {
-  if (event.key !== 'Escape' || !session) return;
-  const active = session.active;
-  cancel();
-  if (active) { event.preventDefault(); event.stopImmediatePropagation(); }
- });
- listen(doc, 'selectstart', event => { if (session) event.preventDefault(); });
- listen(doc, 'dragstart', event => { if (sourceAt({ target:event.target, pointerType:'mouse' })) event.preventDefault(); });
- listen(doc, 'visibilitychange', () => { if (doc.hidden) cancel(); });
- listen(win, 'blur', cancel);
- return {
-  cancel,
-  isDragging:() => !!session?.active,
-  destroy:() => { if (destroyed) return; destroyed = true; clean(false, false); suppression = null; listeners.splice(0).forEach(remove => remove()); }
- };
+ listen(doc,'dragstart',e=>{if(sourceAt({target:e.target}))e.preventDefault();});
+ listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
+ listen(doc,'selectstart',e=>{if(session)e.preventDefault();});
+ listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
+ return {cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
 }
 
 return {reorderById, resolveDropIntent, edgeScrollDelta, createDesktopDragController};
 })();
 const __search_history = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
 /** Opt-in search history for this browser only; never part of desktop backups. */
 const SEARCH_HISTORY_KEY = 'qiye.search-history.v1';
 const MAX_SEARCH_HISTORY_ITEMS = 20;
@@ -4823,10 +4977,12 @@ function clearSearchHistory() {
 
 return {SEARCH_HISTORY_KEY, MAX_SEARCH_HISTORY_ITEMS, MAX_SEARCH_QUERY_LENGTH, MAX_SEARCH_HISTORY_BYTES, readSearchHistory, rememberSearch, clearSearchHistory};
 })();
+// SPDX-License-Identifier: GPL-3.0-only
 const { DEFAULT_STATE, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } = __core;
 const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets, chineseLunarDate } = __widgets;
 const { icon, iconNames } = __icons;
 const { normalizeWallpaperPhoto } = __wallpapers;
+const { createWallpaperLibrary } = __wallpaper_library;
 const { webDAVStateFingerprint } = __webdav;
 const { createSyncController } = __sync_ui;
 const { getFaviconCandidates, discoverFavicon, faviconCacheReady } = __favicons;
@@ -4860,7 +5016,7 @@ let faviconRequestSequence = 0;
 let avatarRequestSequence = 0, renderedAvatar, renderedEngineKey = '', lastGroupWheel = 0;
 
 function allEngines() { return [...ENGINES, ...(state.settings.customEngines || [])]; }
-async function applyOnlineWallpaper(value) {
+async function applyOnlineWallpaper(value,{isCurrent=()=>true}={}) {
  const photo = normalizeWallpaperPhoto(value);
  if (!photo) throw new Error('壁纸来源不受支持，请重新选择。');
  const wallpaperChoice=JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.wallpaperApiEnabled,state.settings.dailyWallpaper]);
@@ -4874,6 +5030,7 @@ async function applyOnlineWallpaper(value) {
   preview.src=photo.url;
  });
  if(wallpaperChoice!==JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.wallpaperApiEnabled,state.settings.dailyWallpaper])) throw new Error('加载期间壁纸设置已改变，请重新选择要应用的照片。');
+ if(!isCurrent())throw new Error('已取消壁纸应用。');
  state.settings.remoteWallpaper=photo;state.settings.wallpaperApiEnabled=true;
  state.settings.customWallpaper=null;state.settings.customWallpaperType='image';state.settings.dailyWallpaper=false;
  await persist();applySettings();
@@ -5039,7 +5196,7 @@ function renderClock() {
  let hour = now.getHours(); const period = hour >= 12 ? '下午' : '上午';
  if (s.hour12) hour = hour % 12 || 12;
  $('#clock-time').textContent = `${String(hour).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
- $('#clock-seconds').textContent = s.showSeconds ? String(now.getSeconds()).padStart(2,'0') : '';
+ $('#clock-seconds').textContent = s.showSeconds ? ':' + String(now.getSeconds()).padStart(2,'0') : '';
  $('#clock-period').textContent = s.hour12 ? period : '';
  const dateKey = `${now.toDateString()}|${s.showWeekday}|${s.showLunar}`;
  if (lastDate !== dateKey) {
@@ -5172,6 +5329,7 @@ function applySettings() {
  document.body.classList.toggle('no-labels', !s.showLabels);
  document.body.classList.toggle('no-sidebar-labels', !s.sidebarLabels);
  document.body.classList.toggle('reduce-effects', !!s.reducedEffects);
+ root.classList.toggle('hide-content-scrollbar', !!s.hideScrollbar);
  document.body.classList.toggle('clock-theme-color', !!s.clockFollowTheme);
  document.body.classList.toggle('pin-clock', s.pinClock && (s.showClock || s.showDate));
  document.body.classList.toggle('pin-search', s.pinSearch && s.showSearch);
@@ -5188,7 +5346,7 @@ function applySettings() {
  const credit = $('#wallpaper-credit');
  if (credit) {
   credit.hidden = !remote || !!s.customWallpaper;
-  if (remote) {credit.href=remote.sourceUrl;credit.textContent=`摄影 ${remote.author} · Picsum`;credit.title='查看壁纸摄影师与照片来源';}
+  if (remote) {credit.href=remote.sourceUrl;credit.textContent=`${remote.author} · ${remote.provider==='commons'?'Commons':'Picsum'}`;credit.title='查看壁纸摄影师与照片来源';}
   else {credit.removeAttribute('href');credit.textContent='';}
  }
  const video = $('#wallpaper-video');
@@ -5247,7 +5405,7 @@ function renderTile(item,index=0) {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
   body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="打开文件夹：${esc(item.title)}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
  } else body = `<a class="tile-body" draggable="false" href="${esc(safeUrl(item.url) || '#')}" data-open-link="${esc(item.id)}" style="--tile-color:${esc(item.color || '#486c91')};--tile-ink:${tileInk(item.color)}" aria-label="打开${esc(item.title)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer">${siteGlyph(item)}</a>`;
- return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" aria-label="${esc(item.title)}"><button type="button" class="tile-drag-handle" data-drag-handle aria-label="拖动${esc(item.title)}" title="拖动以调整位置"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h0m6 0h0M5 8h0m6 0h0M5 13h0m6 0h0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="编辑${esc(item.title)}" title="编辑">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="移除${esc(item.title)}" title="移除">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
+ return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" tabindex="0" aria-label="${esc(item.title)} · 拖动排序，Alt 加方向键调整位置"><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="编辑${esc(item.title)}" title="编辑">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="移除${esc(item.title)}" title="移除">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
 }
 function renderEngine() {
  const e = currentEngine(), key = JSON.stringify([e.id,allEngines()]);
@@ -5297,7 +5455,9 @@ function openDialog(kind,data={}) {
  hideSearchMenus(); $('#context-menu').hidden = true;
  if (!dialog.open) lastDialogFocus = document.activeElement;
  avatarRequestSequence++;
+ if(kind!=='wallpaper')wallpaperLibrary.close();
  dialogKind = kind; dialogData = data;
+ dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  document.body.classList.remove('shortcuts-open');
  $('#shortcuts-button').setAttribute('aria-expanded','false');
@@ -5317,6 +5477,7 @@ function openDialog(kind,data={}) {
  else if (kind === 'restore-preview') html = restorePreviewDialog(data.state);
  else if (kind === 'confirm') html = confirmDialog(data);
  else return;
+ document.body.append($('#context-menu'));
  $('#dialog-content').innerHTML = html;
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
@@ -5325,7 +5486,7 @@ function openDialog(kind,data={}) {
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else $('input:not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
-function closeDialog() { avatarRequestSequence++; if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
+function closeDialog() { wallpaperLibrary.close(); avatarRequestSequence++; if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
 function addDialog(tab,data) {
  const item = data.item;
  let content = '';
@@ -5402,7 +5563,7 @@ function settingsDialog(tab) {
   <div class="section-label">时间</div>
   ${settingSwitch('showClock','显示时间')}
   ${settingSwitch('pinClock','滚动时固定时间','时间与日期共同固定，独立于搜索框设置。')}
-  ${settingSwitch('showSeconds','显示秒数','秒与时分字号相同，以更细字重和较淡颜色区分。')}
+  ${settingSwitch('showSeconds','显示秒数','统一显示 HH:MM:SS，字号、字重与颜色完全一致。')}
   ${settingSwitch('hour12','使用 12 小时制')}
   ${settingRange('clockSize','时钟字号',30,160)}
   ${settingRange('clockWeight','时钟字重',200,700,'')}
@@ -5433,7 +5594,8 @@ function settingsDialog(tab) {
  else if(tab==='layout') content = `
   <div class="section-label">桌面布局</div>
   ${settingSwitch('minimal','极简模式','只显示时间、搜索与壁纸；按 Esc 可恢复桌面。')}
-  ${settingSwitch('quote','显示页底短句')}
+  ${settingSwitch('quote','显示页底短句','固定在视口底部，不随组件数量移动。')}
+  ${settingSwitch('hideScrollbar','隐藏内容区滚动条','只隐藏轨道，滚轮、触屏、Page Down 和空格仍可滚动。')}
   ${settingSwitch('animateGroups','分组切换动画','图标从下方向上轻滑入场。遵循系统的减少动态效果设置。')}
   ${settingRange('desktopMaxWidth','内容最大宽度',720,2000)}
   <div class="section-label">时间位置</div>
@@ -5454,7 +5616,7 @@ function settingsDialog(tab) {
   ${settingRange('sidebarWidth','侧边栏宽度',40,120)}
   ${settingRange('sidebarOpacity','导航透明度',0,100,'%')}
   ${settingSwitch('sidebarLabels','显示分组名称')}
-  ${settingSwitch('scrollGroups','滚轮切换分组','鼠标在分组栏上滚动即可切换，编辑时用于滚动列表。')}
+  ${preferenceSelect('sidebarWheelMode','侧栏滚轮行为',[['scroll','滚动分组列表'],['switch','切换当前分组']],'默认仅滚动导航列表以查看被遮挡的分组，不会切换桌面。编辑时始终滚动列表。')}
   <p class="help-text">分组支持右键重命名和编辑图标；编辑桌面时可拖动调整分组顺序。</p>`;
  else if(tab==='data') content = `
   <div class="data-card"><div><strong>导出完整备份</strong><p>包含网址、分组、布局、头像、组件数据和本地壁纸。</p></div><button class="secondary-button" data-action="export">${icon('download')}导出 JSON</button></div>
@@ -5466,20 +5628,28 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.2.3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.0 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；智能提取只在点击时读取页面图标声明。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
+  <p class="about-note">Copyright © 2026 Ktclat and Qiye contributors. 栖页代码使用 GNU GPLv3，允许使用、修改和按许可证再分发，不提供担保。<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">完整许可证</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/WIDGETS.md" target="_blank" rel="noopener noreferrer">组件贡献指南</a></p>
   <p class="about-note">Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
  return dialogHeader('设置','把栖页调成你喜欢的样子。') + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.2.3</small></nav>
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.0</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
-function wallpaperDialog() {
- return dialogHeader('换一片风景','公开摄影壁纸、六款渐变背景，或你自己的照片与视频。') + `<div class="dialog-body"><div class="data-card"><div><strong>发现摄影壁纸</strong><p>免密钥公开图片 API，在小组件中浏览、换一张并应用。</p></div><button class="secondary-button" data-action="add-wallpaper-widget">${icon('wallpaper')}打开小组件</button></div><div class="wallpaper-grid">${WALLPAPERS.map(w=>`<button class="wallpaper-option ${w.id===state.settings.wallpaper&&!state.settings.customWallpaper&&!(state.settings.wallpaperApiEnabled&&state.settings.remoteWallpaper)?'selected':''}" style="background:${w.background}" data-wallpaper="${w.id}" aria-label="${w.name}壁纸"><span>${w.name} · ${w.tag}</span>${w.id===state.settings.wallpaper&&!state.settings.customWallpaper&&!(state.settings.wallpaperApiEnabled&&state.settings.remoteWallpaper)?`<i class="selected-badge">${icon('check')}</i>`:''}</button>`).join('')}</div><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>上传本地壁纸</strong><small>图片或 MP4 / WebM 视频，最大 4 MB</small></span></button>${state.settings.customWallpaper?'<p class="help-text">正在使用你的本地壁纸。选择上方任一背景即可切换。</p>':''}${settingRange('blur','背景模糊',0,20)}${settingRange('dim','背景暗度',0,70,'%')}${settingSwitch('wallpaperApiEnabled','允许公开图片 API','启用后，小组件可获取 Picsum 摄影壁纸；暂停后将显示本地背景。')}${state.settings.remoteWallpaper?`<p class="help-text">已选择在线壁纸：${esc(state.settings.remoteWallpaper.author)}。完整图片由 Picsum 加载。</p>`:''}${settingSwitch('dailyWallpaper','每日轮换内置背景','每天切换一款渐变背景；手动选择的本地或在线壁纸优先显示。')}</div>`;
-}
+const wallpaperLibrary = createWallpaperLibrary({
+ getState:()=>state, wallpapers:WALLPAPERS, toast,
+ rerender:()=>{if(dialogKind==='wallpaper')openDialog('wallpaper');},
+ enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
+ apply:applyOnlineWallpaper,
+ renderCustom:()=>`<h3>自定义背景</h3><p class="help-text">仅在本机读取照片或视频，最大 4 MB。支持 PNG、JPEG、WebP、GIF、AVIF、MP4、WebM。应用后会进入桌面备份与 WebDAV 同步。</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>选择本地图片或视频</strong><small>不上传到栖页服务器</small></span></button>${state.settings.customWallpaper?'<p class="help-text">当前已使用本地背景。选择任意官方背景可切换回来。</p>':''}`,
+ renderParameters:()=>`<h3>壁纸参数</h3><p class="help-text">参数独立于图库，修改后立即预览并保存。</p>${settingRange('blur','背景模糊',0,20)}${settingRange('dim','背景暗度',0,70,'%')}${settingSwitch('dailyWallpaper','每日轮换内置背景','手动选择的本地或在线壁纸优先显示。')}${settingSwitch('wallpaperApiEnabled','允许公开图片 API','只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。')}`
+});
+function wallpaperDialog() {return dialogHeader('壁纸','为桌面选一处风景')+wallpaperLibrary.render();}
+
 function widgetConfigDialog(item) {
  if(!item) return dialogHeader('组件不存在')+'<div class="dialog-body">请关闭后重试。</div>';
  const type = item.widget, c=item.config || {};
@@ -5515,7 +5685,7 @@ async function chooseLocalScope(scope) {
 function folderDialog(id) {
  const folder=state.items.find(i=>i.id===id); if(!folder)return dialogHeader('文件夹已移除');
  const items=state.items.filter(i=>i.folderId===id);
- return dialogHeader(folder.title,`${items.length} 个网站 · 点击右上角箭头可移回桌面`) + `<div class="dialog-body"><div class="folder-grid">${items.map(i=>`<div class="folder-item"><a class="folder-site" data-open-link="${esc(i.id)}" href="${esc(i.url)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer" style="--tile-color:${esc(i.color)}" aria-label="打开${esc(i.title)}">${siteGlyph(i)}</a><span>${esc(i.title)}</span><button class="remove-folder-item" data-unfolder="${esc(i.id)}" title="移回桌面" aria-label="将${esc(i.title)}移回桌面">${icon('upload')}</button></div>`).join('')}</div>${!items.length?'<div class="local-empty">文件夹还是空的。<br>把网站拖到这个文件夹中央即可收纳。</div>':''}<div class="button-row"><button class="secondary-button" data-edit-item="${esc(id)}">${icon('edit')}编辑文件夹</button><button class="primary-button" data-close>完成</button></div></div>`;
+ return dialogHeader(folder.title,`${items.length} 个网站 · 右键网站可编辑或移动`) + `<div class="dialog-body"><div class="folder-grid">${items.map(i=>`<div class="folder-item" data-folder-item="${esc(i.id)}"><a class="folder-site" data-open-link="${esc(i.id)}" href="${esc(i.url)}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer" style="--tile-color:${esc(i.color)}" aria-label="打开${esc(i.title)}">${siteGlyph(i)}</a><span>${esc(i.title)}</span></div>`).join('')}</div>${!items.length?'<div class="local-empty">文件夹还是空的。<br>把网站拖到这个文件夹中央即可收纳。</div>':''}<div class="button-row"><button class="secondary-button" data-edit-item="${esc(id)}">${icon('edit')}编辑文件夹</button><button class="primary-button" data-close>完成</button></div></div>`;
 }
 function moveDialog(id) {
  const item=state.items.find(i=>i.id===id);if(!item)return '';
@@ -5565,14 +5735,17 @@ async function importBookmarks(button) {
 function contextButton(action,label,glyph='grid',extra='') { return `<button role="menuitem" data-context="${action}" ${extra}>${icon(glyph)}${label}</button>`; }
 function openContext(event,{itemId,groupId}={}) {
  event.preventDefault(); hideSearchMenus();
- const menu=$('#context-menu');menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
+ const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
  if(item) html = `${contextButton('edit','编辑'+(item.type==='widget'?'组件':item.type==='folder'?'文件夹':'网站'),'edit')}${contextButton('move','移动到…','move')}${contextButton('duplicate','复制一份','copy')}<hr><div class="menu-label">卡片尺寸</div><div class="size-options">${(item.type==='widget'?['2x2','4x2']:['1x1','2x1','2x2','4x2']).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete','移除','trash','class="danger"')}`;
  else if(group)html=`${contextButton('edit-group','编辑分组','edit')}${state.groups.length>1?contextButton('delete-group','删除分组','trash','class="danger"'):''}`;
  else html=`${contextButton('add-link','添加网站','link')}${contextButton('add-widget','添加组件','grid')}${contextButton('add-folder','新建文件夹','folder')}<hr>${contextButton('edit-desktop',editing?'完成编辑':'编辑桌面','edit')}${contextButton('wallpaper','更换壁纸','wallpaper')}${contextButton('local-search','本地搜索','search')}<hr>${contextButton('export','立即备份','download')}${contextButton('settings','设置','settings')}`;
  menu.innerHTML=html;menu.hidden=false;
- const r=menu.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(event.clientX,innerWidth-r.width-8))+'px';menu.style.top=Math.max(8,Math.min(event.clientY,innerHeight-r.height-8))+'px';
+ const r=menu.getBoundingClientRect(),host=dialog.open?dialog.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};
+ menu.style.position=dialog.open?'absolute':'fixed';
+ menu.style.left=Math.max(8,Math.min(event.clientX-host.left,host.width-r.width-8))+'px';
+ menu.style.top=(Math.max(8,Math.min(event.clientY-host.top,host.height-r.height-8))+(dialog.open?dialog.scrollTop:0))+'px';
 }
 function confirmDeleteGroup(id) {
  const group=state.groups.find(g=>g.id===id);if(!group || state.groups.length<2)return;
@@ -5596,6 +5769,7 @@ document.addEventListener('click', async event=>{
  if(!target) { if(!event.target.closest('.search-wrapper'))hideSearchMenus(); $('#context-menu').hidden=true; return; }
  try {
  if(target.matches('[data-close]'))return closeDialog();
+ if(target.closest('.wallpaper-browser') && await wallpaperLibrary.handleClick(target))return;
  if(target.hasAttribute('data-drag-handle'))return;
  if(target.dataset.extractEngineIcon)return await extractEngineFavicon(target);
  if(target.dataset.group){state.activeGroupId=target.dataset.group;await commit();document.body.classList.remove('navigation-open');updateToolbar();return;}
@@ -5767,7 +5941,14 @@ $('#search-input').addEventListener('focus',suggestions);
 $('.shortcuts-control').addEventListener('pointerenter',()=>document.body.classList.remove('shortcuts-dismissed'));
 $('#shortcuts-button').addEventListener('focus',()=>document.body.classList.remove('shortcuts-dismissed'));
 $('#groups').addEventListener('wheel',event=>{
- if(!state.settings.scrollGroups || editing || dialog.open || desktopDrag?.isDragging() || event.ctrlKey || event.metaKey)return;
+ if(event.ctrlKey || event.metaKey || dialog.open)return;
+ const list=$('#groups'), horizontal=state.settings.navigationMode==='top';
+ if(state.settings.sidebarWheelMode!=='switch' || editing || desktopDrag?.isDragging()){
+  const delta=(Math.abs(event.deltaX)>Math.abs(event.deltaY)?event.deltaX:event.deltaY)*(event.deltaMode===1?20:event.deltaMode===2?list.clientHeight:1);
+  event.preventDefault();
+  if(horizontal)list.scrollLeft+=delta;else list.scrollTop+=delta;
+  return;
+ }
  const delta=Math.abs(event.deltaY)>Math.abs(event.deltaX)?event.deltaY:event.deltaX;
  if(Math.abs(delta)<3)return;
  event.preventDefault();
@@ -5792,8 +5973,11 @@ document.addEventListener('keydown',event=>{
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
-dialog.addEventListener('close',()=>{avatarRequestSequence++;searchToken++;dialogKind='';});
-document.addEventListener('contextmenu',event=>{if(dialog.open || /INPUT|TEXTAREA/.test(event.target.tagName))return;const tile=event.target.closest('[data-item]'),group=event.target.closest('[data-group]');openContext(event,{itemId:tile?.dataset.item,groupId:group?.dataset.group});});
+dialog.addEventListener('close',()=>{wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';});
+document.addEventListener('contextmenu',event=>{
+ const entry=event.target.closest('[data-folder-item]');
+ if(dialog.open && dialogKind==='folder' && entry){openContext(event,{itemId:entry.dataset.folderItem});return;}
+ if(dialog.open || /INPUT|TEXTAREA/.test(event.target.tagName))return;const tile=event.target.closest('[data-item]'),group=event.target.closest('[data-group]');openContext(event,{itemId:tile?.dataset.item,groupId:group?.dataset.group});});
 async function applyDesktopDrop(intent) {
  if (intent.kind === 'group-reorder') {
   const ordered = reorderById(state.groups,intent.groupId,intent.targetId,intent.position);

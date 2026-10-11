@@ -104,7 +104,7 @@ test('all thirteen widgets render offline without requesting external services',
     assert.match(weather, /启用天气/);
     assert.doesNotMatch(weather, /\d+<sup>°/);
     const wallpaper = renderWidget({ id: 'wallpaper', widget: 'wallpaper', config: {} }, baseState);
-    assert.match(wallpaper, /浏览在线壁纸/);
+    assert.match(wallpaper, /打开壁纸中心/);
     assert.doesNotMatch(wallpaper, /<img[^>]+src=/);
     const hotlinks = renderWidget({ id: 'hot', widget: 'hotlinks', config: {} }, baseState);
     assert.match(hotlinks, /快捷入口/);

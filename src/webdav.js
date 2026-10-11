@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 import { validateImport, exportState, MAX_BACKUP_BYTES, loadState } from './core.js';
 
 /**

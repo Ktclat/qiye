@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
 
 import { createWallpaperBrowser, normalizeWallpaperPhoto } from './wallpapers.js';
@@ -456,17 +457,8 @@ function wallpaperStatus(current) {
 }
 
 function renderWallpaper(item, state) {
-  const enabled = state.settings?.wallpaperApiEnabled === true;
-  const current = enabled ? currentWallpaperBrowser(state).getState() : null;
-  const photo = current?.photo;
-  const disableButton = enabled ? `<button type="button" class="widget-icon-button" data-action="widget-wallpaper-disable" title="暂停在线壁纸" aria-label="暂停在线壁纸">${icon('pause')}</button>` : '';
-  const top = header('在线壁纸', 'image', `<div class="widget-heading-actions">${enabled ? `<button type="button" class="widget-icon-button" data-action="widget-wallpaper-refresh" title="换一组照片" aria-label="换一组照片"${current.status === 'loading' || current.applying ? ' disabled' : ''}>${icon('reset')}</button>` : '<span class="w-wallpaper-provider-tag">PICSUM</span>'}${disableButton}</div>`);
-  const landscape = '<svg class="w-wallpaper-landscape" viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle cx="309" cy="40" r="27" fill="#f5dca8"/><path d="M0 105 67 38 144 129 236 75 344 164 400 111V180H0Z" fill="#4d807b"/><path d="m0 152 103-70 97 79 84-43 116 38v24H0Z" fill="#285a57"/><path d="m0 172 140-45 125 53H0Z" fill="#1e4847"/></svg>';
-  if (!enabled) return `${landscape}<div class="w-wallpaper-content">${top}<div class="w-wallpaper-invite"><strong>给桌面换一处风景</strong><span>来自公开摄影图库 · 无需账号</span><button type="button" class="w-wallpaper-primary" data-action="widget-wallpaper-enable">浏览在线壁纸 ${icon('arrow')}</button></div><div class="w-wallpaper-disclosure">启用后向 Picsum 及其图片服务请求照片</div></div>`;
-  const status = wallpaperStatus(current);
-  if (!photo) return `${landscape}<div class="w-wallpaper-content">${top}<div class="w-wallpaper-empty" role="status">${current.status === 'error' ? icon('image') : '<span class="w-wallpaper-spinner" aria-hidden="true"></span>'}<strong>${current.status === 'error' ? '风景暂时没有到达' : '正在寻找下一处风景'}</strong><span>${escapeHtml(status || '等待公开图库返回照片')}</span>${current.status === 'error' ? '<button type="button" class="w-wallpaper-primary" data-action="widget-wallpaper-retry">重新加载</button>' : ''}</div><div class="w-wallpaper-disclosure"><a href="https://picsum.photos/" target="_blank" rel="noopener noreferrer">Lorem Picsum</a> · 公开摄影图库</div></div>`;
-  const applied = normalizeWallpaperPhoto(state.settings?.remoteWallpaper)?.id === photo.id;
-  return `${landscape}<img class="w-wallpaper-photo" src="${escapeHtml(photo.thumbnail)}" alt="${escapeHtml(photo.title)}" data-widget-image="wallpaper" data-photo-id="${escapeHtml(photo.id)}" referrerpolicy="no-referrer" draggable="false" decoding="async"><div class="w-wallpaper-shade"></div><div class="w-wallpaper-content">${top}<div class="w-wallpaper-status" role="status" data-live="wallpaper-status">${escapeHtml(status)}</div><div class="w-wallpaper-footer"><div class="w-wallpaper-credit"><a href="${escapeHtml(photo.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(`查看 ${photo.author} 的原始照片`)}">摄影 / ${escapeHtml(photo.author)}</a><span><a href="https://picsum.photos/" target="_blank" rel="noopener noreferrer">Picsum</a><span> · </span><a href="${photo.licenseUrl}" target="_blank" rel="noopener noreferrer">使用条款</a></span></div><div class="w-wallpaper-actions"><button type="button" class="w-wallpaper-next" data-action="widget-wallpaper-next"${current.status === 'loading' || current.applying ? ' disabled' : ''}>${icon('reset')}换一张</button><button type="button" class="w-wallpaper-primary" data-action="widget-wallpaper-apply"${current.imageStatus !== 'ready' || current.applying ? ' disabled' : ''}>${current.applying ? '应用中…' : applied ? '已设为壁纸' : '设为壁纸'}</button></div></div></div>`;
+ const photo = state.settings.wallpaperApiEnabled && normalizeWallpaperPhoto(state.settings.remoteWallpaper);
+ return `<div class="wallpaper-widget-art" aria-hidden="true"></div>${photo ? `<img class="wallpaper-widget-photo" src="${escapeHtml(photo.thumbnail)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">` : ''}<button class="wallpaper-launcher" data-action="wallpaper" aria-label="打开壁纸中心"><span class="wallpaper-eyebrow">WALLPAPERS</span><strong>换一片风景</strong><span>自定义 · 官方背景 · 摄影图库</span><span class="wallpaper-launch-arrow" aria-hidden="true">↗</span></button>`;
 }
 
 function updateWallpaperCards(binding) {
@@ -498,17 +490,7 @@ function syncWallpaperImages(binding) {
 }
 
 function ensureWallpapers(binding) {
-  if (!binding.alive || binding.wallpaperConsentPending || binding.context.getState().settings?.wallpaperApiEnabled !== true || !binding.container.querySelector('[data-widget="wallpaper"]')) return;
-  const browser = currentWallpaperBrowser(binding.context.getState());
-  if (browser.getState().status === 'idle') void browser.load();
-  for (const root of widgetRoots(binding.container, 'wallpaper')) {
-    const image = root.querySelector('[data-widget-image="wallpaper"]');
-    if (image?.complete === true && browser.getState().imageStatus === 'loading') {
-      if (image.naturalWidth > 0) browser.markImageReady(image.dataset.photoId);
-      else browser.markImageError(image.dataset.photoId);
-    }
-  }
-  syncWallpaperImages(binding);
+ // No implicit feed fetches. The gallery loads only after a user selects a source.
 }
 
 export function renderWidget(item, state) {

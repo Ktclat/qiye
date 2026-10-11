@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Qiye Copyright 2026 Ktclat and contributors; GPL-3.0-only. Source: https://github.com/Ktclat/qiye -->
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -11,6 +12,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="src/widgets.css">
   <link rel="stylesheet" href="src/sync.css">
+  <link rel="stylesheet" href="src/refinements.css">
 </head>
 <body>
   <div id="wallpaper" class="wallpaper" aria-hidden="true"></div>
@@ -31,9 +33,6 @@
     <button class="tool-button" data-action="wallpaper" title="更换壁纸" aria-label="更换壁纸"></button>
     <button class="tool-button" data-action="edit" id="edit-button" title="编辑桌面" aria-label="编辑桌面" aria-pressed="false"></button>
     <button class="tool-button add-main" data-action="add" title="添加网站或组件" aria-label="添加网站或组件"></button>
-    </div>
-    <div class="toolbar-utilities">
-      <button class="tool-button" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
       <div class="shortcuts-control">
         <button class="tool-button" id="shortcuts-button" aria-label="快捷键说明" aria-describedby="shortcuts-tooltip" aria-expanded="false"></button>
         <div id="shortcuts-tooltip" class="shortcuts-tooltip" role="tooltip">
@@ -42,11 +41,12 @@
           <span>切换搜索引擎<kbd>Tab / Shift Tab</kbd></span>
           <span>搜索桌面收藏<kbd>Ctrl / ⌘ K 或 F</kbd></span>
           <span>编辑桌面<kbd>E</kbd></span>
-          <span>退出 / 取消拖动<kbd>Esc</kbd></span>
+          <span>退出 / 取消拖动<kbd>Esc</kbd></span><span>卡片键盘排序<kbd>Alt + 方向键</kbd></span>
           <small>安装扩展后可用 Alt + C 打开本地搜索。Tab 切换仅在搜索框内生效。</small>
         </div>
       </div>
     </div>
+    <button class="tool-button toolbar-mode" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
   </div>
   <main id="main">
     <header id="clock-block" class="clock-block">

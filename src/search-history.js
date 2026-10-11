@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 /** Opt-in search history for this browser only; never part of desktop backups. */
 export const SEARCH_HISTORY_KEY = 'qiye.search-history.v1';
 export const MAX_SEARCH_HISTORY_ITEMS = 20;

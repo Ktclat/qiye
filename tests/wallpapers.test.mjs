@@ -198,44 +198,12 @@ function widgetHarness() {
   return { item, state, root, container, handlers, click };
 }
 
-test('the real widget binding waits for saved consent, applies a loaded photo, and pauses external browsing', async () => {
-  const harness = widgetHarness();
-  let finishSave;
-  const saved = new Promise((resolve) => { finishSave = resolve; });
-  const originalFetch = globalThis.fetch;
-  let fetches = 0;
-  const applied = [];
-  const enabledChanges = [];
-  globalThis.fetch = async () => { fetches += 1; return { ok: true, json: async () => [rawPhoto()] }; };
-  const cleanup = bindWidgets(harness.container, {
-    getState: () => harness.state, save: () => saved, toast() {},
-    wallpaperEnabledChanged: (enabled) => enabledChanges.push(enabled),
-    applyWallpaper: async (value) => { applied.push(value); harness.state.settings.remoteWallpaper = value; },
-  });
-  try {
-    assert.equal(fetches, 0);
-    const enabling = harness.click('widget-wallpaper-enable');
-    refreshLiveWidgets(harness.container, harness.state);
-    assert.equal(fetches, 0);
-    finishSave();
-    await enabling;
-    await new Promise((resolve) => setImmediate(resolve));
-    assert.equal(fetches, 1);
-    assert.deepEqual(enabledChanges, [true]);
-    assert.ok(harness.root.image);
-    harness.handlers.get('error')({ type: 'error', target: harness.root.image });
-    await harness.click('widget-wallpaper-apply');
-    assert.equal(applied.length, 0);
-    harness.handlers.get('load')({ type: 'load', target: harness.root.image });
-    await harness.click('widget-wallpaper-apply');
-    assert.deepEqual(applied, [photo()]);
-    await harness.click('widget-wallpaper-disable');
-    refreshLiveWidgets(harness.container, harness.state);
-    assert.equal(harness.state.settings.wallpaperApiEnabled, false);
-    assert.deepEqual(enabledChanges, [true, false]);
-    assert.doesNotMatch(harness.root.innerHTML, /<img[^>]+src=/);
-    assert.equal(fetches, 1);
-  } finally { cleanup(); globalThis.fetch = originalFetch; }
+test('desktop wallpaper launchers stay offline even with saved consent', () => {
+ const h=widgetHarness();h.state.settings.wallpaperApiEnabled=true;
+ const original=globalThis.fetch;let fetches=0;globalThis.fetch=()=>{fetches++;throw Error('no implicit request');};
+ const cleanup=bindWidgets(h.container,{getState:()=>h.state,save:async()=>{},toast(){}});
+ try {refreshLiveWidgets(h.container,h.state);assert.equal(fetches,0);assert.match(renderWidget(h.item,h.state),/data-action="wallpaper"/);}
+ finally {cleanup();globalThis.fetch=original;}
 });
 
 test('failed consent saving keeps the wallpaper widget offline', async () => {

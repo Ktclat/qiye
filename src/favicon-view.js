@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 import { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates } from './favicons.js';
 
 const faviconImageBindings = new WeakMap();

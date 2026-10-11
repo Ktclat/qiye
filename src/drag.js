@@ -1,13 +1,5 @@
-/**
- * Grid dragging for Qiye. Pointer events are the only drop authority: native
- * browser drags are suppressed for our cards, never interpreted as app data.
- *
- * Cards use [data-item] / [data-item-type], navigation buttons use [data-group].
- * Every card may expose a button[data-drag-handle]. Widget contents and normal
- * touch scrolling remain interactive because only handles start their drags.
- * The handle needs CSS touch-action:none; group buttons need it while editable.
- */
-
+// SPDX-License-Identifier: GPL-3.0-only
+// Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside'];
@@ -78,310 +70,223 @@ export function edgeScrollDelta(position, start, end, edge = 64, maxSpeed = 20) 
 }
 
 /**
- * onDrop receives one of resolveDropIntent's intents and may return a Promise.
- * The caller owns state mutation/persistence and should handle it atomically.
- * cancel() is safe before any desktop rerender or modal opening. destroy()
- * removes the delegated listeners. All desktop nodes may be freely rerendered.
+ * Reorders live DOM, animating neighbours with FLIP; data is committed once on
+ * release. Escape/cancel restores the exact original order. Only transform and
+ * opacity animate. Widgets' inputs, links and buttons retain native behaviour.
  */
 export function createDesktopDragController({
- document: doc = globalThis.document,
- getState,
- getActiveGroupId = () => getState().activeGroupId,
- onDrop,
- canDragGroups = () => false,
- isBlocked = () => false,
- onError = () => {},
- onStart = () => {}
+ document:doc=globalThis.document, getState, getActiveGroupId=()=>getState().activeGroupId,
+ onDrop, canDragGroups=()=>false, isBlocked=()=>false, onError=()=>{}, onStart=()=>{}
 }) {
- if (!doc || typeof getState !== 'function' || typeof onDrop !== 'function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
- const win = doc.defaultView || globalThis;
- let session = null, frame = null, indicator = null, preview = null, marked = null;
- let suppression = null, busy = false, destroyed = false;
- const listeners = [];
- const listen = (node, type, callback, options = true) => {
-  node.addEventListener(type, callback, options);
-  listeners.push(() => node.removeEventListener(type, callback, options));
- };
- const element = target => target?.nodeType === 3 ? target.parentElement : target;
- const desktop = () => doc.getElementById('desktop');
- const groupList = () => doc.getElementById('groups');
- const now = () => Date.now();
-
- function sourceAt(event) {
-  const target = element(event.target);
-  if (!target?.closest) return null;
-  const tile = target.closest('[data-item]'), handle = target.closest('[data-drag-handle]');
-  if (tile && desktop()?.contains(tile)) {
-   const item = getState().items.find(entry => entry.id === tile.dataset.item);
-   if (!item || item.folderId || item.groupId !== getActiveGroupId()) return null;
-   const ownHandle = handle && tile.contains(handle);
-   if (!ownHandle) {
-    if (item.type === 'widget' || (event.pointerType && event.pointerType !== 'mouse')) return null;
-    if (target.closest('input,textarea,select,[contenteditable],[data-no-drag]')) return null;
-    const control = target.closest('button,a');
-    if (control && !(item.type === 'link' && control.dataset.openLink === item.id) &&
-        !(item.type === 'folder' && control.dataset.openFolder === item.id)) return null;
-   }
-   if (ownHandle && handle.disabled) return null;
-   return { kind:'item', id:item.id, element:tile, handle:ownHandle ? handle : null, title:item.title, type:item.type };
+ if(!doc || typeof getState!=='function' || typeof onDrop!=='function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
+ const win=doc.defaultView || globalThis, listeners=[], animations=new Map();
+ let session=null, frame=null, holdTimer=null, ghost=null, suppression=null, busy=false, destroyed=false;
+ const listen=(node,type,fn,options=true)=>{node.addEventListener(type,fn,options);listeners.push(()=>node.removeEventListener(type,fn,options));};
+ const element=t=>t?.nodeType===3?t.parentElement:t;
+ const grid=()=>doc.getElementById('desktop'), groups=()=>doc.getElementById('groups');
+ const reduced=()=>getState().settings?.reducedEffects || win.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ const nodes=root=>[...root.querySelectorAll(root===groups()?'[data-group]':'[data-item]')];
+ const id=node=>node.dataset.item || node.dataset.group;
+ const boxes=list=>new Map(list.map(n=>[n,n.getBoundingClientRect()]));
+ const cancelAnimations=()=>{for(const a of animations.values())a.cancel?.();animations.clear();};
+ function animate(before,list){
+  for(const node of list){
+   const old=before.get(node),next=node.getBoundingClientRect();
+   if(!old || reduced() || !node.animate || node===session?.source.element)continue;
+   const x=old.left-next.left,y=old.top-next.top;
+   if(Math.abs(x)+Math.abs(y)<.5)continue;
+   const a=node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:190,easing:'cubic-bezier(.2,.75,.2,1)'});
+   animations.set(node,a);a.onfinish=()=>{if(animations.get(node)===a)animations.delete(node);};
   }
-  const group = target.closest('[data-group]');
-  if (group && groupList()?.contains(group) && canDragGroups()) {
-   const item = getState().groups.find(entry => entry.id === group.dataset.group);
-   if (item) return { kind:'group', id:item.id, element:group, handle:group, title:item.name, type:'group' };
+ }
+ function sourceAt(event){
+  const t=element(event.target);if(!t?.closest)return null;
+  const tile=t.closest('[data-item]'),g=t.closest('[data-group]');
+  if(tile && grid()?.contains(tile)){
+   const item=getState().items.find(i=>i.id===tile.dataset.item);
+   if(!item || item.folderId || item.groupId!==getActiveGroupId())return null;
+   if(t.closest('input,textarea,select,[contenteditable],[data-no-drag]'))return null;
+   const control=t.closest('button,a');
+   if(control && control.dataset.openLink!==item.id && control.dataset.openFolder!==item.id && !(item.widget==='wallpaper' && control.dataset.action==='wallpaper'))return null;
+   return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title};
   }
+  if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
   return null;
  }
-
- function clearMark() {
-  marked?.classList.remove(...DROP_CLASSES);
-  marked = null;
-  if (indicator) indicator.hidden = true;
+ function valid(){
+  if(!session?.source.element.isConnected || isBlocked())return false;
+  const s=session.source;
+  return s.kind==='group'?canDragGroups() && getState().groups.some(g=>g.id===s.id):getState().items.some(i=>i.id===s.id && !i.folderId && i.groupId===getActiveGroupId());
  }
-
- function armClickGuard(drag, waitForRelease) {
-  suppression = { pointerId:drag.pointerId, x:drag.x, y:drag.y, until:now() + CLICK_GUARD_MS, waitForRelease };
+ function unmark(){doc.querySelectorAll('.drop-inside').forEach(n=>n.classList.remove('drop-inside'));}
+ function restore(s){
+  if(!s?.original || !s.source.root.isConnected)return;
+  const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
+  // Only restore surviving original nodes, never resurrect a deleted card.
+  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)s.source.root.append(node);
+  animate(before,list);
  }
-
- function clean(waitForRelease = false, guard = true) {
-  const previous = session;
-  session = null;
-  if (frame !== null) win.cancelAnimationFrame(frame);
-  frame = null;
-  if (previous?.active && guard) armClickGuard(previous, waitForRelease);
-  previous?.source.element.classList.remove('dragging');
-  doc.body.classList.remove('is-dragging');
-  clearMark();
-  indicator?.remove(); preview?.remove(); indicator = null; preview = null;
-  if (previous?.capture) {
-   try { previous.capture.releasePointerCapture(previous.pointerId); } catch { /* Pointer may already have ended. */ }
+ function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
+  const s=session;session=null;clearTimeout(holdTimer);holdTimer=null;
+  if(frame!==null)win.cancelAnimationFrame(frame);frame=null;
+  if(s?.active && guard)suppression={x:s.x,y:s.y,pointerId:s.pointerId,until:Date.now()+CLICK_GUARD_MS,waitForRelease};
+  if(revert)restore(s);
+  const image=ghost;ghost=null;
+  s?.source.element.classList.remove('dragging');doc.body.classList.remove('is-dragging');unmark();
+  if(image){
+   const end=s?.source.element.getBoundingClientRect();
+   if(landing && end && !reduced() && image.animate){
+    const begin=image.getBoundingClientRect();
+    const a=image.animate([{transform:`translate3d(${begin.left}px,${begin.top}px,0) scale(1.015)`,opacity:.92},{transform:`translate3d(${end.left}px,${end.top}px,0) scale(1)`,opacity:0}],{duration:150,easing:'ease-out',fill:'forwards'});
+    a.onfinish=()=>image.remove();setTimeout(()=>image.remove(),200);
+   }else image.remove();
   }
+  if(s?.capture){try{s.capture.releasePointerCapture(s.pointerId);}catch{}}
  }
-
- function cancel() { clean(true); }
-
- function sourceStillValid() {
-  if (!session?.source.element.isConnected || isBlocked()) return false;
-  const source = session.source, state = getState();
-  if (source.kind === 'group') return canDragGroups() && state.groups.some(group => group.id === source.id);
-  return state.items.some(item => item.id === source.id && item.groupId === getActiveGroupId() && !item.folderId);
- }
-
- function movePreview() {
-  if (!preview || !session) return;
-  const width = preview.offsetWidth || 190, height = preview.offsetHeight || 62;
-  const left = Math.max(8, Math.min(session.x + 16, win.innerWidth - width - 8));
-  const top = Math.max(8, Math.min(session.y + 16, win.innerHeight - height - 8));
-  preview.style.transform = `translate3d(${left}px,${top}px,0)`;
- }
-
- function begin() {
-  const drag = session;
-  if (!drag || !sourceStillValid()) return clean();
-  drag.active = true;
-  drag.source.element.classList.add('dragging');
-  doc.body.classList.add('is-dragging');
-  try {
-   drag.capture = drag.source.handle || drag.source.element;
-   drag.capture.setPointerCapture(drag.pointerId);
-  } catch { drag.capture = null; }
+ const cancel=()=>clean({waitForRelease:true});
+ function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
+ function begin(){
+  if(!valid())return clean();
+  const s=session,rect=s.source.element.getBoundingClientRect();s.active=true;
+  s.original=[...s.source.root.children];s.offsetX=s.startX-rect.left;s.offsetY=s.startY-rect.top;s.lastSwap=0;
+  cancelAnimations();s.source.root.classList.remove('group-enter');
+  ghost=s.source.element.cloneNode(true);ghost.classList.remove('dragging');ghost.classList.add('drag-ghost');
+  for(const n of [ghost,...ghost.querySelectorAll('*')]){n.removeAttribute('id');n.removeAttribute('data-item');n.removeAttribute('data-group');n.removeAttribute('tabindex');}
+  ghost.setAttribute('aria-hidden','true');ghost.inert=true;
+  ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
+  doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
+  try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   doc.getSelection?.()?.removeAllRanges();
-  preview = doc.createElement('div'); preview.className = 'drag-preview';
-  preview.setAttribute('aria-hidden', 'true');
-  preview.style.position = 'fixed'; preview.style.left = '0'; preview.style.top = '0'; preview.style.pointerEvents = 'none';
-  const hint = doc.createElement('small'), title = doc.createElement('strong');
-  hint.textContent = ({link:'移动网站',folder:'移动文件夹',widget:'移动组件',group:'移动分组'})[drag.source.type] || '移动项目';
-  title.textContent = drag.source.title || '未命名';
-  preview.append(hint, title); doc.body.append(preview);
-  indicator = doc.createElement('div'); indicator.className = 'drag-indicator'; indicator.hidden = true;
-  indicator.setAttribute('aria-hidden', 'true'); indicator.style.position = 'fixed'; indicator.style.pointerEvents = 'none';
-  doc.body.append(indicator);
-  movePreview();
-  try { onStart(); } catch (error) { onError(error); }
-  if (session === drag && drag.active) frame = win.requestAnimationFrame(tick);
+  moveGhost();try{onStart();}catch(e){onError(e);}
+  if(session===s)frame=win.requestAnimationFrame(tick);
  }
-
- function targetAt(point) {
-  const grid = desktop(), hit = doc.elementFromPoint(point.x, point.y);
-  if (!hit?.closest || point.x < 0 || point.y < 0 || point.x > win.innerWidth || point.y > win.innerHeight) return null;
-  const group = hit.closest('[data-group]');
-  if (group && groupList()?.contains(group)) return { kind:'group', id:group.dataset.group, element:group, rect:group.getBoundingClientRect() };
-  if (session.source.kind === 'group' || !grid) return null;
-  const tile = hit.closest('[data-item]');
-  if (tile && grid.contains(tile)) return { kind:'item', id:tile.dataset.item, element:tile, rect:tile.getBoundingClientRect() };
-  const rect = grid.getBoundingClientRect();
-  if (!grid.contains(hit) || point.x < rect.left || point.x > rect.right || point.y < rect.top || point.y > rect.bottom) return null;
-  const tiles = [...grid.querySelectorAll('[data-item]')].filter(node => node.dataset.item !== session.source.id);
-  const add = hit.closest('.tile-add');
-  const last = tiles.at(-1);
-  const belowAll = tiles.length && point.y > Math.max(...tiles.map(node => node.getBoundingClientRect().bottom)) + 6;
-  if (add || !tiles.length || belowAll) {
-   const marker = add || last || grid;
-   return { kind:'desktop', id:getActiveGroupId(), element:marker, rect:marker.getBoundingClientRect(), appendBefore:!!add };
+ function swap(target,position){
+  const s=session,root=s.source.root,source=s.source.element;
+  const next=position==='before'?target:target.nextElementSibling;
+  if(next===source || source.nextElementSibling===next)return;
+  const list=nodes(root),before=boxes(list);cancelAnimations();root.insertBefore(source,next);
+  // Capture final layout before FLIP transforms affect hit testing.
+  s.layout=boxes(nodes(root));s.lastSwap=Date.now();
+  animate(before,list);s.changed=true;
+ }
+ function updateTarget(force=false){
+  if(!session?.active)return;
+  if(!valid())return cancel();
+  const s=session,point={x:s.x,y:s.y},hit=doc.elementFromPoint(s.x,s.y);unmark();
+  s.special=null;s.inside=false;
+  if(!hit?.closest)return;
+  const g=hit.closest('[data-group]');
+  if(g && groups()?.contains(g) && s.source.kind==='item'){
+   const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:'group',id:g.dataset.group,rect:g.getBoundingClientRect()},point});
+   if(intent){s.special=intent;g.classList.add('drop-inside');}return;
   }
-  let nearest = null, distance = Infinity;
-  for (const node of tiles) {
-   const bounds = node.getBoundingClientRect();
-   const dx = Math.max(bounds.left - point.x, 0, point.x - bounds.right);
-   const dy = Math.max(bounds.top - point.y, 0, point.y - bounds.bottom);
-   const value = dx * dx + dy * dy;
-   if (value < distance) { nearest = { kind:'item', id:node.dataset.item, element:node, rect:bounds }; distance = value; }
+  const root=s.source.root;
+  if(!root.contains(hit))return;
+  s.inside=true;
+  // Use untransformed current layout for stable FLIP hit testing. Compensate
+  // for document/nav scrolling without repeatedly forcing full grid layout.
+  const scrollY=root===groups()?root.scrollTop:(doc.scrollingElement?.scrollTop||0);
+  const scrollX=root===groups()?root.scrollLeft:0;
+  if(!s.layout || scrollY!==s.scrollY || scrollX!==s.scrollX){
+   const dy=(s.scrollY??scrollY)-scrollY,dx=(s.scrollX??scrollX)-scrollX;
+   if(s.layout)s.layout=new Map([...s.layout].map(([n,r])=>[n,{...r,left:r.left+dx,right:r.right+dx,top:r.top+dy,bottom:r.bottom+dy,width:r.width,height:r.height}]));
+   else s.layout=boxes(nodes(root));s.scrollY=scrollY;s.scrollX=scrollX;
   }
-  return nearest;
- }
-
- function drawTarget(target, intent) {
-  clearMark();
-  if (!target || !intent) return;
-  marked = target.element;
-  if (intent.kind === 'folder' || intent.kind === 'group') {
-   marked.classList.add('drop-inside');
-   return;
+  const own=s.layout.get(s.source.element);
+  if(own && s.x>=own.left && s.x<=own.right && s.y>=own.top && s.y<=own.bottom)return;
+  let dest=null,rect=null,best=Infinity;
+  for(const [node,r] of s.layout){
+   if(node===s.source.element)continue;
+   const dx=Math.max(r.left-s.x,0,s.x-r.right),dy=Math.max(r.top-s.y,0,s.y-r.bottom);
+   const d=dx*dx+dy*dy;
+   if(d<best){best=d;dest=node;rect=r;}
   }
-  const position = intent.kind === 'append' ? (target.appendBefore ? 'before' : 'after') : intent.position;
-  marked.classList.add(position === 'before' ? 'drop-before' : 'drop-after');
-  const rect = target.rect, vertical = intent.kind === 'group-reorder' && getState().settings?.navigationMode !== 'top';
-  indicator.dataset.axis = vertical ? 'y' : 'x';
-  indicator.hidden = false;
-  indicator.style.left = `${vertical ? rect.left + 3 : (position === 'before' ? rect.left : rect.right) - 2}px`;
-  indicator.style.top = `${vertical ? (position === 'before' ? rect.top : rect.bottom) - 2 : rect.top + 3}px`;
-  indicator.style.width = `${vertical ? Math.max(16, rect.width - 6) : 4}px`;
-  indicator.style.height = `${vertical ? 4 : Math.max(18, rect.height - 6)}px`;
+  if(!dest)return;
+  const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:s.source.kind==='group'?'group':'item',id:id(dest),rect},point});
+  if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
+  if(!intent)return;
+  if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
+  swap(dest,intent.position);
  }
-
- function updateTarget() {
-  if (!session?.active) return;
-  if (!sourceStillValid()) return cancel();
-  const point = { x:session.x, y:session.y }, target = targetAt(point);
-  const intent = resolveDropIntent({ state:getState(), source:session.source, target, point });
-  session.intent = intent;
-  drawTarget(target, intent);
-  movePreview();
+ function scroll(){
+  if(!session?.active)return false;
+  const s=session,hit=doc.elementFromPoint(s.x,s.y),nav=groups(),page=doc.scrollingElement||doc.documentElement;
+  let el=nav?.contains(hit)?nav:page;
+  const horizontal=el===nav && getState().settings?.navigationMode==='top';
+  const r=el===page?{left:0,right:win.innerWidth,top:0,bottom:win.innerHeight}:el.getBoundingClientRect();
+  const property=horizontal?'scrollLeft':'scrollTop',before=el[property];
+  const delta=edgeScrollDelta(horizontal?s.x:s.y,horizontal?r.left:Math.max(0,r.top),horizontal?r.right:Math.min(win.innerHeight,r.bottom));
+  const limit=Math.max(0,horizontal?el.scrollWidth-el.clientWidth:el.scrollHeight-el.clientHeight);
+  if(delta && limit)el[property]=Math.max(0,Math.min(limit,before+delta));
+  return el[property]!==before;
  }
-
- function scrollElement(node, bounds, horizontal = false) {
-  if (!session || (horizontal
-   ? session.y < bounds.top || session.y > bounds.bottom
-   : session.x < bounds.left || session.x > bounds.right)) return false;
-  const delta = horizontal
-   ? edgeScrollDelta(session.x, bounds.left, bounds.right)
-   : edgeScrollDelta(session.y, bounds.top, bounds.bottom);
-  const property = horizontal ? 'scrollLeft' : 'scrollTop';
-  const before = node[property], limit = Math.max(0, horizontal ? node.scrollWidth - node.clientWidth : node.scrollHeight - node.clientHeight);
-  if (!delta || limit <= 0) return false;
-  node[property] = Math.max(0, Math.min(limit, before + delta));
-  return node[property] !== before;
+ function tick(){
+  frame=null;if(!session?.active)return;if(!valid())return cancel();
+  const scrolled=scroll();
+  if(scrolled || session.dirty){session.dirty=false;updateTarget();moveGhost();}
+  if(session?.active)frame=win.requestAnimationFrame(tick);
  }
-
- function autoScroll() {
-  let node = doc.elementFromPoint(session.x, session.y);
-  const page = doc.scrollingElement || doc.documentElement;
-  const navigation = groupList();
-  if (getState().settings?.navigationMode === 'top' && navigation?.contains(node)) {
-   // A horizontal group bar must not scroll the page vertically while a user
-   // browses its off-screen groups, including when the bar reaches an edge.
-   if (!/auto|scroll/.test(win.getComputedStyle(navigation).overflowX)) return false;
-   const rect = navigation.getBoundingClientRect();
-   return scrollElement(navigation, {
-    left:Math.max(0,rect.left), right:Math.min(win.innerWidth,rect.right),
-    top:Math.max(0,rect.top), bottom:Math.min(win.innerHeight,rect.bottom)
-   }, true);
+ function down(e){
+  if(e.isPrimary===false || e.button!==undefined && e.button!==0)return;
+  suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
+  const source=sourceAt(e);if(!source)return;
+  session={source,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
+  if(e.pointerType==='touch'){
+   session.touch=true;holdTimer=setTimeout(()=>{holdTimer=null;if(session)begin();},330);
   }
-  while (node && node !== doc.body && node !== page) {
-   if (node.scrollHeight > node.clientHeight + 1 && /auto|scroll/.test(win.getComputedStyle(node).overflowY)) {
-    const rect = node.getBoundingClientRect();
-    const bounds = {left:rect.left,right:rect.right,top:Math.max(0,rect.top),bottom:Math.min(win.innerHeight,rect.bottom)};
-    if (scrollElement(node, bounds)) return true;
-   }
-   node = node.parentElement;
+ }
+ function move(e){
+  if(!session || e.pointerId!==session.pointerId)return;
+  if(e.pointerType==='mouse' && e.buttons===0)return cancel();
+  session.x=e.clientX;session.y=e.clientY;
+  if(!session.active && Math.hypot(session.x-session.startX,session.y-session.startY)>=DRAG_THRESHOLD){
+   if(session.touch && holdTimer!==null)return clean({guard:false});begin();
   }
-  return scrollElement(page, {left:0,right:win.innerWidth,top:0,bottom:win.innerHeight});
+  if(session?.active){e.preventDefault();session.dirty=true;}
  }
-
- function tick() {
-  frame = null;
-  if (!session?.active) return;
-  if (!sourceStillValid()) return cancel();
-  if (autoScroll()) updateTarget();
-  if (session?.active) frame = win.requestAnimationFrame(tick);
+ function finalIntent(s){
+  if(s.special)return s.special;
+  if(!s.inside || !s.changed)return null;
+  const list=nodes(s.source.root),index=list.indexOf(s.source.element),next=list[index+1],previous=list[index-1];
+  const same=list.map(id).join('\0')===s.original.filter(n=>n.matches?.('[data-item],[data-group]')).map(id).join('\0');
+  if(same)return null;
+  const target=next||previous;if(!target)return null;
+  return s.source.kind==='group'?{kind:'group-reorder',groupId:s.source.id,targetId:id(target),position:next?'before':'after'}:{kind:'reorder',itemId:s.source.id,targetId:id(target),position:next?'before':'after'};
  }
-
- function pointerDown(event) {
-  if (event.isPrimary === false || (event.button !== undefined && event.button !== 0)) return;
-  // A fresh gesture is intentional; only a previous drag's synthetic click is blocked.
-  suppression = null;
-  if (session) clean();
-  if (destroyed || busy || isBlocked()) return;
-  const source = sourceAt(event);
-  if (!source) return;
-  session = { source, pointerId:event.pointerId, startX:event.clientX, startY:event.clientY, x:event.clientX, y:event.clientY, active:false, intent:null, capture:null };
-  if (source.handle) event.preventDefault();
+ function up(e){
+  if(suppression?.waitForRelease && e.pointerId===suppression.pointerId){Object.assign(suppression,{x:e.clientX,y:e.clientY,waitForRelease:false,until:Date.now()+CLICK_GUARD_MS});}
+  if(!session || e.pointerId!==session.pointerId)return;
+  if(!session.active)return clean({guard:false});
+  e.preventDefault();const moved=session.x!==e.clientX||session.y!==e.clientY;session.x=e.clientX;session.y=e.clientY;if(moved||session.dirty)updateTarget(true);
+  if(!session)return;
+  const intent=finalIntent(session);clean({revert:!intent,landing:!!intent});
+  if(!intent)return;
+  busy=true;Promise.resolve().then(()=>onDrop(intent)).catch(onError).finally(()=>{busy=false;});
  }
-
- function pointerMove(event) {
-  if (!session || event.pointerId !== session.pointerId) return;
-  if (event.buttons === 0 && event.pointerType === 'mouse') return cancel();
-  session.x = event.clientX; session.y = event.clientY;
-  if (!session.active && Math.hypot(session.x - session.startX, session.y - session.startY) >= DRAG_THRESHOLD) begin();
-  if (!session?.active) return;
-  event.preventDefault();
-  updateTarget();
- }
-
- function pointerUp(event) {
-  if (suppression?.waitForRelease && event.pointerId === suppression.pointerId) {
-   suppression.x = event.clientX; suppression.y = event.clientY;
-   suppression.waitForRelease = false; suppression.until = now() + CLICK_GUARD_MS;
-  }
-  if (!session || event.pointerId !== session.pointerId) return;
-  if (!session.active) return clean(false, false);
-  event.preventDefault();
-  session.x = event.clientX; session.y = event.clientY;
-  updateTarget();
-  const intent = session?.intent;
-  clean(false);
-  if (!intent) return;
-  busy = true;
-  Promise.resolve().then(() => onDrop(intent)).catch(error => onError(error)).finally(() => { busy = false; });
- }
-
- function guardClick(event) {
-  if (!suppression || event.detail === 0) return;
-  if (!suppression.waitForRelease && now() > suppression.until) { suppression = null; return; }
-  if (Math.hypot(event.clientX - suppression.x, event.clientY - suppression.y) > 28) return;
-  if (event.pointerId !== undefined && event.pointerId !== suppression.pointerId) return;
-  event.preventDefault(); event.stopImmediatePropagation(); suppression = null;
- }
-
- listen(doc, 'pointerdown', pointerDown);
- listen(doc, 'pointermove', pointerMove, { capture:true, passive:false });
- listen(doc, 'pointerup', pointerUp);
- listen(doc, 'pointercancel', event => { if (session?.pointerId === event.pointerId) clean(false); });
- listen(doc, 'lostpointercapture', event => {
-  // Capture may transfer from the pressed child (an anchor, for example) to
-  // its card. Losing that previous target is not losing our current capture.
-  if (session?.active && session.pointerId === event.pointerId && event.target === session.capture) clean(false);
+ listen(doc,'pointerdown',down);
+ listen(doc,'pointermove',move,{capture:true,passive:false});listen(doc,'pointerup',up);
+ listen(doc,'pointercancel',e=>{if(session?.pointerId===e.pointerId)clean();});
+ listen(doc,'lostpointercapture',e=>{if(session?.active && e.pointerId===session.pointerId && e.target===session.capture)cancel();});
+ listen(doc,'touchmove',e=>{if(session?.active)e.preventDefault();},{capture:true,passive:false});
+ listen(doc,'click',e=>{
+  if(!suppression || e.detail===0)return;
+  if(!suppression.waitForRelease && Date.now()>suppression.until){suppression=null;return;}
+  if(e.pointerId!==undefined && e.pointerId!==suppression.pointerId)return;
+  if(Math.hypot(e.clientX-suppression.x,e.clientY-suppression.y)>28)return;
+  e.preventDefault();e.stopImmediatePropagation();suppression=null;
  });
- listen(doc, 'click', guardClick);
- listen(doc, 'contextmenu', event => {
-  // A touch handle can produce a long-press menu while a drag is pending.
-  // Other right clicks and long presses keep the app's normal context menu.
-  if (!session || (!session.active && !session.source.handle)) return;
-  event.preventDefault(); event.stopImmediatePropagation();
+ listen(doc,'keydown',e=>{
+  if(e.key==='Escape' && session){const active=session.active;cancel();if(active){e.preventDefault();e.stopImmediatePropagation();}return;}
+  if(!e.altKey || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key) || busy || isBlocked())return;
+  const source=sourceAt({target:e.target});if(!source)return;
+  const list=nodes(source.root),i=list.indexOf(source.element),forward=['ArrowRight','ArrowDown'].includes(e.key),target=list[i+(forward?1:-1)];
+  if(!target)return;e.preventDefault();
+  const intent={kind:source.kind==='group'?'group-reorder':'reorder',[source.kind==='group'?'groupId':'itemId']:source.id,targetId:id(target),position:forward?'after':'before'};
+  busy=true;Promise.resolve(onDrop(intent)).then(()=>doc.querySelector(`[${source.kind==='group'?'data-group':'data-item'}="${source.id}"]`)?.focus()).catch(onError).finally(()=>{busy=false;});
  });
- listen(doc, 'keydown', event => {
-  if (event.key !== 'Escape' || !session) return;
-  const active = session.active;
-  cancel();
-  if (active) { event.preventDefault(); event.stopImmediatePropagation(); }
- });
- listen(doc, 'selectstart', event => { if (session) event.preventDefault(); });
- listen(doc, 'dragstart', event => { if (sourceAt({ target:event.target, pointerType:'mouse' })) event.preventDefault(); });
- listen(doc, 'visibilitychange', () => { if (doc.hidden) cancel(); });
- listen(win, 'blur', cancel);
- return {
-  cancel,
-  isDragging:() => !!session?.active,
-  destroy:() => { if (destroyed) return; destroyed = true; clean(false, false); suppression = null; listeners.splice(0).forEach(remove => remove()); }
- };
+ listen(doc,'dragstart',e=>{if(sourceAt({target:e.target}))e.preventDefault();});
+ listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
+ listen(doc,'selectstart',e=>{if(session)e.preventDefault();});
+ listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
+ return {cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
 }

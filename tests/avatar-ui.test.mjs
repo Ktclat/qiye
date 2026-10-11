@@ -77,7 +77,7 @@ function harness({ initialAvatar = null, writer } = {}) {
     }
   };
   const document = {
-    activeElement: element(), body: { classList: { remove() {} } },
+    activeElement: element(), body: { append() {}, classList: { remove() {} } },
     querySelector(selector) {
       return ({ '#brand-button': brand, '#context-menu': menu, '#shortcuts-button': shortcuts,
         '#dialog-content': content, '#dialog': dialog, '#avatar-panel': currentPanel.panel,
@@ -85,7 +85,7 @@ function harness({ initialAvatar = null, writer } = {}) {
     }
   };
   context = vm.createContext({
-    DEFAULT_STATE: initial, structuredClone, Promise, document, dialog,
+    DEFAULT_STATE: initial, structuredClone, Promise, document, dialog, wallpaperLibrary: {close() {}},
     $: (selector, root = document) => root?.querySelector(selector),
     normalizeAvatarFile(file) {
       const request = deferred(); decodes.push({ file, ...request }); return request.promise;

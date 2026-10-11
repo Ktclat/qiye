@@ -23,6 +23,7 @@ output.mkdir(parents=True, exist_ok=True)
 (output / 'icons').mkdir(exist_ok=True)
 shutil.copyfile(root / 'icons/icon32.png', output / 'icons/icon32.png')
 (output / '.nojekyll').write_text('', encoding='utf-8')
+shutil.copyfile(root / 'LICENSE', output / 'LICENSE')
 (output / 'README.md').write_text(f'''# 栖页 Qiye · GitHub Pages
 
 栖页 v{version} 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
@@ -30,6 +31,10 @@ shutil.copyfile(root / 'icons/icon32.png', output / 'icons/icon32.png')
 **[打开栖页](https://ktclat.github.io/qiye/)** · **[完整源码与扩展安装](https://github.com/Ktclat/qiye/tree/main)**
 
 本分支 `gh-pages` 专门保存由生产模块生成的静态网页文件。完整源码、功能说明、图标智能提取实现、隐私说明和测试位于同一仓库的 [main 分支](https://github.com/Ktclat/qiye/tree/main)。
+
+## 许可
+
+程序采用 GPL-3.0-only，完整许可见 [LICENSE](LICENSE)，对应源码和构建脚本在 main。字体和图片保留各自许可。
 
 ## 首次启用 Pages
 
@@ -43,7 +48,7 @@ shutil.copyfile(root / 'icons/icon32.png', output / 'icons/icon32.png')
 python3 scripts/build-pages.py /path/to/qiye-demo
 ```
 
-输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll` 和本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
+输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE` 和本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
 
 Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分支**，GitHub Pages 会自动部署。仅推送 `main` 不会更新演示页面；请先构建，再将生成文件推送到 `gh-pages`。
 
@@ -51,4 +56,4 @@ Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分
 
 部署与数据迁移说明见 [源码仓库的部署指南](https://github.com/Ktclat/qiye/blob/main/docs/DEPLOYMENT.md)。
 ''', encoding='utf-8')
-print(f'Pages files generated in {output}: index.html, icons/icon32.png, .nojekyll, README.md')
+print(f'Pages files generated in {output}: index.html, icons/icon32.png, .nojekyll, LICENSE, README.md')

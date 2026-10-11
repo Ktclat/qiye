@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { validateAvatarDataUrl } from './avatar.js';
 
@@ -47,7 +48,7 @@ export const DEFAULT_STATE = deepFreeze({
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: true, pinSearch: true, minimal: false, openNewTab: true,
-    searchNewTab: true, rememberGroup: true, scrollGroups: true,
+    searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
@@ -263,6 +264,8 @@ function validateSettings(raw) {
     minimal: bool(v.minimal, 'settings.minimal'), openNewTab: bool(v.openNewTab, 'settings.openNewTab'),
     searchNewTab: bool(v.searchNewTab, 'settings.searchNewTab'),
     rememberGroup: bool(v.rememberGroup, 'settings.rememberGroup'), scrollGroups: bool(v.scrollGroups, 'settings.scrollGroups'),
+    sidebarWheelMode: enumeration(v.sidebarWheelMode, ['scroll', 'switch'], 'settings.sidebarWheelMode'),
+    hideScrollbar: bool(v.hideScrollbar, 'settings.hideScrollbar'),
     gridSize: number(v.gridSize, 'settings.gridSize', 48, 120), gap: number(v.gap, 'settings.gap', 8, 40),
     radius: number(v.radius, 'settings.radius', 0, 48), showLabels: bool(v.showLabels, 'settings.showLabels'),
     clockSize: number(v.clockSize, 'settings.clockSize', 30, 160), searchEngine: v.searchEngine, customEngines,

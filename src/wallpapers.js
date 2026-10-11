@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 /* Public wallpaper provider. No account, API key, or application server. */
 
 export const wallpaperProviders = Object.freeze([
@@ -37,6 +38,7 @@ function wallpaperSourceUrl(value) {
 
 /** Safe, canonical data shared by the widget, background settings, and backups. */
 export function normalizeWallpaperPhoto(value) {
+  if(value?.provider === 'commons') return normalizeCommonsPhoto(value);
   if (!value || typeof value !== 'object' || Array.isArray(value) || value.provider !== 'picsum') return null;
   const id = String(value.id ?? '');
   if (!PHOTO_ID.test(id)) return null;
@@ -149,4 +151,73 @@ export function createWallpaperBrowser({ fetchPage = fetchWallpaperPage, initial
       finally { state.applying = false; emit('image'); }
     },
   };
+}
+
+// Wikimedia Commons integration: only bitmap files with recognized open
+// licences and upload.wikimedia.org URLs cross the storage boundary.
+const COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
+function commonsMediaUrl(value) {
+ if(typeof value!=='string' || value.length>2048)return null;
+ try{const u=new URL(value);return u.protocol==='https:' && u.hostname==='upload.wikimedia.org' && !u.username && !u.password && !u.port && !u.search && !u.hash && u.pathname.startsWith('/wikipedia/commons/') && /\.(?:jpe?g|png|webp)$/i.test(u.pathname)?u.href:null;}catch{return null;}
+}
+function commonsSourceUrl(value) {
+ try{const u=new URL(value);return u.protocol==='https:' && u.hostname==='commons.wikimedia.org' && !u.username && !u.password && !u.port && !u.search && !u.hash && u.pathname.startsWith('/wiki/File:')?u.href:null;}catch{return null;}
+}
+function commonsLicenseUrl(value) {
+ try{const u=new URL(value);return u.protocol==='https:' && u.hostname==='creativecommons.org' && !u.username && !u.password && !u.port && !u.search && !u.hash && /^\/(?:licenses\/(?:by|by-sa)\/[1-4]\.0|publicdomain\/(?:zero|mark)\/1\.0)\/$/.test(u.pathname)?u.href:null;}catch{return null;}
+}
+export function normalizeCommonsPhoto(value) {
+ if(!value || value.provider!=='commons' || typeof value.id!=='string' || !/^File:.{1,500}$/u.test(value.id))return null;
+ const url=commonsMediaUrl(value.url),thumbnail=commonsMediaUrl(value.thumbnail),sourceUrl=commonsSourceUrl(value.sourceUrl),licenseUrl=commonsLicenseUrl(value.licenseUrl);
+ if(!url || !thumbnail || !sourceUrl || !licenseUrl)return null;
+ // The source must describe this very file, not an unrelated attribution page.
+ try{if(decodeURIComponent(new URL(sourceUrl).pathname.slice(6)).replaceAll('_',' ')!==value.id.replaceAll('_',' '))return null;}catch{return null;}
+ const width=Number(value.width),height=Number(value.height);
+ if(!Number.isFinite(width)||!Number.isFinite(height)||width<640||height<360||width>30000||height>30000)return null;
+ return {provider:'commons',id:value.id,url,thumbnail,sourceUrl,width,height,title:cleanWallpaperText(value.title,value.id.slice(5)),author:cleanWallpaperText(value.author,'见原始文件页',180),license:cleanWallpaperText(value.license,'见许可',60),licenseUrl};
+}
+function plainMetadata(value) {
+ return String(value?.value||'').replace(/<[^>]*>/g,'').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim().slice(0,300);
+}
+export function parseCommonsResponse(raw) {
+ const pages=raw?.query?.pages;
+ if(!Array.isArray(pages) || pages.length>50)throw new Error('Commons 返回的图片清单不正确');
+ const result=[];
+ for(const p of pages){
+  const info=p?.imageinfo?.[0],m=info?.extmetadata;
+  if(!info || !m || !['image/jpeg','image/png','image/webp'].includes(info.mime) || info.width<1280 || info.height<720 || info.width<info.height)continue;
+  let licenseUrl=plainMetadata(m.LicenseUrl).replace(/^http:/,'https:');
+  const short=plainMetadata(m.LicenseShortName);
+  if(!licenseUrl && /^(?:public domain|CC0)$/i.test(short))licenseUrl=short==='CC0'?'https://creativecommons.org/publicdomain/zero/1.0/':'https://creativecommons.org/publicdomain/mark/1.0/';
+  const photo=normalizeCommonsPhoto({provider:'commons',id:p.title,url:info.thumburl,thumbnail:info.thumburl,sourceUrl:info.descriptionurl,width:info.width,height:info.height,title:p.title?.slice(5).replaceAll('_',' '),author:plainMetadata(m.Artist),license:short,licenseUrl});
+  if(photo)result.push(photo);
+ }
+ return {photos:result,continue:raw?.continue && typeof raw.continue==='object'?raw.continue:null};
+}
+async function commonsRequest(params,{signal,fetchImpl=globalThis.fetch}={}) {
+ const controller=new AbortController(),abort=()=>controller.abort();
+ if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+ const timer=setTimeout(abort,12000);
+ try{
+  const url=new URL(COMMONS_API);url.search=new URLSearchParams({action:'query',format:'json',formatversion:'2',origin:'*',...params});
+  const res=await fetchImpl(url.href,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}});
+  if(!res.ok)throw new Error(`Commons 暂不可用（${res.status}），可切换其他来源`);
+  if(Number(res.headers?.get?.('content-length'))>2*1024*1024)throw new Error('Commons 响应过大');
+  const text=await res.text();if(text.length>2*1024*1024)throw new Error('Commons 响应过大');
+  const body=JSON.parse(text);if(body.error)throw new Error('Commons 查询失败，请稍后重试');
+  return body;
+ }catch(e){if(controller.signal.aborted)throw new Error('壁纸请求已取消或超时');throw e;}
+ finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}
+export async function fetchCommonsWallpaperPage({page=1,signal,fetchImpl=globalThis.fetch}={}) {
+ if(!Number.isInteger(page)||page<1||page>50)throw new Error('无效的壁纸页码');
+ const body=await commonsRequest({generator:'search',gsrsearch:'filetype:bitmap landscape nature',gsrnamespace:'6',gsrlimit:'18',gsroffset:String((page-1)*18),prop:'imageinfo',iiprop:'url|size|mime|extmetadata',iiurlwidth:'640',iiextmetadatafilter:'Artist|LicenseShortName|LicenseUrl'}, {signal,fetchImpl});
+ return parseCommonsResponse(body).photos;
+}
+export async function resolveCommonsWallpaper(photo,{signal,fetchImpl=globalThis.fetch}={}) {
+ const safe=normalizeCommonsPhoto(photo);if(!safe)throw new Error('无效的 Commons 壁纸');
+ const body=await commonsRequest({titles:safe.id,prop:'imageinfo',iiprop:'url',iiurlwidth:'1920'}, {signal,fetchImpl});
+ const url=commonsMediaUrl(body?.query?.pages?.[0]?.imageinfo?.[0]?.thumburl);
+ if(!url)throw new Error('无法获取高清壁纸，原背景已保留');
+ return {...safe,url};
 }

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 /** Local avatar decoding and storage boundary. No network requests are used. */
 export const MAX_AVATAR_BYTES = 256 * 1024;
 export const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
