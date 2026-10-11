@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "栖页 Qiye · 让新标签页住进日常",
+  "short_name": "栖页 Qiye",
+  "version": "0.2.0",
+  "description": "可自由编排的新标签页，包含分组、网站快捷方式、文件夹、壁纸、天气、日历、待办和专注计时。个人数据保存在本机。",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "action": {
+    "default_title": "添加当前页面到栖页",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "activeTab", "contextMenus"],
+  "optional_permissions": ["bookmarks", "history"],
+  "host_permissions": ["https://picsum.photos/*"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "commands": {
+    "open-local-search": {
+      "suggested_key": { "default": "Alt+C", "mac": "Alt+C" },
+      "description": "在栖页新标签页中打开本地搜索"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+}
