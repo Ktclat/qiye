@@ -58,6 +58,18 @@ with sync_playwright() as p:
  def center(page,sel):r=page.locator(sel).bounding_box();return r['x']+r['width']/2,r['y']+r['height']/2
  def drag_begin(page,source,target,endfrac=.9):
   x,y=center(page,source);page.mouse.move(x,y);page.mouse.down();r=page.locator(target).bounding_box();page.mouse.move(r['x']+r['width']*endfrac,r['y']+r['height']/2,steps=14);page.wait_for_timeout(140)
+ def retain_assets(page,except_ids=None):
+  page.wait_for_function('Array.from(document.querySelectorAll("#desktop .site-favicon")).every(i=>i.complete && i.naturalWidth>0 && !i.hidden)')
+  page.evaluate('''() => {
+   window.keptAssets=[...document.querySelectorAll('#desktop .site-favicon')];window.assetWrites=[];
+   window.assetObserver?.disconnect();
+   window.assetObserver=new MutationObserver(ms=>assetWrites.push(...ms.filter(m=>keptAssets.includes(m.target)).map(m=>m.attributeName)));
+   assetObserver.observe(document.querySelector('#desktop'),{subtree:true,attributes:true,attributeFilter:['src','hidden']});
+  }''')
+  if except_ids:page.evaluate('ids=>{keptAssets=keptAssets.filter(i=>!ids.includes(i.closest("[data-item]").dataset.item))}',except_ids)
+ def check_assets(page,label):
+  check(label+' keeps loaded image nodes connected',lambda:truth(page.evaluate('keptAssets.every(i=>i.isConnected && i.naturalWidth>0 && !i.hidden)')))
+  check(label+' does not rewrite image src or hidden state',lambda:eq(page.evaluate('assetWrites'),[]))
  def setting(page,name,value):
   page.locator(f'[name="{name}"]').select_option(value);page.wait_for_timeout(120)
 
@@ -83,6 +95,7 @@ with sync_playwright() as p:
   # Mixed-size widgets and link grid; direct surfaces, animations and save boundary.
   links=[x for x in fixture['items'] if x['groupId']=='home' and x['type']=='link' and not x.get('folderId')]
   ctx,page,errors=setup(items=links)
+  retain_assets(page)
   original=order(page);a=f'[data-item="{original[0]}"]';target=f'[data-item="{original[3]}"]'
   drag_begin(page,a,target)
   check('live order changes BEFORE pointer release',lambda:truth(order(page)!=original))
@@ -90,6 +103,7 @@ with sync_playwright() as p:
   check('one clone follows pointer',lambda:eq(page.locator('.drag-ghost').count(),1))
   check('neighbours have actual transform animations',lambda:truth(page.locator('#desktop').evaluate('n=>n.getAnimations({subtree:true}).some(a=>a.effect.getKeyframes().some(k=>k.transform))')))
   during=order(page);page.mouse.up();page.wait_for_timeout(450)
+  check_assets(page,'website reordering')
   check('release commits visible order once',lambda:eq([i['id'] for i in saved(page)['items']],during))
   if not args.local_document:
    page.reload(wait_until='domcontentloaded');page.wait_for_timeout(400);check('real localStorage order survives reload',lambda:eq(order(page),during))
@@ -99,7 +113,11 @@ with sync_playwright() as p:
   check('keyboard sorting works without a handle',lambda:eq(order(page)[1],original[0]));check('dragging has no JS exceptions',lambda:eq(errors,[]));ctx.close()
 
   ctx,page,errors=setup()
+  retain_assets(page)
+  page.evaluate('window.keptNote=document.querySelector("[data-widget-input=notes]");window.keptTodoDraft=document.querySelector("[data-widget-form=todo] input");keptTodoDraft.value="unfinished task"')
   original=order(page);drag_begin(page,'[data-item="calendar-home"]','[data-item="focus-home"]');page.mouse.up();page.wait_for_timeout(450)
+  check_assets(page,'widget reordering')
+  check('widget reordering retains other component inputs and unfinished draft',lambda:truth(page.evaluate('keptNote.isConnected && keptTodoDraft.isConnected && keptTodoDraft.value==="unfinished task"')))
   check('mixed-size widget surface can move',lambda:truth(order(page)!=original))
   page.locator('[data-open-folder="folder-tools"]').click()
   check('folder has no default move-out buttons',lambda:eq(page.locator('.folder-item button').count(),0))
@@ -107,7 +125,12 @@ with sync_playwright() as p:
   r=page.locator('#context-menu').bounding_box();check('folder contextual menu stays in viewport',lambda:truth(r['x']>=0 and r['y']>=0 and r['x']+r['width']<=1440 and r['y']+r['height']<=950))
   page.locator('[data-context="move"]').click();check('folder movement dialog still available',lambda:truth(page.locator('#dialog[open]').is_visible()))
   page.locator('[data-close]').first.click()
-  check('widget move and folder menu produce no errors',lambda:eq(errors,[]));ctx.close()
+  check('widget move and folder menu produce no errors',lambda:eq(errors,[]))
+  retain_assets(page,['site-google'])
+  drag_begin(page,'#desktop [data-item="site-google"]','#groups [data-group="work"]',.5);page.mouse.up()
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v1")).items.find(i=>i.id==="site-google").groupId==="work"')
+  check_assets(page,'cross-group move')
+  check('cross-group move removes only the moved item',lambda:eq(page.locator('#desktop [data-item="site-google"]').count(),0));ctx.close()
 
   ctx,page,errors=setup({'hideScrollbar':True},many=True,height=720)
   page.locator('#groups').hover();page.mouse.wheel(0,1100);page.wait_for_timeout(250)

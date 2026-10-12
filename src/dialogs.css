@@ -159,3 +159,10 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .icon-color-field .color-input::-webkit-color-swatch-wrapper{padding:0}
 .icon-color-field .color-input::-webkit-color-swatch{border:1px solid var(--control-border);border-radius:50%}
 .icon-color-field .color-input::-moz-color-swatch{border:1px solid var(--control-border);border-radius:50%}
+
+/* Editor-only preference: preserve the scrollport and keyboard/wheel behavior.
+   The website form in the Add workspace shares this preference, other panes do not. */
+html.hide-editor-scrollbar .app-dialog.site-editor-dialog,
+html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-width:none;-ms-overflow-style:none;scrollbar-gutter:auto}
+html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
+html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}

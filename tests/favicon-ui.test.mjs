@@ -26,7 +26,7 @@ const declaration=prefix=>{
 const code=[
  declaration('const esc ='),declaration('const faviconFormStates ='),declaration('let faviconRequestSequence ='),
  ...['tileInk','siteGlyph','renderLinkIconChoices','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon'].map(extractFunction),
- 'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon};'
+ 'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon,view:form=>faviconFormStates.get(form)};'
 ].join('\n\n');
 function deferred() {
  let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};
@@ -78,7 +78,7 @@ test('smart extraction starts the optional permission operation synchronously an
  done.resolve({candidates:['https://example.com/apple-touch-icon.png'],warning:'<img src=x> 图标声明不可读取'});
  await pending;
  assert.equal(f.button.disabled,false);
- assert.equal(f.status.textContent,'<img src=x> 图标声明不可读取');
+ assert.equal(f.status.textContent,'<img src=x> 图标声明不可读取 候选已追加，之前的图标与选择保留；选择后点击保存。');
  assert.equal(f.status.innerHTML,'','remote messages must be text only');
 });
 
@@ -114,4 +114,50 @@ test('text mode can fetch choices without changing the current selection, and fa
  done.reject(new Error('网站没有开放跨域读取。'));await pending;
  assert.equal(f.form.elements.iconMode.value,'text');assert.equal(f.button.disabled,false);
  assert.equal(f.status.textContent,'网站没有开放跨域读取。');
+});
+
+
+test('completed icon candidates and explicit choice survive destination edits',async()=>{
+ const h=harness({discoverFavicon:async()=>({variants:[{url:'https://example.com/logo.svg',source:'网页声明'}],candidates:['https://example.com/logo.svg']})});
+ const f=linkForm();f.form.elements.iconUrl={value:'https://example.com/chosen.png'};f.form.dataset={iconChoice:'candidate'};
+ h.app.updateLinkPreview(f.form);await h.app.extractLinkFavicon(f.button);
+ const view=h.app.view(f.form),variants=view.variants;
+ f.form.elements.url.value='https://chat.example.com/';h.app.updateLinkPreview(f.form);
+ assert.equal(h.app.view(f.form),view);assert.equal(view.variants,variants);
+ assert.equal(f.form.elements.iconUrl.value,'https://example.com/chosen.png');assert.equal(view.choice,'candidate');
+ assert.equal(variants[0].sourceSite,'https://example.com/');
+});
+
+test('a stale lookup is invalidated without destroying the already fetched set',async()=>{
+ const late=deferred();let count=0;
+ const h=harness({discoverFavicon:()=>++count===1?Promise.resolve({candidates:['https://example.com/keep.svg']}):late.promise});
+ const f=linkForm();h.app.updateLinkPreview(f.form);await h.app.extractLinkFavicon(f.button);
+ const view=h.app.view(f.form),old=view.variants;const work=h.app.extractLinkFavicon(f.button);
+ f.form.elements.url.value='https://chat.example.com/';h.app.updateLinkPreview(f.form);
+ const message=f.status.textContent;
+ late.resolve({candidates:['https://example.com/late.svg']});await work;
+ assert.equal(view.variants,old);assert.equal(view.variants.length,1);assert.equal(view.variants[0].url,'https://example.com/keep.svg');assert.equal(f.status.textContent,message);assert.equal(f.button.disabled,false);
+});
+
+test('further lookups append by exact native URL and keep the old source provenance',async()=>{
+ let count=0;
+ const h=harness({discoverFavicon:async()=>({candidates:++count===1?['https://example.com/keep.svg']:['https://example.com/keep.svg','https://child.example.com/new.svg']})});
+ const f=linkForm();h.app.updateLinkPreview(f.form);await h.app.extractLinkFavicon(f.button);
+ f.form.elements.url.value='https://child.example.com/';h.app.updateLinkPreview(f.form);await h.app.extractLinkFavicon(f.button);
+ const variants=h.app.view(f.form).variants;
+ assert.equal(variants.length,2);assert.equal(variants[0].sourceSite,'https://example.com/');assert.equal(variants[1].sourceSite,'https://child.example.com/');
+});
+
+test('a visible automatic current icon is pinned when changing the destination',()=>{
+ const h=harness({bindFaviconImages:(root,options)=>options?.onStatus?.({url:'https://example.com/icon.svg',scalable:true,adequate:true})});
+ const f=linkForm();f.form.dataset={originalUrl:'https://example.com/',originalMode:'auto'};f.form.elements.iconUrl={value:''};
+ h.app.updateLinkPreview(f.form);assert.equal(f.form.elements.iconUrl.value,'');
+ f.form.elements.url.value='https://child.example.com/';h.app.updateLinkPreview(f.form);assert.equal(f.form.elements.iconUrl.value,'https://example.com/icon.svg');
+});
+
+test('typing a new address may update an unfetched preview until actual artwork exists',()=>{
+ const h=harness(),f=linkForm('');h.app.updateLinkPreview(f.form);
+ f.form.elements.url.value='e';h.app.updateLinkPreview(f.form);
+ f.form.elements.url.value='example.com';h.app.updateLinkPreview(f.form);
+ assert.equal(h.app.view(f.form).previewSite,'https://example.com/');
 });

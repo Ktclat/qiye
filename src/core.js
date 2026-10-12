@@ -49,7 +49,7 @@ export const DEFAULT_STATE = deepFreeze({
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
-    searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false,
+    searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
@@ -268,6 +268,7 @@ function validateSettings(raw) {
     rememberGroup: bool(v.rememberGroup, 'settings.rememberGroup'), scrollGroups: bool(v.scrollGroups, 'settings.scrollGroups'),
     sidebarWheelMode: enumeration(v.sidebarWheelMode, ['scroll', 'switch'], 'settings.sidebarWheelMode'),
     hideScrollbar: bool(v.hideScrollbar, 'settings.hideScrollbar'),
+    hideEditorScrollbar: bool(v.hideEditorScrollbar, 'settings.hideEditorScrollbar'),
     iconShape: enumeration(v.iconShape, ['rounded','original'], 'settings.iconShape'),
     iconBackdrop: enumeration(v.iconBackdrop, ['adaptive','none'], 'settings.iconBackdrop'),
     autoExtractIcons: bool(v.autoExtractIcons, 'settings.autoExtractIcons'),

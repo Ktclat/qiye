@@ -12,6 +12,7 @@ import { bindFaviconImages } from './favicon-view.js';
 import { normalizeAvatarFile } from './avatar.js';
 import { readSearchHistory, rememberSearch, clearSearchHistory } from './search-history.js';
 import { createDesktopDragController, reorderById } from './drag.js';
+import { reconcileKeyedChildren } from './keyed-view.js';
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -33,6 +34,7 @@ let editing = false, widgetsCleanup = () => {}, saving = 0, revision = 0, blocke
 let dialogKind = '', dialogData = {}, lastDialogFocus = null, lastToastTimer, undoAction = null;
 let desktopDrag = null, localScope = 'desktop', localExtra = [], searchToken = 0;
 let currentMedia = null, lastDate = '', renderedGroup = '', currentGridColumns = 14;
+let widgetViewRevision = 0, widgetsBound = false;
 const faviconFormStates = new WeakMap();
 let faviconRequestSequence = 0;
 let avatarRequestSequence = 0, renderedAvatar, renderedEngineKey = '', lastGroupWheel = 0;
@@ -125,16 +127,28 @@ function linkPreviewIdentity(form) {
 function updateLinkPreview(form, options = {}) {
  if (!form?.isConnected) return;
  const identity=linkPreviewIdentity(form), mode=form.elements.iconMode.value === 'text' ? 'text' : 'auto';
+ const url=safeUrl(form.elements.url.value);
  let view=faviconFormStates.get(form);
- if (!view || view.identity !== identity) {
-  const url=safeUrl(form.elements.url.value), sameUrl=view?.url===url;
-  view={identity,url,mode,request:++faviconRequestSequence,busy:false,candidates:sameUrl?view.candidates:null,variants:sameUrl?view.variants:null,message:'',choice:form.dataset?.iconChoice || (mode==='text'?'text':'current')};
+ if (!view) {
+  view={identity,url,mode,request:++faviconRequestSequence,busy:false,candidates:[],variants:[],message:'',choice:form.dataset?.iconChoice || (mode==='text'?'text':'current'),previewSite:safeUrl(form.dataset?.originalUrl)||url,currentIcon:normalizeIconSelection(form.dataset?.originalIcon),measurements:new Map()};
   faviconFormStates.set(form,view);
+ } else if (view.identity !== identity) {
+  // The destination and icon artwork are independent. Invalidate only pending
+  // discovery/upload work; keep decoded candidates, their DOM and the selection.
+  const changedUrl=view.url!==url;
+  view.request=++faviconRequestSequence;view.busy=false;
+  view.identity=identity;view.url=url;view.mode=mode;
+  if(changedUrl){
+   view.destinationChanged=true;
+   view.message='网址已修改，图标与候选已保留；获取图标可追加这个网址的结果。';
+  }
  }
+ if(url && (!view.previewSite || !form.dataset?.originalUrl && !view.currentIcon && !view.variants.length))view.previewSite=url;
+ if(view.destinationChanged && view.choice==='current' && mode==='auto' && view.currentIcon && form.elements.iconUrl)form.elements.iconUrl.value=view.currentIcon;
  const preview=$('#link-preview-icon',form), button=$('[data-action="extract-favicon"]',form), status=$('#favicon-status',form);
  const original=form.dataset?.originalUrl;
  const item=original?{url:original,iconMode:form.dataset.originalMode||'auto',iconUrl:form.dataset.originalIcon||null,icon:form.dataset.originalText,title:form.dataset.originalTitle}
-   :{url:view.url,iconMode:'auto',icon:form.elements.icon.value,title:form.elements.title.value};
+   :{url:view.previewSite,iconMode:'auto',icon:form.elements.icon.value,title:form.elements.title.value};
  $('#link-preview-title',form).textContent=form.elements.title.value || '网站';
  $('#link-preview-url',form).textContent=form.elements.url.value;
  preview.style.background=form.elements.color.value;
@@ -142,7 +156,12 @@ function updateLinkPreview(form, options = {}) {
  const markup=siteGlyph(item);
  if(view.rendered!==markup || view.preview!==preview){preview.innerHTML=markup;view.rendered=markup;view.preview=preview;}
  bindFaviconImages(preview,{onStatus:info=>{
-  const quality=$('#favicon-quality',form);if(!quality||!form.isConnected||faviconFormStates.get(form)!==view)return;
+  if(!form.isConnected||faviconFormStates.get(form)!==view)return;
+  if(info.url){
+   view.currentIcon=normalizeIconSelection(info.url);
+   if(view.destinationChanged && view.choice==='current' && form.elements.iconMode.value==='auto' && form.elements.iconUrl)form.elements.iconUrl.value=view.currentIcon||'';
+  }
+  const quality=$('#favicon-quality',form);if(!quality)return;
   quality.dataset.quality=info.adequate?'sharp':'low';
   quality.textContent=info.url?(info.scalable?'当前图标 · SVG 矢量':`当前图标 · ${info.width} × ${info.height}px${info.adequate?'':' · 原图偏小'}`):'当前图标无法加载，将显示文字。';
  }});
@@ -156,32 +175,37 @@ function updateLinkPreview(form, options = {}) {
 }
 function renderLinkIconChoices(form, view) {
  const results=$('[data-icon-results]',form);if(!results)return;
- const variants=(view.variants || []).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
- const key=variants.map(v=>v.url).join('\n');
- if(view.results!==results || view.resultKey!==key){
-  view.results=results;view.resultKey=key;view.measurements=new Map();
-  results.innerHTML=variants.map((v,i)=>`<button type="button" class="icon-choice" data-icon-choice="candidate" data-icon-index="${i}" aria-pressed="false" disabled title="${esc(v.source||'网站图标')} · ${esc(v.url)}"><span class="choice-art"><span class="site-visual" data-favicon-site="${esc(view.url)}" data-favicon-selected="${esc(v.url)}"><span class="site-fallback" aria-hidden="true">…</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span></span><span>网站图标 ${i+1}</span><small data-icon-dimensions>加载中</small></button>`).join('');
-  for(const row of $$('[data-icon-index]',results)){
-   const entry=variants[Number(row.dataset.iconIndex)];
-   bindFaviconImages(row,{force:true,autoDiscover:false,targetSize:64,onStatus:info=>{
+ const variants=(view.variants || []).filter(v=>normalizeIconSelection(v.url)).slice(0,48);
+ const existing=new Map($$('[data-icon-index]',results).map(row=>[row.dataset.iconUrl,row]));
+ const keep=new Set(variants.map(v=>v.url));
+ for(const [url,row] of existing)if(!keep.has(url)){row.remove();view.measurements.delete(url);}
+ for(const [index,entry] of variants.entries()){
+  let row=existing.get(entry.url);
+  const needsBinding=!row || view.retryUrls?.has(entry.url);
+  if(!row){
+   const template=document.createElement('template');
+   template.innerHTML=`<button type="button" class="icon-choice" data-icon-choice="candidate" aria-pressed="false" disabled><span class="choice-art"><span class="site-visual" data-favicon-site="${esc(entry.sourceSite||view.previewSite||view.url)}" data-favicon-selected="${esc(entry.url)}"><span class="site-fallback" aria-hidden="true">…</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span></span><span data-icon-label></span><small data-icon-dimensions>加载中</small></button>`;
+   row=template.content.firstElementChild;row.dataset.iconUrl=entry.url;
+   row.title=`${entry.source||'网站图标'} · ${entry.url}`;
+   results.append(row);
+  }
+  if(needsBinding){
+   view.retryUrls?.delete(entry.url);
+   bindFaviconImages(row,{force:!!existing.get(entry.url),autoDiscover:false,targetSize:64,onStatus:info=>{
     if(!form.isConnected||faviconFormStates.get(form)!==view||!row.isConnected)return;
     row.disabled=!info.url;row.dataset.iconReady=info.url?'true':'false';
     $('[data-icon-dimensions]',row).textContent=info.url?(info.scalable?'SVG · 矢量':`${info.width} × ${info.height}`):'不可用';
     if(info.url)row.title=`${entry.source||'网站图标'} · ${info.scalable?'SVG':info.width+' × '+info.height+'px'}\n${entry.url}`;
     row.classList.toggle('icon-unavailable',!info.url);
     view.measurements.set(entry.url,Boolean(info.url));
-    if(view.measurements.size===variants.length){
-     const loaded=[...view.measurements.values()].filter(Boolean).length;
-     view.message=loaded?`已加载 ${loaded} 个候选，选择后点击保存。`:'未找到可加载的原站图标。可保留当前图标、使用文字或上传图片。';
-     if(view.warning)view.message+=' '+view.warning;
-     const message=$('#favicon-status',form);if(message)message.textContent=view.message;
-    }
    }});
   }
+  row.dataset.iconIndex=String(index);
+  $('[data-icon-label]',row).textContent=`网站图标 ${index+1}`;
  }
  const selection=form.elements.iconUrl?.value||'';
  for(const row of $$('[data-icon-choice]',form)){
-  const chosen=row.dataset.iconChoice===view.choice && (view.choice!=='candidate'||variants[Number(row.dataset.iconIndex)]?.url===selection);
+  const chosen=row.dataset.iconChoice===view.choice && (view.choice!=='candidate'||row.dataset.iconUrl===selection);
   row.setAttribute('aria-pressed',String(chosen));
  }
 }
@@ -193,7 +217,7 @@ function chooseLinkIcon(button){
   if(!candidate||button.dataset.iconReady!=='true')return;
   form.elements.iconUrl.value=candidate.url;form.elements.iconMode.value='auto';
  }else if(choice==='text') {form.elements.iconMode.value='text';form.elements.iconUrl.value='';}
- else if(choice==='current') {form.elements.iconMode.value=form.dataset.originalMode||'auto';form.elements.iconUrl.value=form.dataset.originalIcon||'';}
+ else if(choice==='current') {form.elements.iconMode.value=form.dataset.originalMode||'auto';form.elements.iconUrl.value=view.currentIcon||form.dataset.originalIcon||'';}
  else if(choice==='upload'){ $('#site-icon-upload',form)?.click();return; }
  else return;
  form.dataset.iconChoice=choice;view.choice=choice;
@@ -215,10 +239,13 @@ async function extractLinkFavicon(button) {
  try {
   const result=await pending;if (!isLinkPreviewCurrent(form,view,request)) return;
   view.busy=false;view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
-  view.variants=(result.variants?.length?result.variants:view.candidates.map(url=>({url,source:'站点候选'}))).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
-  view.resultKey=null;view.warning=result.warning||'';
+  const incoming=(result.variants?.length?result.variants:view.candidates.map(url=>({url,source:'站点候选'}))).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
+  view.retryUrls=new Set(incoming.filter(v=>view.measurements.get(v.url)===false).map(v=>v.url));
+  const known=new Set(view.variants.map(v=>v.url));
+  for(const variant of incoming)if(!known.has(variant.url) && view.variants.length<48){view.variants.push({...variant,sourceSite:url});known.add(variant.url);}
+  view.warning=result.warning||'';
   // Listing candidates never changes the selected asset or the website name.
-  view.message=result.warning || (view.variants.length?'请选择图标后保存；尺寸为原始图片尺寸。':'这个网站没有可读取的图标。');
+  view.message=(result.warning ? result.warning+' ' : '')+(incoming.length?'候选已追加，之前的图标与选择保留；选择后点击保存。':'这个网址没有新图标，已有候选与选择已保留。');
   updateLinkPreview(form);
  } catch(err) {
   if (!isLinkPreviewCurrent(form,view,request)) return;
@@ -232,8 +259,8 @@ async function uploadSiteIcon(input){
  try{
   const image=await normalizeAvatarFile(file);if(!isLinkPreviewCurrent(form,view,request))return;
   form.elements.iconUrl.value=image;form.elements.iconMode.value='auto';
-  view.variants=[...(view.variants||[]).filter(v=>!v.url.startsWith('data:')).slice(0,11),{url:image,source:'本机上传'}];
-  view.resultKey=null;view.choice='candidate';form.dataset.iconChoice='candidate';view.message='已处理本机图标，保存后生效。';updateLinkPreview(form);
+  view.variants=[...(view.variants||[]).filter(v=>!v.url.startsWith('data:')).slice(0,47),{url:image,source:'本机上传',sourceSite:view.previewSite||view.url}];
+  view.choice='candidate';form.dataset.iconChoice='candidate';view.message='已处理本机图标，保存后生效。';updateLinkPreview(form);
  }catch(error){if(isLinkPreviewCurrent(form,view,request)){view.message=error.message;updateLinkPreview(form);}}
 }
 function toast(message, undo, actionLabel='撤销') {
@@ -273,7 +300,7 @@ async function persist(options = {}) {
  saveQueue = job.catch(() => {});
  return job;
 }
-async function commit(render = true) { await persist(); if (render) renderDesktop(); }
+async function commit(render = true, options = {}) { await persist(); if (render) renderDesktop(options); }
 function navigate(url, forceNew = false, searchResult = false) {
  const target = safeUrl(url); if (!target) return toast('这个网址无效，请使用 http 或 https 网址。');
  if (forceNew || (searchResult ? state.settings.searchNewTab : state.settings.openNewTab)) window.open(target, '_blank', 'noopener,noreferrer');
@@ -423,6 +450,7 @@ function applySettings() {
  document.body.classList.toggle('no-sidebar-labels', !s.sidebarLabels);
  document.body.classList.toggle('reduce-effects', !!s.reducedEffects);
  root.classList.toggle('hide-content-scrollbar', !!s.hideScrollbar);
+ root.classList.toggle('hide-editor-scrollbar', !!s.hideEditorScrollbar);
  document.body.classList.toggle('clock-theme-color', !!s.clockFollowTheme);
  document.body.classList.toggle('pin-clock', s.pinClock && (s.showClock || s.showDate));
  document.body.classList.toggle('pin-search', s.pinSearch && s.showSearch);
@@ -469,9 +497,10 @@ function renderGroups() {
  groups.scrollLeft=oldScroll[0];groups.scrollTop=oldScroll[1];
  $('.group-button.active',groups)?.scrollIntoView({block:'nearest',inline:'nearest'});
 }
-function renderDesktop() {
+function renderDesktop({preserveWidgets=false} = {}) {
  desktopDrag?.cancel();
- widgetsCleanup(); applySettings(); renderGroups();
+ applySettings(); renderGroups();
+ if(!preserveWidgets)widgetViewRevision++;
  const group = currentGroup(), switched = renderedGroup && renderedGroup !== group.id;
  state.activeGroupId = group.id; renderedGroup = group.id;
  $('.desktop-wrap').setAttribute('aria-label', `${group.name}桌面`);
@@ -483,11 +512,23 @@ function renderDesktop() {
 
  const desktop = $('#desktop');
  desktop.classList.toggle('group-enter', !!switched && state.settings.animateGroups && !state.settings.reducedEffects);
- desktop.innerHTML = items.map((item,index)=>renderTile(item,index)).join('') +
-  (state.settings.showAddTile ? `<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="添加网站或组件">${icon('plus')}</button><span class="tile-label">添加</span></div>` : '');
- if(!items.length && !state.settings.showAddTile) desktop.innerHTML = '<div class="desktop-empty"><span>给这一页留一些喜欢的内容</span><button class="text-button" data-action="add">添加网站或组件</button></div>';
- bindFaviconImages($('#desktop'));
- widgetsCleanup = bindWidgets($('#desktop'), { getState:()=>state, save:persist, openDialog, toast, rerender:renderDesktop, applyWallpaper:applyOnlineWallpaper, wallpaperEnabledChanged:applySettings });
+ const entries=items.map((item,index)=>({
+  key:item.id,
+  // Order is not visual identity. Folder previews alone depend on children;
+  // a pure move retains live widget drafts and their existing event binding.
+  signature:JSON.stringify([item,item.type==='folder'?state.items.filter(i=>i.folderId===item.id).slice(0,4):null,item.type==='widget'?widgetViewRevision:null,item.type==='link'?state.settings.openNewTab:null]),
+  render:()=>renderTile(item,index)
+ }));
+ if(state.settings.showAddTile)entries.push({key:'$add',signature:'add',render:()=>`<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="添加网站或组件">${icon('plus')}</button><span class="tile-label">添加</span></div>`});
+ if(!items.length && !state.settings.showAddTile)entries.push({key:'$empty',signature:'empty',render:()=>'<div class="desktop-empty"><span>给这一页留一些喜欢的内容</span><button class="text-button" data-action="add">添加网站或组件</button></div>'});
+ const changed=reconcileKeyedChildren(desktop,entries);
+ items.forEach((item,index)=>desktop.children[index]?.style.setProperty('--enter-delay',Math.min(index,10)*16+'ms'));
+ bindFaviconImages(desktop);
+ if(!widgetsBound || [...changed.created,...changed.removed].some(node=>node.classList.contains('tile-widget'))){
+  widgetsCleanup();
+  widgetsCleanup=bindWidgets(desktop,{getState:()=>state,save:persist,openDialog,toast,rerender:renderDesktop,applyWallpaper:applyOnlineWallpaper,wallpaperEnabledChanged:applySettings});
+  widgetsBound=true;
+ }
  updateGrid(); refreshLiveWidgets($('#desktop'), state);
 }
 function renderTile(item,index=0) {
@@ -729,6 +770,7 @@ function settingsDialog(tab) {
   ${settingSwitch('minimal','极简模式','只显示时间、搜索与壁纸；按 Esc 可恢复桌面。')}
   ${settingSwitch('quote','显示页底短句','固定在视口底部，不随组件数量移动。')}
   ${settingSwitch('hideScrollbar','隐藏内容区滚动条','只隐藏轨道，滚轮、触屏、Page Down 和空格仍可滚动。')}
+  ${settingSwitch('hideEditorScrollbar','隐藏网站编辑窗口滚动条','同时用于添加网站表单；仅隐藏轨道，内容仍可滚动，与桌面滚动条独立。')}
   ${settingSwitch('animateGroups','分组切换动画','图标从下方向上轻滑入场。遵循系统的减少动态效果设置。')}
   ${settingRange('desktopMaxWidth','内容最大宽度',720,2000)}
   <div class="section-label">时间位置</div>
@@ -762,7 +804,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.2 · GPLv3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.3 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
@@ -771,7 +813,7 @@ function settingsDialog(tab) {
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
  return dialogCloseButton() + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类"><h2 class="workspace-title" id="workspace-title">设置</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.2</small></nav>
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类"><h2 class="workspace-title" id="workspace-title">设置</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.3</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
@@ -858,11 +900,11 @@ async function removeItem(id) {
   await commit();toast('已撤销移除。');
  });
 }
-async function moveItem(id,targetGroup,folderId=null) {
+async function moveItem(id,targetGroup,folderId=null,renderOptions={}) {
  const item=state.items.find(i=>i.id===id); if(!item)return;
  item.groupId=targetGroup;if(item.type==='link')item.folderId=folderId;
  if(item.type==='folder')state.items.forEach(i=>{if(i.folderId===id)i.groupId=targetGroup;});
- await commit();
+ await commit(true,renderOptions);
 }
 function exportBackup(source=state) {
  const data=exportState(source);const blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob);
@@ -1053,7 +1095,6 @@ document.addEventListener('input', event=>{
  if(input.dataset.settingColor){state.settings[input.dataset.settingColor]=input.value;const output=$('#color-value-'+input.dataset.settingColor);if(output)output.textContent=input.value;applySettings();}
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
  if(input.closest('#link-form')){
-  if(input.name==='url'){input.form.elements.iconUrl.value='';input.form.elements.iconMode.value='auto';input.form.dataset.iconChoice='current';input.form.dataset.originalUrl='';input.form.dataset.originalIcon='';input.form.dataset.originalMode='auto';}
   updateLinkPreview(input.form);
  }
 });
@@ -1132,7 +1173,7 @@ async function applyDesktopDrop(intent) {
  if (intent.kind === 'group-reorder') {
   const ordered = reorderById(state.groups,intent.groupId,intent.targetId,intent.position);
   if (ordered === state.groups) return;
-  state.groups = ordered; await commit(); return;
+  state.groups = ordered; await commit(true,{preserveWidgets:true}); return;
  }
  const item = state.items.find(entry => entry.id === intent.itemId);
  if (!item) return;
@@ -1141,7 +1182,7 @@ async function applyDesktopDrop(intent) {
   if (!target || item.groupId !== target.groupId || item.folderId || target.folderId) return;
   const ordered = reorderById(state.items,item.id,target.id,intent.position);
   if (ordered === state.items) return;
-  state.items = ordered; await commit(); return;
+  state.items = ordered; await commit(true,{preserveWidgets:true}); return;
  }
  if (!state.groups.some(group => group.id === intent.groupId)) return;
  if(intent.kind==='create-folder'){
@@ -1152,22 +1193,22 @@ async function applyDesktopDrop(intent) {
   // Both children and their new parent enter the SAME validated storage write.
   item.folderId=folder.id;target.folderId=folder.id;
   state.items=[...state.items.slice(0,index),folder,...state.items.slice(index)];
-  await commit();toast('已创建文件夹，右键可重命名或移动项目。');return;
+  await commit(true,{preserveWidgets:true});toast('已创建文件夹，右键可重命名或移动项目。');return;
  }
  if (intent.kind === 'folder') {
   const folder = state.items.find(entry => entry.id === intent.folderId && entry.type === 'folder' && entry.groupId === intent.groupId);
   if (!folder || item.type !== 'link') return;
-  await moveItem(item.id,folder.groupId,folder.id); toast('已收进文件夹。'); return;
+  await moveItem(item.id,folder.groupId,folder.id,{preserveWidgets:true}); toast('已收进文件夹。'); return;
  }
  if (intent.kind === 'group') {
-  await moveItem(item.id,intent.groupId); toast('已移动到所选分组。'); return;
+  await moveItem(item.id,intent.groupId,null,{preserveWidgets:true}); toast('已移动到所选分组。'); return;
  }
  if (intent.kind === 'append') {
   item.groupId = intent.groupId;
   if (item.type === 'link') item.folderId = null;
   if (item.type === 'folder') state.items.forEach(child => { if (child.folderId === item.id) child.groupId = intent.groupId; });
   state.items = [...state.items.filter(entry => entry.id !== item.id),item];
-  await commit();
+  await commit(true,{preserveWidgets:true});
  }
 }
 

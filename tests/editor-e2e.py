@@ -40,6 +40,8 @@ with sync_playwright() as p:
   def external(route):
    u=route.request.url;requests.append(u);headers={'Access-Control-Allow-Origin':'*'}
    if 'picsum.photos/v2/list' in u:return route.fulfill(status=200,content_type='application/json',body=json.dumps([PHOTO]),headers=headers)
+   if u.startswith('https://chat.icons.example.com/'):
+    return route.fulfill(status=404,body='No child-site icons',headers=headers)
    if u.startswith(SITE):
     suffix=u[len(SITE)-1:]
     if policy['fail']:return route.fulfill(status=404,body='Unavailable',headers=headers)
@@ -63,8 +65,8 @@ with sync_playwright() as p:
   page.locator('#desktop [data-item="native-test"]').click(button='right');page.locator('#context-menu [data-context="edit"]').click();page.locator('#link-form').wait_for()
  def close(page):page.locator('#dialog [data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
  def get(page):
-  page.locator('[data-action="extract-favicon"]').click();page.wait_for_function('document.querySelectorAll("[data-icon-ready=true]").length>=4')
- def candidate(page,suffix):return page.locator('[data-icon-choice="candidate"]').filter(has=page.locator(f'[data-favicon-selected="{SITE}{suffix}"]'))
+  page.locator('[data-action="extract-favicon"]').click();page.wait_for_function('!document.querySelector("[data-action=extract-favicon]").disabled && document.querySelectorAll("[data-icon-ready=true]").length>=4')
+ def candidate(page,suffix):return page.locator('button[data-icon-choice="candidate"]').filter(has=page.locator(f'[data-favicon-selected="{SITE}{suffix}"]'))
  try:
   ctx,page,errors,requests,policy=setup();edit(page)
   check('website editor has exactly two semantic sections',lambda:eq(page.locator('#link-form>.editor-section').count(),2))
@@ -98,11 +100,54 @@ with sync_playwright() as p:
   edit(page);page.locator('#site-icon-upload').set_input_files({'name':'local.png','mimeType':'image/png','buffer':png(100,(65,170,130,255))});page.wait_for_function('document.querySelector("[name=iconUrl]").value.startsWith("data:image/")')
   page.locator('#link-form button[type=submit]').click();page.locator('#dialog').wait_for(state='hidden')
   check('uploaded icon is locally re-encoded and persisted',lambda:ok(link(page)['iconUrl'].startswith('data:image/')))
-  edit(page);page.locator('[name=url]').fill('https://different.example.com/');check('changing website clears stale candidate and original asset',lambda:eq(page.locator('[name=iconUrl]').input_value(),''));close(page)
+  edit(page);page.locator('[name=url]').fill('https://different.example.com/');check('changing website retains the uploaded icon',lambda:eq(page.locator('[name=iconUrl]').input_value(),link(page)['iconUrl']));close(page)
   check('cancelled URL change does not alter saved website',lambda:eq(link(page)['url'],SITE))
   edit(page);policy['fail']=True;page.locator('[data-action=extract-favicon]').click();page.wait_for_function('!document.querySelector("[data-action=extract-favicon]").disabled')
   check('failed extraction leaves selected uploaded image unchanged',lambda:ok(page.locator('[name=iconUrl]').input_value().startswith('data:image/')))
   close(page);check('icon editor interactions produce no uncaught errors',lambda:eq(errors,[]));ctx.close()
+
+  # Icon sources remain independent of the target URL, including main -> subdomain.
+  ctx,page,errors,requests,policy=setup();edit(page);get(page)
+  before=link(page)
+  page.evaluate('window.retainedChoices=[...document.querySelectorAll("[data-icon-index]")];window.retainedImages=retainedChoices.map(n=>n.querySelector("img"))')
+  candidate(page,'small.png').click()
+  page.locator('[name=url]').fill('https://chat.icons.example.com/')
+  check('URL change preserves fetched candidate nodes and decoded images',lambda:ok(page.evaluate('retainedChoices.every((n,i)=>n.isConnected && n.querySelector("img")===retainedImages[i])')))
+  check('selected native icon survives main-to-child URL change',lambda:eq(page.locator('[name=iconUrl]').input_value(),SITE+'small.png'))
+  candidate(page,'alternate.png').click()
+  check('main-site candidate remains selectable for child destination',lambda:eq(page.locator('[name=iconUrl]').input_value(),SITE+'alternate.png'))
+  page.locator('[data-action=extract-favicon]').click();page.wait_for_function('!document.querySelector("[data-action=extract-favicon]").disabled')
+  check('failed child lookup keeps previous decoded choices alive',lambda:ok(page.evaluate('retainedChoices.every(n=>n.isConnected)')))
+  check('failed child lookup does not overwrite selected main-site artwork',lambda:eq(page.locator('[name=iconUrl]').input_value(),SITE+'alternate.png'))
+  check('changing destination and icon is still a draft',lambda:eq(link(page),before))
+  page.locator('#link-form button[type=submit]').click();page.locator('#dialog').wait_for(state='hidden')
+  check('save stores child destination with main-site icon independently',lambda:eq([link(page)['url'],link(page)['iconUrl']],['https://chat.icons.example.com/',SITE+'alternate.png']))
+  if not args.local_document:
+   page.reload(wait_until='domcontentloaded');page.locator('#desktop [data-item=native-test]').wait_for()
+   check('cross-site choice survives real reload',lambda:eq([link(page)['url'],link(page)['iconUrl']],['https://chat.icons.example.com/',SITE+'alternate.png']))
+  edit(page);check('reopened current choice uses stored main-site icon',lambda:eq(page.locator('[data-icon-choice=current] .site-visual').get_attribute('data-favicon-selected'),SITE+'alternate.png'));close(page)
+  check('cross-site editor flow has no runtime errors',lambda:eq(errors,[]));ctx.close()
+
+  # Editor scrollbar preference has a separate storage key and a scoped scrollport.
+  ctx,page,errors,requests,policy=setup('light',520);page.set_viewport_size({'width':520,'height':460})
+  page.locator('#brand-button').click();page.locator('[data-settings-tab=layout]').click()
+  check('editor scrollbar setting defaults to visible',lambda:eq(page.locator('[data-setting=hideEditorScrollbar]').is_checked(),False))
+  page.locator('[data-setting=hideEditorScrollbar]').check()
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v1")).settings.hideEditorScrollbar===true')
+  check('editor setting does not change desktop scrollbar preference',lambda:eq(saved(page)['settings']['hideScrollbar'],False));close(page)
+  edit(page)
+  check('editor scrollbar hidden but overflow remains scrollable',lambda:ok(page.locator('#dialog').evaluate('n=>getComputedStyle(n).scrollbarWidth==="none" && n.scrollHeight>n.clientHeight && getComputedStyle(n).overflowY!=="hidden"')))
+  page.locator('#dialog').hover();page.mouse.wheel(0,420);page.wait_for_function('document.querySelector("#dialog").scrollTop>0')
+  check('hidden editor scrollbar still permits wheel scrolling',lambda:ok(page.locator('#dialog').evaluate('n=>n.scrollTop>0')))
+  page.locator('#link-form').evaluate('n=>n.closest("dialog").scrollTop=0');close(page)
+  page.locator('.top-tools [data-action=add]').click();page.locator('[data-add-tab=link]').click()
+  check('add website pane shares editor scrollbar preference',lambda:eq(page.locator('.add-content').evaluate('n=>getComputedStyle(n).scrollbarWidth'),'none'))
+  page.locator('[data-add-tab=widgets]').click()
+  check('widget catalog scrollbars are not affected by editor preference',lambda:ok(page.locator('.add-content').evaluate('n=>getComputedStyle(n).scrollbarWidth!=="none"')));close(page)
+  page.locator('#brand-button').click();page.locator('[data-settings-tab=layout]').click();page.locator('[data-setting=hideEditorScrollbar]').uncheck()
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v1")).settings.hideEditorScrollbar===false');close(page);edit(page)
+  check('editor scrollbar can be restored',lambda:ok(page.locator('#dialog').evaluate('n=>getComputedStyle(n).scrollbarWidth!=="none"')));close(page)
+  check('editor scrollbar flows have no runtime errors',lambda:eq(errors,[]));ctx.close()
 
   ctx,page,errors,requests,policy=setup('light');page.locator('#brand-button').click()
   check('settings uses navigation title and no tall header',lambda:eq([page.locator('#dialog .dialog-head').count(),page.locator('#workspace-title').inner_text()],[0,'设置']))
