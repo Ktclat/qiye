@@ -995,8 +995,8 @@ html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;widt
 .tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
 .widget-inner h3,.widget-inner strong{max-width:100%}
 .tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:calc(100% - var(--label-space,24px));aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
-.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
-.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
+.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)));height:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)))}
+.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)));height:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)))}
 .tile-link>.tile-label,.tile-folder>.tile-label{height:var(--label-space,24px);padding-top:6px;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
 .tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
 .tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
@@ -1013,7 +1013,7 @@ html[data-icon-shape=original] .tile-link .tile-body:has(.is-loaded),html[data-i
 .tile-folder[data-size="1x1"] .mini-site .site-glyph{font-size:12px}
 .folder-grid .folder-site{width:var(--tile-size);height:var(--tile-size);border-radius:var(--icon-radius);padding:0;overflow:hidden;opacity:var(--icon-opacity)}
 .folder-grid .folder-item{align-items:center;min-width:0}
-.folder-grid .folder-item .folder-name{font-size:var(--label-size)}
+.folder-grid .folder-item>span{font-size:var(--label-size);color:var(--fg);line-height:1.3}
 .preview-icon{border-radius:var(--icon-radius)}
 .engine-mark,.engine-mark .site-visual{background:none!important;border:0;border-radius:0;overflow:hidden;aspect-ratio:1}
 .engine-mark .site-favicon{padding:0;width:100%;height:100%;border-radius:0;filter:none;object-fit:contain}
@@ -6642,7 +6642,7 @@ function settingsDialog(tab) {
   <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.1 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
-  <p class="about-note">图标直接从对应网站加载；智能提取只在点击时读取页面图标声明。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
+  <p class="about-note">图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
   <p class="about-note">Copyright © 2026 Ktclat and Qiye contributors. 栖页代码使用 GNU GPLv3，允许使用、修改和按许可证再分发，不提供担保。<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">完整许可证</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/WIDGETS.md" target="_blank" rel="noopener noreferrer">组件贡献指南</a></p>
   <p class="about-note">Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;

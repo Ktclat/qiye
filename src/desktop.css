@@ -33,8 +33,8 @@ html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;widt
 .tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
 .widget-inner h3,.widget-inner strong{max-width:100%}
 .tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:calc(100% - var(--label-space,24px));aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
-.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
-.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
+.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)));height:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)))}
+.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)));height:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)))}
 .tile-link>.tile-label,.tile-folder>.tile-label{height:var(--label-space,24px);padding-top:6px;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
 .tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
 .tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
@@ -51,7 +51,7 @@ html[data-icon-shape=original] .tile-link .tile-body:has(.is-loaded),html[data-i
 .tile-folder[data-size="1x1"] .mini-site .site-glyph{font-size:12px}
 .folder-grid .folder-site{width:var(--tile-size);height:var(--tile-size);border-radius:var(--icon-radius);padding:0;overflow:hidden;opacity:var(--icon-opacity)}
 .folder-grid .folder-item{align-items:center;min-width:0}
-.folder-grid .folder-item .folder-name{font-size:var(--label-size)}
+.folder-grid .folder-item>span{font-size:var(--label-size);color:var(--fg);line-height:1.3}
 .preview-icon{border-radius:var(--icon-radius)}
 .engine-mark,.engine-mark .site-visual{background:none!important;border:0;border-radius:0;overflow:hidden;aspect-ratio:1}
 .engine-mark .site-favicon{padding:0;width:100%;height:100%;border-radius:0;filter:none;object-fit:contain}

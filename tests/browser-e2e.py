@@ -203,6 +203,14 @@ with sync_playwright() as p:
    check('widgets retain independent rounded corners at icon size '+str(size),lambda:eq(page.locator('.tile-widget .tile-body').first.evaluate('n=>getComputedStyle(n).borderRadius'),'20px'))
    if size==74:page.screenshot(path=str(OUT/'widget-matrix.png'))
    check('widget matrix has no runtime errors '+str(size),lambda:eq(errors,[]));ctx.close()
+  # Large labels must not flatten multi-cell website or folder frames.
+  for size in [48,74,120]:
+   for span in ['2x2','4x2']:
+    expanded=copy.deepcopy(links[:2]);expanded[0]['size']=span;expanded[1]['size']=span
+    expanded.append({'id':'wide-folder','type':'folder','groupId':'home','title':'文件夹','icon':'folder','color':'#A6B1E1','size':span})
+    ctx,page,errors=setup({'gridSize':size,'labelSize':20},items=expanded)
+    check('large-label '+span+' website and folder frames remain square at '+str(size),lambda:truth(page.locator('.tile-link .tile-body,.tile-folder .tile-body').evaluate_all('ns=>ns.every(n=>Math.abs(n.getBoundingClientRect().width-n.getBoundingClientRect().height)<1)')))
+    ctx.close()
   for theme in ['dark','light']:
    ctx,page,errors=setup({'theme':theme,'showSeconds':True,'surfaceStyle':'glass'})
    check(theme+' materials loaded',lambda:eq(page.locator('html').get_attribute('data-theme'),theme))

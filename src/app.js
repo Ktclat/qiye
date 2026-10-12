@@ -673,7 +673,7 @@ function settingsDialog(tab) {
   <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.1 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
-  <p class="about-note">图标直接从对应网站加载；智能提取只在点击时读取页面图标声明。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
+  <p class="about-note">图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
   <p class="about-note">Copyright © 2026 Ktclat and Qiye contributors. 栖页代码使用 GNU GPLv3，允许使用、修改和按许可证再分发，不提供担保。<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">完整许可证</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/WIDGETS.md" target="_blank" rel="noopener noreferrer">组件贡献指南</a></p>
   <p class="about-note">Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
