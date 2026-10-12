@@ -1,3 +1,4 @@
+import { normalizeIconSelection } from '../src/icon-selection.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -24,7 +25,7 @@ const declaration=prefix=>{
 };
 const code=[
  declaration('const esc ='),declaration('const faviconFormStates ='),declaration('let faviconRequestSequence ='),
- ...['tileInk','siteGlyph','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon'].map(extractFunction),
+ ...['tileInk','siteGlyph','renderLinkIconChoices','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon'].map(extractFunction),
  'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon};'
 ].join('\n\n');
 function deferred() {
@@ -33,6 +34,7 @@ function deferred() {
 function harness(extra={}) {
  const dialog={open:true};
  const context=vm.createContext({
+  normalizeIconSelection,
   safeUrl,icon,iconNames,URL,Promise,Date,dialog,bindFaviconImages,state:{settings:{gridSize:74}},
   $:(selector,root)=>root.querySelector(selector),
   $$:(selector,root)=>[...root.querySelectorAll(selector)],
@@ -89,7 +91,7 @@ test('edits to the URL or icon mode invalidate a pending extraction result',asyn
   const currentStatus=f.status.textContent,currentPreview=f.preview.innerHTML;
   done.resolve({candidates:['https://example.com/outdated.png'],warning:'STALE'});await pending;
   assert.equal(f.status.textContent,currentStatus);assert.equal(f.preview.innerHTML,currentPreview);
-  assert.equal(f.button.disabled,change==='iconMode');
+  assert.equal(f.button.disabled,false);
  }
 });
 
@@ -104,12 +106,12 @@ test('closing a dialog or replacing its form prevents late extraction writes',as
  }
 });
 
-test('text mode blocks discovery, while a failed active discovery allows a deliberate retry',async()=>{
+test('text mode can fetch choices without changing the current selection, and failure permits retry',async()=>{
  const done=deferred(),calls=[];const h=harness({discoverFavicon:(...args)=>{calls.push(args);return done.promise;}});
  const f=linkForm();f.form.elements.iconMode.value='text';h.app.updateLinkPreview(f.form);
- await h.app.extractLinkFavicon(f.button);assert.equal(calls.length,0);
- f.form.elements.iconMode.value='auto';h.app.updateLinkPreview(f.form);
- const pending=h.app.extractLinkFavicon(f.button);done.reject(new Error('网站没有开放跨域读取。'));await pending;
- assert.equal(f.button.disabled,false);assert.equal(f.status.textContent,'网站没有开放跨域读取。');
- assert.match(f.preview.innerHTML,/site-fallback/);
+ const pending=h.app.extractLinkFavicon(f.button);assert.equal(calls.length,1);
+ assert.equal(calls[0][1].allCandidates,true);
+ done.reject(new Error('网站没有开放跨域读取。'));await pending;
+ assert.equal(f.form.elements.iconMode.value,'text');assert.equal(f.button.disabled,false);
+ assert.equal(f.status.textContent,'网站没有开放跨域读取。');
 });

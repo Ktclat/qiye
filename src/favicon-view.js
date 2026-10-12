@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates, discoverFavicon } from './favicons.js';
 
+import { normalizeIconSelection } from './icon-selection.js';
+
 import { recoverIcoArtwork } from './icon-artwork.js';
 
 // Metadata requests have their own two-slot queue; page HTML is never fetched
@@ -78,7 +80,8 @@ export function bindFaviconImages(root = document, options = {}) {
       targetSize: faviconTargetSize(visual, image, options),
       pixelRatio: Number.isFinite(options.pixelRatio) && options.pixelRatio > 0 ? options.pixelRatio : globalThis.devicePixelRatio || 1,
     };
-    const provided = Array.isArray(options.candidates) ? options.candidates : getFaviconCandidates(siteUrl, sizeOptions);
+    const selected = normalizeIconSelection(visual.dataset.faviconSelected);
+    const provided = selected ? [selected] : Array.isArray(options.candidates) ? options.candidates : getFaviconCandidates(siteUrl, sizeOptions);
     const candidates = [...new Set(provided)].filter(url => typeof url === 'string' && url).slice(0, 12);
     const tried = new Set();
     let candidateIndex = 0, upgradeIndex = 0, upgrades = null, stopped = false, requestTicket = 0;
@@ -117,7 +120,7 @@ export function bindFaviconImages(root = document, options = {}) {
       try{options.onStatus?.(information);}catch{/* Observer callbacks cannot interrupt loading. */}
     };
     const enhance=async()=>{
-      if(enhanced||!autoDiscover||!binding.current()){complete();return;}
+      if(enhanced||selected||!autoDiscover||!binding.current()){complete();return;}
       enhanced=true;
       try{
         const result=await queueMetadata(binding.current,async()=>{
@@ -179,7 +182,7 @@ export function bindFaviconImages(root = document, options = {}) {
           const quality = getFaviconQuality(siteUrl, sourceUrl||url, { ...sizeOptions, width, height });
           cleanup(false);
           faviconImageFailures.delete(url);
-          try { Promise.resolve(rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
+          try { Promise.resolve(selected ? undefined : rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
           catch { /* Cache quotas do not hide a successfully loaded image. */ }
           if (!best || quality.score > best.quality.score) {
             if (background) {
@@ -211,7 +214,7 @@ export function bindFaviconImages(root = document, options = {}) {
     };
     const advanceUpgrade = () => {
       if (!binding.current()) { binding.cancel(); return; }
-      if (best?.quality.adequate) { complete(); return; }
+      if (selected || best?.quality.adequate) { complete(); return; }
       if (!upgrades) {
         upgrades = takeFaviconUpgradeCandidates(siteUrl, best.url, {
           ...sizeOptions, width: best.width, height: best.height, attempted: [...tried], force: !!options.force,

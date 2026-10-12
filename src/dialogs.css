@@ -1,0 +1,161 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+   v0.3.2 — quiet surfaces, compact two-column workspaces and native icon choices. */
+:root{--workspace-pane:rgb(28 32 39 / .94);--workspace-nav:rgb(13 17 23 / .38);--control-surface:rgb(255 255 255 / .055);--control-border:rgb(221 230 240 / .095);--section-surface:rgb(255 255 255 / .035);--nav-selection:rgb(228 239 255 / .105);--nav-selection-border:rgb(228 239 255 / .16)}
+html[data-theme=light]{--fg:#27313f;--muted:#677385;--panel:#f9fafc;--panel-2:#edf0f5;--field:#f0f3f7;--panel-border:rgb(65 81 109 / .115);--workspace-pane:rgb(251 252 254 / .95);--workspace-nav:rgb(226 232 240 / .46);--control-surface:rgb(99 121 153 / .055);--control-border:rgb(85 106 139 / .11);--section-surface:rgb(244 246 250 / .80);--surface-rgb:247 249 252;--nav-selection:rgb(62 77 104 / .085);--nav-selection-border:rgb(62 77 104 / .12);--surface-shadow:0 20px 65px rgb(20 36 59 / .16),inset 0 1px 0 rgb(255 255 255 / .9)}
+html[data-theme=light] .app-dialog::backdrop{background:rgb(22 32 47 / .21)}
+html[data-theme=light] .app-dialog{background-color:var(--workspace-pane);box-shadow:var(--surface-shadow)}
+html[data-theme=light] .primary-button{background:#2479c9;color:#fff;border:1px solid #1b6eba;box-shadow:0 2px 5px rgb(33 94 154 / .10)}
+html[data-theme=light] .secondary-button{background:#f3f5f8;color:#435267}
+html[data-theme=light] .catalog-icon{background:rgb(37 122 166 / .09);color:#317d99}
+html[data-theme=light] .catalog-card{background:rgb(255 255 255 / .60);box-shadow:0 2px 9px rgb(38 54 79 / .035)}
+html[data-theme=light] .catalog-card:hover{background:rgb(239 244 249 / .8);border-color:rgb(53 109 143 / .3)}
+html[data-theme=light] .theme-option.selected,html[data-theme=light] .material-option.selected{background:rgb(39 116 164 / .055);border-color:#97b0c7;color:#244d70}
+html[data-theme=light] .switch:checked{background:#448bbf}
+html[data-theme=light] .switch:checked:after{background:#fff}
+html[data-theme=light] .toast{background:rgb(249 251 254 / .96);border-color:#cfd9e4;color:#293c50}
+html[data-theme=light] .toast button{color:#236eab}
+/* Active group is neutral by default; geometry stays square at any rail width. */
+html[data-navigation=sidebar] .group-button.active,html[data-navigation=top] .group-button.active{background:var(--nav-selection);box-shadow:inset 0 0 0 1px var(--nav-selection-border);color:var(--fg)}
+html[data-sidebar-accent=theme] .group-button.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}
+/* Focusing search does not add a second pane, ring, blur layer or dark border. */
+#main .search-form,#main .search-form:focus-within,#main .search-wrapper.is-stuck .search-form{box-shadow:none!important;outline:none;border-color:var(--panel-border);background-color:rgb(var(--surface-rgb) / var(--search-opacity));transition:none}
+#main .search-wrapper{filter:none}
+#main .search-form input:focus{outline:none;box-shadow:none}
+#main .search-form button:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) / .95)}
+/* Shared workspace: no separate tall titlebar. The title belongs to the rail. */
+.app-dialog.workspace-dialog{position:fixed;width:min(1040px,calc(100vw - 40px));height:min(780px,calc(100dvh - 48px));max-height:calc(100dvh - 48px);overflow:hidden;padding:0;border-radius:22px;scrollbar-gutter:auto;background-color:var(--workspace-pane)}
+.app-dialog.workspace-dialog.wallpaper-dialog{width:min(1220px,calc(100vw - 40px));height:min(810px,calc(100dvh - 48px))}
+.app-dialog.workspace-dialog #dialog-content{height:100%;min-height:0;display:flex;flex-direction:column;position:relative}
+.workspace-dialog .workspace-close{position:absolute;right:12px;top:12px;z-index:10;width:30px;height:30px;background:var(--control-surface);color:var(--muted);border:0;border-radius:50%}
+.workspace-close:hover{background:var(--nav-selection);color:var(--fg)}
+.workspace-dialog .settings-layout,.workspace-dialog .add-layout,.workspace-dialog .wallpaper-browser{display:grid;grid-template-columns:190px minmax(0,1fr);flex:1;min-height:0;height:100%;border:0}
+.workspace-dialog .settings-nav,.workspace-dialog .add-nav,.workspace-dialog .wallpaper-nav{display:flex;flex-direction:column;gap:5px;padding:24px 12px 16px;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;border:0;border-right:1px solid var(--panel-border);background:var(--workspace-nav)}
+.workspace-dialog .workspace-title{font-size:28px;font-weight:650;line-height:1.2;letter-spacing:-.045em;margin:5px 10px 26px;color:var(--fg);flex:none}
+.workspace-dialog .settings-nav-button,.workspace-dialog .add-nav button,.workspace-dialog .wallpaper-nav button{display:flex;align-items:center;flex-direction:row;gap:10px;width:100%;padding:12px 11px;border:1px solid transparent;border-radius:12px;text-align:left;color:var(--muted);font-size:13px;line-height:1.45;flex:none;min-width:0}
+.workspace-dialog .settings-nav-button span,.workspace-dialog .wallpaper-nav button span:last-child{min-width:0;overflow-wrap:anywhere}
+.workspace-dialog .settings-nav-button.active,.workspace-dialog .add-nav button[aria-selected=true],.workspace-dialog .wallpaper-nav button[aria-selected=true]{background:var(--nav-selection);border-color:var(--nav-selection-border);color:var(--fg);font-weight:550}
+.workspace-dialog .settings-nav-button:hover,.workspace-dialog .add-nav button:hover,.workspace-dialog .wallpaper-nav button:hover{background:var(--control-surface);color:var(--fg)}
+.workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:28px 28px 30px;scrollbar-gutter:stable}
+.workspace-dialog .settings-section-title{font-size:19px;margin:2px 40px 22px 0;font-weight:600;letter-spacing:-.02em}
+.workspace-dialog .settings-content>.section-label:nth-child(2){margin-top:4px}
+.workspace-dialog .settings-nav>small{font-size:10px;line-height:1.65;margin-top:auto;padding:24px 11px 2px;color:var(--muted)}
+.workspace-dialog .add-nav p{padding:12px 10px;font-size:10px;line-height:1.7}
+.workspace-dialog .wallpaper-nav .wallpaper-parameters{margin-top:auto;border:1px solid transparent;padding-top:12px;border-radius:12px}
+.source-symbol{width:20px;flex:none;text-align:center;font-size:18px;font-weight:550;line-height:1}
+/* Two bordered editor sections, as in a desktop icon editor. */
+.app-dialog.site-editor-dialog{width:min(840px,calc(100vw - 40px));background-color:var(--workspace-pane);max-height:calc(100dvh - 44px);scrollbar-gutter:auto}
+.site-editor-dialog .dialog-head{padding:24px 28px 10px;position:relative;background:none;border:0}
+.site-editor-dialog .dialog-head h2{font-size:26px;font-weight:620;letter-spacing:-.04em}
+.site-editor-dialog .dialog-body{padding:10px 28px 26px}
+.site-editor{display:flex;flex-direction:column;gap:16px;min-width:0}
+.editor-section{padding:19px 20px;background:var(--section-surface);border:1px solid var(--control-border);border-radius:19px;min-width:0}
+.editor-section .field{margin:0 0 15px}.editor-section .field:last-child{margin-bottom:0}
+.editor-section .field>span{font-size:13px;margin-bottom:8px;color:var(--muted)}
+.editor-section input:not([type=hidden]):not([type=file]):not([type=color]),.editor-footer select{background:var(--control-surface)!important;border:1px solid var(--control-border);border-radius:12px;color:var(--fg);height:42px;font-size:14px}
+.editor-section input::placeholder{color:var(--muted);opacity:.72}
+.address-control{display:flex;align-items:center;gap:0;background:var(--control-surface);border:1px solid var(--control-border);border-radius:12px;min-width:0;overflow:hidden}
+.address-control>.icon{width:16px;height:16px;margin-left:12px;color:var(--muted);opacity:.7}
+.address-control input{flex:1;min-width:0;width:0!important;background:transparent!important;border:0!important;border-radius:0!important;outline-offset:-3px;padding:0 10px!important}
+.address-control .get-icon-button{height:42px;flex:none;white-space:nowrap;padding:0 16px;background:var(--control-surface);border-left:1px solid var(--control-border);font-size:13px;color:var(--fg)}
+.get-icon-button:hover{background:var(--nav-selection)}
+.icon-choices{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;margin:0 0 12px;max-width:100%}
+.icon-result-list{display:contents}
+.icon-choice{width:76px;min-width:0;flex:none;display:flex;flex-direction:column;align-items:center;gap:7px;padding:0;border:0;background:none;font-size:12px;line-height:1.2;color:var(--fg);text-align:center}
+.icon-choice .choice-art{position:relative;width:68px;height:68px;flex:none;display:grid;place-items:center;background:var(--control-surface);border:1px solid var(--control-border);border-radius:18px;font-size:24px;font-weight:500;color:var(--fg);padding:0;box-shadow:none;overflow:visible}
+.icon-choice .choice-art .site-visual{width:100%;height:100%;border-radius:17px;overflow:hidden;display:grid;place-items:center;aspect-ratio:1;background:transparent!important}
+.icon-choice .choice-art:has(.is-loaded){background:transparent!important}
+.icon-choice .choice-art img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;background:transparent;filter:none;box-shadow:none;border:0;padding:0}
+.icon-choice small{color:var(--muted);font-size:10px;max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-choice[aria-pressed=true] .choice-art{outline:2px solid var(--fg);outline-offset:3px}
+.icon-choice[aria-pressed=true] .choice-art:after{content:'✓';position:absolute;right:-5px;bottom:-5px;background:#278bd4;color:#fff;border:2px solid var(--workspace-pane);border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:12px;font-weight:650;z-index:2}
+.icon-choice:hover:not(:disabled) .choice-art{border-color:var(--muted)}
+.icon-choice:disabled{opacity:.42;cursor:default}
+.icon-choice.icon-unavailable{display:none}
+.icon-choice .site-fallback{display:grid;place-items:center;width:100%;height:100%}
+.icon-choice .site-visual.is-loaded .site-fallback{display:none}
+.icon-upload-choice .icon{width:22px;height:22px}
+.icon-section .icon-status{font-size:11px;line-height:1.65;margin:9px 0;color:var(--muted)}
+.icon-section .icon-quality-summary{font-size:10px;opacity:.85;margin-top:-4px}
+.icon-text-field{display:flex!important;align-items:center;gap:12px;margin:15px 0 13px!important}
+.icon-text-field>span{margin:0!important;flex:none;min-width:56px}
+.icon-text-field input{width:min(240px,100%)!important;min-width:0}
+.icon-text-field input[readonly]{opacity:.42;cursor:default}
+.icon-color-field .color-options{gap:12px;margin:12px 0 0}
+.icon-color-field .color-option,.icon-color-field .color-input{width:24px;height:24px;border-radius:50%}
+.icon-color-field .color-option.selected{outline:2px solid var(--fg);outline-offset:3px}
+.editor-footer{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-top:4px}
+.editor-footer>.field{max-width:200px;margin:0;flex:1;min-width:130px}
+.editor-footer>.field>span{font-size:11px;color:var(--muted)}
+.editor-footer .button-row{margin:0;flex:none}
+.editor-footer .inline-error{flex-basis:100%}
+/* Denser gallery. Image actions are visible on hover, keyboard focus and touch. */
+.gallery-intro{padding-right:36px;margin:0 0 18px}
+.wallpaper-content .gallery-intro h3{font-size:17px;font-weight:560;margin:0 0 6px}
+.gallery-intro p{margin:0;font-size:12px;line-height:1.65;color:var(--muted)}
+.gallery-intro small{display:block;font-size:11px;line-height:1.6;margin-top:3px;color:var(--muted)}
+.wallpaper-content .wallpaper-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0}
+.wallpaper-photo-card{background:none;border:0;border-radius:14px;overflow:hidden;box-shadow:none;min-width:0}
+.wallpaper-photo-visual{position:relative;aspect-ratio:16/10;width:100%;overflow:hidden;border-radius:inherit;background-color:var(--control-surface)}
+.wallpaper-photo-visual>img{height:100%;width:100%;aspect-ratio:auto;object-fit:cover;display:block;transition:none}
+.wallpaper-photo-actions{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .13s ease;background:rgb(0 0 0 / .29);border-radius:inherit}
+.wallpaper-photo-actions button{background:rgb(12 18 28 / .6);color:#fff;border:1px solid rgb(255 255 255 / .24);padding:7px 11px;border-radius:9px;font-size:12px;cursor:pointer}
+.wallpaper-photo-actions button:hover{background:rgb(0 0 0 / .74)}
+.wallpaper-photo-card:hover .wallpaper-photo-actions,.wallpaper-photo-card:focus-within .wallpaper-photo-actions{opacity:1}
+.wallpaper-photo-card.selected{outline:2px solid var(--accent);outline-offset:2px}
+.wallpaper-photo-card.selected:after{content:'✓';position:absolute;right:9px;top:9px;width:24px;height:24px;border-radius:50%;background:rgb(12 25 35 / .6);color:#fff;display:grid;place-items:center;pointer-events:none}
+.wallpaper-builtin-name{position:absolute;left:12px;bottom:10px;font-size:13px;color:white;text-shadow:0 1px 6px #0009}
+.wallpaper-status.is-quiet{display:none}.wallpaper-content .wallpaper-status{font-size:12px;padding:8px 0;line-height:1.6;min-height:0}
+.wallpaper-preview{display:flex;flex-direction:column;min-width:0;gap:16px;min-height:100%;padding:0}
+.wallpaper-preview h3{font-size:17px;line-height:1.5;overflow-wrap:anywhere;margin:0 28px 0 0}
+.preview-back{align-self:flex-start;font-size:12px;padding:0;color:var(--muted);height:26px}
+.preview-back:hover{color:var(--fg)}
+.wallpaper-preview-art{aspect-ratio:16/10;max-height:calc(100dvh - 280px);width:100%;min-height:180px;border-radius:15px;overflow:hidden;background:var(--control-surface);display:grid;place-items:center}
+.wallpaper-preview-art>img{width:100%;height:100%;max-height:inherit;object-fit:contain;min-height:0}
+.wallpaper-preview-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.preview-credit{display:flex;flex-wrap:wrap;gap:8px 14px;line-height:1.65;flex:1;min-width:160px}
+.preview-credit>span{flex-basis:100%;overflow-wrap:anywhere}.preview-credit a{text-decoration:underline;text-underline-offset:3px;color:var(--fg)}
+@media(max-width:1000px){.wallpaper-content .wallpaper-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){
+ .app-dialog.workspace-dialog,.app-dialog.workspace-dialog.wallpaper-dialog{width:calc(100vw - 20px);height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);border-radius:18px}
+ .workspace-dialog .settings-layout,.workspace-dialog .add-layout,.workspace-dialog .wallpaper-browser{display:grid;grid-template-columns:126px minmax(0,1fr);height:100%}
+ .workspace-dialog .settings-nav,.workspace-dialog .add-nav,.workspace-dialog .wallpaper-nav{flex-direction:column;padding:20px 7px 12px;border-right:1px solid var(--panel-border);border-bottom:0;flex-shrink:1}
+ .workspace-dialog .workspace-title{font-size:25px;margin:7px 7px 23px}
+ .workspace-dialog .settings-nav-button,.workspace-dialog .add-nav button,.workspace-dialog .wallpaper-nav button{font-size:11px;gap:7px;padding:11px 7px}
+ .workspace-dialog .settings-nav-button .icon{width:15px;height:15px}
+ .workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{padding:24px 16px}
+ .workspace-dialog .settings-nav>small{display:block;padding:18px 7px 0;font-size:9px}
+ .wallpaper-content .wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .wallpaper-photo-actions{gap:5px}.wallpaper-photo-actions button{padding:7px 8px;font-size:11px}
+ .source-symbol{width:16px;font-size:16px}.workspace-dialog .add-content .catalog{grid-template-columns:1fr}
+ .site-editor-dialog .dialog-body{padding:10px 18px 20px}.site-editor-dialog .dialog-head{padding:22px 18px 8px}
+ .editor-section{padding:16px}.icon-choices{gap:10px}.icon-choice{width:64px;font-size:11px}.icon-choice .choice-art{width:58px;height:58px;border-radius:16px}
+ .icon-choice small{font-size:9px}.editor-footer{gap:15px}.editor-footer .button-row{flex:1}
+ .address-control .get-icon-button{padding:0 10px;font-size:12px}.address-control>.icon{display:none}
+}
+@media(max-width:430px){
+ .workspace-dialog .settings-layout,.workspace-dialog .add-layout,.workspace-dialog .wallpaper-browser{grid-template-columns:104px minmax(0,1fr)}
+ .workspace-dialog .workspace-title{font-size:23px}.workspace-dialog .settings-nav-button{gap:5px}
+ .workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{padding:24px 12px}
+ .wallpaper-content .wallpaper-grid{grid-template-columns:1fr}.editor-section{padding:13px}.icon-choices{gap:8px}
+ .editor-footer>.field{max-width:none;flex-basis:100%}.editor-footer .button-row{justify-content:flex-start}
+ .workspace-dialog .setting-row{gap:12px}.source-symbol{display:none}
+}
+@media(hover:none){.wallpaper-photo-actions{opacity:1;inset:auto 0 0;padding:7px;background:linear-gradient(transparent,rgb(0 0 0 / .38))}}
+@media(prefers-reduced-motion:reduce){.wallpaper-photo-actions{transition:none}}
+.reduce-effects .wallpaper-photo-actions{transition:none}
+
+/* A single focus indication on the URL control, not a nested outline. */
+.address-control:focus-within{border-color:color-mix(in srgb,var(--fg) 25%,transparent)}
+.address-control input:focus{outline:none!important;box-shadow:none!important}
+/* Shared restrained sliders instead of the platform's heavy full-width track. */
+.workspace-dialog input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:20px;background:transparent;border:0;padding:0;cursor:pointer}
+.workspace-dialog input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:5px;background:color-mix(in srgb,var(--muted) 23%,transparent)}
+.workspace-dialog input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-5px;background:var(--accent);border:2px solid var(--workspace-pane);border-radius:50%;box-shadow:0 0 0 1px color-mix(in srgb,var(--muted) 22%,transparent)}
+.workspace-dialog input[type=range]::-moz-range-track{height:4px;border-radius:5px;background:color-mix(in srgb,var(--muted) 23%,transparent)}
+.workspace-dialog input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--accent);border:2px solid var(--workspace-pane);border-radius:50%}
+.workspace-dialog input[type=range]:focus-visible{outline:1px solid var(--accent);outline-offset:4px;border-radius:8px}
+.icon-color-field .color-input{appearance:none;-webkit-appearance:none;border:0;padding:0;background:none;overflow:hidden;cursor:pointer}
+.icon-color-field .color-input::-webkit-color-swatch-wrapper{padding:0}
+.icon-color-field .color-input::-webkit-color-swatch{border:1px solid var(--control-border);border-radius:50%}
+.icon-color-field .color-input::-moz-color-swatch{border:1px solid var(--control-border);border-radius:50%}

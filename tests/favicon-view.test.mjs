@@ -1,3 +1,4 @@
+import { normalizeIconSelection } from '../src/icon-selection.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -45,6 +46,7 @@ function harness(overrides = {}) {
     return { size, requiredSize, scalable, score: scalable ? 10000 : size, adequate: scalable || size >= requiredSize };
   };
   const context = vm.createContext({
+    normalizeIconSelection,
     Image: BrowserImage, document: {}, URL, Promise, Date, devicePixelRatio: 2,
     getComputedStyle: image => image.styleValues,
     setTimeout: callback => { timers.set(++sequence, callback); return sequence; },
@@ -227,4 +229,16 @@ test('disabled automatic extraction retains the original source without any meta
 });
 test('late metadata cannot hydrate a detached group or replace a subsequent manual binding',async()=>{
  let done;const h=harness({recoverIcoArtwork:async()=>null,discoverFavicon:()=>new Promise(r=>done=r)}),v=h.visual();h.bind(v.root,{autoDiscover:true});v.image.load(16);await new Promise(setImmediate);v.element.isConnected=false;done({candidates:['https://example.com/late.svg']});await new Promise(setImmediate);assert.equal(h.requests.length,1);
+});
+
+test('an explicit native choice is retained even when small and never updates global best-image cache',()=>{
+ const h=harness(),v=h.visual();v.element.dataset.faviconSelected='https://cdn.example.com/chosen-16.png';
+ h.bind(v.root,{autoDiscover:true});v.image.load(16);
+ assert.deepEqual(h.requests.map(r=>r.url),['https://cdn.example.com/chosen-16.png']);
+ assert.equal(h.upgradeCalls.length,0);assert.equal(h.remembered.length,0);assert.equal(h.candidateCalls.length,0);
+ assert.equal(v.image.hidden,false);assert.equal(v.element.dataset.iconQuality,'low');
+});
+test('failed explicit native choice falls back to text instead of silently selecting another asset',()=>{
+ const h=harness(),v=h.visual();v.element.dataset.faviconSelected='https://cdn.example.com/chosen-missing.png';
+ h.bind(v.root);v.image.fail();assert.equal(h.requests.length,1);assert.equal(v.image.hidden,true);assert.equal(h.remembered.length,0);
 });

@@ -1,3 +1,4 @@
+import { normalizeIconSelection } from '../src/icon-selection.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -30,6 +31,7 @@ const helpers = ['engineSiteUrl', 'engineGlyph'].map(extractFunction).join('\n\n
 function harness({ actualGlyph = false, ...extra } = {}) {
   const glyphCalls = [];
   const context = vm.createContext({
+    normalizeIconSelection,
     safeUrl, URL, icon, iconNames,
     siteGlyph: item => {
       glyphCalls.push(structuredClone(item));

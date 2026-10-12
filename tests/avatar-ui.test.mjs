@@ -59,7 +59,7 @@ function harness({ initialAvatar = null, writer } = {}) {
   let currentPanel = editorPanel(), context;
   const brand = element(), shortcuts = element(), menu = element();
   const dialog = {
-    open: true, classList: { toggle() {} },
+    open: true, classList: { toggle() {} }, setAttribute() {},
     addEventListener(type, handler) { if (type === 'close') closeListeners.push(handler); },
     showModal() { this.open = true; },
     close() { this.open = false; for (const handler of closeListeners) handler(); },

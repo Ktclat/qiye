@@ -468,17 +468,18 @@ async function fetchMetadata(url, kind, signal) {
 
 function resultFor(pageUrl, source, errorCode = '', options) {
   const candidates = pageUrl ? getFaviconCandidates(pageUrl, options) : [];
-  return { url: candidates[0] || null, candidates, source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
+  return { url: candidates[0] || null, candidates, variants: pageUrl ? getFaviconVariants(pageUrl, options) : [], source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
 }
 
 /** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
  * synchronously, before cache initialization or any asynchronous work. Web pages
  * can read only sites that opt into CORS; no proxy bypass is attempted. */
-export function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1 } = {}) {
-  const options = { targetSize, pixelRatio };
+export function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1, allCandidates = false } = {}) {
+  const options = { targetSize, pixelRatio, allCandidates };
   const pageUrl = sitePageUrl(siteUrl);
   if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe', options));
-  if (pending.has(pageUrl)) return pending.get(pageUrl);
+  const requestKey = pageUrl + (allCandidates ? '#all' : '#best');
+  if (pending.has(requestKey)) return pending.get(requestKey);
   const runtime = extensionRuntime();
   const origins = [`${new URL(pageUrl).origin}/*`];
   let permission;
@@ -514,7 +515,7 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
         };
         let icons = metadata.icons.map(measuredIcon);
         let manifestError = '';
-        if (metadata.manifest && !icons.some(icon => icon.adequate)) {
+        if (metadata.manifest && (allCandidates || !icons.some(icon => icon.adequate))) {
           try {
             const manifest = await fetchMetadata(metadata.manifest, 'manifest', controller.signal);
             icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length, options).map(measuredIcon)];
@@ -546,8 +547,8 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
       controller.abort(); // Also stop unread bodies rejected by their headers.
     }
   })();
-  pending.set(pageUrl, job);
-  job.finally(() => { if (pending.get(pageUrl) === job) pending.delete(pageUrl); });
+  pending.set(requestKey, job);
+  job.finally(() => { if (pending.get(requestKey) === job) pending.delete(requestKey); });
   return job;
 }
 
@@ -556,4 +557,19 @@ export function describeFavicon(siteUrl,iconUrl,options={}){
  const pageUrl=sitePageUrl(siteUrl),entry=pageUrl?currentEntry(pageUrl):null;
  const quality=getFaviconQuality(siteUrl,iconUrl,options);
  return {source:entry?.source||'site',url:iconUrl,quality,warning:entry?.errorCode?WARNINGS[entry.errorCode]:''};
+}
+
+/** All distinct source assets for the picker. Do not substitute a third-party
+ * favicon aggregation service; fallback paths are labelled as guesses until
+ * the browser has successfully decoded them. Each asset is an inert image. */
+export function getFaviconVariants(siteUrl, options={}) {
+ const pageUrl=sitePageUrl(siteUrl);if(!pageUrl)return [];
+ const entry=currentEntry(pageUrl), audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
+ const declared=entry?.checkedAt + CACHE_TTL > Date.now()?entry.candidates:[];
+ return getFaviconCandidates(pageUrl,options).filter(url=>safeImageUrl(url)).map(url=>{
+  const detail=detailFor(entry,url), known=audited.some(v=>v.url===url);
+  return {url,kind:detail.kind||'fallback',scalable:!!detail.scalable,
+   width:detail.actualWidth||detail.width||0,height:detail.actualHeight||detail.height||0,
+   source:declared.includes(url)?'网站声明':known?'已核对站点资源':'常规路径'};
+ });
 }

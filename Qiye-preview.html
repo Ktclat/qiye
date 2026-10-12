@@ -1083,6 +1083,170 @@ html[data-navigation=sidebar] .group-button{gap:2px;padding:2px}
 .icon-settings-preview .tile{pointer-events:none}
 
 </style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only
+   v0.3.2 — quiet surfaces, compact two-column workspaces and native icon choices. */
+:root{--workspace-pane:rgb(28 32 39 / .94);--workspace-nav:rgb(13 17 23 / .38);--control-surface:rgb(255 255 255 / .055);--control-border:rgb(221 230 240 / .095);--section-surface:rgb(255 255 255 / .035);--nav-selection:rgb(228 239 255 / .105);--nav-selection-border:rgb(228 239 255 / .16)}
+html[data-theme=light]{--fg:#27313f;--muted:#677385;--panel:#f9fafc;--panel-2:#edf0f5;--field:#f0f3f7;--panel-border:rgb(65 81 109 / .115);--workspace-pane:rgb(251 252 254 / .95);--workspace-nav:rgb(226 232 240 / .46);--control-surface:rgb(99 121 153 / .055);--control-border:rgb(85 106 139 / .11);--section-surface:rgb(244 246 250 / .80);--surface-rgb:247 249 252;--nav-selection:rgb(62 77 104 / .085);--nav-selection-border:rgb(62 77 104 / .12);--surface-shadow:0 20px 65px rgb(20 36 59 / .16),inset 0 1px 0 rgb(255 255 255 / .9)}
+html[data-theme=light] .app-dialog::backdrop{background:rgb(22 32 47 / .21)}
+html[data-theme=light] .app-dialog{background-color:var(--workspace-pane);box-shadow:var(--surface-shadow)}
+html[data-theme=light] .primary-button{background:#2479c9;color:#fff;border:1px solid #1b6eba;box-shadow:0 2px 5px rgb(33 94 154 / .10)}
+html[data-theme=light] .secondary-button{background:#f3f5f8;color:#435267}
+html[data-theme=light] .catalog-icon{background:rgb(37 122 166 / .09);color:#317d99}
+html[data-theme=light] .catalog-card{background:rgb(255 255 255 / .60);box-shadow:0 2px 9px rgb(38 54 79 / .035)}
+html[data-theme=light] .catalog-card:hover{background:rgb(239 244 249 / .8);border-color:rgb(53 109 143 / .3)}
+html[data-theme=light] .theme-option.selected,html[data-theme=light] .material-option.selected{background:rgb(39 116 164 / .055);border-color:#97b0c7;color:#244d70}
+html[data-theme=light] .switch:checked{background:#448bbf}
+html[data-theme=light] .switch:checked:after{background:#fff}
+html[data-theme=light] .toast{background:rgb(249 251 254 / .96);border-color:#cfd9e4;color:#293c50}
+html[data-theme=light] .toast button{color:#236eab}
+/* Active group is neutral by default; geometry stays square at any rail width. */
+html[data-navigation=sidebar] .group-button.active,html[data-navigation=top] .group-button.active{background:var(--nav-selection);box-shadow:inset 0 0 0 1px var(--nav-selection-border);color:var(--fg)}
+html[data-sidebar-accent=theme] .group-button.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}
+/* Focusing search does not add a second pane, ring, blur layer or dark border. */
+#main .search-form,#main .search-form:focus-within,#main .search-wrapper.is-stuck .search-form{box-shadow:none!important;outline:none;border-color:var(--panel-border);background-color:rgb(var(--surface-rgb) / var(--search-opacity));transition:none}
+#main .search-wrapper{filter:none}
+#main .search-form input:focus{outline:none;box-shadow:none}
+#main .search-form button:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) / .95)}
+/* Shared workspace: no separate tall titlebar. The title belongs to the rail. */
+.app-dialog.workspace-dialog{position:fixed;width:min(1040px,calc(100vw - 40px));height:min(780px,calc(100dvh - 48px));max-height:calc(100dvh - 48px);overflow:hidden;padding:0;border-radius:22px;scrollbar-gutter:auto;background-color:var(--workspace-pane)}
+.app-dialog.workspace-dialog.wallpaper-dialog{width:min(1220px,calc(100vw - 40px));height:min(810px,calc(100dvh - 48px))}
+.app-dialog.workspace-dialog #dialog-content{height:100%;min-height:0;display:flex;flex-direction:column;position:relative}
+.workspace-dialog .workspace-close{position:absolute;right:12px;top:12px;z-index:10;width:30px;height:30px;background:var(--control-surface);color:var(--muted);border:0;border-radius:50%}
+.workspace-close:hover{background:var(--nav-selection);color:var(--fg)}
+.workspace-dialog .settings-layout,.workspace-dialog .add-layout,.workspace-dialog .wallpaper-browser{display:grid;grid-template-columns:190px minmax(0,1fr);flex:1;min-height:0;height:100%;border:0}
+.workspace-dialog .settings-nav,.workspace-dialog .add-nav,.workspace-dialog .wallpaper-nav{display:flex;flex-direction:column;gap:5px;padding:24px 12px 16px;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;border:0;border-right:1px solid var(--panel-border);background:var(--workspace-nav)}
+.workspace-dialog .workspace-title{font-size:28px;font-weight:650;line-height:1.2;letter-spacing:-.045em;margin:5px 10px 26px;color:var(--fg);flex:none}
+.workspace-dialog .settings-nav-button,.workspace-dialog .add-nav button,.workspace-dialog .wallpaper-nav button{display:flex;align-items:center;flex-direction:row;gap:10px;width:100%;padding:12px 11px;border:1px solid transparent;border-radius:12px;text-align:left;color:var(--muted);font-size:13px;line-height:1.45;flex:none;min-width:0}
+.workspace-dialog .settings-nav-button span,.workspace-dialog .wallpaper-nav button span:last-child{min-width:0;overflow-wrap:anywhere}
+.workspace-dialog .settings-nav-button.active,.workspace-dialog .add-nav button[aria-selected=true],.workspace-dialog .wallpaper-nav button[aria-selected=true]{background:var(--nav-selection);border-color:var(--nav-selection-border);color:var(--fg);font-weight:550}
+.workspace-dialog .settings-nav-button:hover,.workspace-dialog .add-nav button:hover,.workspace-dialog .wallpaper-nav button:hover{background:var(--control-surface);color:var(--fg)}
+.workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:28px 28px 30px;scrollbar-gutter:stable}
+.workspace-dialog .settings-section-title{font-size:19px;margin:2px 40px 22px 0;font-weight:600;letter-spacing:-.02em}
+.workspace-dialog .settings-content>.section-label:nth-child(2){margin-top:4px}
+.workspace-dialog .settings-nav>small{font-size:10px;line-height:1.65;margin-top:auto;padding:24px 11px 2px;color:var(--muted)}
+.workspace-dialog .add-nav p{padding:12px 10px;font-size:10px;line-height:1.7}
+.workspace-dialog .wallpaper-nav .wallpaper-parameters{margin-top:auto;border:1px solid transparent;padding-top:12px;border-radius:12px}
+.source-symbol{width:20px;flex:none;text-align:center;font-size:18px;font-weight:550;line-height:1}
+/* Two bordered editor sections, as in a desktop icon editor. */
+.app-dialog.site-editor-dialog{width:min(840px,calc(100vw - 40px));background-color:var(--workspace-pane);max-height:calc(100dvh - 44px);scrollbar-gutter:auto}
+.site-editor-dialog .dialog-head{padding:24px 28px 10px;position:relative;background:none;border:0}
+.site-editor-dialog .dialog-head h2{font-size:26px;font-weight:620;letter-spacing:-.04em}
+.site-editor-dialog .dialog-body{padding:10px 28px 26px}
+.site-editor{display:flex;flex-direction:column;gap:16px;min-width:0}
+.editor-section{padding:19px 20px;background:var(--section-surface);border:1px solid var(--control-border);border-radius:19px;min-width:0}
+.editor-section .field{margin:0 0 15px}.editor-section .field:last-child{margin-bottom:0}
+.editor-section .field>span{font-size:13px;margin-bottom:8px;color:var(--muted)}
+.editor-section input:not([type=hidden]):not([type=file]):not([type=color]),.editor-footer select{background:var(--control-surface)!important;border:1px solid var(--control-border);border-radius:12px;color:var(--fg);height:42px;font-size:14px}
+.editor-section input::placeholder{color:var(--muted);opacity:.72}
+.address-control{display:flex;align-items:center;gap:0;background:var(--control-surface);border:1px solid var(--control-border);border-radius:12px;min-width:0;overflow:hidden}
+.address-control>.icon{width:16px;height:16px;margin-left:12px;color:var(--muted);opacity:.7}
+.address-control input{flex:1;min-width:0;width:0!important;background:transparent!important;border:0!important;border-radius:0!important;outline-offset:-3px;padding:0 10px!important}
+.address-control .get-icon-button{height:42px;flex:none;white-space:nowrap;padding:0 16px;background:var(--control-surface);border-left:1px solid var(--control-border);font-size:13px;color:var(--fg)}
+.get-icon-button:hover{background:var(--nav-selection)}
+.icon-choices{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;margin:0 0 12px;max-width:100%}
+.icon-result-list{display:contents}
+.icon-choice{width:76px;min-width:0;flex:none;display:flex;flex-direction:column;align-items:center;gap:7px;padding:0;border:0;background:none;font-size:12px;line-height:1.2;color:var(--fg);text-align:center}
+.icon-choice .choice-art{position:relative;width:68px;height:68px;flex:none;display:grid;place-items:center;background:var(--control-surface);border:1px solid var(--control-border);border-radius:18px;font-size:24px;font-weight:500;color:var(--fg);padding:0;box-shadow:none;overflow:visible}
+.icon-choice .choice-art .site-visual{width:100%;height:100%;border-radius:17px;overflow:hidden;display:grid;place-items:center;aspect-ratio:1;background:transparent!important}
+.icon-choice .choice-art:has(.is-loaded){background:transparent!important}
+.icon-choice .choice-art img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;background:transparent;filter:none;box-shadow:none;border:0;padding:0}
+.icon-choice small{color:var(--muted);font-size:10px;max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-choice[aria-pressed=true] .choice-art{outline:2px solid var(--fg);outline-offset:3px}
+.icon-choice[aria-pressed=true] .choice-art:after{content:'✓';position:absolute;right:-5px;bottom:-5px;background:#278bd4;color:#fff;border:2px solid var(--workspace-pane);border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:12px;font-weight:650;z-index:2}
+.icon-choice:hover:not(:disabled) .choice-art{border-color:var(--muted)}
+.icon-choice:disabled{opacity:.42;cursor:default}
+.icon-choice.icon-unavailable{display:none}
+.icon-choice .site-fallback{display:grid;place-items:center;width:100%;height:100%}
+.icon-choice .site-visual.is-loaded .site-fallback{display:none}
+.icon-upload-choice .icon{width:22px;height:22px}
+.icon-section .icon-status{font-size:11px;line-height:1.65;margin:9px 0;color:var(--muted)}
+.icon-section .icon-quality-summary{font-size:10px;opacity:.85;margin-top:-4px}
+.icon-text-field{display:flex!important;align-items:center;gap:12px;margin:15px 0 13px!important}
+.icon-text-field>span{margin:0!important;flex:none;min-width:56px}
+.icon-text-field input{width:min(240px,100%)!important;min-width:0}
+.icon-text-field input[readonly]{opacity:.42;cursor:default}
+.icon-color-field .color-options{gap:12px;margin:12px 0 0}
+.icon-color-field .color-option,.icon-color-field .color-input{width:24px;height:24px;border-radius:50%}
+.icon-color-field .color-option.selected{outline:2px solid var(--fg);outline-offset:3px}
+.editor-footer{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-top:4px}
+.editor-footer>.field{max-width:200px;margin:0;flex:1;min-width:130px}
+.editor-footer>.field>span{font-size:11px;color:var(--muted)}
+.editor-footer .button-row{margin:0;flex:none}
+.editor-footer .inline-error{flex-basis:100%}
+/* Denser gallery. Image actions are visible on hover, keyboard focus and touch. */
+.gallery-intro{padding-right:36px;margin:0 0 18px}
+.wallpaper-content .gallery-intro h3{font-size:17px;font-weight:560;margin:0 0 6px}
+.gallery-intro p{margin:0;font-size:12px;line-height:1.65;color:var(--muted)}
+.gallery-intro small{display:block;font-size:11px;line-height:1.6;margin-top:3px;color:var(--muted)}
+.wallpaper-content .wallpaper-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0}
+.wallpaper-photo-card{background:none;border:0;border-radius:14px;overflow:hidden;box-shadow:none;min-width:0}
+.wallpaper-photo-visual{position:relative;aspect-ratio:16/10;width:100%;overflow:hidden;border-radius:inherit;background-color:var(--control-surface)}
+.wallpaper-photo-visual>img{height:100%;width:100%;aspect-ratio:auto;object-fit:cover;display:block;transition:none}
+.wallpaper-photo-actions{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .13s ease;background:rgb(0 0 0 / .29);border-radius:inherit}
+.wallpaper-photo-actions button{background:rgb(12 18 28 / .6);color:#fff;border:1px solid rgb(255 255 255 / .24);padding:7px 11px;border-radius:9px;font-size:12px;cursor:pointer}
+.wallpaper-photo-actions button:hover{background:rgb(0 0 0 / .74)}
+.wallpaper-photo-card:hover .wallpaper-photo-actions,.wallpaper-photo-card:focus-within .wallpaper-photo-actions{opacity:1}
+.wallpaper-photo-card.selected{outline:2px solid var(--accent);outline-offset:2px}
+.wallpaper-photo-card.selected:after{content:'✓';position:absolute;right:9px;top:9px;width:24px;height:24px;border-radius:50%;background:rgb(12 25 35 / .6);color:#fff;display:grid;place-items:center;pointer-events:none}
+.wallpaper-builtin-name{position:absolute;left:12px;bottom:10px;font-size:13px;color:white;text-shadow:0 1px 6px #0009}
+.wallpaper-status.is-quiet{display:none}.wallpaper-content .wallpaper-status{font-size:12px;padding:8px 0;line-height:1.6;min-height:0}
+.wallpaper-preview{display:flex;flex-direction:column;min-width:0;gap:16px;min-height:100%;padding:0}
+.wallpaper-preview h3{font-size:17px;line-height:1.5;overflow-wrap:anywhere;margin:0 28px 0 0}
+.preview-back{align-self:flex-start;font-size:12px;padding:0;color:var(--muted);height:26px}
+.preview-back:hover{color:var(--fg)}
+.wallpaper-preview-art{aspect-ratio:16/10;max-height:calc(100dvh - 280px);width:100%;min-height:180px;border-radius:15px;overflow:hidden;background:var(--control-surface);display:grid;place-items:center}
+.wallpaper-preview-art>img{width:100%;height:100%;max-height:inherit;object-fit:contain;min-height:0}
+.wallpaper-preview-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.preview-credit{display:flex;flex-wrap:wrap;gap:8px 14px;line-height:1.65;flex:1;min-width:160px}
+.preview-credit>span{flex-basis:100%;overflow-wrap:anywhere}.preview-credit a{text-decoration:underline;text-underline-offset:3px;color:var(--fg)}
+@media(max-width:1000px){.wallpaper-content .wallpaper-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){
+ .app-dialog.workspace-dialog,.app-dialog.workspace-dialog.wallpaper-dialog{width:calc(100vw - 20px);height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);border-radius:18px}
+ .workspace-dialog .settings-layout,.workspace-dialog .add-layout,.workspace-dialog .wallpaper-browser{display:grid;grid-template-columns:126px minmax(0,1fr);height:100%}
+ .workspace-dialog .settings-nav,.workspace-dialog .add-nav,.workspace-dialog .wallpaper-nav{flex-direction:column;padding:20px 7px 12px;border-right:1px solid var(--panel-border);border-bottom:0;flex-shrink:1}
+ .workspace-dialog .workspace-title{font-size:25px;margin:7px 7px 23px}
+ .workspace-dialog .settings-nav-button,.workspace-dialog .add-nav button,.workspace-dialog .wallpaper-nav button{font-size:11px;gap:7px;padding:11px 7px}
+ .workspace-dialog .settings-nav-button .icon{width:15px;height:15px}
+ .workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{padding:24px 16px}
+ .workspace-dialog .settings-nav>small{display:block;padding:18px 7px 0;font-size:9px}
+ .wallpaper-content .wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .wallpaper-photo-actions{gap:5px}.wallpaper-photo-actions button{padding:7px 8px;font-size:11px}
+ .source-symbol{width:16px;font-size:16px}.workspace-dialog .add-content .catalog{grid-template-columns:1fr}
+ .site-editor-dialog .dialog-body{padding:10px 18px 20px}.site-editor-dialog .dialog-head{padding:22px 18px 8px}
+ .editor-section{padding:16px}.icon-choices{gap:10px}.icon-choice{width:64px;font-size:11px}.icon-choice .choice-art{width:58px;height:58px;border-radius:16px}
+ .icon-choice small{font-size:9px}.editor-footer{gap:15px}.editor-footer .button-row{flex:1}
+ .address-control .get-icon-button{padding:0 10px;font-size:12px}.address-control>.icon{display:none}
+}
+@media(max-width:430px){
+ .workspace-dialog .settings-layout,.workspace-dialog .add-layout,.workspace-dialog .wallpaper-browser{grid-template-columns:104px minmax(0,1fr)}
+ .workspace-dialog .workspace-title{font-size:23px}.workspace-dialog .settings-nav-button{gap:5px}
+ .workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{padding:24px 12px}
+ .wallpaper-content .wallpaper-grid{grid-template-columns:1fr}.editor-section{padding:13px}.icon-choices{gap:8px}
+ .editor-footer>.field{max-width:none;flex-basis:100%}.editor-footer .button-row{justify-content:flex-start}
+ .workspace-dialog .setting-row{gap:12px}.source-symbol{display:none}
+}
+@media(hover:none){.wallpaper-photo-actions{opacity:1;inset:auto 0 0;padding:7px;background:linear-gradient(transparent,rgb(0 0 0 / .38))}}
+@media(prefers-reduced-motion:reduce){.wallpaper-photo-actions{transition:none}}
+.reduce-effects .wallpaper-photo-actions{transition:none}
+
+/* A single focus indication on the URL control, not a nested outline. */
+.address-control:focus-within{border-color:color-mix(in srgb,var(--fg) 25%,transparent)}
+.address-control input:focus{outline:none!important;box-shadow:none!important}
+/* Shared restrained sliders instead of the platform's heavy full-width track. */
+.workspace-dialog input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:20px;background:transparent;border:0;padding:0;cursor:pointer}
+.workspace-dialog input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:5px;background:color-mix(in srgb,var(--muted) 23%,transparent)}
+.workspace-dialog input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-5px;background:var(--accent);border:2px solid var(--workspace-pane);border-radius:50%;box-shadow:0 0 0 1px color-mix(in srgb,var(--muted) 22%,transparent)}
+.workspace-dialog input[type=range]::-moz-range-track{height:4px;border-radius:5px;background:color-mix(in srgb,var(--muted) 23%,transparent)}
+.workspace-dialog input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--accent);border:2px solid var(--workspace-pane);border-radius:50%}
+.workspace-dialog input[type=range]:focus-visible{outline:1px solid var(--accent);outline-offset:4px;border-radius:8px}
+.icon-color-field .color-input{appearance:none;-webkit-appearance:none;border:0;padding:0;background:none;overflow:hidden;cursor:pointer}
+.icon-color-field .color-input::-webkit-color-swatch-wrapper{padding:0}
+.icon-color-field .color-input::-webkit-color-swatch{border:1px solid var(--control-border);border-radius:50%}
+.icon-color-field .color-input::-moz-color-swatch{border:1px solid var(--control-border);border-radius:50%}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -2005,6 +2169,226 @@ function recoverIcoArtwork(url,{requiredSize=128,fetchImpl=globalThis.fetch}={})
 
 return {selectIcoFrame, recoverIcoArtwork};
 })();
+const __avatar = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+/** Local avatar decoding and storage boundary. No network requests are used. */
+const MAX_AVATAR_BYTES = 256 * 1024;
+const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
+const AVATAR_SIZE = 256;
+
+const AVATAR_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const MAX_AVATAR_PIXELS = 40 * 1024 * 1024;
+
+function avatarError(message = '头像仅支持有效的 PNG、JPEG 或 WebP 图片') { throw new Error(message); }
+function avatarTag(bytes, offset) { return String.fromCharCode(...bytes.subarray(offset, offset + 4)); }
+function avatarDimensions(width, height) {
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) avatarError();
+  if (width > 16384 || height > 16384 || width * height > MAX_AVATAR_PIXELS) avatarError('头像图片分辨率过大，请先缩小图片');
+  return { width, height };
+}
+
+// Check container signatures before image decoding. Imported data URLs must also
+// be static; uploaded PNG/WebP animations are flattened by the canvas below.
+function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let dimensions = null;
+  if (mime === 'image/png') {
+    if (bytes.length < 45 || bytes[0] !== 0x89 || avatarTag(bytes, 1) !== 'PNG\r' ||
+      bytes[5] !== 10 || bytes[6] !== 26 || bytes[7] !== 10) avatarError();
+    let offset = 8, imageData = false, ended = false;
+    while (offset + 12 <= bytes.length) {
+      const size = view.getUint32(offset);
+      if (size > bytes.length - offset - 12) avatarError();
+      const type = avatarTag(bytes, offset + 4);
+      if (offset === 8 && (type !== 'IHDR' || size !== 13)) avatarError();
+      if (type === 'IHDR') {
+        if (offset !== 8 || size !== 13) avatarError();
+        dimensions = avatarDimensions(view.getUint32(offset + 8), view.getUint32(offset + 12));
+      }
+      if (type === 'acTL' && !allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
+      if (type === 'IDAT' && size > 0) imageData = true;
+      offset += size + 12;
+      if (type === 'IEND') {
+        if (size !== 0 || offset !== bytes.length) avatarError();
+        ended = true;
+        break;
+      }
+    }
+    if (!ended || !imageData || !dimensions) avatarError();
+  } else if (mime === 'image/jpeg') {
+    if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8 ||
+      bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) avatarError();
+    let offset = 2;
+    const frames = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+    while (offset + 1 < bytes.length) {
+      if (bytes[offset++] !== 0xff) avatarError();
+      while (bytes[offset] === 0xff) offset += 1;
+      const marker = bytes[offset++];
+      if (marker === 0xd9) break;
+      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > bytes.length) avatarError();
+      const size = view.getUint16(offset);
+      if (size < 2 || size > bytes.length - offset) avatarError();
+      if (frames.has(marker)) {
+        if (size < 8) avatarError();
+        dimensions = avatarDimensions(view.getUint16(offset + 5), view.getUint16(offset + 3));
+      }
+      if (marker === 0xda) break; // Pixel data is checked by the browser decoder.
+      offset += size;
+    }
+    if (!dimensions) avatarError();
+  } else if (mime === 'image/webp') {
+    if (bytes.length < 26 || avatarTag(bytes, 0) !== 'RIFF' || avatarTag(bytes, 8) !== 'WEBP' ||
+      view.getUint32(4, true) !== bytes.length - 8) avatarError();
+    let offset = 12, hasFrame = false;
+    while (offset + 8 <= bytes.length) {
+      const type = avatarTag(bytes, offset);
+      const size = view.getUint32(offset + 4, true);
+      const data = offset + 8;
+      if (size > bytes.length - data) avatarError();
+      if (type === 'VP8X') {
+        if (size < 10) avatarError();
+        if ((bytes[data] & 0x02) && !allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
+        const width = 1 + bytes[data + 4] + (bytes[data + 5] << 8) + (bytes[data + 6] << 16);
+        const height = 1 + bytes[data + 7] + (bytes[data + 8] << 8) + (bytes[data + 9] << 16);
+        dimensions = avatarDimensions(width, height);
+      }
+      if (type === 'ANIM' || type === 'ANMF') {
+        if (!allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
+        if (type === 'ANMF') hasFrame = true;
+      }
+      if (type === 'VP8L') {
+        if (size < 5 || bytes[data] !== 0x2f) avatarError();
+        const width = 1 + bytes[data + 1] + ((bytes[data + 2] & 0x3f) << 8);
+        const height = 1 + (bytes[data + 2] >> 6) + (bytes[data + 3] << 2) + ((bytes[data + 4] & 0x0f) << 10);
+        dimensions ||= avatarDimensions(width, height);
+        hasFrame = true;
+      }
+      if (type === 'VP8 ') {
+        if (size < 10 || bytes[data + 3] !== 0x9d || bytes[data + 4] !== 1 || bytes[data + 5] !== 0x2a) avatarError();
+        dimensions ||= avatarDimensions(view.getUint16(data + 6, true) & 0x3fff, view.getUint16(data + 8, true) & 0x3fff);
+        hasFrame = true;
+      }
+      offset = data + size + (size % 2);
+    }
+    if (offset !== bytes.length || !hasFrame || !dimensions) avatarError();
+  } else avatarError();
+  return dimensions;
+}
+
+/** A strict, bounded data URL boundary shared by imports, storage and uploads. */
+function validateAvatarDataUrl(value) {
+  if (typeof value !== 'string' || !value.startsWith('data:')) avatarError('头像仅支持本地 PNG、JPEG 或 WebP 的 data URL');
+  // Reject large strings before allocating decoded bytes.
+  if (value.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) avatarError('头像不能超过 256 KiB');
+  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  if (!match || match[2].length % 4 !== 0) avatarError('头像仅支持 PNG、JPEG 或 WebP 的 base64 数据');
+  const size = match[2].length / 4 * 3 - (match[2].endsWith('==') ? 2 : match[2].endsWith('=') ? 1 : 0);
+  if (size > MAX_AVATAR_BYTES) avatarError('头像不能超过 256 KiB');
+  let binary;
+  try { binary = atob(match[2]); } catch { avatarError('头像的 base64 数据无效'); }
+  if (btoa(binary) !== match[2]) avatarError('头像的 base64 数据无效');
+  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  inspectAvatarBytes(bytes, match[1]);
+  return value;
+}
+
+async function decodeLocalAvatar(file) {
+  if (typeof globalThis.createImageBitmap === 'function') {
+    const image = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
+    return { image, width: image.width, height: image.height, release: () => image.close() };
+  }
+  if (!globalThis.Image || !globalThis.URL?.createObjectURL) avatarError('当前浏览器无法读取本地图片');
+  const objectUrl = globalThis.URL.createObjectURL(file);
+  const image = new globalThis.Image();
+  try {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('头像读取超时，请选择另一张图片')), 15000);
+      image.onload = () => { clearTimeout(timeout); resolve(); };
+      image.onerror = () => { clearTimeout(timeout); reject(new Error('头像图片无法解码，请选择另一张图片')); };
+      image.src = objectUrl;
+    });
+    return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => { image.src = ''; } };
+  } finally {
+    image.onload = image.onerror = null;
+    globalThis.URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function createAvatarCanvas(size) {
+  if (!globalThis.document?.createElement) avatarError('当前浏览器无法处理本地图片');
+  const canvas = globalThis.document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  return canvas;
+}
+
+/**
+ * Flatten a local PNG/JPEG/WebP into a centered 256 px square. Dependencies may
+ * be supplied by non-browser callers; output still passes the storage boundary.
+ */
+async function normalizeAvatarFile(file, { decodeImage = decodeLocalAvatar, createCanvas = createAvatarCanvas } = {}) {
+  if (!(file instanceof Blob) || !AVATAR_TYPES.has(file.type)) avatarError('请选择 PNG、JPEG 或 WebP 图片作为头像');
+  if (!file.size) avatarError('头像文件为空');
+  if (file.size > MAX_AVATAR_FILE_BYTES) avatarError('上传的头像文件不能超过 4 MiB');
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  inspectAvatarBytes(bytes, file.type, true);
+  let decoded;
+  try {
+    try { decoded = await decodeImage(file); }
+    catch { avatarError('头像图片无法解码，请选择另一张图片'); }
+    if (!decoded?.image) avatarError('头像图片无法解码，请选择另一张图片');
+    const { width, height } = avatarDimensions(decoded.width, decoded.height);
+    const canvas = createCanvas(AVATAR_SIZE);
+    const context = canvas?.getContext?.('2d', { alpha: true });
+    if (!context || typeof canvas.toDataURL !== 'function') avatarError('当前浏览器无法处理本地图片');
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    const side = Math.min(width, height);
+    context.drawImage(decoded.image, (width - side) / 2, (height - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+    // Browsers that cannot encode WebP return PNG automatically.
+    let result = canvas.toDataURL('image/webp', 0.9);
+    if (result.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) result = canvas.toDataURL('image/webp', 0.75);
+    return validateAvatarDataUrl(result);
+  } finally {
+    try { decoded?.release?.(); } catch { /* Decoding resources must not mask the result. */ }
+  }
+}
+
+return {MAX_AVATAR_BYTES, MAX_AVATAR_FILE_BYTES, AVATAR_SIZE, validateAvatarDataUrl, normalizeAvatarFile};
+})();
+const __icon_selection = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { validateAvatarDataUrl } = __avatar;
+
+/** Persist an explicitly chosen native asset, never a proxy URL or executable
+ * markup. Local uploads are re-encoded through the existing static image boundary.
+ * This field is independent of the best-image cache so later renders cannot
+ * silently replace a user's choice. */
+function normalizeIconSelection(value) {
+ if (value === undefined || value === null || value === '') return null;
+ if (typeof value !== 'string') return null;
+ if (value.startsWith('data:')) {
+  try { return validateAvatarDataUrl(value); } catch { return null; }
+ }
+ if (value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+ try {
+  const u = new URL(value);
+  if (u.protocol !== 'https:' || u.username || u.password || u.port) return null;
+  const host=u.hostname.toLowerCase();
+  if (!host.includes('.') || !/^[a-z0-9.-]+$/.test(host) || /^\d+(?:\.\d+){3}$/.test(host)
+      || /(?:^|\.)(?:localhost|local|internal|lan|home|localdomain|intranet|onion)$/.test(host)) return null;
+  u.hash='';return u.href;
+ } catch { return null; }
+}
+
+function iconSelectionLabel(url, width=0, height=0) {
+ if (url?.startsWith('data:')) return '本机上传';
+ try { if (/\.svg$/i.test(new URL(url).pathname)) return 'SVG · 矢量'; } catch { /* Invalid URLs are not displayed. */ }
+ return width > 0 && height > 0 ? `${width} × ${height}` : '等待图片';
+}
+
+return {normalizeIconSelection, iconSelectionLabel};
+})();
 const __favicons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { SITE_ICON_CATALOG } = __site_icon_catalog;
@@ -2476,17 +2860,18 @@ async function fetchMetadata(url, kind, signal) {
 
 function resultFor(pageUrl, source, errorCode = '', options) {
   const candidates = pageUrl ? getFaviconCandidates(pageUrl, options) : [];
-  return { url: candidates[0] || null, candidates, source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
+  return { url: candidates[0] || null, candidates, variants: pageUrl ? getFaviconVariants(pageUrl, options) : [], source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
 }
 
 /** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
  * synchronously, before cache initialization or any asynchronous work. Web pages
  * can read only sites that opt into CORS; no proxy bypass is attempted. */
-function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1 } = {}) {
-  const options = { targetSize, pixelRatio };
+function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1, allCandidates = false } = {}) {
+  const options = { targetSize, pixelRatio, allCandidates };
   const pageUrl = sitePageUrl(siteUrl);
   if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe', options));
-  if (pending.has(pageUrl)) return pending.get(pageUrl);
+  const requestKey = pageUrl + (allCandidates ? '#all' : '#best');
+  if (pending.has(requestKey)) return pending.get(requestKey);
   const runtime = extensionRuntime();
   const origins = [`${new URL(pageUrl).origin}/*`];
   let permission;
@@ -2522,7 +2907,7 @@ function discoverFavicon(siteUrl, { requestPermission = false, force = false, ta
         };
         let icons = metadata.icons.map(measuredIcon);
         let manifestError = '';
-        if (metadata.manifest && !icons.some(icon => icon.adequate)) {
+        if (metadata.manifest && (allCandidates || !icons.some(icon => icon.adequate))) {
           try {
             const manifest = await fetchMetadata(metadata.manifest, 'manifest', controller.signal);
             icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length, options).map(measuredIcon)];
@@ -2554,8 +2939,8 @@ function discoverFavicon(siteUrl, { requestPermission = false, force = false, ta
       controller.abort(); // Also stop unread bodies rejected by their headers.
     }
   })();
-  pending.set(pageUrl, job);
-  job.finally(() => { if (pending.get(pageUrl) === job) pending.delete(pageUrl); });
+  pending.set(requestKey, job);
+  job.finally(() => { if (pending.get(requestKey) === job) pending.delete(requestKey); });
   return job;
 }
 
@@ -2566,11 +2951,28 @@ function describeFavicon(siteUrl,iconUrl,options={}){
  return {source:entry?.source||'site',url:iconUrl,quality,warning:entry?.errorCode?WARNINGS[entry.errorCode]:''};
 }
 
-return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon, describeFavicon};
+/** All distinct source assets for the picker. Do not substitute a third-party
+ * favicon aggregation service; fallback paths are labelled as guesses until
+ * the browser has successfully decoded them. Each asset is an inert image. */
+function getFaviconVariants(siteUrl, options={}) {
+ const pageUrl=sitePageUrl(siteUrl);if(!pageUrl)return [];
+ const entry=currentEntry(pageUrl), audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
+ const declared=entry?.checkedAt + CACHE_TTL > Date.now()?entry.candidates:[];
+ return getFaviconCandidates(pageUrl,options).filter(url=>safeImageUrl(url)).map(url=>{
+  const detail=detailFor(entry,url), known=audited.some(v=>v.url===url);
+  return {url,kind:detail.kind||'fallback',scalable:!!detail.scalable,
+   width:detail.actualWidth||detail.width||0,height:detail.actualHeight||detail.height||0,
+   source:declared.includes(url)?'网站声明':known?'已核对站点资源':'常规路径'};
+ });
+}
+
+return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon, describeFavicon, getFaviconVariants};
 })();
 const __favicon_view = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates, discoverFavicon } = __favicons;
+
+const { normalizeIconSelection } = __icon_selection;
 
 const { recoverIcoArtwork } = __icon_artwork;
 
@@ -2649,7 +3051,8 @@ function bindFaviconImages(root = document, options = {}) {
       targetSize: faviconTargetSize(visual, image, options),
       pixelRatio: Number.isFinite(options.pixelRatio) && options.pixelRatio > 0 ? options.pixelRatio : globalThis.devicePixelRatio || 1,
     };
-    const provided = Array.isArray(options.candidates) ? options.candidates : getFaviconCandidates(siteUrl, sizeOptions);
+    const selected = normalizeIconSelection(visual.dataset.faviconSelected);
+    const provided = selected ? [selected] : Array.isArray(options.candidates) ? options.candidates : getFaviconCandidates(siteUrl, sizeOptions);
     const candidates = [...new Set(provided)].filter(url => typeof url === 'string' && url).slice(0, 12);
     const tried = new Set();
     let candidateIndex = 0, upgradeIndex = 0, upgrades = null, stopped = false, requestTicket = 0;
@@ -2688,7 +3091,7 @@ function bindFaviconImages(root = document, options = {}) {
       try{options.onStatus?.(information);}catch{/* Observer callbacks cannot interrupt loading. */}
     };
     const enhance=async()=>{
-      if(enhanced||!autoDiscover||!binding.current()){complete();return;}
+      if(enhanced||selected||!autoDiscover||!binding.current()){complete();return;}
       enhanced=true;
       try{
         const result=await queueMetadata(binding.current,async()=>{
@@ -2750,7 +3153,7 @@ function bindFaviconImages(root = document, options = {}) {
           const quality = getFaviconQuality(siteUrl, sourceUrl||url, { ...sizeOptions, width, height });
           cleanup(false);
           faviconImageFailures.delete(url);
-          try { Promise.resolve(rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
+          try { Promise.resolve(selected ? undefined : rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
           catch { /* Cache quotas do not hide a successfully loaded image. */ }
           if (!best || quality.score > best.quality.score) {
             if (background) {
@@ -2782,7 +3185,7 @@ function bindFaviconImages(root = document, options = {}) {
     };
     const advanceUpgrade = () => {
       if (!binding.current()) { binding.cancel(); return; }
-      if (best?.quality.adequate) { complete(); return; }
+      if (selected || best?.quality.adequate) { complete(); return; }
       if (!upgrades) {
         upgrades = takeFaviconUpgradeCandidates(siteUrl, best.url, {
           ...sizeOptions, width: best.width, height: best.height, attempted: [...tried], force: !!options.force,
@@ -3059,22 +3462,22 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const WALLPAPER_SOURCES=Object.freeze([
  {id:'custom',name:'自定义背景'},
  {id:'official',name:'官方背景'},
- {id:'deepin',name:'deepin',endpoint:true,snapshot:true,intro:'deepin 官方开放许可背景 · CC BY 4.0 · 固定版本清单，图片直接来自原仓库。'},
- {id:'wallhaven',name:'Wallhaven',endpoint:true,snapshot:true,intro:'SFW 壁纸精选 · 2026-10-12 官方 API 清单快照，不是实时榜单；缩略图和原图直接来自 Wallhaven。版权以原图为准，并非统一商用许可。'},
- {id:'picsum',name:'Lorem Picsum',endpoint:true,intro:'公开摄影图片接口，保留摄影师、原始照片及许可链接。'},
- {id:'commons',name:'Wikimedia Commons',endpoint:true,intro:'筛选具有明确 CC / 公共领域许可的横向图片，保留作者与每张图的许可。'}
+ {id:'deepin',name:'deepin',endpoint:true,snapshot:true,intro:'deepin 官方背景 · CC BY 4.0 · 固定版本清单'},
+ {id:'wallhaven',name:'Wallhaven',endpoint:true,snapshot:true,intro:'SFW 精选 · 2026-10-12 清单快照 · 非实时榜单'},
+ {id:'picsum',name:'Lorem Picsum',endpoint:true,intro:'摄影图片 · Lorem Picsum'},
+ {id:'commons',name:'Wikimedia Commons',endpoint:true,intro:'开放许可的横向摄影图片'}
 ]);
-/** On-demand gallery with per-source pagination, bounded cache and cancellation.
- * No API keys; no fetch is performed merely by creating or rendering it. */
+/** On-demand, bounded gallery. No requests on creation. Preview is a view inside
+ * the same dialog, never a modal layered over a modal. Only Apply writes state. */
 function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParameters,rerender,enable,apply,toast,
  fetchers={picsum:fetchWallpaperPage,commons:fetchCommonsWallpaperPage,deepin:o=>fetchCatalogWallpaperPage('deepin',o),wallhaven:o=>fetchCatalogWallpaperPage('wallhaven',o)},resolve=resolveCommonsWallpaper}) {
- const state={tab:'official',page:1,photos:[],loading:false,applying:false,error:''};
+ const state={tab:'official',page:1,photos:[],loading:false,applying:false,error:'',preview:null};
  const cache=new Map();let controller=null,sequence=0;
  function stop(){sequence++;controller?.abort();controller=null;state.loading=false;state.applying=false;}
  function refresh(){rerender();}
  async function load(){
   if(!getState().settings.wallpaperApiEnabled || !fetchers[state.tab])return;
-  stop();const token=sequence,key=`${state.tab}:${state.page}`;state.error='';
+  stop();const token=sequence,key=`${state.tab}:${state.page}`;state.error='';state.preview=null;
   if(cache.has(key)){state.photos=cache.get(key);refresh();return;}
   state.loading=true;state.photos=[];controller=new AbortController();refresh();
   try{
@@ -3084,31 +3487,54 @@ function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParamete
   }catch(e){if(sequence===token)state.error=e.message||'图片清单加载失败';}
   finally{if(sequence===token){state.loading=false;refresh();}}
  }
+ function photoDetails(photo){
+  return `<div class="preview-credit"><span>${esc(photo.author)}</span><a href="${esc(photo.sourceUrl)}" target="_blank" rel="noopener noreferrer">图片来源 ↗</a><a href="${esc(photo.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(photo.license)}</a></div>`;
+ }
+ function previewMarkup(){
+  const view=state.preview,photo=view.photo;
+  const builtin=view.builtin;
+  return `<div class="wallpaper-preview" aria-label="壁纸预览"><button class="preview-back" data-gallery-back>← 返回图库</button><h3>${esc(photo.title||photo.name)}</h3><div class="wallpaper-preview-art" ${builtin?`style="background:${photo.background}"`:''}>${builtin?'':`<img src="${esc(photo.url||photo.thumbnail)}" alt="${esc(photo.title)}" referrerpolicy="no-referrer" decoding="async">`}</div><div class="wallpaper-preview-meta">${builtin?'<span>栖页内置背景 · 离线可用</span>':photoDetails(photo)}<button class="primary-button" ${builtin?`data-wallpaper="${esc(photo.id)}"`:`data-gallery-apply="${view.index}"`} ${state.loading||state.applying?'disabled':''}>${state.applying?'正在应用…':'选用壁纸'}</button></div><p class="wallpaper-status" role="status">${state.loading?'正在加载预览…':esc(state.error)}</p></div>`;
+ }
  function render(){
   const settings=getState().settings,tab=WALLPAPER_SOURCES.find(s=>s.id===state.tab);
   let content='';
-  if(state.tab==='official')content=`<h3>官方背景</h3><p class="help-text">栖页内置渐变 · 离线可用 · 无需连接外部服务</p><div class="wallpaper-grid">${wallpapers.map(w=>`<button class="wallpaper-option ${settings.wallpaper===w.id&&!settings.customWallpaper&&!(settings.wallpaperApiEnabled&&settings.remoteWallpaper)?'selected':''}" style="background:${w.background}" data-wallpaper="${w.id}" aria-label="${w.name}壁纸"><span>${w.name} · ${w.tag}</span></button>`).join('')}</div>`;
+  if(state.preview)content=previewMarkup();
+  else if(state.tab==='official')content=`<div class="gallery-intro"><h3>官方背景</h3><p>内置渐变 · 离线可用</p></div><div class="wallpaper-grid">${wallpapers.map(w=>`<article class="wallpaper-photo-card wallpaper-builtin ${settings.wallpaper===w.id&&!settings.customWallpaper&&!(settings.wallpaperApiEnabled&&settings.remoteWallpaper)?'selected':''}"><div class="wallpaper-photo-visual" style="background:${w.background}"><span class="wallpaper-builtin-name">${w.name}</span><div class="wallpaper-photo-actions"><button data-gallery-builtin-preview="${w.id}" aria-label="预览${w.name}背景">预览</button><button data-wallpaper="${w.id}" aria-label="选用${w.name}背景">选用</button></div></div></article>`).join('')}</div>`;
   else if(state.tab==='custom')content=renderCustom();
   else if(state.tab==='parameters')content=renderParameters();
   else{
-   const intro=tab?.intro||'';
-   content=`<h3>${esc(tab.name)}</h3><p class="help-text">${intro}</p>`;
-   if(!settings.wallpaperApiEnabled)content+=`<div class="wallpaper-permission"><strong>按需连接在线图库</strong><p>点击后，浏览器会直接连接 ${esc(tab.name)} 及其图片域名。不会发送桌面内容、搜索历史或同步凭据。</p><button class="primary-button" data-gallery-enable>启用并加载图片</button></div>`;
-   else content+=`<div class="wallpaper-status" role="status">${state.applying?'正在加载高清壁纸…':state.loading?'正在加载图片清单…':esc(state.error)||(!state.photos.length?'这一页暂无可用图片，可以翻页或重新加载。':'点击图片应用背景')}</div>${state.error?'<button class="secondary-button" data-gallery-retry>重新加载</button>':''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card"><button data-gallery-apply="${i}" aria-label="应用壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"></button><div class="wallpaper-photo-credit"><a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(p.author)}">${esc(p.author)}</a><a href="${esc(p.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.license)}</a></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>上一页</button><span>第 ${state.page} 页</span><button class="secondary-button" data-gallery-page="1" ${state.page>=(tab.snapshot?catalogWallpaperPages(state.tab):50)||state.loading||state.applying?'disabled':''}>下一页</button></div>`;
+   content=`<div class="gallery-intro"><h3>${esc(tab.name)}</h3><p>${esc(tab.intro)}</p><small>图片权利归原作者，来源与许可见预览详情。</small></div>`;
+   if(!settings.wallpaperApiEnabled)content+=`<div class="wallpaper-permission"><strong>连接 ${esc(tab.name)}</strong><p>启用后直接加载该图库和图片域名，不发送桌面内容或同步凭据。</p><button class="primary-button" data-gallery-enable>启用并加载图片</button></div>`;
+   else content+=`<div class="wallpaper-status ${!state.loading&&!state.applying&&!state.error&&state.photos.length?'is-quiet':''}" role="status">${state.applying?'正在加载高清壁纸…':state.loading?'正在加载图片清单…':esc(state.error)||(!state.photos.length?'这一页暂无可用图片。':'')}</div>${state.error?'<button class="secondary-button" data-gallery-retry>重新加载</button>':''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card ${settings.remoteWallpaper?.provider===p.provider&&settings.remoteWallpaper?.id===p.id?'selected':''}"><div class="wallpaper-photo-visual"><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"><div class="wallpaper-photo-actions"><button data-gallery-preview="${i}" aria-label="预览壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}>预览</button><button data-gallery-apply="${i}" aria-label="选用壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}>选用</button></div></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>上一页</button><span>第 ${state.page} 页</span><button class="secondary-button" data-gallery-page="1" ${state.page>=(tab.snapshot?catalogWallpaperPages(state.tab):50)||state.loading||state.applying?'disabled':''}>下一页</button></div>`;
   }
-  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="壁纸来源">${WALLPAPER_SOURCES.map(s=>`<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content">${s.name}</button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}">壁纸参数</button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="壁纸内容">${content}</section></div>`;
+  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="壁纸来源"><h2 class="workspace-title" id="workspace-title">壁纸库</h2>${WALLPAPER_SOURCES.map(s=>`<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content"><span class="source-symbol" aria-hidden="true">${({custom:'＋',official:'◈',deepin:'◉',wallhaven:'W',picsum:'P',commons:'◎'})[s.id]}</span><span>${s.name}</span></button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}"><span class="source-symbol" aria-hidden="true">☷</span><span>参数设置</span></button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="壁纸内容">${content}</section></div>`;
  }
+ function back(){if(!state.preview)return false;stop();state.preview=null;state.error='';refresh();return true;}
  async function handleClick(button){
   if(button.dataset.galleryTab){
    const tab=button.dataset.galleryTab;if(tab!=='parameters'&&!WALLPAPER_SOURCES.some(s=>s.id===tab))return true;
-   stop();state.tab=tab;state.page=1;state.photos=[];state.error='';refresh();await load();return true;
+   stop();state.tab=tab;state.page=1;state.photos=[];state.preview=null;state.error='';refresh();await load();return true;
+  }
+  if(button.hasAttribute('data-gallery-back')){back();return true;}
+  if(button.hasAttribute('data-gallery-builtin-preview')){
+   const photo=wallpapers.find(w=>w.id===button.dataset.galleryBuiltinPreview);if(photo){stop();state.preview={builtin:true,photo};refresh();}return true;
+  }
+  if(button.hasAttribute('data-gallery-preview')){
+   const index=Number(button.dataset.galleryPreview),photo=state.photos[index];if(!photo||state.applying)return true;
+   stop();const token=sequence;state.error='';state.preview={index,photo};controller=new AbortController();
+   if(photo.provider==='commons'){
+    state.loading=true;refresh();
+    try {const full=await resolve(photo,{signal:controller.signal});if(sequence===token)state.preview={index,photo:full};}
+    catch(e){if(sequence===token)state.error=e.message||'高清预览暂不可用';}
+    finally{if(sequence===token){state.loading=false;refresh();}}
+   }else refresh();return true;
   }
   if(button.hasAttribute('data-gallery-enable')){await enable();await load();return true;}
   if(button.hasAttribute('data-gallery-retry')){cache.delete(`${state.tab}:${state.page}`);await load();return true;}
   if(button.dataset.galleryPage){state.page=Math.max(1,Math.min(WALLPAPER_SOURCES.find(s=>s.id===state.tab)?.snapshot?catalogWallpaperPages(state.tab):50,state.page+Number(button.dataset.galleryPage)));await load();return true;}
   if(button.hasAttribute('data-gallery-apply')){
    if(state.applying || state.loading)return true;
-   const photo=state.photos[Number(button.dataset.galleryApply)];if(!photo)return true;
+   const index=Number(button.dataset.galleryApply),photo=state.preview?.index===index?state.preview.photo:state.photos[index];if(!photo)return true;
    stop();const token=sequence;controller=new AbortController();state.applying=true;state.error='';refresh();
    try{
     const full=photo.provider==='commons'?await resolve(photo,{signal:controller.signal}):photo;
@@ -3120,202 +3546,16 @@ function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParamete
   }
   return false;
  }
- return {render,handleClick,close:stop,getState:()=>({...state,photos:[...state.photos]})};
+ return {render,handleClick,back,close:stop,getState:()=>({...state,photos:[...state.photos]})};
 }
 
 return {WALLPAPER_SOURCES, createWallpaperLibrary};
-})();
-const __avatar = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-/** Local avatar decoding and storage boundary. No network requests are used. */
-const MAX_AVATAR_BYTES = 256 * 1024;
-const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
-const AVATAR_SIZE = 256;
-
-const AVATAR_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
-const MAX_AVATAR_PIXELS = 40 * 1024 * 1024;
-
-function avatarError(message = '头像仅支持有效的 PNG、JPEG 或 WebP 图片') { throw new Error(message); }
-function avatarTag(bytes, offset) { return String.fromCharCode(...bytes.subarray(offset, offset + 4)); }
-function avatarDimensions(width, height) {
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) avatarError();
-  if (width > 16384 || height > 16384 || width * height > MAX_AVATAR_PIXELS) avatarError('头像图片分辨率过大，请先缩小图片');
-  return { width, height };
-}
-
-// Check container signatures before image decoding. Imported data URLs must also
-// be static; uploaded PNG/WebP animations are flattened by the canvas below.
-function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  let dimensions = null;
-  if (mime === 'image/png') {
-    if (bytes.length < 45 || bytes[0] !== 0x89 || avatarTag(bytes, 1) !== 'PNG\r' ||
-      bytes[5] !== 10 || bytes[6] !== 26 || bytes[7] !== 10) avatarError();
-    let offset = 8, imageData = false, ended = false;
-    while (offset + 12 <= bytes.length) {
-      const size = view.getUint32(offset);
-      if (size > bytes.length - offset - 12) avatarError();
-      const type = avatarTag(bytes, offset + 4);
-      if (offset === 8 && (type !== 'IHDR' || size !== 13)) avatarError();
-      if (type === 'IHDR') {
-        if (offset !== 8 || size !== 13) avatarError();
-        dimensions = avatarDimensions(view.getUint32(offset + 8), view.getUint32(offset + 12));
-      }
-      if (type === 'acTL' && !allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
-      if (type === 'IDAT' && size > 0) imageData = true;
-      offset += size + 12;
-      if (type === 'IEND') {
-        if (size !== 0 || offset !== bytes.length) avatarError();
-        ended = true;
-        break;
-      }
-    }
-    if (!ended || !imageData || !dimensions) avatarError();
-  } else if (mime === 'image/jpeg') {
-    if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8 ||
-      bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) avatarError();
-    let offset = 2;
-    const frames = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
-    while (offset + 1 < bytes.length) {
-      if (bytes[offset++] !== 0xff) avatarError();
-      while (bytes[offset] === 0xff) offset += 1;
-      const marker = bytes[offset++];
-      if (marker === 0xd9) break;
-      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
-      if (offset + 2 > bytes.length) avatarError();
-      const size = view.getUint16(offset);
-      if (size < 2 || size > bytes.length - offset) avatarError();
-      if (frames.has(marker)) {
-        if (size < 8) avatarError();
-        dimensions = avatarDimensions(view.getUint16(offset + 5), view.getUint16(offset + 3));
-      }
-      if (marker === 0xda) break; // Pixel data is checked by the browser decoder.
-      offset += size;
-    }
-    if (!dimensions) avatarError();
-  } else if (mime === 'image/webp') {
-    if (bytes.length < 26 || avatarTag(bytes, 0) !== 'RIFF' || avatarTag(bytes, 8) !== 'WEBP' ||
-      view.getUint32(4, true) !== bytes.length - 8) avatarError();
-    let offset = 12, hasFrame = false;
-    while (offset + 8 <= bytes.length) {
-      const type = avatarTag(bytes, offset);
-      const size = view.getUint32(offset + 4, true);
-      const data = offset + 8;
-      if (size > bytes.length - data) avatarError();
-      if (type === 'VP8X') {
-        if (size < 10) avatarError();
-        if ((bytes[data] & 0x02) && !allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
-        const width = 1 + bytes[data + 4] + (bytes[data + 5] << 8) + (bytes[data + 6] << 16);
-        const height = 1 + bytes[data + 7] + (bytes[data + 8] << 8) + (bytes[data + 9] << 16);
-        dimensions = avatarDimensions(width, height);
-      }
-      if (type === 'ANIM' || type === 'ANMF') {
-        if (!allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
-        if (type === 'ANMF') hasFrame = true;
-      }
-      if (type === 'VP8L') {
-        if (size < 5 || bytes[data] !== 0x2f) avatarError();
-        const width = 1 + bytes[data + 1] + ((bytes[data + 2] & 0x3f) << 8);
-        const height = 1 + (bytes[data + 2] >> 6) + (bytes[data + 3] << 2) + ((bytes[data + 4] & 0x0f) << 10);
-        dimensions ||= avatarDimensions(width, height);
-        hasFrame = true;
-      }
-      if (type === 'VP8 ') {
-        if (size < 10 || bytes[data + 3] !== 0x9d || bytes[data + 4] !== 1 || bytes[data + 5] !== 0x2a) avatarError();
-        dimensions ||= avatarDimensions(view.getUint16(data + 6, true) & 0x3fff, view.getUint16(data + 8, true) & 0x3fff);
-        hasFrame = true;
-      }
-      offset = data + size + (size % 2);
-    }
-    if (offset !== bytes.length || !hasFrame || !dimensions) avatarError();
-  } else avatarError();
-  return dimensions;
-}
-
-/** A strict, bounded data URL boundary shared by imports, storage and uploads. */
-function validateAvatarDataUrl(value) {
-  if (typeof value !== 'string' || !value.startsWith('data:')) avatarError('头像仅支持本地 PNG、JPEG 或 WebP 的 data URL');
-  // Reject large strings before allocating decoded bytes.
-  if (value.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) avatarError('头像不能超过 256 KiB');
-  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
-  if (!match || match[2].length % 4 !== 0) avatarError('头像仅支持 PNG、JPEG 或 WebP 的 base64 数据');
-  const size = match[2].length / 4 * 3 - (match[2].endsWith('==') ? 2 : match[2].endsWith('=') ? 1 : 0);
-  if (size > MAX_AVATAR_BYTES) avatarError('头像不能超过 256 KiB');
-  let binary;
-  try { binary = atob(match[2]); } catch { avatarError('头像的 base64 数据无效'); }
-  if (btoa(binary) !== match[2]) avatarError('头像的 base64 数据无效');
-  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
-  inspectAvatarBytes(bytes, match[1]);
-  return value;
-}
-
-async function decodeLocalAvatar(file) {
-  if (typeof globalThis.createImageBitmap === 'function') {
-    const image = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
-    return { image, width: image.width, height: image.height, release: () => image.close() };
-  }
-  if (!globalThis.Image || !globalThis.URL?.createObjectURL) avatarError('当前浏览器无法读取本地图片');
-  const objectUrl = globalThis.URL.createObjectURL(file);
-  const image = new globalThis.Image();
-  try {
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('头像读取超时，请选择另一张图片')), 15000);
-      image.onload = () => { clearTimeout(timeout); resolve(); };
-      image.onerror = () => { clearTimeout(timeout); reject(new Error('头像图片无法解码，请选择另一张图片')); };
-      image.src = objectUrl;
-    });
-    return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => { image.src = ''; } };
-  } finally {
-    image.onload = image.onerror = null;
-    globalThis.URL.revokeObjectURL(objectUrl);
-  }
-}
-
-function createAvatarCanvas(size) {
-  if (!globalThis.document?.createElement) avatarError('当前浏览器无法处理本地图片');
-  const canvas = globalThis.document.createElement('canvas');
-  canvas.width = canvas.height = size;
-  return canvas;
-}
-
-/**
- * Flatten a local PNG/JPEG/WebP into a centered 256 px square. Dependencies may
- * be supplied by non-browser callers; output still passes the storage boundary.
- */
-async function normalizeAvatarFile(file, { decodeImage = decodeLocalAvatar, createCanvas = createAvatarCanvas } = {}) {
-  if (!(file instanceof Blob) || !AVATAR_TYPES.has(file.type)) avatarError('请选择 PNG、JPEG 或 WebP 图片作为头像');
-  if (!file.size) avatarError('头像文件为空');
-  if (file.size > MAX_AVATAR_FILE_BYTES) avatarError('上传的头像文件不能超过 4 MiB');
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  inspectAvatarBytes(bytes, file.type, true);
-  let decoded;
-  try {
-    try { decoded = await decodeImage(file); }
-    catch { avatarError('头像图片无法解码，请选择另一张图片'); }
-    if (!decoded?.image) avatarError('头像图片无法解码，请选择另一张图片');
-    const { width, height } = avatarDimensions(decoded.width, decoded.height);
-    const canvas = createCanvas(AVATAR_SIZE);
-    const context = canvas?.getContext?.('2d', { alpha: true });
-    if (!context || typeof canvas.toDataURL !== 'function') avatarError('当前浏览器无法处理本地图片');
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
-    const side = Math.min(width, height);
-    context.drawImage(decoded.image, (width - side) / 2, (height - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
-    // Browsers that cannot encode WebP return PNG automatically.
-    let result = canvas.toDataURL('image/webp', 0.9);
-    if (result.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) result = canvas.toDataURL('image/webp', 0.75);
-    return validateAvatarDataUrl(result);
-  } finally {
-    try { decoded?.release?.(); } catch { /* Decoding resources must not mask the result. */ }
-  }
-}
-
-return {MAX_AVATAR_BYTES, MAX_AVATAR_FILE_BYTES, AVATAR_SIZE, validateAvatarDataUrl, normalizeAvatarFile};
 })();
 const __core = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { normalizeWallpaperPhoto } = __wallpapers;
 const { validateAvatarDataUrl } = __avatar;
+const { normalizeIconSelection } = __icon_selection;
 
 /**
  * Shared, dependency-free storage boundary for every Qiye extension surface.
@@ -3366,7 +3606,7 @@ const DEFAULT_STATE = deepFreeze({
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
-    sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
+    sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
     reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, clockWeight: 400,
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
@@ -3593,7 +3833,7 @@ function validateSettings(raw) {
     sidebarPosition: enumeration(v.sidebarPosition, ['left', 'right'], 'settings.sidebarPosition'),
     navigationMode: enumeration(v.navigationMode, ['sidebar', 'top'], 'settings.navigationMode'),
     sidebarVisibility: enumeration(v.sidebarVisibility, ['always', 'auto', 'hidden'], 'settings.sidebarVisibility'),
-    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), avatar,
+    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), sidebarUseAccent: bool(v.sidebarUseAccent, 'settings.sidebarUseAccent'), avatar,
     toolbarVisibility: enumeration(v.toolbarVisibility, ['always', 'auto'], 'settings.toolbarVisibility'),
     surfaceStyle: enumeration(v.surfaceStyle, ['solid', 'glass', 'acrylic', 'mica'], 'settings.surfaceStyle'),
     surfaceOpacity: number(v.surfaceOpacity, 'settings.surfaceOpacity', 20, 100),
@@ -3692,7 +3932,7 @@ function validateImport(raw) {
     const path = `items[${i}]`;
     plain(item, path);
     const type = enumeration(item.type, ['link', 'folder', 'widget'], `${path}.type`);
-    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
+    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'iconUrl', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
     keys(item, allowed, path);
     const groupId = id(item.groupId, `${path}.groupId`);
     if (!groupIds.has(groupId)) invalid(`${path}.groupId`, '对应分组不存在');
@@ -3707,7 +3947,9 @@ function validateImport(raw) {
     if (type === 'folder') return { ...base, ...appearance };
     // Old backups acquire automatic discovery without losing their text fallback.
     const iconMode = enumeration(maybe(item.iconMode, 'auto'), ['auto', 'text'], `${path}.iconMode`);
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    const iconUrl = normalizeIconSelection(item.iconUrl);
+    if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, '需要安全的 HTTPS 图标地址或有效的本地静态图片');
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
@@ -5976,6 +6218,7 @@ const { createWallpaperLibrary } = __wallpaper_library;
 const { webDAVStateFingerprint } = __webdav;
 const { createSyncController } = __sync_ui;
 const { getFaviconCandidates, discoverFavicon, faviconCacheReady } = __favicons;
+const { normalizeIconSelection } = __icon_selection;
 const { bindFaviconImages } = __favicon_view;
 const { normalizeAvatarFile } = __avatar;
 const { readSearchHistory, rememberSearch, clearSearchHistory } = __search_history;
@@ -6083,7 +6326,8 @@ function siteGlyph(item) {
  const fallback = iconNames.includes(value) ? icon(value) : `<span class="site-glyph ${[...value].length > 2 ? 'small' : ''}">${esc(value.slice(0,8))}</span>`;
  const url = item.iconMode === 'text' ? null : safeUrl(item.url);
  if (!url) return fallback;
- return `<span class="site-visual" data-favicon-site="${esc(url)}"><span class="site-fallback" aria-hidden="true">${fallback}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
+ const selected=normalizeIconSelection(item.iconUrl);
+ return `<span class="site-visual" data-favicon-site="${esc(url)}"${selected?` data-favicon-selected="${esc(selected)}"`:''}><span class="site-fallback" aria-hidden="true">${fallback}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
 
 function linkPreviewIdentity(form) {
@@ -6094,54 +6338,114 @@ function updateLinkPreview(form, options = {}) {
  const identity=linkPreviewIdentity(form), mode=form.elements.iconMode.value === 'text' ? 'text' : 'auto';
  let view=faviconFormStates.get(form);
  if (!view || view.identity !== identity) {
-  view={identity,url:safeUrl(form.elements.url.value),mode,request:++faviconRequestSequence,busy:false,candidates:null,message:''};
+  const url=safeUrl(form.elements.url.value), sameUrl=view?.url===url;
+  view={identity,url,mode,request:++faviconRequestSequence,busy:false,candidates:sameUrl?view.candidates:null,variants:sameUrl?view.variants:null,message:'',choice:form.dataset?.iconChoice || (mode==='text'?'text':'current')};
   faviconFormStates.set(form,view);
  }
  const preview=$('#link-preview-icon',form), button=$('[data-action="extract-favicon"]',form), status=$('#favicon-status',form);
- const item={url:view.url,iconMode:mode,icon:form.elements.icon.value,title:form.elements.title.value};
- $('#link-preview-title',form).textContent=item.title || '一个常去的地方';
- $('#link-preview-url',form).textContent=form.elements.url.value || '把喜欢的网站，放在触手可及的地方';
+ const original=form.dataset?.originalUrl;
+ const item=original?{url:original,iconMode:form.dataset.originalMode||'auto',iconUrl:form.dataset.originalIcon||null,icon:form.dataset.originalText,title:form.dataset.originalTitle}
+   :{url:view.url,iconMode:'auto',icon:form.elements.icon.value,title:form.elements.title.value};
+ $('#link-preview-title',form).textContent=form.elements.title.value || '网站';
+ $('#link-preview-url',form).textContent=form.elements.url.value;
  preview.style.background=form.elements.color.value;
  preview.style.setProperty('--tile-ink',tileInk(form.elements.color.value));
  const markup=siteGlyph(item);
  if(view.rendered!==markup || view.preview!==preview){preview.innerHTML=markup;view.rendered=markup;view.preview=preview;}
- bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates,targetSize:state.settings.gridSize,onStatus:info=>{
+ bindFaviconImages(preview,{onStatus:info=>{
   const quality=$('#favicon-quality',form);if(!quality||!form.isConnected||faviconFormStates.get(form)!==view)return;
   quality.dataset.quality=info.adequate?'sharp':'low';
-  quality.textContent=info.url?(info.scalable?'矢量图标 · 可随显示尺寸缩放':`实际位图 ${info.width} × ${info.height}px · 当前需要约 ${info.requiredSize}px${info.adequate?' · 清晰度充足':' · 原图偏小，保留最佳可用结果'}`):'未取得可用图片，显示文字回退。';
-  quality.title=info.url||'';
+  quality.textContent=info.url?(info.scalable?'当前图标 · SVG 矢量':`当前图标 · ${info.width} × ${info.height}px${info.adequate?'':' · 原图偏小'}`):'当前图标无法加载，将显示文字。';
  }});
- button.disabled=view.busy || mode === 'text' || !view.url;
- button.textContent=view.busy ? '正在提取…' : '智能提取';
- status.textContent=view.message || (mode === 'text' ? '使用下方的文字 / Emoji 与背景色。' : '自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。');
+ const textPreview=$('[data-text-icon-preview]',form);
+ if(textPreview){textPreview.textContent=form.elements.icon.value || form.elements.title.value.slice(0,2) || '文';textPreview.style.background=form.elements.color.value;textPreview.style.color=tileInk(form.elements.color.value);}
+ if(form.elements.icon){form.elements.icon.readOnly=mode!=='text';form.elements.icon.setAttribute?.('aria-disabled',String(mode!=='text'));}
+ button.disabled=view.busy || !view.url;
+ button.textContent=view.busy ? '获取中…' : '获取图标';
+ status.textContent=view.message || (mode === 'text' ? '文字图标 · 可编辑下方文字与颜色。' : '保留当前图标，或获取网站提供的其他图标。');
+ renderLinkIconChoices(form,view);
+}
+function renderLinkIconChoices(form, view) {
+ const results=$('[data-icon-results]',form);if(!results)return;
+ const variants=(view.variants || []).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
+ const key=variants.map(v=>v.url).join('\n');
+ if(view.results!==results || view.resultKey!==key){
+  view.results=results;view.resultKey=key;view.measurements=new Map();
+  results.innerHTML=variants.map((v,i)=>`<button type="button" class="icon-choice" data-icon-choice="candidate" data-icon-index="${i}" aria-pressed="false" disabled title="${esc(v.source||'网站图标')} · ${esc(v.url)}"><span class="choice-art"><span class="site-visual" data-favicon-site="${esc(view.url)}" data-favicon-selected="${esc(v.url)}"><span class="site-fallback" aria-hidden="true">…</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span></span><span>网站图标 ${i+1}</span><small data-icon-dimensions>加载中</small></button>`).join('');
+  for(const row of $$('[data-icon-index]',results)){
+   const entry=variants[Number(row.dataset.iconIndex)];
+   bindFaviconImages(row,{force:true,autoDiscover:false,targetSize:64,onStatus:info=>{
+    if(!form.isConnected||faviconFormStates.get(form)!==view||!row.isConnected)return;
+    row.disabled=!info.url;row.dataset.iconReady=info.url?'true':'false';
+    $('[data-icon-dimensions]',row).textContent=info.url?(info.scalable?'SVG · 矢量':`${info.width} × ${info.height}`):'不可用';
+    if(info.url)row.title=`${entry.source||'网站图标'} · ${info.scalable?'SVG':info.width+' × '+info.height+'px'}\n${entry.url}`;
+    row.classList.toggle('icon-unavailable',!info.url);
+    view.measurements.set(entry.url,Boolean(info.url));
+    if(view.measurements.size===variants.length){
+     const loaded=[...view.measurements.values()].filter(Boolean).length;
+     view.message=loaded?`已加载 ${loaded} 个候选，选择后点击保存。`:'未找到可加载的原站图标。可保留当前图标、使用文字或上传图片。';
+     if(view.warning)view.message+=' '+view.warning;
+     const message=$('#favicon-status',form);if(message)message.textContent=view.message;
+    }
+   }});
+  }
+ }
+ const selection=form.elements.iconUrl?.value||'';
+ for(const row of $$('[data-icon-choice]',form)){
+  const chosen=row.dataset.iconChoice===view.choice && (view.choice!=='candidate'||variants[Number(row.dataset.iconIndex)]?.url===selection);
+  row.setAttribute('aria-pressed',String(chosen));
+ }
+}
+function chooseLinkIcon(button){
+ const form=button.closest('#link-form');if(!form||button.disabled)return;
+ updateLinkPreview(form);const view=faviconFormStates.get(form),choice=button.dataset.iconChoice;
+ if(choice==='candidate'){
+  const candidate=view.variants?.[Number(button.dataset.iconIndex)];
+  if(!candidate||button.dataset.iconReady!=='true')return;
+  form.elements.iconUrl.value=candidate.url;form.elements.iconMode.value='auto';
+ }else if(choice==='text') {form.elements.iconMode.value='text';form.elements.iconUrl.value='';}
+ else if(choice==='current') {form.elements.iconMode.value=form.dataset.originalMode||'auto';form.elements.iconUrl.value=form.dataset.originalIcon||'';}
+ else if(choice==='upload'){ $('#site-icon-upload',form)?.click();return; }
+ else return;
+ form.dataset.iconChoice=choice;view.choice=choice;
+ updateLinkPreview(form);
 }
 function isLinkPreviewCurrent(form, view, request) {
  return form.isConnected && dialog.open && faviconFormStates.get(form) === view && view.request === request && view.identity === linkPreviewIdentity(form);
 }
 async function extractLinkFavicon(button) {
  const form=button.closest('#link-form');
- if (!form || button.disabled || form.elements.iconMode.value === 'text') return;
- const url=safeUrl(form.elements.url.value);
- if (!url) return;
- // Invoke synchronously from the click handler so Chrome keeps the user gesture
- // needed by the per-site optional permission request inside discoverFavicon.
- const pending=discoverFavicon(url,{requestPermission:true,force:true,targetSize:64,pixelRatio:globalThis.devicePixelRatio || 1});
+ if (!form || button.disabled) return;
+ const url=safeUrl(form.elements.url.value);if (!url) return;
+ // Request permission synchronously in the click gesture. Full enumeration also
+ // reads a same-origin manifest even when one HTML icon is already sharp.
+ const pending=discoverFavicon(url,{requestPermission:true,force:true,allCandidates:true,targetSize:64,pixelRatio:globalThis.devicePixelRatio || 1});
  updateLinkPreview(form);
  const view=faviconFormStates.get(form), request=++faviconRequestSequence;
- view.request=request;view.busy=true;view.message='正在读取网站图标声明…';
- updateLinkPreview(form);
+ view.request=request;view.busy=true;view.message='正在读取网站图标声明…';updateLinkPreview(form);
  try {
-  const result=await pending;
-  if (!isLinkPreviewCurrent(form,view,request)) return;
-  view.busy=false;
-  view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
-  view.message=result.warning || (view.candidates.length ? '已更新候选图标，加载成功后会保存在本机缓存。' : '暂时没有可用图标，已保留文字回退。');
-  updateLinkPreview(form,{force:true});
+  const result=await pending;if (!isLinkPreviewCurrent(form,view,request)) return;
+  view.busy=false;view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
+  view.variants=(result.variants?.length?result.variants:view.candidates.map(url=>({url,source:'站点候选'}))).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
+  view.resultKey=null;view.warning=result.warning||'';
+  // Listing candidates never changes the selected asset or the website name.
+  view.message=result.warning || (view.variants.length?'请选择图标后保存；尺寸为原始图片尺寸。':'这个网站没有可读取的图标。');
+  updateLinkPreview(form);
  } catch(err) {
   if (!isLinkPreviewCurrent(form,view,request)) return;
-  view.busy=false;view.message=err.message || '提取未完成，已保留文字图标，可稍后重试。';
-  updateLinkPreview(form);
+  view.busy=false;view.message=err.message || '暂时无法获取，当前图标未更改。';updateLinkPreview(form);
  }
+}
+async function uploadSiteIcon(input){
+ const form=input.closest('#link-form'),file=input.files?.[0];input.value='';if(!form||!file)return;
+ updateLinkPreview(form);const view=faviconFormStates.get(form),request=++faviconRequestSequence;
+ view.request=request;view.message='正在处理本机图标…';updateLinkPreview(form);
+ try{
+  const image=await normalizeAvatarFile(file);if(!isLinkPreviewCurrent(form,view,request))return;
+  form.elements.iconUrl.value=image;form.elements.iconMode.value='auto';
+  view.variants=[...(view.variants||[]).filter(v=>!v.url.startsWith('data:')).slice(0,11),{url:image,source:'本机上传'}];
+  view.resultKey=null;view.choice='candidate';form.dataset.iconChoice='candidate';view.message='已处理本机图标，保存后生效。';updateLinkPreview(form);
+ }catch(error){if(isLinkPreviewCurrent(form,view,request)){view.message=error.message;updateLinkPreview(form);}}
 }
 function toast(message, undo, actionLabel='撤销') {
  clearTimeout(lastToastTimer); const el = $('#toast');
@@ -6306,6 +6610,7 @@ function applySettings() {
  root.dataset.navigation = s.navigationMode;
  root.dataset.sidebarPosition = s.sidebarPosition;
  root.dataset.sidebarVisibility = s.sidebarVisibility;
+ root.dataset.sidebarAccent = s.sidebarUseAccent?'theme':'neutral';
  root.dataset.font = s.uiFont;
  root.dataset.iconShape=s.iconShape;
  root.dataset.iconDiscovery=s.autoExtractIcons?'auto':'manual';
@@ -6443,7 +6748,8 @@ function submitSearch() {
  rememberSearch(q,state.settings.showSearchHistory);
  hideSearchMenus(); navigate(url,false,true);
 }
-function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2>${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="关闭">${icon('close')}</button></header>`; }
+function dialogCloseButton(){return `<button class="dialog-close workspace-close" data-close aria-label="关闭">${icon('close')}</button>`;}
+function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2 id="dialog-title">${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="关闭">${icon('close')}</button></header>`; }
 function field(name,label,value='',options={}) { return `<label class="field"><span>${esc(label)}</span><input name="${esc(name)}" type="${options.type || 'text'}" value="${esc(value)}" ${options.required?'required':''} ${options.type==='number'?'step="any"':''} ${options.min!==undefined?`min="${options.min}"`:''} ${options.max!==undefined?`max="${options.max}"`:''} ${options.maxlength?`maxlength="${options.maxlength}"`:''} ${options.placeholder?`placeholder="${esc(options.placeholder)}"`:''}>${options.help?`<small>${esc(options.help)}</small>`:''}</label>`; }
 function selectField(name,label,value,options) { return `<label class="field"><span>${esc(label)}</span><select name="${name}">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`; }
 function formActions(label='保存') { return `<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="secondary-button" type="button" data-close>取消</button><button class="primary-button" type="submit">${icon('check')}${esc(label)}</button></div>`; }
@@ -6459,6 +6765,8 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  dialog.classList.toggle('add-dialog',kind==='add');
+ dialog.classList.toggle('workspace-dialog',['add','settings','wallpaper'].includes(kind));
+ dialog.classList.toggle('site-editor-dialog',kind==='edit-item'&&state.items.find(i=>i.id===data.id)?.type==='link');
  document.body.classList.remove('shortcuts-open');
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
@@ -6479,24 +6787,49 @@ function openDialog(kind,data={}) {
  else return;
  document.body.append($('#context-menu'));
  $('#dialog-content').innerHTML = html;
+ dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
- else $('input:not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
+ else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 function closeDialog() { wallpaperLibrary.close(); avatarRequestSequence++; if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
+function linkEditorForm(item){
+ const value=item||{},color=value.color||COLORS[0],mode=value.iconMode||'auto';
+ return `<form id="link-form" class="site-editor" data-id="${esc(value.id||'')}" data-original-url="${esc(value.url||'')}" data-original-mode="${esc(mode)}" data-original-icon="${esc(value.iconUrl||'')}" data-original-text="${esc(value.icon||'')}" data-original-title="${esc(value.title||'')}" data-icon-choice="${mode==='text'?'text':'current'}">
+ <input name="iconMode" type="hidden" value="${esc(mode)}"><input name="iconUrl" type="hidden" value="${esc(value.iconUrl||'')}">
+ <section class="editor-section" aria-label="网站信息">
+  <label class="field"><span>网址</span><div class="address-control">${icon('link')}<input name="url" type="text" value="${esc(value.url||'')}" required maxlength="2048" placeholder="https://example.com" autocomplete="off" spellcheck="false"><button class="get-icon-button" type="button" data-action="extract-favicon">获取图标</button></div></label>
+  ${field('title','名称',value.title||'',{required:true,maxlength:120,placeholder:'网站名称'})}
+ </section>
+ <section class="editor-section icon-section" aria-label="图标样式">
+  <div class="icon-choices" role="group" aria-label="选择网站图标">
+   <button type="button" class="icon-choice" data-icon-choice="current" aria-pressed="${mode!=='text'}"><span class="choice-art preview-icon" id="link-preview-icon" style="background:${esc(color)}">${siteGlyph(value)}</span><span>当前图标</span><small>保留现有</small></button>
+   <button type="button" class="icon-choice" data-icon-choice="text" aria-pressed="${mode==='text'}"><span class="choice-art" data-text-icon-preview></span><span>文字图标</span><small>自定义文字</small></button>
+   <span class="icon-result-list" data-icon-results></span>
+   <button type="button" class="icon-choice icon-upload-choice" data-icon-choice="upload" aria-label="上传本机图标"><span class="choice-art">${icon('plus')}</span><span>上传</span><small>本机图片</small></button>
+  </div>
+  <span hidden id="link-preview-title"></span><span hidden id="link-preview-url"></span>
+  <p id="favicon-status" class="icon-status" role="status" aria-live="polite"></p><p id="favicon-quality" class="icon-status icon-quality-summary"></p>
+  <label class="field icon-text-field"><span>图标文字</span><input name="icon" value="${esc(value.icon||value.title?.slice(0,2)||'')}" maxlength="8" placeholder="例如：知、G、🌿"></label>
+  <div class="field icon-color-field"><span>图标颜色</span>${colorsHtml(color)}</div>
+  <input type="file" id="site-icon-upload" accept="image/png,image/jpeg,image/webp" hidden>
+ </section>
+ <div class="editor-footer">${selectField('groupId','所在分组',value.groupId||currentGroup().id,groupOptions())}${formActions(item?'保存':'添加到桌面')}</div>
+ </form>`;
+}
 function addDialog(tab,data) {
  const item = data.item;
  let content = '';
  if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
- else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div><p id="favicon-quality" class="icon-status" role="status">正在测量图标清晰度…</p>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
- const head=dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'收纳常用网站，组合日常组件。');
+ else content = linkEditorForm(item);
+ const head=item?dialogHeader(item.type==='folder'?'编辑文件夹':'编辑图标'):dialogCloseButton();
  if(item)return head+`<div class="dialog-body">${content}</div>`;
  const tabs=[{id:'widgets',name:'小组件',icon:'grid'},{id:'link',name:'网站',icon:'link'},{id:'folder',name:'文件夹',icon:'folder'}];
- return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="添加内容分类">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>内容仅保存到你的桌面</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||'网站'}">${content}</section></div>`;
+ return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="添加内容分类"><h2 class="workspace-title" id="workspace-title">添加</h2>${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>内容仅保存到你的桌面</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||'网站'}">${content}</section></div>`;
 
 }
 function groupDialog(id) {
@@ -6627,6 +6960,7 @@ function settingsDialog(tab) {
   ${settingRange('sidebarWidth','侧边栏宽度',40,120)}
   ${settingRange('sidebarOpacity','导航透明度',0,100,'%')}
   ${settingSwitch('sidebarLabels','显示分组名称')}
+  ${settingSwitch('sidebarUseAccent','选中分组使用主题色','默认使用与导航材质协调的中性色，开启后使用全局主题色。')}
   ${preferenceSelect('sidebarWheelMode','侧栏滚轮行为',[['scroll','滚动分组列表'],['switch','切换当前分组']],'默认仅滚动导航列表以查看被遮挡的分组，不会切换桌面。编辑时始终滚动列表。')}
   <p class="help-text">分组支持右键重命名和编辑图标；编辑桌面时可拖动调整分组顺序。</p>`;
  else if(tab==='data') content = `
@@ -6639,7 +6973,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.1 · GPLv3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.2 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
@@ -6647,19 +6981,27 @@ function settingsDialog(tab) {
   <p class="about-note">Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
- return dialogHeader('设置','把栖页调成你喜欢的样子。') + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.1</small></nav>
+ return dialogCloseButton() + `
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类"><h2 class="workspace-title" id="workspace-title">设置</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.2</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
  getState:()=>state, wallpapers:WALLPAPERS, toast,
- rerender:()=>{if(dialogKind==='wallpaper')openDialog('wallpaper');},
+ rerender:()=>{
+  if(dialogKind!=='wallpaper'||!dialog.open)return;
+  const content=$('.wallpaper-content',dialog),nav=$('.wallpaper-nav',dialog);
+  const view=wallpaperLibrary.getState(),key=[view.tab,view.page,view.preview?.index??view.preview?.id??''].join('|');
+  const y=content?.scrollTop||0,n=nav?.scrollTop||0,previous=dialog.dataset.galleryView;
+  $('#dialog-content').innerHTML=wallpaperDialog();dialog.dataset.galleryView=key;
+  if(previous===key&&$('.wallpaper-content',dialog))$('.wallpaper-content',dialog).scrollTop=y;
+  if($('.wallpaper-nav',dialog))$('.wallpaper-nav',dialog).scrollTop=n;
+ },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
  renderCustom:()=>`<h3>自定义背景</h3><p class="help-text">仅在本机读取照片或视频，最大 4 MB。支持 PNG、JPEG、WebP、GIF、AVIF、MP4、WebM。应用后会进入桌面备份与 WebDAV 同步。</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>选择本地图片或视频</strong><small>不上传到栖页服务器</small></span></button>${state.settings.customWallpaper?'<p class="help-text">当前已使用本地背景。选择任意官方背景可切换回来。</p>':''}`,
  renderParameters:()=>`<h3>壁纸参数</h3><p class="help-text">参数独立于图库，修改后立即预览并保存。</p>${settingRange('blur','背景模糊',0,20)}${settingRange('dim','背景暗度',0,70,'%')}${settingSwitch('dailyWallpaper','每日轮换内置背景','手动选择的本地或在线壁纸优先显示。')}${settingSwitch('wallpaperApiEnabled','允许公开图片 API','只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。')}`
 });
-function wallpaperDialog() {return dialogHeader('壁纸','为桌面选一处风景')+wallpaperLibrary.render();}
+function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
 
 function widgetConfigDialog(item) {
  if(!item) return dialogHeader('组件不存在')+'<div class="dialog-body">请关闭后重试。</div>';
@@ -6791,12 +7133,13 @@ document.addEventListener('click', async event=>{
  if(target.dataset.openFolder)return openDialog('folder',{id:target.dataset.openFolder});
  if(target.dataset.editItem)return openDialog('edit-item',{id:target.dataset.editItem});
  if(target.dataset.deleteItem){await removeItem(target.dataset.deleteItem);return;}
+ if(target.dataset.iconChoice)return chooseLinkIcon(target);
  if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab});
  if(target.dataset.addWidget)return await addWidget(target.dataset.addWidget);
  if(target.dataset.settingsTab)return openDialog('settings',{tab:target.dataset.settingsTab});
  if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});if(form.id==='link-form')updateLinkPreview(form);return;}
  if(target.dataset.groupIcon){$('input[name=icon]',dialog).value=target.dataset.groupIcon;$$('[data-group-icon]',dialog).forEach(b=>b.classList.toggle('selected',b===target));return;}
- if(target.dataset.theme){state.settings.theme=target.dataset.theme;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
+ if(target.dataset.theme){state.settings.theme=target.dataset.theme;applySettings();await persist();if(dialog.open&&dialogKind==='settings')openDialog('settings',{tab:'appearance'});return;}
  if(target.dataset.material){state.settings.surfaceStyle=target.dataset.material;applySettings();await persist();$$('[data-material]',dialog).forEach(button=>{const selected=button===target;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});return;}
  if(target.dataset.wallpaper){state.settings.wallpaper=target.dataset.wallpaper;state.settings.customWallpaper=null;state.settings.remoteWallpaper=null;state.settings.dailyWallpaper=false;await persist();applySettings();openDialog('wallpaper');return;}
  if(target.dataset.deleteEngine){state.settings.customEngines=state.settings.customEngines.filter(e=>e.id!==target.dataset.deleteEngine);if(state.settings.searchEngine===target.dataset.deleteEngine)state.settings.searchEngine=ENGINES[0].id;await persist();renderEngine();openDialog('settings',{tab:'search'});return;}
@@ -6875,7 +7218,7 @@ dialog.addEventListener('submit',async event=>{
    const url=safeUrl(value('url'));if(!url)throw new Error('请输入有效的 http 或 https 网站地址。');
    if(!value('title'))throw new Error('请填写网站名称。');
    const old=state.items.find(i=>i.id===form.dataset.id),groupId=value('groupId');
-   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
+   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',iconUrl:normalizeIconSelection(value('iconUrl')),color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
    if(old)state.items[state.items.indexOf(old)]=item;else state.items.push(item);
    await commit();closeDialog();toast(old?'网站已更新。':'已添加到桌面。');
   }else if(form.id==='folder-form'){
@@ -6920,11 +7263,15 @@ document.addEventListener('input', event=>{
  if(input.id==='local-query')renderLocalResults(input.value);
  if(input.dataset.settingColor){state.settings[input.dataset.settingColor]=input.value;const output=$('#color-value-'+input.dataset.settingColor);if(output)output.textContent=input.value;applySettings();}
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
- if(input.closest('#link-form'))updateLinkPreview(input.form);
+ if(input.closest('#link-form')){
+  if(input.name==='url'){input.form.elements.iconUrl.value='';input.form.elements.iconMode.value='auto';input.form.dataset.iconChoice='current';input.form.dataset.originalUrl='';input.form.dataset.originalIcon='';input.form.dataset.originalMode='auto';}
+  updateLinkPreview(input.form);
+ }
 });
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
+  if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
   if(input.dataset.preference){state.settings[input.dataset.preference]=input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
   if(input.dataset.settingColor){await persist();return;}
@@ -6986,6 +7333,7 @@ document.addEventListener('keydown',event=>{
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
+dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
 dialog.addEventListener('close',()=>{wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');

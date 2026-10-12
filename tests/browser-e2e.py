@@ -126,8 +126,8 @@ with sync_playwright() as p:
   page.locator('.wallpaper-launcher').click();check('wallpaper widget opens two-column library',lambda:eq(page.locator('.wallpaper-browser').evaluate('n=>getComputedStyle(n).display'),'grid'))
   check('gallery source categories and bottom parameters',lambda:eq(page.locator('[data-gallery-tab]').count(),7))
   page.locator('[data-gallery-tab="picsum"]').click();check('online gallery requires explicit consent',lambda:truth(page.locator('[data-gallery-enable]').is_visible()))
-  page.locator('[data-gallery-enable]').click();page.locator('[data-gallery-apply]').wait_for();check('Picsum gallery response rendered',lambda:eq(page.locator('[data-gallery-apply]').count(),1))
-  page.locator('[data-gallery-tab="commons"]').click();page.locator('[data-gallery-apply]').wait_for();check('Commons license attribution retained',lambda:truth('CC BY-SA' in page.locator('.wallpaper-photo-credit').inner_text()))
+  page.locator('[data-gallery-enable]').click();page.locator('[data-gallery-apply]').first.wait_for();check('Picsum gallery response rendered',lambda:eq(page.locator('[data-gallery-apply]').count(),1))
+  page.locator('[data-gallery-tab="commons"]').click();page.locator('[data-gallery-preview]').first.click();page.locator('.preview-credit').wait_for();check('Commons license attribution retained in preview',lambda:truth('CC BY-SA' in page.locator('.preview-credit').inner_text()))
   page.locator('[data-gallery-tab="parameters"]').click();check('wallpaper sliders in separate parameters panel',lambda:truth(page.locator('[data-range="blur"]').is_visible()))
   page.locator('[data-gallery-tab="custom"]').click();check('custom upload is a separate category',lambda:truth(page.locator('[data-action="upload-wallpaper"]').is_visible()))
   page.locator('[data-gallery-tab="deepin"]').click();page.locator('[data-gallery-apply]').first.wait_for();check('deepin shows direct usable images',lambda:eq(page.locator('[data-gallery-apply]').count(),4))
@@ -223,3 +223,9 @@ with sync_playwright() as p:
   (OUT/'browser-report.json').write_text(json.dumps({'mode':'local-document' if args.local_document else 'http','passed':results},ensure_ascii=False,indent=2))
   browser.close()
   if server:server.shutdown()
+
+# Keep the focused editor/workspace suite in the same CI command. It uses its
+# own fresh browser/storage and propagates failures rather than masking them.
+editor_command=[__import__('sys').executable,str(ROOT/'tests/editor-e2e.py'),'--output',str(OUT/'editor')]
+if args.local_document:editor_command.append('--local-document')
+subprocess.run(editor_command,check=True)

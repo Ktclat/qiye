@@ -379,7 +379,7 @@ test('legacy backups gain automatic icons while text choices survive storage and
   assert.equal((await loadState()).items.find(item => item.id === appended.item.id).iconMode, 'text');
 });
 
-test('invalid icon modes and remote icon fields cannot enter persistent desktop data', async () => {
+test('invalid icon modes and unsafe selected icon fields cannot enter persistent desktop data', async () => {
   const fixture = extensionFixture(fresh());
   const original = copy(fixture.records[STORAGE_KEY]);
   for (const mode of ['favicon', '', null, { url: 'https://example.org/icon.png' }]) {
@@ -395,8 +395,8 @@ test('invalid icon modes and remote icon fields cannot enter persistent desktop 
     assert.throws(() => validateImport(state), /iconMode.*不是支持的字段/);
   }
   const remote = fresh();
-  remote.items.find(item => item.type === 'link').iconUrl = 'https://example.org/icon.png';
-  assert.throws(() => exportState(remote), /iconUrl.*不是支持的字段/);
+  remote.items.find(item => item.type === 'link').iconUrl = 'javascript:alert(1)';
+  assert.throws(() => exportState(remote), /iconUrl/);
   assert.equal(fixture.writes, 0);
   assert.deepEqual(fixture.records[STORAGE_KEY], original);
 });

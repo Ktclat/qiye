@@ -433,3 +433,18 @@ test('head-only extraction stops the stream before a huge application body and k
  });
  const r=await api.discoverFavicon('https://head.example.com/',{force:true});assert.equal(r.candidates[0],'https://cdn.example.com/real.png');assert.equal(cancelled,true);assert.equal(readCount,1);
 });
+
+test('explicit candidate enumeration reads manifest even when HTML already contains adequate icons',async t=>{
+ const requests=[];
+ const {api}=await setup(t,{fetchImpl:async url=>{
+  requests.push(url);
+  if(url.endsWith('.webmanifest'))return jsonResponse({icons:[{src:'/icons/alternate.png',sizes:'192x192',type:'image/png'},{src:'/icons/logo.svg',sizes:'any',type:'image/svg+xml'}]});
+  return htmlResponse('<link rel="icon" sizes="256x256" href="/native.png"><link rel="manifest" href="/site.webmanifest"><link rel="icon" href="/small.ico" sizes="32x32">');
+ }});
+ const result=await api.discoverFavicon('https://example.com/',{allCandidates:true,force:true});
+ assert.deepEqual(requests,['https://example.com/','https://example.com/site.webmanifest']);
+ for(const suffix of ['/native.png','/small.ico','/icons/alternate.png','/icons/logo.svg'])assert.ok(result.variants.some(v=>v.url===`https://example.com${suffix}`));
+ assert.equal(new Set(result.variants.map(v=>v.url)).size,result.variants.length);
+ assert.ok(result.variants.every(v=>v.url.startsWith('https://example.com/')));
+ assert.ok(result.variants.find(v=>v.url.endsWith('/native.png')).source==='网站声明');
+});

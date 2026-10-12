@@ -7,6 +7,7 @@ import { createWallpaperLibrary } from './wallpaper-library.js';
 import { webDAVStateFingerprint } from './webdav.js';
 import { createSyncController } from './sync-ui.js';
 import { getFaviconCandidates, discoverFavicon, faviconCacheReady } from './favicons.js';
+import { normalizeIconSelection } from './icon-selection.js';
 import { bindFaviconImages } from './favicon-view.js';
 import { normalizeAvatarFile } from './avatar.js';
 import { readSearchHistory, rememberSearch, clearSearchHistory } from './search-history.js';
@@ -114,7 +115,8 @@ function siteGlyph(item) {
  const fallback = iconNames.includes(value) ? icon(value) : `<span class="site-glyph ${[...value].length > 2 ? 'small' : ''}">${esc(value.slice(0,8))}</span>`;
  const url = item.iconMode === 'text' ? null : safeUrl(item.url);
  if (!url) return fallback;
- return `<span class="site-visual" data-favicon-site="${esc(url)}"><span class="site-fallback" aria-hidden="true">${fallback}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
+ const selected=normalizeIconSelection(item.iconUrl);
+ return `<span class="site-visual" data-favicon-site="${esc(url)}"${selected?` data-favicon-selected="${esc(selected)}"`:''}><span class="site-fallback" aria-hidden="true">${fallback}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
 
 function linkPreviewIdentity(form) {
@@ -125,54 +127,114 @@ function updateLinkPreview(form, options = {}) {
  const identity=linkPreviewIdentity(form), mode=form.elements.iconMode.value === 'text' ? 'text' : 'auto';
  let view=faviconFormStates.get(form);
  if (!view || view.identity !== identity) {
-  view={identity,url:safeUrl(form.elements.url.value),mode,request:++faviconRequestSequence,busy:false,candidates:null,message:''};
+  const url=safeUrl(form.elements.url.value), sameUrl=view?.url===url;
+  view={identity,url,mode,request:++faviconRequestSequence,busy:false,candidates:sameUrl?view.candidates:null,variants:sameUrl?view.variants:null,message:'',choice:form.dataset?.iconChoice || (mode==='text'?'text':'current')};
   faviconFormStates.set(form,view);
  }
  const preview=$('#link-preview-icon',form), button=$('[data-action="extract-favicon"]',form), status=$('#favicon-status',form);
- const item={url:view.url,iconMode:mode,icon:form.elements.icon.value,title:form.elements.title.value};
- $('#link-preview-title',form).textContent=item.title || '一个常去的地方';
- $('#link-preview-url',form).textContent=form.elements.url.value || '把喜欢的网站，放在触手可及的地方';
+ const original=form.dataset?.originalUrl;
+ const item=original?{url:original,iconMode:form.dataset.originalMode||'auto',iconUrl:form.dataset.originalIcon||null,icon:form.dataset.originalText,title:form.dataset.originalTitle}
+   :{url:view.url,iconMode:'auto',icon:form.elements.icon.value,title:form.elements.title.value};
+ $('#link-preview-title',form).textContent=form.elements.title.value || '网站';
+ $('#link-preview-url',form).textContent=form.elements.url.value;
  preview.style.background=form.elements.color.value;
  preview.style.setProperty('--tile-ink',tileInk(form.elements.color.value));
  const markup=siteGlyph(item);
  if(view.rendered!==markup || view.preview!==preview){preview.innerHTML=markup;view.rendered=markup;view.preview=preview;}
- bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates,targetSize:state.settings.gridSize,onStatus:info=>{
+ bindFaviconImages(preview,{onStatus:info=>{
   const quality=$('#favicon-quality',form);if(!quality||!form.isConnected||faviconFormStates.get(form)!==view)return;
   quality.dataset.quality=info.adequate?'sharp':'low';
-  quality.textContent=info.url?(info.scalable?'矢量图标 · 可随显示尺寸缩放':`实际位图 ${info.width} × ${info.height}px · 当前需要约 ${info.requiredSize}px${info.adequate?' · 清晰度充足':' · 原图偏小，保留最佳可用结果'}`):'未取得可用图片，显示文字回退。';
-  quality.title=info.url||'';
+  quality.textContent=info.url?(info.scalable?'当前图标 · SVG 矢量':`当前图标 · ${info.width} × ${info.height}px${info.adequate?'':' · 原图偏小'}`):'当前图标无法加载，将显示文字。';
  }});
- button.disabled=view.busy || mode === 'text' || !view.url;
- button.textContent=view.busy ? '正在提取…' : '智能提取';
- status.textContent=view.message || (mode === 'text' ? '使用下方的文字 / Emoji 与背景色。' : '自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。');
+ const textPreview=$('[data-text-icon-preview]',form);
+ if(textPreview){textPreview.textContent=form.elements.icon.value || form.elements.title.value.slice(0,2) || '文';textPreview.style.background=form.elements.color.value;textPreview.style.color=tileInk(form.elements.color.value);}
+ if(form.elements.icon){form.elements.icon.readOnly=mode!=='text';form.elements.icon.setAttribute?.('aria-disabled',String(mode!=='text'));}
+ button.disabled=view.busy || !view.url;
+ button.textContent=view.busy ? '获取中…' : '获取图标';
+ status.textContent=view.message || (mode === 'text' ? '文字图标 · 可编辑下方文字与颜色。' : '保留当前图标，或获取网站提供的其他图标。');
+ renderLinkIconChoices(form,view);
+}
+function renderLinkIconChoices(form, view) {
+ const results=$('[data-icon-results]',form);if(!results)return;
+ const variants=(view.variants || []).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
+ const key=variants.map(v=>v.url).join('\n');
+ if(view.results!==results || view.resultKey!==key){
+  view.results=results;view.resultKey=key;view.measurements=new Map();
+  results.innerHTML=variants.map((v,i)=>`<button type="button" class="icon-choice" data-icon-choice="candidate" data-icon-index="${i}" aria-pressed="false" disabled title="${esc(v.source||'网站图标')} · ${esc(v.url)}"><span class="choice-art"><span class="site-visual" data-favicon-site="${esc(view.url)}" data-favicon-selected="${esc(v.url)}"><span class="site-fallback" aria-hidden="true">…</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span></span><span>网站图标 ${i+1}</span><small data-icon-dimensions>加载中</small></button>`).join('');
+  for(const row of $$('[data-icon-index]',results)){
+   const entry=variants[Number(row.dataset.iconIndex)];
+   bindFaviconImages(row,{force:true,autoDiscover:false,targetSize:64,onStatus:info=>{
+    if(!form.isConnected||faviconFormStates.get(form)!==view||!row.isConnected)return;
+    row.disabled=!info.url;row.dataset.iconReady=info.url?'true':'false';
+    $('[data-icon-dimensions]',row).textContent=info.url?(info.scalable?'SVG · 矢量':`${info.width} × ${info.height}`):'不可用';
+    if(info.url)row.title=`${entry.source||'网站图标'} · ${info.scalable?'SVG':info.width+' × '+info.height+'px'}\n${entry.url}`;
+    row.classList.toggle('icon-unavailable',!info.url);
+    view.measurements.set(entry.url,Boolean(info.url));
+    if(view.measurements.size===variants.length){
+     const loaded=[...view.measurements.values()].filter(Boolean).length;
+     view.message=loaded?`已加载 ${loaded} 个候选，选择后点击保存。`:'未找到可加载的原站图标。可保留当前图标、使用文字或上传图片。';
+     if(view.warning)view.message+=' '+view.warning;
+     const message=$('#favicon-status',form);if(message)message.textContent=view.message;
+    }
+   }});
+  }
+ }
+ const selection=form.elements.iconUrl?.value||'';
+ for(const row of $$('[data-icon-choice]',form)){
+  const chosen=row.dataset.iconChoice===view.choice && (view.choice!=='candidate'||variants[Number(row.dataset.iconIndex)]?.url===selection);
+  row.setAttribute('aria-pressed',String(chosen));
+ }
+}
+function chooseLinkIcon(button){
+ const form=button.closest('#link-form');if(!form||button.disabled)return;
+ updateLinkPreview(form);const view=faviconFormStates.get(form),choice=button.dataset.iconChoice;
+ if(choice==='candidate'){
+  const candidate=view.variants?.[Number(button.dataset.iconIndex)];
+  if(!candidate||button.dataset.iconReady!=='true')return;
+  form.elements.iconUrl.value=candidate.url;form.elements.iconMode.value='auto';
+ }else if(choice==='text') {form.elements.iconMode.value='text';form.elements.iconUrl.value='';}
+ else if(choice==='current') {form.elements.iconMode.value=form.dataset.originalMode||'auto';form.elements.iconUrl.value=form.dataset.originalIcon||'';}
+ else if(choice==='upload'){ $('#site-icon-upload',form)?.click();return; }
+ else return;
+ form.dataset.iconChoice=choice;view.choice=choice;
+ updateLinkPreview(form);
 }
 function isLinkPreviewCurrent(form, view, request) {
  return form.isConnected && dialog.open && faviconFormStates.get(form) === view && view.request === request && view.identity === linkPreviewIdentity(form);
 }
 async function extractLinkFavicon(button) {
  const form=button.closest('#link-form');
- if (!form || button.disabled || form.elements.iconMode.value === 'text') return;
- const url=safeUrl(form.elements.url.value);
- if (!url) return;
- // Invoke synchronously from the click handler so Chrome keeps the user gesture
- // needed by the per-site optional permission request inside discoverFavicon.
- const pending=discoverFavicon(url,{requestPermission:true,force:true,targetSize:64,pixelRatio:globalThis.devicePixelRatio || 1});
+ if (!form || button.disabled) return;
+ const url=safeUrl(form.elements.url.value);if (!url) return;
+ // Request permission synchronously in the click gesture. Full enumeration also
+ // reads a same-origin manifest even when one HTML icon is already sharp.
+ const pending=discoverFavicon(url,{requestPermission:true,force:true,allCandidates:true,targetSize:64,pixelRatio:globalThis.devicePixelRatio || 1});
  updateLinkPreview(form);
  const view=faviconFormStates.get(form), request=++faviconRequestSequence;
- view.request=request;view.busy=true;view.message='正在读取网站图标声明…';
- updateLinkPreview(form);
+ view.request=request;view.busy=true;view.message='正在读取网站图标声明…';updateLinkPreview(form);
  try {
-  const result=await pending;
-  if (!isLinkPreviewCurrent(form,view,request)) return;
-  view.busy=false;
-  view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
-  view.message=result.warning || (view.candidates.length ? '已更新候选图标，加载成功后会保存在本机缓存。' : '暂时没有可用图标，已保留文字回退。');
-  updateLinkPreview(form,{force:true});
+  const result=await pending;if (!isLinkPreviewCurrent(form,view,request)) return;
+  view.busy=false;view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
+  view.variants=(result.variants?.length?result.variants:view.candidates.map(url=>({url,source:'站点候选'}))).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
+  view.resultKey=null;view.warning=result.warning||'';
+  // Listing candidates never changes the selected asset or the website name.
+  view.message=result.warning || (view.variants.length?'请选择图标后保存；尺寸为原始图片尺寸。':'这个网站没有可读取的图标。');
+  updateLinkPreview(form);
  } catch(err) {
   if (!isLinkPreviewCurrent(form,view,request)) return;
-  view.busy=false;view.message=err.message || '提取未完成，已保留文字图标，可稍后重试。';
-  updateLinkPreview(form);
+  view.busy=false;view.message=err.message || '暂时无法获取，当前图标未更改。';updateLinkPreview(form);
  }
+}
+async function uploadSiteIcon(input){
+ const form=input.closest('#link-form'),file=input.files?.[0];input.value='';if(!form||!file)return;
+ updateLinkPreview(form);const view=faviconFormStates.get(form),request=++faviconRequestSequence;
+ view.request=request;view.message='正在处理本机图标…';updateLinkPreview(form);
+ try{
+  const image=await normalizeAvatarFile(file);if(!isLinkPreviewCurrent(form,view,request))return;
+  form.elements.iconUrl.value=image;form.elements.iconMode.value='auto';
+  view.variants=[...(view.variants||[]).filter(v=>!v.url.startsWith('data:')).slice(0,11),{url:image,source:'本机上传'}];
+  view.resultKey=null;view.choice='candidate';form.dataset.iconChoice='candidate';view.message='已处理本机图标，保存后生效。';updateLinkPreview(form);
+ }catch(error){if(isLinkPreviewCurrent(form,view,request)){view.message=error.message;updateLinkPreview(form);}}
 }
 function toast(message, undo, actionLabel='撤销') {
  clearTimeout(lastToastTimer); const el = $('#toast');
@@ -337,6 +399,7 @@ function applySettings() {
  root.dataset.navigation = s.navigationMode;
  root.dataset.sidebarPosition = s.sidebarPosition;
  root.dataset.sidebarVisibility = s.sidebarVisibility;
+ root.dataset.sidebarAccent = s.sidebarUseAccent?'theme':'neutral';
  root.dataset.font = s.uiFont;
  root.dataset.iconShape=s.iconShape;
  root.dataset.iconDiscovery=s.autoExtractIcons?'auto':'manual';
@@ -474,7 +537,8 @@ function submitSearch() {
  rememberSearch(q,state.settings.showSearchHistory);
  hideSearchMenus(); navigate(url,false,true);
 }
-function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2>${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="关闭">${icon('close')}</button></header>`; }
+function dialogCloseButton(){return `<button class="dialog-close workspace-close" data-close aria-label="关闭">${icon('close')}</button>`;}
+function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2 id="dialog-title">${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="关闭">${icon('close')}</button></header>`; }
 function field(name,label,value='',options={}) { return `<label class="field"><span>${esc(label)}</span><input name="${esc(name)}" type="${options.type || 'text'}" value="${esc(value)}" ${options.required?'required':''} ${options.type==='number'?'step="any"':''} ${options.min!==undefined?`min="${options.min}"`:''} ${options.max!==undefined?`max="${options.max}"`:''} ${options.maxlength?`maxlength="${options.maxlength}"`:''} ${options.placeholder?`placeholder="${esc(options.placeholder)}"`:''}>${options.help?`<small>${esc(options.help)}</small>`:''}</label>`; }
 function selectField(name,label,value,options) { return `<label class="field"><span>${esc(label)}</span><select name="${name}">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`; }
 function formActions(label='保存') { return `<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="secondary-button" type="button" data-close>取消</button><button class="primary-button" type="submit">${icon('check')}${esc(label)}</button></div>`; }
@@ -490,6 +554,8 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  dialog.classList.toggle('add-dialog',kind==='add');
+ dialog.classList.toggle('workspace-dialog',['add','settings','wallpaper'].includes(kind));
+ dialog.classList.toggle('site-editor-dialog',kind==='edit-item'&&state.items.find(i=>i.id===data.id)?.type==='link');
  document.body.classList.remove('shortcuts-open');
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
@@ -510,24 +576,49 @@ function openDialog(kind,data={}) {
  else return;
  document.body.append($('#context-menu'));
  $('#dialog-content').innerHTML = html;
+ dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
- else $('input:not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
+ else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 function closeDialog() { wallpaperLibrary.close(); avatarRequestSequence++; if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
+function linkEditorForm(item){
+ const value=item||{},color=value.color||COLORS[0],mode=value.iconMode||'auto';
+ return `<form id="link-form" class="site-editor" data-id="${esc(value.id||'')}" data-original-url="${esc(value.url||'')}" data-original-mode="${esc(mode)}" data-original-icon="${esc(value.iconUrl||'')}" data-original-text="${esc(value.icon||'')}" data-original-title="${esc(value.title||'')}" data-icon-choice="${mode==='text'?'text':'current'}">
+ <input name="iconMode" type="hidden" value="${esc(mode)}"><input name="iconUrl" type="hidden" value="${esc(value.iconUrl||'')}">
+ <section class="editor-section" aria-label="网站信息">
+  <label class="field"><span>网址</span><div class="address-control">${icon('link')}<input name="url" type="text" value="${esc(value.url||'')}" required maxlength="2048" placeholder="https://example.com" autocomplete="off" spellcheck="false"><button class="get-icon-button" type="button" data-action="extract-favicon">获取图标</button></div></label>
+  ${field('title','名称',value.title||'',{required:true,maxlength:120,placeholder:'网站名称'})}
+ </section>
+ <section class="editor-section icon-section" aria-label="图标样式">
+  <div class="icon-choices" role="group" aria-label="选择网站图标">
+   <button type="button" class="icon-choice" data-icon-choice="current" aria-pressed="${mode!=='text'}"><span class="choice-art preview-icon" id="link-preview-icon" style="background:${esc(color)}">${siteGlyph(value)}</span><span>当前图标</span><small>保留现有</small></button>
+   <button type="button" class="icon-choice" data-icon-choice="text" aria-pressed="${mode==='text'}"><span class="choice-art" data-text-icon-preview></span><span>文字图标</span><small>自定义文字</small></button>
+   <span class="icon-result-list" data-icon-results></span>
+   <button type="button" class="icon-choice icon-upload-choice" data-icon-choice="upload" aria-label="上传本机图标"><span class="choice-art">${icon('plus')}</span><span>上传</span><small>本机图片</small></button>
+  </div>
+  <span hidden id="link-preview-title"></span><span hidden id="link-preview-url"></span>
+  <p id="favicon-status" class="icon-status" role="status" aria-live="polite"></p><p id="favicon-quality" class="icon-status icon-quality-summary"></p>
+  <label class="field icon-text-field"><span>图标文字</span><input name="icon" value="${esc(value.icon||value.title?.slice(0,2)||'')}" maxlength="8" placeholder="例如：知、G、🌿"></label>
+  <div class="field icon-color-field"><span>图标颜色</span>${colorsHtml(color)}</div>
+  <input type="file" id="site-icon-upload" accept="image/png,image/jpeg,image/webp" hidden>
+ </section>
+ <div class="editor-footer">${selectField('groupId','所在分组',value.groupId||currentGroup().id,groupOptions())}${formActions(item?'保存':'添加到桌面')}</div>
+ </form>`;
+}
 function addDialog(tab,data) {
  const item = data.item;
  let content = '';
  if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
- else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div><p id="favicon-quality" class="icon-status" role="status">正在测量图标清晰度…</p>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
- const head=dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'收纳常用网站，组合日常组件。');
+ else content = linkEditorForm(item);
+ const head=item?dialogHeader(item.type==='folder'?'编辑文件夹':'编辑图标'):dialogCloseButton();
  if(item)return head+`<div class="dialog-body">${content}</div>`;
  const tabs=[{id:'widgets',name:'小组件',icon:'grid'},{id:'link',name:'网站',icon:'link'},{id:'folder',name:'文件夹',icon:'folder'}];
- return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="添加内容分类">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>内容仅保存到你的桌面</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||'网站'}">${content}</section></div>`;
+ return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="添加内容分类"><h2 class="workspace-title" id="workspace-title">添加</h2>${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>内容仅保存到你的桌面</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||'网站'}">${content}</section></div>`;
 
 }
 function groupDialog(id) {
@@ -658,6 +749,7 @@ function settingsDialog(tab) {
   ${settingRange('sidebarWidth','侧边栏宽度',40,120)}
   ${settingRange('sidebarOpacity','导航透明度',0,100,'%')}
   ${settingSwitch('sidebarLabels','显示分组名称')}
+  ${settingSwitch('sidebarUseAccent','选中分组使用主题色','默认使用与导航材质协调的中性色，开启后使用全局主题色。')}
   ${preferenceSelect('sidebarWheelMode','侧栏滚轮行为',[['scroll','滚动分组列表'],['switch','切换当前分组']],'默认仅滚动导航列表以查看被遮挡的分组，不会切换桌面。编辑时始终滚动列表。')}
   <p class="help-text">分组支持右键重命名和编辑图标；编辑桌面时可拖动调整分组顺序。</p>`;
  else if(tab==='data') content = `
@@ -670,7 +762,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.1 · GPLv3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.2 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
@@ -678,19 +770,27 @@ function settingsDialog(tab) {
   <p class="about-note">Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
- return dialogHeader('设置','把栖页调成你喜欢的样子。') + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.1</small></nav>
+ return dialogCloseButton() + `
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类"><h2 class="workspace-title" id="workspace-title">设置</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.2</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
  getState:()=>state, wallpapers:WALLPAPERS, toast,
- rerender:()=>{if(dialogKind==='wallpaper')openDialog('wallpaper');},
+ rerender:()=>{
+  if(dialogKind!=='wallpaper'||!dialog.open)return;
+  const content=$('.wallpaper-content',dialog),nav=$('.wallpaper-nav',dialog);
+  const view=wallpaperLibrary.getState(),key=[view.tab,view.page,view.preview?.index??view.preview?.id??''].join('|');
+  const y=content?.scrollTop||0,n=nav?.scrollTop||0,previous=dialog.dataset.galleryView;
+  $('#dialog-content').innerHTML=wallpaperDialog();dialog.dataset.galleryView=key;
+  if(previous===key&&$('.wallpaper-content',dialog))$('.wallpaper-content',dialog).scrollTop=y;
+  if($('.wallpaper-nav',dialog))$('.wallpaper-nav',dialog).scrollTop=n;
+ },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
  renderCustom:()=>`<h3>自定义背景</h3><p class="help-text">仅在本机读取照片或视频，最大 4 MB。支持 PNG、JPEG、WebP、GIF、AVIF、MP4、WebM。应用后会进入桌面备份与 WebDAV 同步。</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>选择本地图片或视频</strong><small>不上传到栖页服务器</small></span></button>${state.settings.customWallpaper?'<p class="help-text">当前已使用本地背景。选择任意官方背景可切换回来。</p>':''}`,
  renderParameters:()=>`<h3>壁纸参数</h3><p class="help-text">参数独立于图库，修改后立即预览并保存。</p>${settingRange('blur','背景模糊',0,20)}${settingRange('dim','背景暗度',0,70,'%')}${settingSwitch('dailyWallpaper','每日轮换内置背景','手动选择的本地或在线壁纸优先显示。')}${settingSwitch('wallpaperApiEnabled','允许公开图片 API','只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。')}`
 });
-function wallpaperDialog() {return dialogHeader('壁纸','为桌面选一处风景')+wallpaperLibrary.render();}
+function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
 
 function widgetConfigDialog(item) {
  if(!item) return dialogHeader('组件不存在')+'<div class="dialog-body">请关闭后重试。</div>';
@@ -822,12 +922,13 @@ document.addEventListener('click', async event=>{
  if(target.dataset.openFolder)return openDialog('folder',{id:target.dataset.openFolder});
  if(target.dataset.editItem)return openDialog('edit-item',{id:target.dataset.editItem});
  if(target.dataset.deleteItem){await removeItem(target.dataset.deleteItem);return;}
+ if(target.dataset.iconChoice)return chooseLinkIcon(target);
  if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab});
  if(target.dataset.addWidget)return await addWidget(target.dataset.addWidget);
  if(target.dataset.settingsTab)return openDialog('settings',{tab:target.dataset.settingsTab});
  if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});if(form.id==='link-form')updateLinkPreview(form);return;}
  if(target.dataset.groupIcon){$('input[name=icon]',dialog).value=target.dataset.groupIcon;$$('[data-group-icon]',dialog).forEach(b=>b.classList.toggle('selected',b===target));return;}
- if(target.dataset.theme){state.settings.theme=target.dataset.theme;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
+ if(target.dataset.theme){state.settings.theme=target.dataset.theme;applySettings();await persist();if(dialog.open&&dialogKind==='settings')openDialog('settings',{tab:'appearance'});return;}
  if(target.dataset.material){state.settings.surfaceStyle=target.dataset.material;applySettings();await persist();$$('[data-material]',dialog).forEach(button=>{const selected=button===target;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});return;}
  if(target.dataset.wallpaper){state.settings.wallpaper=target.dataset.wallpaper;state.settings.customWallpaper=null;state.settings.remoteWallpaper=null;state.settings.dailyWallpaper=false;await persist();applySettings();openDialog('wallpaper');return;}
  if(target.dataset.deleteEngine){state.settings.customEngines=state.settings.customEngines.filter(e=>e.id!==target.dataset.deleteEngine);if(state.settings.searchEngine===target.dataset.deleteEngine)state.settings.searchEngine=ENGINES[0].id;await persist();renderEngine();openDialog('settings',{tab:'search'});return;}
@@ -906,7 +1007,7 @@ dialog.addEventListener('submit',async event=>{
    const url=safeUrl(value('url'));if(!url)throw new Error('请输入有效的 http 或 https 网站地址。');
    if(!value('title'))throw new Error('请填写网站名称。');
    const old=state.items.find(i=>i.id===form.dataset.id),groupId=value('groupId');
-   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
+   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',iconUrl:normalizeIconSelection(value('iconUrl')),color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
    if(old)state.items[state.items.indexOf(old)]=item;else state.items.push(item);
    await commit();closeDialog();toast(old?'网站已更新。':'已添加到桌面。');
   }else if(form.id==='folder-form'){
@@ -951,11 +1052,15 @@ document.addEventListener('input', event=>{
  if(input.id==='local-query')renderLocalResults(input.value);
  if(input.dataset.settingColor){state.settings[input.dataset.settingColor]=input.value;const output=$('#color-value-'+input.dataset.settingColor);if(output)output.textContent=input.value;applySettings();}
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
- if(input.closest('#link-form'))updateLinkPreview(input.form);
+ if(input.closest('#link-form')){
+  if(input.name==='url'){input.form.elements.iconUrl.value='';input.form.elements.iconMode.value='auto';input.form.dataset.iconChoice='current';input.form.dataset.originalUrl='';input.form.dataset.originalIcon='';input.form.dataset.originalMode='auto';}
+  updateLinkPreview(input.form);
+ }
 });
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
+  if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
   if(input.dataset.preference){state.settings[input.dataset.preference]=input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
   if(input.dataset.settingColor){await persist();return;}
@@ -1017,6 +1122,7 @@ document.addEventListener('keydown',event=>{
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
+dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
 dialog.addEventListener('close',()=>{wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');

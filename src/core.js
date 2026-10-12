@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { validateAvatarDataUrl } from './avatar.js';
+import { normalizeIconSelection } from './icon-selection.js';
 
 /**
  * Shared, dependency-free storage boundary for every Qiye extension surface.
@@ -51,7 +52,7 @@ export const DEFAULT_STATE = deepFreeze({
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
-    sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
+    sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
     reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, clockWeight: 400,
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
@@ -278,7 +279,7 @@ function validateSettings(raw) {
     sidebarPosition: enumeration(v.sidebarPosition, ['left', 'right'], 'settings.sidebarPosition'),
     navigationMode: enumeration(v.navigationMode, ['sidebar', 'top'], 'settings.navigationMode'),
     sidebarVisibility: enumeration(v.sidebarVisibility, ['always', 'auto', 'hidden'], 'settings.sidebarVisibility'),
-    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), avatar,
+    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), sidebarUseAccent: bool(v.sidebarUseAccent, 'settings.sidebarUseAccent'), avatar,
     toolbarVisibility: enumeration(v.toolbarVisibility, ['always', 'auto'], 'settings.toolbarVisibility'),
     surfaceStyle: enumeration(v.surfaceStyle, ['solid', 'glass', 'acrylic', 'mica'], 'settings.surfaceStyle'),
     surfaceOpacity: number(v.surfaceOpacity, 'settings.surfaceOpacity', 20, 100),
@@ -377,7 +378,7 @@ export function validateImport(raw) {
     const path = `items[${i}]`;
     plain(item, path);
     const type = enumeration(item.type, ['link', 'folder', 'widget'], `${path}.type`);
-    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
+    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'iconUrl', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
     keys(item, allowed, path);
     const groupId = id(item.groupId, `${path}.groupId`);
     if (!groupIds.has(groupId)) invalid(`${path}.groupId`, '对应分组不存在');
@@ -392,7 +393,9 @@ export function validateImport(raw) {
     if (type === 'folder') return { ...base, ...appearance };
     // Old backups acquire automatic discovery without losing their text fallback.
     const iconMode = enumeration(maybe(item.iconMode, 'auto'), ['auto', 'text'], `${path}.iconMode`);
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    const iconUrl = normalizeIconSelection(item.iconUrl);
+    if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, '需要安全的 HTTPS 图标地址或有效的本地静态图片');
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
