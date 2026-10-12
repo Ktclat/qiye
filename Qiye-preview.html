@@ -959,6 +959,130 @@ html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .dai
 body.reduce-effects .wallpaper-photo-card img{transition:none}
 
 </style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only
+   v0.3.1: separate scrolling and pinned regions; square desktop geometry. */
+html,body{height:100%;min-height:0;overflow:hidden}
+#main{display:flex;flex-direction:column;height:100dvh;min-height:0;padding:0;overflow:hidden}
+.content-scroll{flex:1;min-height:0;overflow:auto;overflow-x:hidden;overscroll-behavior:contain;padding:0 34px 104px;scrollbar-gutter:stable;outline:none;position:relative}
+.header-region{display:flex;flex-direction:column;align-items:center;flex:none;position:relative;isolation:isolate;min-width:0;gap:0}
+#flow-header{padding-top:max(60px,calc(6vh + var(--clock-offset-y) + var(--nav-header-space)));padding-bottom:24px}
+#header-dock{padding: max(60px,calc(6vh + clamp(-20px,var(--clock-offset-y),10vh) + var(--nav-header-space))) 40px 30px;z-index:12;max-height:none}
+#flow-header[hidden],#header-dock[hidden]{display:none}
+#main .clock-block,#main .clock-block.is-stuck,#main .search-wrapper{position:relative;top:auto;flex:none;margin-left:auto;margin-right:auto}
+#main .clock-block,#main .clock-block.is-stuck{padding:0 12px 6px;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;transition:none;border-radius:0}
+#main .clock-block .clock{color:var(--clock-color);text-shadow:0 2px 22px #00152518}
+#main .clock-block .date{color:var(--clock-color);opacity:.88}
+.clock-theme-color #main .clock,.clock-theme-color #main .date{color:var(--fg)}
+#main .search-wrapper{margin-top:max(12px,calc(24px + var(--search-offset-y)));z-index:24}
+#main .header-region>.search-wrapper:first-child{margin-top:0}
+#header-dock>.search-wrapper{margin-top:max(12px,calc(24px + clamp(-12px,var(--search-offset-y),8vh)))}
+#main .search-form{transition:background-color .15s,box-shadow .15s;border-width:1px}
+#main .search-wrapper.is-stuck .search-form{box-shadow:none}
+#main .desktop-wrap{margin:0 auto;max-width:var(--desktop-max-width);width:100%;padding-top:6px}
+#main.has-pinned-header .desktop-wrap{padding-top:0}
+.minimal #main{padding:0;margin:0}
+.minimal #flow-header,.minimal #header-dock{padding-top:max(70px,calc(24vh + var(--clock-offset-y)));max-height:none}
+html.hide-content-scrollbar .content-scroll{scrollbar-width:none;scrollbar-gutter:auto}
+html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;width:0;height:0}
+/* Each unit is a real square. Widget 2×2 and 4×2 frames no longer inherit the
+   icon's label reservation or the icon-radius slider. */
+.desktop{grid-template-columns:repeat(var(--columns),minmax(0,var(--cell-size)));grid-auto-rows:var(--cell-size);justify-content:center;align-items:stretch;grid-auto-flow:row;gap:var(--gap);padding:0 0 12px}
+.tile{min-height:0;justify-content:flex-start;container-type:inline-size;gap:0}
+.tile-widget .tile-body{width:100%;height:100%;max-width:none;max-height:none;flex:1;aspect-ratio:auto;border-radius:20px;background:none;box-shadow:0 5px 20px rgb(5 15 25 / .10)}
+.tile-widget>.tile-label{display:none}
+.widget-inner{border-radius:inherit;padding:clamp(10px,7cqi,17px);font-size:clamp(11px,5.8cqi,13px)}
+.tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
+.widget-inner h3,.widget-inner strong{max-width:100%}
+.tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:calc(100% - var(--label-space,24px));aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
+.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
+.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
+.tile-link>.tile-label,.tile-folder>.tile-label{height:var(--label-space,24px);padding-top:6px;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
+.tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
+.tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
+.tile-link .site-visual,.tile-link .site-visual.is-loaded,.folder-site .site-visual,.preview-icon .site-visual{width:100%;height:100%;border-radius:inherit;overflow:hidden;background:transparent;aspect-ratio:1}
+.tile-link .site-favicon,.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;filter:none!important;border-radius:inherit;padding:0}
+html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .tile-link .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .folder-site .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .mini-site .site-visual.is-loaded{background:color-mix(in srgb,var(--tile-color,#64748b) 14%,var(--panel))}
+html[data-icon-shape=original] .tile-link .tile-body:has(.is-loaded),html[data-icon-shape=original] .tile-link .site-visual{border-radius:0!important;background:none!important}
+.tile-link .tile-body{opacity:var(--icon-opacity)}
+.folder-preview{padding:10px;width:100%;height:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:8px;align-content:center}
+.folder-preview .mini-site{width:100%;height:100%;max-height:none;border-radius:clamp(4px,calc(var(--icon-radius)*.6),16px)!important;overflow:hidden!important;aspect-ratio:1}
+.folder-preview .mini-site .site-visual{border-radius:inherit;overflow:hidden}
+.folder-preview .mini-site .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+.tile-folder[data-size="1x1"] .folder-preview{gap:5px;padding:7px}
+.tile-folder[data-size="1x1"] .mini-site .site-glyph{font-size:12px}
+.folder-grid .folder-site{width:var(--tile-size);height:var(--tile-size);border-radius:var(--icon-radius);padding:0;overflow:hidden;opacity:var(--icon-opacity)}
+.folder-grid .folder-item{align-items:center;min-width:0}
+.folder-grid .folder-item .folder-name{font-size:var(--label-size)}
+.preview-icon{border-radius:var(--icon-radius)}
+.engine-mark,.engine-mark .site-visual{background:none!important;border:0;border-radius:0;overflow:hidden;aspect-ratio:1}
+.engine-mark .site-favicon{padding:0;width:100%;height:100%;border-radius:0;filter:none;object-fit:contain}
+/* Selected navigation item is a square encompassing icon and label, not a strip. */
+html[data-navigation=sidebar] .group-button{width:min(64px,calc(var(--sidebar-width) - 6px));height:min(64px,calc(var(--sidebar-width) - 6px));min-height:0;aspect-ratio:1;flex:0 0 auto;gap:3px;padding:3px 2px;border-radius:12px;margin:0 auto;font-size:10px;line-height:12px;border:0;color:var(--muted)}
+html[data-navigation=sidebar] .group-button .icon{width:19px;height:19px}
+html[data-navigation=sidebar] .group-button span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:12px}
+html[data-navigation=sidebar] .group-button.active{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
+.group-button.active:before{display:none!important}
+.sidebar-bottom{gap:4px;padding-bottom:14px}
+.groups{flex:1;max-height:none;min-height:0}
+.brand{flex:none}
+/* Two-column content chooser. No tab is nested inside a form. */
+.app-dialog.add-dialog{width:min(940px,calc(100vw - 36px));padding:0;max-height:calc(100dvh - 40px);overflow:hidden}
+.add-dialog #dialog-content{height:min(740px,calc(100dvh - 44px));display:flex;flex-direction:column;min-height:0}
+.add-dialog .dialog-head{padding:24px 28px 20px;flex:none}
+.add-layout{display:grid;grid-template-columns:166px minmax(0,1fr);flex:1;min-height:0;border-top:1px solid var(--panel-border)}
+.add-nav{display:flex;flex-direction:column;gap:6px;padding:18px 10px;border-right:1px solid var(--panel-border)}
+.add-nav button{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;color:var(--muted);text-align:left;font-size:13px}
+.add-nav button[aria-selected=true]{background:var(--accent-soft);color:var(--fg);font-weight:600}
+.add-nav button:hover{color:var(--fg);background:var(--panel-2)}
+.add-nav p{margin-top:auto;color:var(--muted);font-size:10px;line-height:1.8;padding:10px}
+.add-content{overflow:auto;overscroll-behavior:contain;padding:24px 28px 28px;min-width:0;min-height:0}
+.add-content .catalog{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.add-content .catalog-card{min-width:0;padding:16px;align-items:flex-start;border-radius:14px}
+.add-content .form-preview{margin-top:0}
+.icon-settings-preview{display:flex;gap:16px;align-items:center;padding:16px 0 24px;flex-wrap:wrap}
+.icon-settings-preview .tile{width:var(--cell-size);height:var(--cell-size);flex:none}
+.icon-status{font-size:11px;color:var(--muted);line-height:1.6;max-width:100%;overflow-wrap:anywhere}
+.icon-status[data-quality=low]{color:var(--w-error,#cf9352)}
+.icon-source-options{display:flex;gap:8px;overflow:auto;padding:6px 0 12px}
+.icon-source-options button{width:64px;flex:none;padding:5px;border:1px solid var(--panel-border);border-radius:12px;font-size:9px;color:var(--muted)}
+.icon-source-options img{width:42px;height:42px;object-fit:contain;display:block;margin:auto}
+.icon-source-options button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+/* Folder hover uses a dwell preview; edges retain real-time reorder. */
+body.is-dragging .tile.folder-pending .tile-body{transform:scale(.92)!important;outline:2px dashed var(--accent);outline-offset:4px}
+body.is-dragging .tile.folder-ready .tile-body{transform:scale(1.04)!important;outline:2px solid var(--accent);outline-offset:4px;background:var(--accent-soft)!important}
+.folder-drop-hint{position:fixed;z-index:1002;pointer-events:none;transform:translate(-50%,0);padding:7px 11px;border-radius:9px;color:var(--fg);background:var(--panel);border:1px solid var(--panel-border);font-size:11px;box-shadow:0 5px 16px #0002}
+@media(max-width:650px){
+ .content-scroll{padding-left:16px;padding-right:16px}
+ #header-dock{padding-left:18px;padding-right:18px;padding-bottom:24px}
+ #flow-header{padding-top:max(74px,calc(8vh + var(--clock-offset-y) + var(--nav-header-space)))}
+ .app-dialog.add-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}
+ .add-dialog #dialog-content{height:calc(100dvh - 24px)}
+ .add-layout{grid-template-columns:96px minmax(0,1fr)}
+ .add-nav{padding:12px 5px}.add-nav button{flex-direction:column;gap:6px;padding:12px 5px;font-size:11px}
+ .add-content{padding:18px 12px}.add-content .catalog{grid-template-columns:1fr}
+ .add-content .two-columns{grid-template-columns:1fr}.add-dialog .dialog-head{padding:18px}
+ .tile-widget .tile-body{border-radius:16px}.widget-inner{padding:10px}
+}
+@media(max-height:600px){#header-dock{padding-top:48px;padding-bottom:18px}#header-dock .clock{font-size:min(var(--clock-size),54px)}#header-dock>.search-wrapper{margin-top:12px}}
+
+/* Dock height is content-driven, not a shrinking sticky overlay. On shorter
+   screens the chosen clock size is bounded so a scrollable desktop remains. */
+#header-dock{padding-top:max(52px,calc(6vh + clamp(-20px,var(--clock-offset-y),8vh) + var(--nav-header-space)))}
+#header-dock #clock{font-size:min(var(--clock-size),17dvh)}
+#header-dock>.search-wrapper{margin-top:max(12px,calc(24px + clamp(-12px,var(--search-offset-y),4vh)))}
+.widget-inner .wallpaper-launcher{padding:20px;background:linear-gradient(transparent,rgba(8,31,30,.55));color:#fff}
+@container(max-width:170px){.widget-inner .wallpaper-launcher{padding:12px}.wallpaper-launcher strong{font-size:17px}.wallpaper-launcher>span:not(.wallpaper-eyebrow):not(.wallpaper-launch-arrow){font-size:9px}}
+html[data-navigation=sidebar] .group-button .icon{width:18px;height:18px}
+html[data-navigation=sidebar] .group-button{gap:2px;padding:2px}
+@media(max-height:600px){#header-dock{padding-top:calc(48px + var(--nav-header-space));padding-bottom:16px}#header-dock #clock{font-size:min(var(--clock-size),12dvh)}}
+
+/* Keep the fixed quote outside the desktop scrollport as well. */
+.content-scroll{margin-bottom:var(--quote-safe-space,84px);padding-bottom:28px}
+
+.icon-settings-preview .tile{pointer-events:none}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -1066,6 +1190,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <button class="side-button add-group" data-action="add-group" title="添加分组" aria-label="添加分组"></button>
     <div class="sidebar-bottom">
       <button class="side-button" data-action="local-search" title="本地搜索 · Ctrl / ⌘ K" aria-label="本地搜索"></button>
+      <button class="side-button" data-action="icon-settings" title="图标外观与提取" aria-label="图标外观与提取"></button>
       <button class="side-button" data-action="settings" title="设置" aria-label="设置"></button>
     </div>
   </aside>
@@ -1091,6 +1216,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <button class="tool-button toolbar-mode" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
   </div>
   <main id="main">
+    <div id="header-dock" class="header-region" aria-label="固定时间与搜索"></div>
+    <div id="content-scroll" class="content-scroll" tabindex="-1" aria-label="桌面滚动区">
+    <div id="flow-header" class="header-region">
     <header id="clock-block" class="clock-block">
       <button id="clock" class="clock" title="点击切换极简模式" aria-label="切换极简模式"><span id="clock-time">00:00</span><span id="clock-seconds"></span><span id="clock-period"></span></button>
       <div id="date" class="date"></div>
@@ -1105,10 +1233,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div id="engine-menu" class="engine-menu" hidden></div>
         <div id="search-suggestions" class="search-suggestions" hidden></div>
       </div>
+    </div>
     <section class="desktop-wrap" aria-label="个人桌面">
       <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
       <div id="desktop" class="desktop"></div>
     </section>
+    </div>
     <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span></footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
@@ -1118,8 +1248,766 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   <input id="backup-file" type="file" accept="application/json,.json" hidden>
   <input id="wallpaper-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm" hidden>
   <script type="module">
+const __wallpaper_catalog = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Metadata only: image bytes stay on their original hosts.
+const WALLPAPER_CATALOG_DATE = "2026-10-12";
+const DIRECT_WALLPAPERS = Object.freeze([
+  {
+    "provider": "deepin",
+    "id": "Colorful-Abstraction01.jpg",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Colorful-Abstraction01.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Colorful-Abstraction01.jpg",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Colorful-Abstraction01.jpg",
+    "width": 3840,
+    "height": 2400,
+    "title": "Colorful Abstraction01",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "deepin",
+    "id": "Colorful-Abstraction03.jpg",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Colorful-Abstraction03.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Colorful-Abstraction03.jpg",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Colorful-Abstraction03.jpg",
+    "width": 3840,
+    "height": 2400,
+    "title": "Colorful Abstraction03",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "deepin",
+    "id": "Glossy-Gradient.jpg",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Glossy-Gradient.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Glossy-Gradient.jpg",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/Glossy-Gradient.jpg",
+    "width": 3840,
+    "height": 2400,
+    "title": "Glossy Gradient",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "deepin",
+    "id": "flow-light.png",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/flow-light.png",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/flow-light.png",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/flow-light.png",
+    "width": 3840,
+    "height": 2160,
+    "title": "flow light",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "deepin",
+    "id": "hazy-color-dark.jpg",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/hazy-color-dark.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/hazy-color-dark.jpg",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/hazy-color-dark.jpg",
+    "width": 4000,
+    "height": 2250,
+    "title": "hazy color dark",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "deepin",
+    "id": "hazy-color-light.jpg",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/hazy-color-light.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/hazy-color-light.jpg",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/hazy-color-light.jpg",
+    "width": 4000,
+    "height": 2250,
+    "title": "hazy color light",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "deepin",
+    "id": "organic-glass-light.jpg",
+    "url": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/organic-glass-light.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/linuxdeepin/deepin-wallpapers/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/organic-glass-light.jpg",
+    "sourceUrl": "https://github.com/linuxdeepin/deepin-wallpapers/blob/caae39a555fbeac36da0cacc0fd00d73b2706c7e/deepin/organic-glass-light.jpg",
+    "width": 3840,
+    "height": 2160,
+    "title": "organic glass light",
+    "author": "UnionTech Software Technology Co., Ltd.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "jel1jq",
+    "url": "https://w.wallhaven.cc/full/je/wallhaven-jel1jq.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/je/jel1jq.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/jel1jq",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · jel1jq",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/jel1jq"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "5ypy88",
+    "url": "https://w.wallhaven.cc/full/5y/wallhaven-5ypy88.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/5y/5ypy88.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/5ypy88",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · 5ypy88",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/5ypy88"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "pomle9",
+    "url": "https://w.wallhaven.cc/full/po/wallhaven-pomle9.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/po/pomle9.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/pomle9",
+    "width": 4096,
+    "height": 2731,
+    "title": "Wallhaven · pomle9",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/pomle9"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "d8vvlo",
+    "url": "https://w.wallhaven.cc/full/d8/wallhaven-d8vvlo.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/d8/d8vvlo.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/d8vvlo",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · d8vvlo",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/d8vvlo"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "zpvqmv",
+    "url": "https://w.wallhaven.cc/full/zp/wallhaven-zpvqmv.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/zp/zpvqmv.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/zpvqmv",
+    "width": 1920,
+    "height": 1080,
+    "title": "Wallhaven · zpvqmv",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/zpvqmv"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "1qod3w",
+    "url": "https://w.wallhaven.cc/full/1q/wallhaven-1qod3w.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/1q/1qod3w.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/1qod3w",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · 1qod3w",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/1qod3w"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "lygg6r",
+    "url": "https://w.wallhaven.cc/full/ly/wallhaven-lygg6r.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/ly/lygg6r.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/lygg6r",
+    "width": 4928,
+    "height": 3280,
+    "title": "Wallhaven · lygg6r",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/lygg6r"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "zpvqyj",
+    "url": "https://w.wallhaven.cc/full/zp/wallhaven-zpvqyj.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/zp/zpvqyj.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/zpvqyj",
+    "width": 4571,
+    "height": 2571,
+    "title": "Wallhaven · zpvqyj",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/zpvqyj"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "pomo69",
+    "url": "https://w.wallhaven.cc/full/po/wallhaven-pomo69.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/po/pomo69.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/pomo69",
+    "width": 1920,
+    "height": 1080,
+    "title": "Wallhaven · pomo69",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/pomo69"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "lygzqq",
+    "url": "https://w.wallhaven.cc/full/ly/wallhaven-lygzqq.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/ly/lygzqq.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/lygzqq",
+    "width": 6192,
+    "height": 4128,
+    "title": "Wallhaven · lygzqq",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/lygzqq"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "lygzop",
+    "url": "https://w.wallhaven.cc/full/ly/wallhaven-lygzop.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/ly/lygzop.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/lygzop",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · lygzop",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/lygzop"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "zpvdzv",
+    "url": "https://w.wallhaven.cc/full/zp/wallhaven-zpvdzv.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/zp/zpvdzv.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/zpvdzv",
+    "width": 5599,
+    "height": 3149,
+    "title": "Wallhaven · zpvdzv",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/zpvdzv"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "9ok8q8",
+    "url": "https://w.wallhaven.cc/full/9o/wallhaven-9ok8q8.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/9o/9ok8q8.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/9ok8q8",
+    "width": 4096,
+    "height": 2304,
+    "title": "Wallhaven · 9ok8q8",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/9ok8q8"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "216d1g",
+    "url": "https://w.wallhaven.cc/full/21/wallhaven-216d1g.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/21/216d1g.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/216d1g",
+    "width": 1920,
+    "height": 1080,
+    "title": "Wallhaven · 216d1g",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/216d1g"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "xekje3",
+    "url": "https://w.wallhaven.cc/full/xe/wallhaven-xekje3.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/xe/xekje3.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/xekje3",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · xekje3",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/xekje3"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "3q7w9d",
+    "url": "https://w.wallhaven.cc/full/3q/wallhaven-3q7w9d.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/3q/3q7w9d.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/3q7w9d",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · 3q7w9d",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/3q7w9d"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "8g8e62",
+    "url": "https://w.wallhaven.cc/full/8g/wallhaven-8g8e62.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/8g/8g8e62.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/8g8e62",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · 8g8e62",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/8g8e62"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "6led57",
+    "url": "https://w.wallhaven.cc/full/6l/wallhaven-6led57.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/6l/6led57.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/6led57",
+    "width": 2556,
+    "height": 1278,
+    "title": "Wallhaven · 6led57",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/6led57"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "216zzg",
+    "url": "https://w.wallhaven.cc/full/21/wallhaven-216zzg.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/21/216zzg.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/216zzg",
+    "width": 3840,
+    "height": 2160,
+    "title": "Wallhaven · 216zzg",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/216zzg"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "w53xlp",
+    "url": "https://w.wallhaven.cc/full/w5/wallhaven-w53xlp.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/w5/w53xlp.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/w53xlp",
+    "width": 4000,
+    "height": 5001,
+    "title": "Wallhaven · w53xlp",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/w53xlp"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "jelezm",
+    "url": "https://w.wallhaven.cc/full/je/wallhaven-jelezm.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/je/jelezm.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/jelezm",
+    "width": 4898,
+    "height": 3265,
+    "title": "Wallhaven · jelezm",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/jelezm"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "yqk2q7",
+    "url": "https://w.wallhaven.cc/full/yq/wallhaven-yqk2q7.jpg",
+    "thumbnail": "https://th.wallhaven.cc/lg/yq/yqk2q7.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/yqk2q7",
+    "width": 1920,
+    "height": 1080,
+    "title": "Wallhaven · yqk2q7",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/yqk2q7"
+  },
+  {
+    "provider": "wallhaven",
+    "id": "rqejzq",
+    "url": "https://w.wallhaven.cc/full/rq/wallhaven-rqejzq.png",
+    "thumbnail": "https://th.wallhaven.cc/lg/rq/rqejzq.jpg",
+    "sourceUrl": "https://wallhaven.cc/w/rqejzq",
+    "width": 7680,
+    "height": 4320,
+    "title": "Wallhaven · rqejzq",
+    "author": "原作者与来源见图片详情页",
+    "license": "版权见原图 · 非统一商用许可",
+    "licenseUrl": "https://wallhaven.cc/w/rqejzq"
+  }
+]);
+
+return {WALLPAPER_CATALOG_DATE, DIRECT_WALLPAPERS};
+})();
+const __site_icon_catalog = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Public icon declarations verified on 2026-10-12; no logo bytes are bundled.
+// This small bootstrap index is not a substitute for per-site discovery.
+const SITE_ICON_CATALOG = Object.freeze({
+  "https://www.bing.com/": [
+    {
+      "url": "https://www.bing.com/sa/simg/favicon-trans-bg-blue-mg-png.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.baidu.com/": [
+    {
+      "url": "https://www.baidu.com/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://psstatic.cdn.bcebos.com/video/wiseindex/aa6eef91f8b5b1a33b454c401_1660835115000.png",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://duckduckgo.com/": [
+    {
+      "url": "https://duckduckgo.com/favicon.ico",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_60x60.png",
+      "width": 60,
+      "height": 60,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_76x76.png",
+      "width": 76,
+      "height": 76,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_120x120.png",
+      "width": 120,
+      "height": 120,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_152x152.png",
+      "width": 152,
+      "height": 152,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://github.com/": [
+    {
+      "url": "https://github.com/fluidicon.png",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://github.githubassets.com/favicons/favicon.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://github.githubassets.com/favicons/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    }
+  ],
+  "https://www.youtube.com/": [
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_32x32.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_48x48.png",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_96x96.png",
+      "width": 96,
+      "height": 96,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_144x144.png",
+      "width": 144,
+      "height": 144,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.notion.so/": [
+    {
+      "url": "https://www.notion.com/front-static/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.notion.com/front-static/logo-ios.png",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://www.notion.com/": [
+    {
+      "url": "https://www.notion.com/front-static/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.notion.com/front-static/logo-ios.png",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://developer.mozilla.org/": [
+    {
+      "url": "https://developer.mozilla.org/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/apple-touch-icon.png",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://developer.mozilla.org/en-US/": [
+    {
+      "url": "https://developer.mozilla.org/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/apple-touch-icon.png",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://excalidraw.com/": [
+    {
+      "url": "https://excalidraw.com/apple-touch-icon.png",
+      "width": 180,
+      "height": 180,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://excalidraw.com/favicon-32x32.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://excalidraw.com/favicon-16x16.png",
+      "width": 16,
+      "height": 16,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.figma.com/": [
+    {
+      "url": "https://static.figma.com/app/icon/2/icon-128.png",
+      "width": 128,
+      "height": 128,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/icon-192.png",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/icon-256.png",
+      "width": 256,
+      "height": 256,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/favicon.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.google.com/": [
+    {
+      "url": "https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png",
+      "width": 128,
+      "height": 128,
+      "scalable": false,
+      "kind": "html"
+    }
+  ]
+});
+
+return {SITE_ICON_CATALOG};
+})();
+const __icon_artwork = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Recover the best REAL ICO frame; never pretend an upscaled 16px source is HD.
+const LIMIT=1024*1024,TTL=7*86400000,KEY='qiye.icon-artwork.v1';
+const memory=new Map(),pending=new Map(),failed=new Map();
+function allowed(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&u.hostname.includes('.')&&!/^\d+(?:\.\d+){3}$/.test(u.hostname)&&!/(?:^|\.)(?:localhost|local|internal|lan|home|onion)$/.test(u.hostname);}catch{return false;}}
+/** ICO frame selection is checked before a browser decoder sees any bytes. */
+function selectIcoFrame(value,requested=128){
+ const bytes=value instanceof Uint8Array?value:new Uint8Array(value);
+ if(bytes.length<22||bytes.length>LIMIT)return null;
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ if(view.getUint16(0,true)!==0||view.getUint16(2,true)!==1)return null;
+ const count=view.getUint16(4,true);if(!count||count>64||6+count*16>bytes.length)return null;
+ const frames=[];
+ for(let i=0;i<count;i++){
+  const at=6+i*16,w=bytes[at]||256,h=bytes[at+1]||256,size=view.getUint32(at+8,true),offset=view.getUint32(at+12,true);
+  if(offset<6+count*16||size<8||offset+size>bytes.length)continue;
+  const extent=Math.min(w,h),sufficient=extent>=requested;
+  frames.push({at,width:w,height:h,size,offset,score:(sufficient?1000-Math.abs(extent-requested):extent)-Math.abs(w-h)*2});
+ }
+ if(!frames.length)return null;
+ const f=frames.sort((a,b)=>b.score-a.score)[0],raw=bytes.slice(f.offset,f.offset+f.size);
+ const isPng=raw[0]===137&&raw[1]===80&&raw[2]===78&&raw[3]===71;
+ if(isPng)return {...f,mime:'image/png',bytes:raw};
+ const ico=new Uint8Array(22+raw.length);ico.set([0,0,1,0,1,0]);ico.set(bytes.slice(f.at,f.at+16),6);
+ new DataView(ico.buffer).setUint32(18,22,true);ico.set(raw,22);
+ return {...f,mime:'image/x-icon',bytes:ico};
+}
+function validData(v){return typeof v==='string'&&v.length<=180000&&/^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(v);}
+try{
+ const raw=globalThis.localStorage?.getItem(KEY);
+ if(raw&&raw.length<2400000)for(const row of JSON.parse(raw).slice(0,16))if(allowed(row.url)&&validData(row.dataUrl)&&row.time<=Date.now()&&row.time+TTL>Date.now()&&row.width>0&&row.width<=256&&row.height>0&&row.height<=256)memory.set(row.url,row);
+}catch{/* Storage is only a cache. */}
+function store(row){
+ memory.delete(row.url);memory.set(row.url,row);
+ while(memory.size>16)memory.delete(memory.keys().next().value);
+ let encoded=JSON.stringify([...memory.values()]);
+ while(encoded.length>2400000&&memory.size>1){memory.delete(memory.keys().next().value);encoded=JSON.stringify([...memory.values()]);}
+ try{globalThis.localStorage?.setItem(KEY,encoded);}catch{/* A failed cache write never touches desktop data. */}
+}
+/** One bounded, coalesced attempt, only for ICOs and only after a low-res load.
+ * CORS/host permission denial retains the visible icon; it never uses a proxy. */
+function recoverIcoArtwork(url,{requiredSize=128,fetchImpl=globalThis.fetch}={}){
+ if(!allowed(url)||!/(?:\.ico)(?:\?|$)/i.test(url))return Promise.resolve(null);
+ if(memory.get(url)?.time+TTL>Date.now())return Promise.resolve(memory.get(url));
+ if(failed.get(url)>Date.now())return Promise.resolve(null);
+ if(pending.has(url))return pending.get(url);
+ const work=(async()=>{
+  const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),3500);
+  let objectUrl='';
+  try{
+   const r=await fetchImpl(url,{signal:abort.signal,mode:'cors',credentials:'omit',referrerPolicy:'no-referrer',redirect:'error'});
+   if(!r.ok||Number(r.headers?.get?.('content-length'))>LIMIT)return null;
+   const chunks=[];let total=0;
+   if(r.body?.getReader){const reader=r.body.getReader();try{for(;;){const {done,value}=await reader.read();if(done)break;total+=value.byteLength;if(total>LIMIT){await reader.cancel();return null;}chunks.push(value);}}finally{reader.releaseLock();}}
+   else {const value=new Uint8Array(await r.arrayBuffer());if(value.byteLength>LIMIT)return null;chunks.push(value);total=value.byteLength;}
+   const bytes=new Uint8Array(total);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}
+   const frame=selectIcoFrame(bytes,Math.min(256,requiredSize));if(!frame)return null;
+   if(abort.signal.aborted)return null;
+   const im=new Image();objectUrl=URL.createObjectURL(new Blob([frame.bytes],{type:frame.mime}));
+   await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=reject;abort.signal.addEventListener('abort',reject,{once:true});im.src=objectUrl;});
+   if(!im.naturalWidth||im.naturalWidth>256||im.naturalHeight>256)return null;
+   const canvas=document.createElement('canvas');canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;
+   const context=canvas.getContext('2d');if(!context)return null;context.drawImage(im,0,0);
+   const dataUrl=canvas.toDataURL('image/png');if(!validData(dataUrl))return null;
+   const row={url,dataUrl,width:canvas.width,height:canvas.height,time:Date.now()};store(row);return row;
+  }catch{return null;}
+  finally{clearTimeout(timer);if(objectUrl)URL.revokeObjectURL(objectUrl);failed.set(url,Date.now()+86400000);while(failed.size>200)failed.delete(failed.keys().next().value);pending.delete(url);}
+ })();pending.set(url,work);return work;
+}
+
+return {selectIcoFrame, recoverIcoArtwork};
+})();
 const __favicons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { SITE_ICON_CATALOG } = __site_icon_catalog;
 /* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
 
 const FAVICON_CACHE_KEY = 'qiye.favicons.local.v1';
@@ -1184,6 +2072,8 @@ function sitePageUrl(value) {
   } catch { return null; }
 }
 
+function originKey(pageUrl){return new URL(pageUrl).origin+'/';}
+
 function unique(values) { return [...new Set(values.filter(Boolean))].slice(0, MAX_CANDIDATES); }
 
 function requestedSize({ targetSize = 64, pixelRatio = 1 } = {}) {
@@ -1239,6 +2129,7 @@ function iconQuality(detail = {}, options = {}) {
 function detailFor(entry, url) {
   const detail = entry?.details?.find(item => item.url === url);
   if (detail) return detail;
+  for(const icons of Object.values(SITE_ICON_CATALOG)){const known=icons.find(icon=>icon.url===url);if(known)return known;}
   let scalable = false;
   try { scalable = /\.svg$/i.test(new URL(url).pathname); } catch { /* No inferred metadata. */ }
   return { url, scalable, kind: /\/apple-touch-icon\.png(?:\?|$)/i.test(url) ? 'apple' : 'fallback' };
@@ -1258,7 +2149,8 @@ function getFaviconCandidates(siteUrl, options = {}) {
   if (!pageUrl) return [];
   const entry = currentEntry(pageUrl);
   const origin = new URL(pageUrl).origin;
-  const known = entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : [];
+  const audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
+  const known = [...(entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : []),...audited.map(icon=>icon.url)];
   const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
   const qualityOptions = { targetSize: options.targetSize, pixelRatio: options.pixelRatio };
   const conventional = [`${origin}/favicon.svg`, `${origin}/apple-touch-icon.png`, `${origin}/favicon.ico`, browserFavicon(pageUrl, options)].filter(Boolean);
@@ -1273,7 +2165,7 @@ function getFaviconCandidates(siteUrl, options = {}) {
   let keepPreferred = false;
   if (preferred && (preferredQuality.adequate || !preferredQuality.measured || coolingDown)) {
     const best = declared.find(url => iconQuality(detailFor(entry, url), qualityOptions).score > preferredQuality.score);
-    keepPreferred = !best || coolingDown || !preferredQuality.measured;
+    keepPreferred = !best || !preferredQuality.measured || (coolingDown && !iconQuality(detailFor(entry,best),qualityOptions).adequate);
   }
   const first = keepPreferred ? [preferred, ...declared.filter(url => url !== preferred)] : declared;
   const last = conventional.filter(url => !keepPreferred || url !== preferred);
@@ -1505,7 +2397,7 @@ function parseHtmlIcons(html, pageUrl, options) {
     const rel = String(attrs.rel || '').toLowerCase().split(/\s+/);
     const url = safeImageUrl(attrs.href, base);
     if (!url) continue;
-    const kind = rel.includes('icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
+    const kind = rel.includes('icon') || rel.includes('fluid-icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
     if (kind) {
       const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length, options);
       if (icon) icons.push(icon);
@@ -1528,10 +2420,12 @@ function parseManifestIcons(text, manifestUrl, offset, options) {
   });
 }
 
-async function boundedText(response, limit) {
-  if (Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
+async function boundedText(response, limit, headOnly=false) {
+  const headEnd=text=>{const match=/<\/head\s*>|<body(?:\s|>)/i.exec(text);return match?match.index+match[0].length:0;};
+  if ((!headOnly || !response.body?.getReader) && Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
   if (!response.body?.getReader) {
-    const text = await response.text();
+    let text = await response.text();
+    if(headOnly&&headEnd(text))text=text.slice(0,headEnd(text));
     if (new TextEncoder().encode(text).byteLength > limit) throw new Error('large');
     return text;
   }
@@ -1543,8 +2437,9 @@ async function boundedText(response, limit) {
       const { done, value } = await reader.read();
       if (done) break;
       length += value.byteLength;
-      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
       text += decoder.decode(value, { stream: true });
+      if(headOnly){const end=headEnd(text);if(end&&new TextEncoder().encode(text.slice(0,end)).length<=limit){await reader.cancel().catch(()=>{});return text.slice(0,end);}}
+      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
     }
     return text + decoder.decode();
   } finally { reader.releaseLock(); }
@@ -1574,7 +2469,7 @@ async function fetchMetadata(url, kind, signal) {
     if (!response.ok) throw new Error('network');
     const mime = (response.headers?.get?.('content-type') || '').toLowerCase().split(';')[0].trim();
     if (mime && !(kind === 'html' ? ['text/html', 'application/xhtml+xml'].includes(mime) : /^(?:application\/(?:manifest\+json|json)|text\/json)$/.test(mime))) throw new Error('content');
-    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT), url };
+    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT, kind === 'html'), url };
   }
   throw new Error('redirect');
 }
@@ -1584,7 +2479,7 @@ function resultFor(pageUrl, source, errorCode = '', options) {
   return { url: candidates[0] || null, candidates, source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
 }
 
-/** Explicit user action only. When requested, the permission API is invoked
+/** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
  * synchronously, before cache initialization or any asynchronous work. Web pages
  * can read only sites that opt into CORS; no proxy bypass is attempted. */
 function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1 } = {}) {
@@ -1664,11 +2559,26 @@ function discoverFavicon(siteUrl, { requestPermission = false, force = false, ta
   return job;
 }
 
-return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon};
+/** Safe diagnostic data for UI; no network and no credentials. */
+function describeFavicon(siteUrl,iconUrl,options={}){
+ const pageUrl=sitePageUrl(siteUrl),entry=pageUrl?currentEntry(pageUrl):null;
+ const quality=getFaviconQuality(siteUrl,iconUrl,options);
+ return {source:entry?.source||'site',url:iconUrl,quality,warning:entry?.errorCode?WARNINGS[entry.errorCode]:''};
+}
+
+return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon, describeFavicon};
 })();
 const __favicon_view = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
-const { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates } = __favicons;
+const { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates, discoverFavicon } = __favicons;
+
+const { recoverIcoArtwork } = __icon_artwork;
+
+// Metadata requests have their own two-slot queue; page HTML is never fetched
+// from every render, and no permission prompt is opened automatically.
+const metadataQueue=[];let metadataActive=0;
+function queueMetadata(current,job){return new Promise(resolve=>{metadataQueue.push({current,job,resolve});pumpMetadata();});}
+function pumpMetadata(){while(metadataActive<2&&metadataQueue.length){const work=metadataQueue.shift();if(!work.current()){work.resolve(null);continue;}metadataActive++;Promise.resolve().then(work.job).catch(()=>null).then(result=>work.resolve(result)).finally(()=>{metadataActive--;pumpMetadata();});}}
 
 const faviconImageBindings = new WeakMap();
 const faviconImageFailures = new Map();
@@ -1743,7 +2653,8 @@ function bindFaviconImages(root = document, options = {}) {
     const candidates = [...new Set(provided)].filter(url => typeof url === 'string' && url).slice(0, 12);
     const tried = new Set();
     let candidateIndex = 0, upgradeIndex = 0, upgrades = null, stopped = false, requestTicket = 0;
-    let best = null;
+    let best = null, enhanced=false;
+    const autoDiscover=options.autoDiscover ?? (globalThis.document?.documentElement?.dataset?.iconDiscovery==='auto');
     if (previous?.siteUrl === siteUrl && !image.hidden && image.naturalWidth && image.naturalHeight) {
       const url = image.currentSrc || image.src;
       best = { url, width: image.naturalWidth, height: image.naturalHeight, quality: getFaviconQuality(siteUrl, url, { ...sizeOptions, width: image.naturalWidth, height: image.naturalHeight }) };
@@ -1765,7 +2676,38 @@ function bindFaviconImages(root = document, options = {}) {
     faviconImageWork.add(binding);
     const complete = () => {
       faviconImageWork.delete(binding);
-      if (!best) { image.hidden = true; image.removeAttribute('src'); visual.classList.remove('is-loaded'); }
+      if (!best) { image.hidden = true; image.removeAttribute('src'); visual.classList.remove('is-loaded'); visual.dataset.iconQuality='missing'; }
+      report();
+    };
+    const report=()=>{
+      if(!binding.current())return;
+      const information=best?{siteUrl,url:best.sourceUrl||best.url,width:best.width,height:best.height,requiredSize:best.quality.requiredSize,scalable:best.quality.scalable,adequate:best.quality.adequate}:{siteUrl,url:null,adequate:false};
+      visual.dataset.iconQuality=best?(best.quality.adequate?'sharp':'low'):'missing';
+      visual.dataset.iconWidth=String(best?.width||0);visual.dataset.iconHeight=String(best?.height||0);
+      visual.dataset.iconSource=information.url||'';
+      try{options.onStatus?.(information);}catch{/* Observer callbacks cannot interrupt loading. */}
+    };
+    const enhance=async()=>{
+      if(enhanced||!autoDiscover||!binding.current()){complete();return;}
+      enhanced=true;
+      try{
+        const result=await queueMetadata(binding.current,async()=>{
+          const recovered=best&&!best.quality.adequate?await recoverIcoArtwork(best.sourceUrl||best.url,{requiredSize:best.quality.requiredSize}):null;
+          const metadata=(!recovered||Math.min(recovered.width,recovered.height)<sizeOptions.targetSize*sizeOptions.pixelRatio)?await discoverFavicon(siteUrl,{...sizeOptions,requestPermission:false}):null;
+          return {recovered,metadata};
+        });
+        if(!binding.current()){binding.cancel();return;}
+        const choices=[];
+        if(result?.recovered&&(!best||Math.min(result.recovered.width,result.recovered.height)>Math.min(best.width,best.height)))choices.push({url:result.recovered.dataUrl,sourceUrl:result.recovered.url});
+        for(const url of result?.metadata?.candidates||[])if(!tried.has(url))choices.push({url});
+        let index=0;
+        const next=()=>{
+          if(!binding.current()){binding.cancel();return;}
+          if(best?.quality.adequate||index>=Math.min(3,choices.length)){complete();return;}
+          const choice=choices[index++];load(choice.url,!!best,next,choice.sourceUrl);
+        };
+        next();
+      }catch{complete();}
     };
     const nextUsable = (values, start) => {
       for (let index = start; index < values.length; index++) {
@@ -1775,7 +2717,7 @@ function bindFaviconImages(root = document, options = {}) {
       }
       return null;
     };
-    const load = (url, background, done) => {
+    const load = (url, background, done, sourceUrl=null) => {
       faviconImageQueue.push({ binding, start: release => {
         const ticket = ++requestTicket;
         let target;
@@ -1805,10 +2747,10 @@ function bindFaviconImages(root = document, options = {}) {
           if (!active()) { if (!binding.current()) binding.cancel(); else cleanup(true); return; }
           const width = target.naturalWidth, height = target.naturalHeight;
           if (!width || !height) { failed(); return; }
-          const quality = getFaviconQuality(siteUrl, url, { ...sizeOptions, width, height });
+          const quality = getFaviconQuality(siteUrl, sourceUrl||url, { ...sizeOptions, width, height });
           cleanup(false);
           faviconImageFailures.delete(url);
-          try { Promise.resolve(rememberFavicon(siteUrl, url, { width, height })).catch(() => {}); }
+          try { Promise.resolve(rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
           catch { /* Cache quotas do not hide a successfully loaded image. */ }
           if (!best || quality.score > best.quality.score) {
             if (background) {
@@ -1820,10 +2762,11 @@ function bindFaviconImages(root = document, options = {}) {
               image.replaceWith(target);
               image = target;
             }
-            best = { url, width, height, quality };
+            best = { url, sourceUrl, width, height, quality };
             image.hidden = false;
             visual.classList.add('is-loaded');
           }
+          report();
           done(true);
         };
         target.onerror = failed;
@@ -1846,14 +2789,14 @@ function bindFaviconImages(root = document, options = {}) {
         }).slice(0, 3);
       }
       const next = nextUsable(upgrades, upgradeIndex);
-      if (!next) { complete(); return; }
+      if (!next) { enhance(); return; }
       upgradeIndex = next.index;
       load(next.url, true, advanceUpgrade);
     };
     const advanceInitial = () => {
       if (!binding.current()) { binding.cancel(); return; }
       const next = nextUsable(candidates, candidateIndex);
-      if (!next) { complete(); return; }
+      if (!next) { enhance(); return; }
       candidateIndex = next.index;
       load(next.url, !!best, loaded => loaded ? advanceUpgrade() : advanceInitial());
     };
@@ -1865,6 +2808,7 @@ return {bindFaviconImages};
 })();
 const __wallpapers = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { DIRECT_WALLPAPERS } = __wallpaper_catalog;
 /* Public wallpaper provider. No account, API key, or application server. */
 
 const wallpaperProviders = Object.freeze([
@@ -1904,6 +2848,7 @@ function wallpaperSourceUrl(value) {
 
 /** Safe, canonical data shared by the widget, background settings, and backups. */
 function normalizeWallpaperPhoto(value) {
+  if(['deepin','wallhaven'].includes(value?.provider))return normalizeCatalogWallpaper(value);
   if(value?.provider === 'commons') return normalizeCommonsPhoto(value);
   if (!value || typeof value !== 'object' || Array.isArray(value) || value.provider !== 'picsum') return null;
   const id = String(value.id ?? '');
@@ -2088,24 +3033,41 @@ async function resolveCommonsWallpaper(photo,{signal,fetchImpl=globalThis.fetch}
  return {...safe,url};
 }
 
-return {wallpaperProviders, isAllowedWallpaperUrl, normalizeWallpaperPhoto, parsePicsumResponse, fetchWallpaperPage, createWallpaperBrowser, normalizeCommonsPhoto, parseCommonsResponse, fetchCommonsWallpaperPage, resolveCommonsWallpaper};
+/** Catalog snapshots preserve the verified author/license/URL relationship.
+ * Imported backups cannot turn this into an arbitrary remote-image loader. */
+function normalizeCatalogWallpaper(value){
+ if(!value||typeof value!=='object')return null;
+ const item=DIRECT_WALLPAPERS.find(p=>p.provider===value.provider&&p.id===value.id);
+ if(!item)return null;
+ for(const key of ['url','thumbnail','sourceUrl','licenseUrl'])if(value[key]!==undefined&&value[key]!==item[key])return null;
+ return {...item};
+}
+async function fetchCatalogWallpaperPage(provider,{page=1,signal}={}){
+ if(!['deepin','wallhaven'].includes(provider)||!Number.isInteger(page)||page<1||page>50)throw Error('壁纸页码无效');
+ if(signal?.aborted)throw Error('已取消');
+ const perPage=provider==='deepin'?4:12;
+ return DIRECT_WALLPAPERS.filter(p=>p.provider===provider).slice((page-1)*perPage,page*perPage).map(p=>({...p}));
+}
+function catalogWallpaperPages(provider){return Math.max(1,Math.ceil(DIRECT_WALLPAPERS.filter(p=>p.provider===provider).length/(provider==='deepin'?4:12)));}
+
+return {wallpaperProviders, isAllowedWallpaperUrl, normalizeWallpaperPhoto, parsePicsumResponse, fetchWallpaperPage, createWallpaperBrowser, normalizeCommonsPhoto, parseCommonsResponse, fetchCommonsWallpaperPage, resolveCommonsWallpaper, normalizeCatalogWallpaper, fetchCatalogWallpaperPage, catalogWallpaperPages};
 })();
 const __wallpaper_library = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
-const { fetchWallpaperPage, fetchCommonsWallpaperPage, resolveCommonsWallpaper } = __wallpapers;
+const { fetchWallpaperPage, fetchCommonsWallpaperPage, resolveCommonsWallpaper, fetchCatalogWallpaperPage, catalogWallpaperPages } = __wallpapers;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WALLPAPER_SOURCES=Object.freeze([
- {id:'custom',name:'自定义背景',section:'我的背景'},
+ {id:'custom',name:'自定义背景'},
  {id:'official',name:'官方背景'},
- {id:'picsum',name:'Lorem Picsum',section:'在线图库',endpoint:true,url:'https://picsum.photos/'},
- {id:'commons',name:'Wikimedia Commons',endpoint:true,url:'https://commons.wikimedia.org/'},
- {id:'unsplash',name:'Unsplash ↗',section:'更多灵感 · 网站入口',url:'https://unsplash.com/wallpapers',license:'https://unsplash.com/license'},
- {id:'pexels',name:'Pexels ↗',url:'https://www.pexels.com/search/wallpaper/',license:'https://www.pexels.com/license/'}
+ {id:'deepin',name:'deepin',endpoint:true,snapshot:true,intro:'deepin 官方开放许可背景 · CC BY 4.0 · 固定版本清单，图片直接来自原仓库。'},
+ {id:'wallhaven',name:'Wallhaven',endpoint:true,snapshot:true,intro:'SFW 壁纸精选 · 2026-10-12 官方 API 清单快照，不是实时榜单；缩略图和原图直接来自 Wallhaven。版权以原图为准，并非统一商用许可。'},
+ {id:'picsum',name:'Lorem Picsum',endpoint:true,intro:'公开摄影图片接口，保留摄影师、原始照片及许可链接。'},
+ {id:'commons',name:'Wikimedia Commons',endpoint:true,intro:'筛选具有明确 CC / 公共领域许可的横向图片，保留作者与每张图的许可。'}
 ]);
 /** On-demand gallery with per-source pagination, bounded cache and cancellation.
  * No API keys; no fetch is performed merely by creating or rendering it. */
 function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParameters,rerender,enable,apply,toast,
- fetchers={picsum:fetchWallpaperPage,commons:fetchCommonsWallpaperPage},resolve=resolveCommonsWallpaper}) {
+ fetchers={picsum:fetchWallpaperPage,commons:fetchCommonsWallpaperPage,deepin:o=>fetchCatalogWallpaperPage('deepin',o),wallhaven:o=>fetchCatalogWallpaperPage('wallhaven',o)},resolve=resolveCommonsWallpaper}) {
  const state={tab:'official',page:1,photos:[],loading:false,applying:false,error:''};
  const cache=new Map();let controller=null,sequence=0;
  function stop(){sequence++;controller?.abort();controller=null;state.loading=false;state.applying=false;}
@@ -2128,14 +3090,13 @@ function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParamete
   if(state.tab==='official')content=`<h3>官方背景</h3><p class="help-text">栖页内置渐变 · 离线可用 · 无需连接外部服务</p><div class="wallpaper-grid">${wallpapers.map(w=>`<button class="wallpaper-option ${settings.wallpaper===w.id&&!settings.customWallpaper&&!(settings.wallpaperApiEnabled&&settings.remoteWallpaper)?'selected':''}" style="background:${w.background}" data-wallpaper="${w.id}" aria-label="${w.name}壁纸"><span>${w.name} · ${w.tag}</span></button>`).join('')}</div>`;
   else if(state.tab==='custom')content=renderCustom();
   else if(state.tab==='parameters')content=renderParameters();
-  else if(!tab?.endpoint)content=`<h3>${esc(tab?.name)}</h3><div class="wallpaper-external"><p class="help-text">此来源提供网站入口，不会静默抓取图片，也不绕过 API 授权。请在原网站选择、下载获准使用的图片，再从“自定义背景”导入。</p><div class="button-row"><a class="primary-button" href="${tab.url}" target="_blank" rel="noopener noreferrer">访问 ${esc(tab.name.replace(' ↗',''))}</a><a class="text-button" href="${tab.license}" target="_blank" rel="noopener noreferrer">查看使用许可</a></div></div>`;
   else{
-   const intro=state.tab==='commons'?'筛选具有明确 CC / 公共领域许可的横向图片，保留作者与每张图的许可。':'公开摄影图片接口，保留摄影师、原始照片及许可链接。';
+   const intro=tab?.intro||'';
    content=`<h3>${esc(tab.name)}</h3><p class="help-text">${intro}</p>`;
    if(!settings.wallpaperApiEnabled)content+=`<div class="wallpaper-permission"><strong>按需连接在线图库</strong><p>点击后，浏览器会直接连接 ${esc(tab.name)} 及其图片域名。不会发送桌面内容、搜索历史或同步凭据。</p><button class="primary-button" data-gallery-enable>启用并加载图片</button></div>`;
-   else content+=`<div class="wallpaper-status" role="status">${state.applying?'正在加载高清壁纸…':state.loading?'正在加载图片清单…':esc(state.error)||(!state.photos.length?'这一页暂无可用图片，可以翻页或重新加载。':'点击图片应用背景')}</div>${state.error?'<button class="secondary-button" data-gallery-retry>重新加载</button>':''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card"><button data-gallery-apply="${i}" aria-label="应用壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"></button><div class="wallpaper-photo-credit"><a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(p.author)}">${esc(p.author)}</a><a href="${esc(p.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.license)}</a></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>上一页</button><span>第 ${state.page} 页</span><button class="secondary-button" data-gallery-page="1" ${state.page>=50||state.loading||state.applying?'disabled':''}>下一页</button></div>`;
+   else content+=`<div class="wallpaper-status" role="status">${state.applying?'正在加载高清壁纸…':state.loading?'正在加载图片清单…':esc(state.error)||(!state.photos.length?'这一页暂无可用图片，可以翻页或重新加载。':'点击图片应用背景')}</div>${state.error?'<button class="secondary-button" data-gallery-retry>重新加载</button>':''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card"><button data-gallery-apply="${i}" aria-label="应用壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"></button><div class="wallpaper-photo-credit"><a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(p.author)}">${esc(p.author)}</a><a href="${esc(p.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.license)}</a></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>上一页</button><span>第 ${state.page} 页</span><button class="secondary-button" data-gallery-page="1" ${state.page>=(tab.snapshot?catalogWallpaperPages(state.tab):50)||state.loading||state.applying?'disabled':''}>下一页</button></div>`;
   }
-  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="壁纸来源">${WALLPAPER_SOURCES.map(s=>`${s.section?`<small>${s.section}</small>`:''}<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content">${s.name}</button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}">壁纸参数</button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="壁纸内容">${content}</section></div>`;
+  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="壁纸来源">${WALLPAPER_SOURCES.map(s=>`<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content">${s.name}</button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}">壁纸参数</button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="壁纸内容">${content}</section></div>`;
  }
  async function handleClick(button){
   if(button.dataset.galleryTab){
@@ -2144,7 +3105,7 @@ function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParamete
   }
   if(button.hasAttribute('data-gallery-enable')){await enable();await load();return true;}
   if(button.hasAttribute('data-gallery-retry')){cache.delete(`${state.tab}:${state.page}`);await load();return true;}
-  if(button.dataset.galleryPage){state.page=Math.max(1,Math.min(50,state.page+Number(button.dataset.galleryPage)));await load();return true;}
+  if(button.dataset.galleryPage){state.page=Math.max(1,Math.min(WALLPAPER_SOURCES.find(s=>s.id===state.tab)?.snapshot?catalogWallpaperPages(state.tab):50,state.page+Number(button.dataset.galleryPage)));await load();return true;}
   if(button.hasAttribute('data-gallery-apply')){
    if(state.applying || state.loading)return true;
    const photo=state.photos[Number(button.dataset.galleryApply)];if(!photo)return true;
@@ -2401,7 +3362,7 @@ const DEFAULT_STATE = deepFreeze({
   updatedAt: 0,
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
-    blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: true, pinSearch: true, minimal: false, openNewTab: true,
+    blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
@@ -2411,6 +3372,7 @@ const DEFAULT_STATE = deepFreeze({
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
     searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
     showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
+    iconShape: 'rounded', iconBackdrop: 'adaptive', autoExtractIcons: true,
     iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
     desktopMaxWidth: 1350, themeColor: '#79d7b4',
     showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false,
@@ -2620,6 +3582,9 @@ function validateSettings(raw) {
     rememberGroup: bool(v.rememberGroup, 'settings.rememberGroup'), scrollGroups: bool(v.scrollGroups, 'settings.scrollGroups'),
     sidebarWheelMode: enumeration(v.sidebarWheelMode, ['scroll', 'switch'], 'settings.sidebarWheelMode'),
     hideScrollbar: bool(v.hideScrollbar, 'settings.hideScrollbar'),
+    iconShape: enumeration(v.iconShape, ['rounded','original'], 'settings.iconShape'),
+    iconBackdrop: enumeration(v.iconBackdrop, ['adaptive','none'], 'settings.iconBackdrop'),
+    autoExtractIcons: bool(v.autoExtractIcons, 'settings.autoExtractIcons'),
     gridSize: number(v.gridSize, 'settings.gridSize', 48, 120), gap: number(v.gap, 'settings.gap', 8, 40),
     radius: number(v.radius, 'settings.radius', 0, 48), showLabels: bool(v.showLabels, 'settings.showLabels'),
     clockSize: number(v.clockSize, 'settings.clockSize', 30, 160), searchEngine: v.searchEngine, customEngines,
@@ -4622,7 +5587,8 @@ const __drag = (() => {
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
 const CLICK_GUARD_MS = 550;
-const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside'];
+const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
+const FOLDER_DWELL_MS = 500;
 
 /** Return an ordered copy without changing item objects or unrelated entries. */
 function reorderById(entries, sourceId, targetId, position = 'before') {
@@ -4676,6 +5642,13 @@ function resolveDropIntent({ state, source, target, point }) {
      point.y > rect.top + rect.height * .2 && point.y < rect.bottom - rect.height * .2) {
   return { kind:'folder', itemId:item.id, groupId:destination.groupId, folderId:destination.id };
  }
+ // Only two top-level websites can form a new folder. Widgets and folders
+ // must never become children of another folder.
+ if(item.type==='link'&&destination.type==='link'&&rect&&
+    point.x>rect.left+rect.width*.28&&point.x<rect.right-rect.width*.28&&
+    point.y>rect.top+rect.height*.18&&point.y<rect.bottom-rect.height*.30) {
+  return {kind:'create-folder',itemId:item.id,targetId:destination.id,groupId:destination.groupId};
+ }
  return { kind:'reorder', itemId:item.id, targetId:destination.id, position:dropPosition(rect, point) };
 }
 
@@ -4700,10 +5673,11 @@ function createDesktopDragController({
 }) {
  if(!doc || typeof getState!=='function' || typeof onDrop!=='function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
  const win=doc.defaultView || globalThis, listeners=[], animations=new Map();
- let session=null, frame=null, holdTimer=null, ghost=null, suppression=null, busy=false, destroyed=false;
+ let session=null, frame=null, holdTimer=null, ghost=null, mergeHint=null, suppression=null, busy=false, destroyed=false;
  const listen=(node,type,fn,options=true)=>{node.addEventListener(type,fn,options);listeners.push(()=>node.removeEventListener(type,fn,options));};
  const element=t=>t?.nodeType===3?t.parentElement:t;
  const grid=()=>doc.getElementById('desktop'), groups=()=>doc.getElementById('groups');
+ const scrollport=()=>doc.getElementById('content-scroll')||doc.scrollingElement||doc.documentElement;
  const reduced=()=>getState().settings?.reducedEffects || win.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  const nodes=root=>[...root.querySelectorAll(root===groups()?'[data-group]':'[data-item]')];
  const id=node=>node.dataset.item || node.dataset.group;
@@ -4738,7 +5712,7 @@ function createDesktopDragController({
   const s=session.source;
   return s.kind==='group'?canDragGroups() && getState().groups.some(g=>g.id===s.id):getState().items.some(i=>i.id===s.id && !i.folderId && i.groupId===getActiveGroupId());
  }
- function unmark(){doc.querySelectorAll('.drop-inside').forEach(n=>n.classList.remove('drop-inside'));}
+ function unmark(){for(const name of DROP_CLASSES)doc.querySelectorAll('.'+name).forEach(n=>n.classList.remove(name));}
  function restore(s){
   if(!s?.original || !s.source.root.isConnected)return;
   const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
@@ -4747,7 +5721,7 @@ function createDesktopDragController({
   animate(before,list);
  }
  function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
-  const s=session;session=null;clearTimeout(holdTimer);holdTimer=null;
+  clearMerge();const s=session;session=null;clearTimeout(holdTimer);holdTimer=null;
   if(frame!==null)win.cancelAnimationFrame(frame);frame=null;
   if(s?.active && guard)suppression={x:s.x,y:s.y,pointerId:s.pointerId,until:Date.now()+CLICK_GUARD_MS,waitForRelease};
   if(revert)restore(s);
@@ -4762,6 +5736,15 @@ function createDesktopDragController({
    }else image.remove();
   }
   if(s?.capture){try{s.capture.releasePointerCapture(s.pointerId);}catch{}}
+ }
+ function clearMerge(){
+  if(session)session.merge=null;
+  mergeHint?.remove();mergeHint=null;
+ }
+ function showMerge(target,ready){
+  target.classList.add(ready?'folder-ready':'folder-pending');
+  if(!mergeHint&&doc.createElement){mergeHint=doc.createElement('div');mergeHint.className='folder-drop-hint';mergeHint.setAttribute('role','status');doc.body.append(mergeHint);}
+  if(mergeHint){const rect=target.getBoundingClientRect();mergeHint.textContent=ready?'松手创建文件夹':'停留片刻，创建文件夹';mergeHint.style.left=(rect.left+rect.width/2)+'px';mergeHint.style.top=Math.min(win.innerHeight-40,rect.bottom+10)+'px';}
  }
  const cancel=()=>clean({waitForRelease:true});
  function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
@@ -4794,18 +5777,18 @@ function createDesktopDragController({
   if(!valid())return cancel();
   const s=session,point={x:s.x,y:s.y},hit=doc.elementFromPoint(s.x,s.y);unmark();
   s.special=null;s.inside=false;
-  if(!hit?.closest)return;
+  if(!hit?.closest){clearMerge();return;}
   const g=hit.closest('[data-group]');
   if(g && groups()?.contains(g) && s.source.kind==='item'){
    const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:'group',id:g.dataset.group,rect:g.getBoundingClientRect()},point});
-   if(intent){s.special=intent;g.classList.add('drop-inside');}return;
+   clearMerge();if(intent){s.special=intent;g.classList.add('drop-inside');}return;
   }
   const root=s.source.root;
-  if(!root.contains(hit))return;
+  if(!root.contains(hit)){clearMerge();return;}
   s.inside=true;
   // Use untransformed current layout for stable FLIP hit testing. Compensate
   // for document/nav scrolling without repeatedly forcing full grid layout.
-  const scrollY=root===groups()?root.scrollTop:(doc.scrollingElement?.scrollTop||0);
+  const scrollY=root===groups()?root.scrollTop:(scrollport()?.scrollTop||0);
   const scrollX=root===groups()?root.scrollLeft:0;
   if(!s.layout || scrollY!==s.scrollY || scrollX!==s.scrollX){
    const dy=(s.scrollY??scrollY)-scrollY,dx=(s.scrollX??scrollX)-scrollX;
@@ -4813,7 +5796,7 @@ function createDesktopDragController({
    else s.layout=boxes(nodes(root));s.scrollY=scrollY;s.scrollX=scrollX;
   }
   const own=s.layout.get(s.source.element);
-  if(own && s.x>=own.left && s.x<=own.right && s.y>=own.top && s.y<=own.bottom)return;
+  if(own && s.x>=own.left && s.x<=own.right && s.y>=own.top && s.y<=own.bottom){clearMerge();return;}
   let dest=null,rect=null,best=Infinity;
   for(const [node,r] of s.layout){
    if(node===s.source.element)continue;
@@ -4821,8 +5804,15 @@ function createDesktopDragController({
    const d=dx*dx+dy*dy;
    if(d<best){best=d;dest=node;rect=r;}
   }
-  if(!dest)return;
+  if(!dest){clearMerge();return;}
   const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:s.source.kind==='group'?'group':'item',id:id(dest),rect},point});
+  if(intent?.kind==='create-folder'){
+   if(s.merge?.id!==dest.dataset.item)s.merge={id:dest.dataset.item,since:Date.now()};
+   const ready=Date.now()-s.merge.since>=FOLDER_DWELL_MS;
+   if(ready)s.special=intent;else s.dirty=true;
+   showMerge(dest,ready);return;
+  }
+  clearMerge();
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
   if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
@@ -4830,10 +5820,10 @@ function createDesktopDragController({
  }
  function scroll(){
   if(!session?.active)return false;
-  const s=session,hit=doc.elementFromPoint(s.x,s.y),nav=groups(),page=doc.scrollingElement||doc.documentElement;
+  const s=session,hit=doc.elementFromPoint(s.x,s.y),nav=groups(),page=scrollport();
   let el=nav?.contains(hit)?nav:page;
   const horizontal=el===nav && getState().settings?.navigationMode==='top';
-  const r=el===page?{left:0,right:win.innerWidth,top:0,bottom:win.innerHeight}:el.getBoundingClientRect();
+  const r=el===doc.scrollingElement||el===doc.documentElement?{left:0,right:win.innerWidth,top:0,bottom:win.innerHeight}:el.getBoundingClientRect();
   const property=horizontal?'scrollLeft':'scrollTop',before=el[property];
   const delta=edgeScrollDelta(horizontal?s.x:s.y,horizontal?r.left:Math.max(0,r.top),horizontal?r.right:Math.min(win.innerHeight,r.bottom));
   const limit=Math.max(0,horizontal?el.scrollWidth-el.clientWidth:el.scrollHeight-el.clientHeight);
@@ -4911,7 +5901,7 @@ function createDesktopDragController({
  return {cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
 }
 
-return {reorderById, resolveDropIntent, edgeScrollDelta, createDesktopDragController};
+return {FOLDER_DWELL_MS, reorderById, resolveDropIntent, edgeScrollDelta, createDesktopDragController};
 })();
 const __search_history = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -5115,7 +6105,12 @@ function updateLinkPreview(form, options = {}) {
  preview.style.setProperty('--tile-ink',tileInk(form.elements.color.value));
  const markup=siteGlyph(item);
  if(view.rendered!==markup || view.preview!==preview){preview.innerHTML=markup;view.rendered=markup;view.preview=preview;}
- bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates});
+ bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates,targetSize:state.settings.gridSize,onStatus:info=>{
+  const quality=$('#favicon-quality',form);if(!quality||!form.isConnected||faviconFormStates.get(form)!==view)return;
+  quality.dataset.quality=info.adequate?'sharp':'low';
+  quality.textContent=info.url?(info.scalable?'矢量图标 · 可随显示尺寸缩放':`实际位图 ${info.width} × ${info.height}px · 当前需要约 ${info.requiredSize}px${info.adequate?' · 清晰度充足':' · 原图偏小，保留最佳可用结果'}`):'未取得可用图片，显示文字回退。';
+  quality.title=info.url||'';
+ }});
  button.disabled=view.busy || mode === 'text' || !view.url;
  button.textContent=view.busy ? '正在提取…' : '智能提取';
  status.textContent=view.message || (mode === 'text' ? '使用下方的文字 / Emoji 与背景色。' : '自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。');
@@ -5207,46 +6202,45 @@ function renderClock() {
   $('#date').textContent = parts.join('　');
  }
 }
+// Pinned controls live OUTSIDE the scrollport. No shrink-on-scroll, overlay,
+// backdrop change, or z-index trick is needed to keep cards away from them.
+function positionHeaderRegions() {
+ const dock=$('#header-dock'),flow=$('#flow-header');
+ if(!dock||!flow)return;
+ for(const [selector,pinned] of [['#clock-block',state.settings.pinClock],['.search-wrapper',state.settings.pinSearch]]) {
+  const node=$(selector),target=pinned?dock:flow;
+  if(node.parentElement!==target)target.append(node);
+  node.classList.remove('is-stuck');
+ }
+ // Preserve time-before-search inside either region without moving stable nodes.
+ for(const region of [dock,flow]) {
+  const clock=$('#clock-block',region),search=$('.search-wrapper',region);
+  if(clock&&search&&clock.nextElementSibling!==search)region.insertBefore(clock,search);
+  region.hidden=![...region.children].some(node=>!node.hidden);
+ }
+ document.body.classList.toggle('has-pinned-header',!dock.hidden);
+ document.body.classList.toggle('has-flow-header',!flow.hidden);
+}
 function updatePinnedHeader() {
- const clock = $('#clock-block'), search = $('.search-wrapper');
- const rect = clock.getBoundingClientRect();
- const clockHeight = state.settings.pinClock && !clock.hidden ? rect.height : 0;
- document.documentElement.style.setProperty('--pinned-clock-height', `${clockHeight}px`);
- const pinTop = parseFloat(getComputedStyle(clock).getPropertyValue('--header-pin-top')) || 16;
- clock.classList.toggle('is-stuck', state.settings.pinClock && !clock.hidden && window.scrollY > 8 && rect.top <= pinTop + 1);
- search.classList.toggle('is-stuck', state.settings.pinSearch && !search.hidden && window.scrollY > 8 && search.getBoundingClientRect().top <= pinTop + clockHeight + 13);
+ // Kept as a small compatibility hook; scrolling never mutates header styling.
+ $('#clock-block').classList.remove('is-stuck');
+ $('.search-wrapper').classList.remove('is-stuck');
 }
 function updateHeaderPlacement() {
- const main = $('#main'), bounds = main.getBoundingClientRect(), css = getComputedStyle(main);
- const left = bounds.left + parseFloat(css.paddingLeft || 0), right = bounds.right - parseFloat(css.paddingRight || 0);
- const clockText = $('#clock');
+ const clockText=$('#clock');
  clockText.style.fontSize='';
- const available = Math.max(1,right-left-32);
- if (!clockText.hidden && clockText.scrollWidth > available) clockText.style.fontSize=(parseFloat(getComputedStyle(clockText).fontSize)*available/clockText.scrollWidth)+'px';
- for (const [selector,key] of [['#clock-block','clock'],['.search-wrapper','search']]) {
-  const el = $(selector), property = `--${key}-shift`;
-  const previous = parseFloat(el.style.getPropertyValue(property)) || 0;
-  const rect = el.getBoundingClientRect();
-  if (el.hidden || !rect.width) { el.style.setProperty(property,'0px'); continue; }
-  const baseLeft = rect.left - previous, baseRight = rect.right - previous;
-  const desired = state.settings[key+'OffsetX'] * window.innerWidth / 100;
-  const offset = Math.max(left - baseLeft, Math.min(right - baseRight, desired));
-  el.style.setProperty(property, `${Math.round(offset*100)/100}px`);
+ const region=clockText.closest('.header-region')||$('#main');
+ const available=Math.max(1,region.clientWidth-32);
+ if(!clockText.hidden&&clockText.scrollWidth>available)clockText.style.fontSize=(parseFloat(getComputedStyle(clockText).fontSize)*available/clockText.scrollWidth)+'px';
+ for(const [selector,key] of [['#clock-block','clock'],['.search-wrapper','search']]) {
+  const el=$(selector),parent=el.parentElement,box=parent.getBoundingClientRect(),css=getComputedStyle(parent);
+  const left=box.left+parseFloat(css.paddingLeft||0),right=box.right-parseFloat(css.paddingRight||0);
+  const property=`--${key}-shift`,previous=parseFloat(el.style.getPropertyValue(property))||0,rect=el.getBoundingClientRect();
+  if(el.hidden||!rect.width){el.style.setProperty(property,'0px');continue;}
+  const desired=state.settings[key+'OffsetX']*window.innerWidth/100;
+  const offset=Math.max(left-(rect.left-previous),Math.min(right-(rect.right-previous),desired));
+  el.style.setProperty(property,`${Math.round(offset*100)/100}px`);
  }
- // Sticky controls reserve the toolbar row only if their horizontal regions
- // intersect; desktop-wide layouts keep the compact 16px pin position.
- const tools = $('.top-tools').getBoundingClientRect();
- const navSpace = state.settings.navigationMode==='top' && state.settings.sidebarVisibility==='always' ? 64 : 0;
- let pinTop = 16 + navSpace;
- if (!state.settings.minimal) {
-  const toolbarLeft = tools.right - Math.max(tools.width,192), floor = tools.bottom + 12;
-  const overlaps = el => {const rect=el.getBoundingClientRect();return rect.right>toolbarLeft && rect.left<tools.right;};
-  const clock = $('#clock-block'), search = $('.search-wrapper');
-  const clockHeight = state.settings.pinClock && !clock.hidden ? clock.getBoundingClientRect().height : 0;
-  if (clockHeight && overlaps(clock)) pinTop = Math.max(pinTop,floor);
-  if (state.settings.pinSearch && !search.hidden && overlaps(search)) pinTop = Math.max(pinTop,floor-(clockHeight ? clockHeight+12 : 0));
- }
- document.documentElement.style.setProperty('--header-pin-top',pinTop+'px');
  updatePinnedHeader();
 }
 function renderAvatar() {
@@ -5313,13 +6307,18 @@ function applySettings() {
  root.dataset.sidebarPosition = s.sidebarPosition;
  root.dataset.sidebarVisibility = s.sidebarVisibility;
  root.dataset.font = s.uiFont;
+ root.dataset.iconShape=s.iconShape;
+ root.dataset.iconDiscovery=s.autoExtractIcons?'auto':'manual';
+ root.dataset.iconBackdrop=s.iconBackdrop;
  const properties = {
   '--gap':s.gap+'px','--tile-size':s.gridSize+'px','--radius':s.radius+'px',
+  '--label-space':Math.max(24,Math.ceil(s.labelSize*1.3)+6)+'px','--cell-size':(s.gridSize+Math.max(24,Math.ceil(s.labelSize*1.3)+6))+'px','--icon-radius':Math.min(s.radius,s.gridSize/2)+'px',
   '--clock-size':s.clockSize+'px','--clock-weight':s.clockWeight,
   '--clock-offset-y':s.clockOffsetY+'px','--search-offset-y':s.searchOffsetY+'px',
   '--search-width':s.searchWidth+'px','--search-height':s.searchHeight+'px','--search-radius':s.searchRadius+'px',
   '--search-opacity':s.searchOpacity/100,'--sidebar-width':s.sidebarWidth+'px','--sidebar-opacity':s.sidebarOpacity/100,
   '--surface-opacity':s.surfaceOpacity/100,'--surface-blur':s.surfaceBlur+'px','--ui-scale':s.uiScale/100,
+  '--quote-safe-space':s.quote?'84px':'0px',
   '--icon-opacity':s.iconOpacity/100,'--label-size':s.labelSize+'px','--label-color':s.labelColor,
   '--clock-color':s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':s.themeColor,
   '--wallpaper-blur':s.blur+'px','--wallpaper-dim':s.dim/100
@@ -5339,14 +6338,14 @@ function applySettings() {
  $('.search-wrapper').hidden = !s.showSearch;
  if (!s.showSearch) hideSearchMenus();
  $('#daily-quote').hidden = !s.quote;
- renderAvatar(); updateToolbar();
+ positionHeaderRegions(); renderAvatar(); updateToolbar();
  let wallpaper = WALLPAPERS.find(w=>w.id === s.wallpaper) || WALLPAPERS[0];
  const remote = s.wallpaperApiEnabled && normalizeWallpaperPhoto(s.remoteWallpaper);
  if (s.dailyWallpaper && !s.customWallpaper && !remote) wallpaper = WALLPAPERS[Math.floor(Date.now()/86400000) % WALLPAPERS.length];
  const credit = $('#wallpaper-credit');
  if (credit) {
   credit.hidden = !remote || !!s.customWallpaper;
-  if (remote) {credit.href=remote.sourceUrl;credit.textContent=`${remote.author} · ${remote.provider==='commons'?'Commons':'Picsum'}`;credit.title='查看壁纸摄影师与照片来源';}
+  if (remote) {credit.href=remote.sourceUrl;credit.textContent=`${remote.author} · ${({commons:'Commons',picsum:'Picsum',deepin:'deepin',wallhaven:'Wallhaven'}[remote.provider]||remote.provider)}`;credit.title='查看壁纸摄影师与照片来源';}
   else {credit.removeAttribute('href');credit.textContent='';}
  }
  const video = $('#wallpaper-video');
@@ -5366,7 +6365,7 @@ function applySettings() {
 function updateGrid() {
  const wrap = $('.desktop-wrap');
  const width = wrap.getBoundingClientRect().width;
- currentGridColumns = Math.max(3,Math.min(16,Math.floor((width + state.settings.gap)/(state.settings.gridSize + state.settings.gap))));
+ currentGridColumns = Math.max(2,Math.min(16,Math.floor((width + state.settings.gap)/(state.settings.gridSize + Math.max(24,Math.ceil(state.settings.labelSize*1.3)+6) + state.settings.gap))));
  document.documentElement.style.setProperty('--columns', currentGridColumns);
  $$('.tile[data-size]').forEach(el => { const [w,h] = el.dataset.size.split('x').map(Number); el.style.gridColumn = `span ${Math.min(w,currentGridColumns)}`; el.style.gridRow = `span ${h}`; });
 }
@@ -5459,6 +6458,7 @@ function openDialog(kind,data={}) {
  dialogKind = kind; dialogData = data;
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
+ dialog.classList.toggle('add-dialog',kind==='add');
  document.body.classList.remove('shortcuts-open');
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
@@ -5492,8 +6492,12 @@ function addDialog(tab,data) {
  let content = '';
  if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
- else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
- return dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'网站、组件、文件夹，一起组成你的个人桌面。') + (item?'':`<div class="tab-bar">${[{id:'link',name:'网站',icon:'link'},{id:'widgets',name:'小组件',icon:'grid'},{id:'folder',name:'文件夹',icon:'folder'}].map(t=>`<button class="tab-button ${tab===t.id?'active':''}" data-add-tab="${t.id}">${icon(t.icon)}${t.name}</button>`).join('')}</div>`) + `<div class="dialog-body">${content}</div>`;
+ else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div><p id="favicon-quality" class="icon-status" role="status">正在测量图标清晰度…</p>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
+ const head=dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'收纳常用网站，组合日常组件。');
+ if(item)return head+`<div class="dialog-body">${content}</div>`;
+ const tabs=[{id:'widgets',name:'小组件',icon:'grid'},{id:'link',name:'网站',icon:'link'},{id:'folder',name:'文件夹',icon:'folder'}];
+ return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="添加内容分类">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>内容仅保存到你的桌面</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||'网站'}">${content}</section></div>`;
+
 }
 function groupDialog(id) {
  const g = state.groups.find(g=>g.id===id);
@@ -5549,10 +6553,15 @@ function settingsDialog(tab) {
   ${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表关键词。支持 http 和 https 地址。'})}
   <div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
  else if(tab==='icons') content = `
+  <div class="icon-settings-preview" aria-label="图标外观预览">${state.items.filter(i=>i.type==='link'&&!i.folderId).slice(0,3).map(i=>renderTile({...i,size:'1x1'})).join('')}</div>
   <div class="section-label">网站图标与卡片</div>
-  ${settingRange('gridSize','图标与网格尺寸',48,120)}
-  ${settingRange('radius','卡片圆角',0,48)}
-  ${settingRange('iconOpacity','网站图标透明度',20,100,'%')}
+  ${settingRange('gridSize','图标大小',48,120)}
+  ${settingSwitch('autoExtractIcons','自动补充高清图标','遇到小图或失败时，按需读取公开图标声明；不会弹出权限，也不会通过第三方代理发送收藏列表。')}
+  <p class="help-text">优先矢量和适合屏幕密度的原图，读取 ICO 内的高清帧；网站自身只提供小图时不会把放大冒充高清。编辑网站 → 智能提取可重新尝试，并查看实际像素尺寸。</p>
+  ${preferenceSelect('iconShape','图标形状',[['rounded','统一圆角正方形'],['original','保留原始轮廓']],'统一外框，不拉伸网站标志；圆角只作用于图标，不再挤压小组件。')}
+  ${preferenceSelect('iconBackdrop','图标底色',[['adaptive','轻量自适应底色'],['none','透明 · 不额外添加底色']],'图片自身的白底保留，不自动去白或重绘品牌标志。')}
+  ${settingRange('radius','图标圆角',0,48)}
+  ${settingRange('iconOpacity','图标不透明度',20,100,'%')}
   ${settingRange('gap','图标间距',8,40)}
   ${settingSwitch('showLabels','显示图标名称')}
   ${settingRange('labelSize','名称字号',10,20)}
@@ -5592,6 +6601,8 @@ function settingsDialog(tab) {
   ${settingRange('uiScale','界面文字比例',85,120,'%')}
   <div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
  else if(tab==='layout') content = `
+  <div class="section-label">时间与搜索的滚动方式</div>
+  <label class="setting-row"><span class="setting-copy"><strong>顶部区域</strong><small>随内容上滑消失，或固定在独立区域；固定时图标不会从下方穿过。</small></span><select data-header-mode aria-label="顶部区域滚动方式"><option value="scroll" ${!s.pinClock&&!s.pinSearch?'selected':''}>随内容滚动</option><option value="fixed" ${s.pinClock&&s.pinSearch?'selected':''}>固定时间和搜索</option>${s.pinClock!==s.pinSearch?'<option value="mixed" selected>分别设置</option>':''}</select></label>
   <div class="section-label">桌面布局</div>
   ${settingSwitch('minimal','极简模式','只显示时间、搜索与壁纸；按 Esc 可恢复桌面。')}
   ${settingSwitch('quote','显示页底短句','固定在视口底部，不随组件数量移动。')}
@@ -5604,7 +6615,7 @@ function settingsDialog(tab) {
   <div class="section-label">搜索框位置</div>
   ${settingRange('searchOffsetX','搜索水平偏移',-30,30,'vw')}
   ${settingRange('searchOffsetY','搜索垂直偏移',-40,160)}
-  <p class="help-text">水平偏移以窗口宽度为基准，窄屏会自动限制在可见区域。垂直偏移调整排版间距，并保留最小间隔以避免重叠；滚动固定后使用顶部位置。</p>
+  <p class="help-text">水平偏移以窗口宽度为基准，窄屏会自动限制在可见区域。垂直偏移调整排版间距，并保留最小间隔以避免重叠；固定后保留当前位置，在下方独立滚动桌面。</p>
   <div class="button-row"><button class="secondary-button" data-action="reset-positions">恢复默认位置</button></div>`;
  else if(tab==='sidebar') content = `
   <div class="section-label">头像与设置入口</div>
@@ -5628,7 +6639,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.0 · GPLv3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.1 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；智能提取只在点击时读取页面图标声明。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
@@ -5637,7 +6648,7 @@ function settingsDialog(tab) {
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
  return dialogHeader('设置','把栖页调成你喜欢的样子。') + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.0</small></nav>
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.1</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
@@ -5810,6 +6821,7 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='icon-settings')return openDialog('settings',{tab:'icons'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast('最近搜索已清除。');return;}
@@ -5918,7 +6930,7 @@ document.addEventListener('change',async event=>{
   if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
-  if(input.dataset.range){await persist();return;}
+  if(input.dataset.range){await persist();if(['gridSize'].includes(input.dataset.range))bindFaviconImages(document,{force:true});return;}
   if(input.name==='searchEngine'&&dialogKind==='settings'){state.settings.searchEngine=input.value;await persist();renderEngine();return;}
   if(input.name==='cityPreset'&&input.value){const [name,lat,lon]=input.value.split('|');const f=input.form;f.elements.cityName.value=name;f.elements.latitude.value=lat;f.elements.longitude.value=lon;return;}
   if(input.id==='bookmark-select-all'){$$('input[name=bookmark]',dialog).forEach(c=>c.checked=input.checked);return;}
@@ -5969,6 +6981,7 @@ document.addEventListener('keydown',event=>{
  const typing=/INPUT|TEXTAREA|SELECT/.test(event.target.tagName)||event.target.isContentEditable;
  if((event.ctrlKey||event.metaKey)&&['k','f'].includes(event.key.toLowerCase())){event.preventDefault();openDialog('local-search');return;}
  if(typing||dialog.open)return;
+ if(['PageDown','PageUp','Home','End',' '].includes(event.key)&&!(event.key===' '&&event.target.closest?.('button,a,[role=button]'))&&!event.altKey&&!event.metaKey&&!event.ctrlKey){const sc=$('#content-scroll');event.preventDefault();sc.scrollTo({top:event.key==='Home'?0:event.key==='End'?sc.scrollHeight:sc.scrollTop+(event.key==='PageUp'||event.shiftKey?-1:1)*sc.clientHeight*.85,behavior:state.settings.reducedEffects?'instant':'smooth'});return;}
  if(event.key==='/'){event.preventDefault();if(state.settings.showSearch)$('#search-input').focus();else openDialog('local-search');}
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
@@ -5994,6 +7007,16 @@ async function applyDesktopDrop(intent) {
   state.items = ordered; await commit(); return;
  }
  if (!state.groups.some(group => group.id === intent.groupId)) return;
+ if(intent.kind==='create-folder'){
+  const target=state.items.find(entry=>entry.id===intent.targetId);
+  if(!target||target.id===item.id||item.type!=='link'||target.type!=='link'||item.folderId||target.folderId||item.groupId!==target.groupId||target.groupId!==intent.groupId)return;
+  const folder={id:uid(),groupId:target.groupId,type:'folder',title:'新建文件夹',icon:'folder',color:'#7b9aaf',size:'1x1'};
+  const index=state.items.indexOf(target);
+  // Both children and their new parent enter the SAME validated storage write.
+  item.folderId=folder.id;target.folderId=folder.id;
+  state.items=[...state.items.slice(0,index),folder,...state.items.slice(index)];
+  await commit();toast('已创建文件夹，右键可重命名或移动项目。');return;
+ }
  if (intent.kind === 'folder') {
   const folder = state.items.find(entry => entry.id === intent.folderId && entry.type === 'folder' && entry.groupId === intent.groupId);
   if (!folder || item.type !== 'link') return;
@@ -6023,6 +7046,7 @@ async function init() {
  await faviconCacheReady;
  $$('[data-action=add-group]').forEach(e=>e.innerHTML=icon('plus'));
  $$('.sidebar-bottom [data-action=local-search]').forEach(e=>e.innerHTML=icon('search'));
+ $$('.sidebar-bottom [data-action=icon-settings]').forEach(e=>e.innerHTML=icon('grid'));
  $$('.sidebar-bottom [data-action=settings]').forEach(e=>e.innerHTML=icon('settings'));
  $$('.top-tools [data-action=wallpaper]').forEach(e=>e.innerHTML=icon('wallpaper'));
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));
@@ -6043,7 +7067,7 @@ async function init() {
  new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
  window.addEventListener('resize',updateHeaderPlacement,{passive:true});
  document.fonts?.ready.then(updateHeaderPlacement);
- window.addEventListener('scroll',updatePinnedHeader,{passive:true});
+ $('#content-scroll').addEventListener('scroll',hideSearchMenus,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);
  setInterval(()=>{renderClock();if(!document.hidden)refreshLiveWidgets($('#desktop'),state);},1000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderClock();refreshLiveWidgets($('#desktop'),state);syncController.onVisible();}});
@@ -6053,6 +7077,13 @@ async function init() {
  if(blockedStorage)openDialog('settings',{tab:'data'});
 }
 init().catch(err=>{console.error('Qiye initialization failed',err);toast('桌面初始化失败，请刷新页面重试。');});
+
+document.addEventListener('change',async event=>{
+ if(!event.target.matches('[data-header-mode]'))return;
+ if(event.target.value==='mixed')return;
+ state.settings.pinClock=state.settings.pinSearch=event.target.value==='fixed';
+ try{applySettings();await persist();}catch(error){if(!error.notified)toast(error.message);}
+});
 
 </script>
 </body>

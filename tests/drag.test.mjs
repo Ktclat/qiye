@@ -183,3 +183,12 @@ test('reduced-effects mode disables neighbour animations but keeps reordering',(
 test('pointer capture lives on stable grid; child blur never cancels live reflow',()=>{
  const h=harness();start(h);assert.equal(h.grid.capture.has(1),true);h.win.emit('blur',{target:h.nodes.a.control});assert.equal(h.controller.isDragging(),true);h.win.emit('blur',{target:h.win});assert.equal(h.controller.isDragging(),false);h.controller.destroy();
 });
+
+test('only two distinct top-level websites can form a new folder, while edges still reorder',()=>{
+ const source={kind:'item',id:'a'},target={kind:'item',id:'b',rect:bounds(100,100)};
+ assert.deepEqual(intent(source,target),{kind:'create-folder',itemId:'a',targetId:'b',groupId:'home'});
+ assert.equal(intent(source,target,{x:105,y:150}).kind,'reorder');
+ assert.equal(intent(source,{kind:'item',id:'note',rect:bounds(100,100)}).kind,'reorder');
+ assert.equal(intent({kind:'item',id:'child'},target),null);
+ assert.equal(intent(source,{kind:'item',id:'other',rect:bounds(100,100)}),null);
+});

@@ -88,8 +88,8 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
   const checked = validateImport(DEFAULT_STATE);
   assert.equal(checked.settings.gridSize, 74);
   assert.equal(checked.settings.weatherEnabled, false);
-  assert.equal(checked.settings.pinClock, true);
-  assert.equal(checked.settings.pinSearch, true);
+  assert.equal(checked.settings.pinClock, false);
+  assert.equal(checked.settings.pinSearch, false);
   assert.equal(checked.settings.clockSize, 70);
   assert.equal(checked.groups.length, 6);
   for (const groupId of ['home', 'code', 'design', 'work', 'ai', 'life']) {
@@ -110,7 +110,7 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
   assert.ok(ENGINES.every(engine => safeUrl(engine.url.replace('{q}', 'test'))));
 });
 
-test('missing pin settings enable both controls while preserving legacy desktop layouts', async () => {
+test('missing pin settings scroll both controls while preserving legacy desktop layouts', async () => {
   const legacy = fresh();
   delete legacy.settings.pinClock;
   delete legacy.settings.pinSearch;
@@ -124,7 +124,7 @@ test('missing pin settings enable both controls while preserving legacy desktop 
   const loaded = await loadState();
   assert.deepEqual(loaded, {
     ...legacy,
-    settings: { ...legacy.settings, pinClock: true, pinSearch: true }
+    settings: { ...legacy.settings, pinClock: false, pinSearch: false }
   });
   assert.equal(loaded.schemaVersion, 1);
   assert.equal(fixture.writes, 0, 'loading a legacy record must not silently replace it');
@@ -136,7 +136,7 @@ test('missing pin settings enable both controls while preserving legacy desktop 
     delete partial.settings[missing];
     partial.settings[other] = false;
     const normalized = validateImport(partial);
-    assert.equal(normalized.settings[missing], true);
+    assert.equal(normalized.settings[missing], false);
     assert.equal(normalized.settings[other], false, 'an existing opt-out remains independent');
   }
 });
@@ -144,8 +144,8 @@ test('missing pin settings enable both controls while preserving legacy desktop 
 test('independent pin choices survive storage and backup round trips', async () => {
   const fixture = extensionFixture();
   let current = await loadState();
-  assert.equal(current.settings.pinClock, true);
-  assert.equal(current.settings.pinSearch, true);
+  assert.equal(current.settings.pinClock, false);
+  assert.equal(current.settings.pinSearch, false);
   for (const [pinClock, pinSearch] of [[true, false], [false, true], [false, false], [true, true]]) {
     current.settings.pinClock = pinClock;
     current.settings.pinSearch = pinSearch;

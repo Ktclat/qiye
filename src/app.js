@@ -136,7 +136,12 @@ function updateLinkPreview(form, options = {}) {
  preview.style.setProperty('--tile-ink',tileInk(form.elements.color.value));
  const markup=siteGlyph(item);
  if(view.rendered!==markup || view.preview!==preview){preview.innerHTML=markup;view.rendered=markup;view.preview=preview;}
- bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates});
+ bindFaviconImages(preview,{force:!!options.force,candidates:view.candidates,targetSize:state.settings.gridSize,onStatus:info=>{
+  const quality=$('#favicon-quality',form);if(!quality||!form.isConnected||faviconFormStates.get(form)!==view)return;
+  quality.dataset.quality=info.adequate?'sharp':'low';
+  quality.textContent=info.url?(info.scalable?'矢量图标 · 可随显示尺寸缩放':`实际位图 ${info.width} × ${info.height}px · 当前需要约 ${info.requiredSize}px${info.adequate?' · 清晰度充足':' · 原图偏小，保留最佳可用结果'}`):'未取得可用图片，显示文字回退。';
+  quality.title=info.url||'';
+ }});
  button.disabled=view.busy || mode === 'text' || !view.url;
  button.textContent=view.busy ? '正在提取…' : '智能提取';
  status.textContent=view.message || (mode === 'text' ? '使用下方的文字 / Emoji 与背景色。' : '自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。');
@@ -228,46 +233,45 @@ function renderClock() {
   $('#date').textContent = parts.join('　');
  }
 }
+// Pinned controls live OUTSIDE the scrollport. No shrink-on-scroll, overlay,
+// backdrop change, or z-index trick is needed to keep cards away from them.
+function positionHeaderRegions() {
+ const dock=$('#header-dock'),flow=$('#flow-header');
+ if(!dock||!flow)return;
+ for(const [selector,pinned] of [['#clock-block',state.settings.pinClock],['.search-wrapper',state.settings.pinSearch]]) {
+  const node=$(selector),target=pinned?dock:flow;
+  if(node.parentElement!==target)target.append(node);
+  node.classList.remove('is-stuck');
+ }
+ // Preserve time-before-search inside either region without moving stable nodes.
+ for(const region of [dock,flow]) {
+  const clock=$('#clock-block',region),search=$('.search-wrapper',region);
+  if(clock&&search&&clock.nextElementSibling!==search)region.insertBefore(clock,search);
+  region.hidden=![...region.children].some(node=>!node.hidden);
+ }
+ document.body.classList.toggle('has-pinned-header',!dock.hidden);
+ document.body.classList.toggle('has-flow-header',!flow.hidden);
+}
 function updatePinnedHeader() {
- const clock = $('#clock-block'), search = $('.search-wrapper');
- const rect = clock.getBoundingClientRect();
- const clockHeight = state.settings.pinClock && !clock.hidden ? rect.height : 0;
- document.documentElement.style.setProperty('--pinned-clock-height', `${clockHeight}px`);
- const pinTop = parseFloat(getComputedStyle(clock).getPropertyValue('--header-pin-top')) || 16;
- clock.classList.toggle('is-stuck', state.settings.pinClock && !clock.hidden && window.scrollY > 8 && rect.top <= pinTop + 1);
- search.classList.toggle('is-stuck', state.settings.pinSearch && !search.hidden && window.scrollY > 8 && search.getBoundingClientRect().top <= pinTop + clockHeight + 13);
+ // Kept as a small compatibility hook; scrolling never mutates header styling.
+ $('#clock-block').classList.remove('is-stuck');
+ $('.search-wrapper').classList.remove('is-stuck');
 }
 function updateHeaderPlacement() {
- const main = $('#main'), bounds = main.getBoundingClientRect(), css = getComputedStyle(main);
- const left = bounds.left + parseFloat(css.paddingLeft || 0), right = bounds.right - parseFloat(css.paddingRight || 0);
- const clockText = $('#clock');
+ const clockText=$('#clock');
  clockText.style.fontSize='';
- const available = Math.max(1,right-left-32);
- if (!clockText.hidden && clockText.scrollWidth > available) clockText.style.fontSize=(parseFloat(getComputedStyle(clockText).fontSize)*available/clockText.scrollWidth)+'px';
- for (const [selector,key] of [['#clock-block','clock'],['.search-wrapper','search']]) {
-  const el = $(selector), property = `--${key}-shift`;
-  const previous = parseFloat(el.style.getPropertyValue(property)) || 0;
-  const rect = el.getBoundingClientRect();
-  if (el.hidden || !rect.width) { el.style.setProperty(property,'0px'); continue; }
-  const baseLeft = rect.left - previous, baseRight = rect.right - previous;
-  const desired = state.settings[key+'OffsetX'] * window.innerWidth / 100;
-  const offset = Math.max(left - baseLeft, Math.min(right - baseRight, desired));
-  el.style.setProperty(property, `${Math.round(offset*100)/100}px`);
+ const region=clockText.closest('.header-region')||$('#main');
+ const available=Math.max(1,region.clientWidth-32);
+ if(!clockText.hidden&&clockText.scrollWidth>available)clockText.style.fontSize=(parseFloat(getComputedStyle(clockText).fontSize)*available/clockText.scrollWidth)+'px';
+ for(const [selector,key] of [['#clock-block','clock'],['.search-wrapper','search']]) {
+  const el=$(selector),parent=el.parentElement,box=parent.getBoundingClientRect(),css=getComputedStyle(parent);
+  const left=box.left+parseFloat(css.paddingLeft||0),right=box.right-parseFloat(css.paddingRight||0);
+  const property=`--${key}-shift`,previous=parseFloat(el.style.getPropertyValue(property))||0,rect=el.getBoundingClientRect();
+  if(el.hidden||!rect.width){el.style.setProperty(property,'0px');continue;}
+  const desired=state.settings[key+'OffsetX']*window.innerWidth/100;
+  const offset=Math.max(left-(rect.left-previous),Math.min(right-(rect.right-previous),desired));
+  el.style.setProperty(property,`${Math.round(offset*100)/100}px`);
  }
- // Sticky controls reserve the toolbar row only if their horizontal regions
- // intersect; desktop-wide layouts keep the compact 16px pin position.
- const tools = $('.top-tools').getBoundingClientRect();
- const navSpace = state.settings.navigationMode==='top' && state.settings.sidebarVisibility==='always' ? 64 : 0;
- let pinTop = 16 + navSpace;
- if (!state.settings.minimal) {
-  const toolbarLeft = tools.right - Math.max(tools.width,192), floor = tools.bottom + 12;
-  const overlaps = el => {const rect=el.getBoundingClientRect();return rect.right>toolbarLeft && rect.left<tools.right;};
-  const clock = $('#clock-block'), search = $('.search-wrapper');
-  const clockHeight = state.settings.pinClock && !clock.hidden ? clock.getBoundingClientRect().height : 0;
-  if (clockHeight && overlaps(clock)) pinTop = Math.max(pinTop,floor);
-  if (state.settings.pinSearch && !search.hidden && overlaps(search)) pinTop = Math.max(pinTop,floor-(clockHeight ? clockHeight+12 : 0));
- }
- document.documentElement.style.setProperty('--header-pin-top',pinTop+'px');
  updatePinnedHeader();
 }
 function renderAvatar() {
@@ -334,13 +338,18 @@ function applySettings() {
  root.dataset.sidebarPosition = s.sidebarPosition;
  root.dataset.sidebarVisibility = s.sidebarVisibility;
  root.dataset.font = s.uiFont;
+ root.dataset.iconShape=s.iconShape;
+ root.dataset.iconDiscovery=s.autoExtractIcons?'auto':'manual';
+ root.dataset.iconBackdrop=s.iconBackdrop;
  const properties = {
   '--gap':s.gap+'px','--tile-size':s.gridSize+'px','--radius':s.radius+'px',
+  '--label-space':Math.max(24,Math.ceil(s.labelSize*1.3)+6)+'px','--cell-size':(s.gridSize+Math.max(24,Math.ceil(s.labelSize*1.3)+6))+'px','--icon-radius':Math.min(s.radius,s.gridSize/2)+'px',
   '--clock-size':s.clockSize+'px','--clock-weight':s.clockWeight,
   '--clock-offset-y':s.clockOffsetY+'px','--search-offset-y':s.searchOffsetY+'px',
   '--search-width':s.searchWidth+'px','--search-height':s.searchHeight+'px','--search-radius':s.searchRadius+'px',
   '--search-opacity':s.searchOpacity/100,'--sidebar-width':s.sidebarWidth+'px','--sidebar-opacity':s.sidebarOpacity/100,
   '--surface-opacity':s.surfaceOpacity/100,'--surface-blur':s.surfaceBlur+'px','--ui-scale':s.uiScale/100,
+  '--quote-safe-space':s.quote?'84px':'0px',
   '--icon-opacity':s.iconOpacity/100,'--label-size':s.labelSize+'px','--label-color':s.labelColor,
   '--clock-color':s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':s.themeColor,
   '--wallpaper-blur':s.blur+'px','--wallpaper-dim':s.dim/100
@@ -360,14 +369,14 @@ function applySettings() {
  $('.search-wrapper').hidden = !s.showSearch;
  if (!s.showSearch) hideSearchMenus();
  $('#daily-quote').hidden = !s.quote;
- renderAvatar(); updateToolbar();
+ positionHeaderRegions(); renderAvatar(); updateToolbar();
  let wallpaper = WALLPAPERS.find(w=>w.id === s.wallpaper) || WALLPAPERS[0];
  const remote = s.wallpaperApiEnabled && normalizeWallpaperPhoto(s.remoteWallpaper);
  if (s.dailyWallpaper && !s.customWallpaper && !remote) wallpaper = WALLPAPERS[Math.floor(Date.now()/86400000) % WALLPAPERS.length];
  const credit = $('#wallpaper-credit');
  if (credit) {
   credit.hidden = !remote || !!s.customWallpaper;
-  if (remote) {credit.href=remote.sourceUrl;credit.textContent=`${remote.author} · ${remote.provider==='commons'?'Commons':'Picsum'}`;credit.title='查看壁纸摄影师与照片来源';}
+  if (remote) {credit.href=remote.sourceUrl;credit.textContent=`${remote.author} · ${({commons:'Commons',picsum:'Picsum',deepin:'deepin',wallhaven:'Wallhaven'}[remote.provider]||remote.provider)}`;credit.title='查看壁纸摄影师与照片来源';}
   else {credit.removeAttribute('href');credit.textContent='';}
  }
  const video = $('#wallpaper-video');
@@ -387,7 +396,7 @@ function applySettings() {
 function updateGrid() {
  const wrap = $('.desktop-wrap');
  const width = wrap.getBoundingClientRect().width;
- currentGridColumns = Math.max(3,Math.min(16,Math.floor((width + state.settings.gap)/(state.settings.gridSize + state.settings.gap))));
+ currentGridColumns = Math.max(2,Math.min(16,Math.floor((width + state.settings.gap)/(state.settings.gridSize + Math.max(24,Math.ceil(state.settings.labelSize*1.3)+6) + state.settings.gap))));
  document.documentElement.style.setProperty('--columns', currentGridColumns);
  $$('.tile[data-size]').forEach(el => { const [w,h] = el.dataset.size.split('x').map(Number); el.style.gridColumn = `span ${Math.min(w,currentGridColumns)}`; el.style.gridRow = `span ${h}`; });
 }
@@ -480,6 +489,7 @@ function openDialog(kind,data={}) {
  dialogKind = kind; dialogData = data;
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
+ dialog.classList.toggle('add-dialog',kind==='add');
  document.body.classList.remove('shortcuts-open');
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
@@ -513,8 +523,12 @@ function addDialog(tab,data) {
  let content = '';
  if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
- else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
- return dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'网站、组件、文件夹，一起组成你的个人桌面。') + (item?'':`<div class="tab-bar">${[{id:'link',name:'网站',icon:'link'},{id:'widgets',name:'小组件',icon:'grid'},{id:'folder',name:'文件夹',icon:'folder'}].map(t=>`<button class="tab-button ${tab===t.id?'active':''}" data-add-tab="${t.id}">${icon(t.icon)}${t.name}</button>`).join('')}</div>`) + `<div class="dialog-body">${content}</div>`;
+ else content = `<form id="link-form" data-id="${esc(item?.id || '')}"><div class="form-preview"><span class="preview-icon" id="link-preview-icon" style="background:${esc(item?.color || COLORS[0])};--tile-ink:${tileInk(item?.color || COLORS[0])}">${siteGlyph(item || {})}</span><div><strong id="link-preview-title">${esc(item?.title || '一个常去的地方')}</strong><p id="link-preview-url">${esc(item?.url || '把喜欢的网站，放在触手可及的地方')}</p></div></div>${field('url','网站地址',item?.url || '',{required:true,maxlength:2048,placeholder:'https://example.com'})}${field('title','网站名称',item?.title || '',{required:true,maxlength:40,placeholder:'给这个网站起个名字'})}<div class="two-columns">${selectField('iconMode','图标显示',item?.iconMode || 'auto',[{value:'auto',label:'自动获取网站图标'},{value:'text',label:'使用文字 / Emoji'}])}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}</div><div class="favicon-controls"><button class="secondary-button" type="button" data-action="extract-favicon" ${item?.iconMode==='text'||!safeUrl(item?.url)?'disabled':''}>智能提取</button><p id="favicon-status" class="help-text" role="status" aria-live="polite">自动尝试网站图标；提取时读取该网站的图标声明，失败保留文字。</p></div><p id="favicon-quality" class="icon-status" role="status">正在测量图标清晰度…</p>${field('icon','文字 / Emoji 回退',item?.icon || '',{maxlength:8,placeholder:'例如：知、G、🌿',help:'网站图标无法加载时显示，也用于文字模式。'})}<div class="field"><span>文字图标背景色</span>${colorsHtml(item?.color || COLORS[0])}</div>${formActions(item?'保存修改':'添加到桌面')}</form>`;
+ const head=dialogHeader(item?'编辑'+(item.type==='folder'?'文件夹':'网站'):'添加到栖页',item?'让你的桌面更合心意。':'收纳常用网站，组合日常组件。');
+ if(item)return head+`<div class="dialog-body">${content}</div>`;
+ const tabs=[{id:'widgets',name:'小组件',icon:'grid'},{id:'link',name:'网站',icon:'link'},{id:'folder',name:'文件夹',icon:'folder'}];
+ return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="添加内容分类">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>内容仅保存到你的桌面</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||'网站'}">${content}</section></div>`;
+
 }
 function groupDialog(id) {
  const g = state.groups.find(g=>g.id===id);
@@ -570,10 +584,15 @@ function settingsDialog(tab) {
   ${field('url','搜索地址模板','',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:'用 {q} 代表关键词。支持 http 和 https 地址。'})}
   <div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${icon('plus')}添加引擎</button></div></form>`;
  else if(tab==='icons') content = `
+  <div class="icon-settings-preview" aria-label="图标外观预览">${state.items.filter(i=>i.type==='link'&&!i.folderId).slice(0,3).map(i=>renderTile({...i,size:'1x1'})).join('')}</div>
   <div class="section-label">网站图标与卡片</div>
-  ${settingRange('gridSize','图标与网格尺寸',48,120)}
-  ${settingRange('radius','卡片圆角',0,48)}
-  ${settingRange('iconOpacity','网站图标透明度',20,100,'%')}
+  ${settingRange('gridSize','图标大小',48,120)}
+  ${settingSwitch('autoExtractIcons','自动补充高清图标','遇到小图或失败时，按需读取公开图标声明；不会弹出权限，也不会通过第三方代理发送收藏列表。')}
+  <p class="help-text">优先矢量和适合屏幕密度的原图，读取 ICO 内的高清帧；网站自身只提供小图时不会把放大冒充高清。编辑网站 → 智能提取可重新尝试，并查看实际像素尺寸。</p>
+  ${preferenceSelect('iconShape','图标形状',[['rounded','统一圆角正方形'],['original','保留原始轮廓']],'统一外框，不拉伸网站标志；圆角只作用于图标，不再挤压小组件。')}
+  ${preferenceSelect('iconBackdrop','图标底色',[['adaptive','轻量自适应底色'],['none','透明 · 不额外添加底色']],'图片自身的白底保留，不自动去白或重绘品牌标志。')}
+  ${settingRange('radius','图标圆角',0,48)}
+  ${settingRange('iconOpacity','图标不透明度',20,100,'%')}
   ${settingRange('gap','图标间距',8,40)}
   ${settingSwitch('showLabels','显示图标名称')}
   ${settingRange('labelSize','名称字号',10,20)}
@@ -613,6 +632,8 @@ function settingsDialog(tab) {
   ${settingRange('uiScale','界面文字比例',85,120,'%')}
   <div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
  else if(tab==='layout') content = `
+  <div class="section-label">时间与搜索的滚动方式</div>
+  <label class="setting-row"><span class="setting-copy"><strong>顶部区域</strong><small>随内容上滑消失，或固定在独立区域；固定时图标不会从下方穿过。</small></span><select data-header-mode aria-label="顶部区域滚动方式"><option value="scroll" ${!s.pinClock&&!s.pinSearch?'selected':''}>随内容滚动</option><option value="fixed" ${s.pinClock&&s.pinSearch?'selected':''}>固定时间和搜索</option>${s.pinClock!==s.pinSearch?'<option value="mixed" selected>分别设置</option>':''}</select></label>
   <div class="section-label">桌面布局</div>
   ${settingSwitch('minimal','极简模式','只显示时间、搜索与壁纸；按 Esc 可恢复桌面。')}
   ${settingSwitch('quote','显示页底短句','固定在视口底部，不随组件数量移动。')}
@@ -625,7 +646,7 @@ function settingsDialog(tab) {
   <div class="section-label">搜索框位置</div>
   ${settingRange('searchOffsetX','搜索水平偏移',-30,30,'vw')}
   ${settingRange('searchOffsetY','搜索垂直偏移',-40,160)}
-  <p class="help-text">水平偏移以窗口宽度为基准，窄屏会自动限制在可见区域。垂直偏移调整排版间距，并保留最小间隔以避免重叠；滚动固定后使用顶部位置。</p>
+  <p class="help-text">水平偏移以窗口宽度为基准，窄屏会自动限制在可见区域。垂直偏移调整排版间距，并保留最小间隔以避免重叠；固定后保留当前位置，在下方独立滚动桌面。</p>
   <div class="button-row"><button class="secondary-button" data-action="reset-positions">恢复默认位置</button></div>`;
  else if(tab==='sidebar') content = `
   <div class="section-label">头像与设置入口</div>
@@ -649,7 +670,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.0 · GPLv3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.1 · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；智能提取只在点击时读取页面图标声明。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
@@ -658,7 +679,7 @@ function settingsDialog(tab) {
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
  return dialogHeader('设置','把栖页调成你喜欢的样子。') + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.0</small></nav>
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.1</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
@@ -831,6 +852,7 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='icon-settings')return openDialog('settings',{tab:'icons'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast('最近搜索已清除。');return;}
@@ -939,7 +961,7 @@ document.addEventListener('change',async event=>{
   if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
-  if(input.dataset.range){await persist();return;}
+  if(input.dataset.range){await persist();if(['gridSize'].includes(input.dataset.range))bindFaviconImages(document,{force:true});return;}
   if(input.name==='searchEngine'&&dialogKind==='settings'){state.settings.searchEngine=input.value;await persist();renderEngine();return;}
   if(input.name==='cityPreset'&&input.value){const [name,lat,lon]=input.value.split('|');const f=input.form;f.elements.cityName.value=name;f.elements.latitude.value=lat;f.elements.longitude.value=lon;return;}
   if(input.id==='bookmark-select-all'){$$('input[name=bookmark]',dialog).forEach(c=>c.checked=input.checked);return;}
@@ -990,6 +1012,7 @@ document.addEventListener('keydown',event=>{
  const typing=/INPUT|TEXTAREA|SELECT/.test(event.target.tagName)||event.target.isContentEditable;
  if((event.ctrlKey||event.metaKey)&&['k','f'].includes(event.key.toLowerCase())){event.preventDefault();openDialog('local-search');return;}
  if(typing||dialog.open)return;
+ if(['PageDown','PageUp','Home','End',' '].includes(event.key)&&!(event.key===' '&&event.target.closest?.('button,a,[role=button]'))&&!event.altKey&&!event.metaKey&&!event.ctrlKey){const sc=$('#content-scroll');event.preventDefault();sc.scrollTo({top:event.key==='Home'?0:event.key==='End'?sc.scrollHeight:sc.scrollTop+(event.key==='PageUp'||event.shiftKey?-1:1)*sc.clientHeight*.85,behavior:state.settings.reducedEffects?'instant':'smooth'});return;}
  if(event.key==='/'){event.preventDefault();if(state.settings.showSearch)$('#search-input').focus();else openDialog('local-search');}
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
@@ -1015,6 +1038,16 @@ async function applyDesktopDrop(intent) {
   state.items = ordered; await commit(); return;
  }
  if (!state.groups.some(group => group.id === intent.groupId)) return;
+ if(intent.kind==='create-folder'){
+  const target=state.items.find(entry=>entry.id===intent.targetId);
+  if(!target||target.id===item.id||item.type!=='link'||target.type!=='link'||item.folderId||target.folderId||item.groupId!==target.groupId||target.groupId!==intent.groupId)return;
+  const folder={id:uid(),groupId:target.groupId,type:'folder',title:'新建文件夹',icon:'folder',color:'#7b9aaf',size:'1x1'};
+  const index=state.items.indexOf(target);
+  // Both children and their new parent enter the SAME validated storage write.
+  item.folderId=folder.id;target.folderId=folder.id;
+  state.items=[...state.items.slice(0,index),folder,...state.items.slice(index)];
+  await commit();toast('已创建文件夹，右键可重命名或移动项目。');return;
+ }
  if (intent.kind === 'folder') {
   const folder = state.items.find(entry => entry.id === intent.folderId && entry.type === 'folder' && entry.groupId === intent.groupId);
   if (!folder || item.type !== 'link') return;
@@ -1044,6 +1077,7 @@ async function init() {
  await faviconCacheReady;
  $$('[data-action=add-group]').forEach(e=>e.innerHTML=icon('plus'));
  $$('.sidebar-bottom [data-action=local-search]').forEach(e=>e.innerHTML=icon('search'));
+ $$('.sidebar-bottom [data-action=icon-settings]').forEach(e=>e.innerHTML=icon('grid'));
  $$('.sidebar-bottom [data-action=settings]').forEach(e=>e.innerHTML=icon('settings'));
  $$('.top-tools [data-action=wallpaper]').forEach(e=>e.innerHTML=icon('wallpaper'));
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));
@@ -1064,7 +1098,7 @@ async function init() {
  new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
  window.addEventListener('resize',updateHeaderPlacement,{passive:true});
  document.fonts?.ready.then(updateHeaderPlacement);
- window.addEventListener('scroll',updatePinnedHeader,{passive:true});
+ $('#content-scroll').addEventListener('scroll',hideSearchMenus,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);
  setInterval(()=>{renderClock();if(!document.hidden)refreshLiveWidgets($('#desktop'),state);},1000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderClock();refreshLiveWidgets($('#desktop'),state);syncController.onVisible();}});
@@ -1074,3 +1108,10 @@ async function init() {
  if(blockedStorage)openDialog('settings',{tab:'data'});
 }
 init().catch(err=>{console.error('Qiye initialization failed',err);toast('桌面初始化失败，请刷新页面重试。');});
+
+document.addEventListener('change',async event=>{
+ if(!event.target.matches('[data-header-mode]'))return;
+ if(event.target.value==='mixed')return;
+ state.settings.pinClock=state.settings.pinSearch=event.target.value==='fixed';
+ try{applySettings();await persist();}catch(error){if(!error.notified)toast(error.message);}
+});

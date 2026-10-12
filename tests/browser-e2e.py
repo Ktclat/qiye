@@ -114,9 +114,9 @@ with sync_playwright() as p:
   check('sidebar scroll exposes hidden groups',lambda:truth(page.locator('#groups').evaluate('n=>n.scrollTop>0')))
   check('scrolling groups does not switch active group',lambda:eq(saved(page)['activeGroupId'],'home'))
   check('sidebar scrollbar hidden, list still scrollable',lambda:eq(page.locator('#groups').evaluate('n=>getComputedStyle(n).scrollbarWidth'),'none'))
-  check('content scrollbar switch only hides track',lambda:eq(page.locator('html').evaluate('n=>getComputedStyle(n).scrollbarWidth'),'none'))
-  page.mouse.move(1000,640);page.mouse.wheel(0,900);page.wait_for_timeout(200)
-  check('content remains wheel-scrollable',lambda:truth(page.evaluate('window.scrollY>0')))
+  check('content scrollbar switch only hides track',lambda:eq(page.locator('#content-scroll').evaluate('n=>getComputedStyle(n).scrollbarWidth'),'none'))
+  r=page.locator('#content-scroll').bounding_box();page.mouse.move(r['x']+r['width']-20,r['y']+r['height']/2);page.mouse.wheel(0,900);page.wait_for_timeout(200)
+  check('content remains wheel-scrollable',lambda:truth(page.locator('#content-scroll').evaluate('n=>n.scrollTop>0')))
   check('scroll tests have no errors',lambda:eq(errors,[]));ctx.close()
   ctx,page,errors=setup({'sidebarWheelMode':'switch'})
   page.locator('#groups').hover();page.mouse.wheel(0,150);page.wait_for_timeout(450)
@@ -130,7 +130,9 @@ with sync_playwright() as p:
   page.locator('[data-gallery-tab="commons"]').click();page.locator('[data-gallery-apply]').wait_for();check('Commons license attribution retained',lambda:truth('CC BY-SA' in page.locator('.wallpaper-photo-credit').inner_text()))
   page.locator('[data-gallery-tab="parameters"]').click();check('wallpaper sliders in separate parameters panel',lambda:truth(page.locator('[data-range="blur"]').is_visible()))
   page.locator('[data-gallery-tab="custom"]').click();check('custom upload is a separate category',lambda:truth(page.locator('[data-action="upload-wallpaper"]').is_visible()))
-  page.locator('[data-gallery-tab="unsplash"]').click();check('keyed providers are honest external entries',lambda:truth('网站入口' in page.locator('.wallpaper-content').inner_text()))
+  page.locator('[data-gallery-tab="deepin"]').click();page.locator('[data-gallery-apply]').first.wait_for();check('deepin shows direct usable images',lambda:eq(page.locator('[data-gallery-apply]').count(),4))
+  page.locator('[data-gallery-tab="wallhaven"]').click();page.locator('[data-gallery-apply]').first.wait_for();check('Wallhaven snapshot is labeled and image-backed',lambda:truth('快照' in page.locator('.wallpaper-content').inner_text() and page.locator('[data-gallery-apply]').count()>0))
+  check('external-only wallpaper tabs and section labels removed',lambda:eq(page.locator('[data-gallery-tab="unsplash"],[data-gallery-tab="pexels"],.wallpaper-nav>small').count(),0))
   page.locator('[data-gallery-tab="official"]').click();page.screenshot(path=str(OUT/'wallpaper-library.png'))
   page.locator('[data-close]').first.click();check('gallery close produces no runtime errors',lambda:eq(errors,[]));ctx.close()
 
@@ -141,6 +143,66 @@ with sync_playwright() as p:
   page.locator('#avatar-file').set_input_files(str(ROOT/'icons/icon128.png'));page.wait_for_function('document.querySelector("#brand-button img")!==null')
   check('local avatar decoded and committed',lambda:truth(saved(page)['settings']['avatar'].startswith('data:image/')))
   check('sidebar/position/avatar changes have no JS errors',lambda:eq(errors,[]));ctx.close()
+  # v0.3.1: independently scrolling desktop and fixed header geometry.
+  long_links=[{**x,'id':x['id']+'-'+str(i)} for i in range(8) for x in links]
+  ctx,page,errors=setup({'pinClock':False,'pinSearch':False},items=long_links,height=720)
+  before=page.locator('#clock').bounding_box()['y']
+  page.locator('#content-scroll').hover();page.mouse.wheel(0,850);page.wait_for_timeout(300)
+  check('flow clock and search scroll upward completely out of the viewport',lambda:truth(page.locator('#clock-block').bounding_box()['y']<0 and page.locator('.search-wrapper').bounding_box()['y']<0))
+  check('flow scrolling does not introduce stuck surfaces',lambda:eq(page.locator('.is-stuck').count(),0));ctx.close()
+  for pins in [(True,True),(True,False),(False,True)]:
+   ctx,page,errors=setup({'pinClock':pins[0],'pinSearch':pins[1]},items=long_links,height=720)
+   selector='#clock-block' if pins[0] else '.search-wrapper'
+   before=page.locator(selector).bounding_box();style_before=page.locator(selector).evaluate('n=>{let s=getComputedStyle(n);return [s.fontSize,s.padding,s.borderWidth,s.backgroundColor]}')
+   page.locator('#content-scroll').hover();page.mouse.wheel(0,1000);page.wait_for_timeout(250)
+   check('fixed header remains stable '+str(pins),lambda:eq(page.locator(selector).bounding_box(),before))
+   check('scroll clipping starts below the fixed region '+str(pins),lambda:truth(page.locator('#content-scroll').bounding_box()['y']>=page.locator('#header-dock').bounding_box()['y']+page.locator('#header-dock').bounding_box()['height']-1))
+   check('fixed styling does not become heavier '+str(pins),lambda:eq(page.locator(selector).evaluate('n=>{let s=getComputedStyle(n);return [s.fontSize,s.padding,s.borderWidth,s.backgroundColor]}'),style_before))
+   check('fixed header does not gain hit-tested desktop cards '+str(pins),lambda:truth(page.locator('#header-dock').evaluate('n=>{const r=n.getBoundingClientRect();return !document.elementFromPoint(r.x+r.width/2,r.bottom-2).closest("[data-item]")}')))
+   ctx.close()
+  ctx,page,errors=setup({'pinClock':True,'pinSearch':True,'clockSize':160,'clockOffsetY':160,'searchOffsetY':160,'navigationMode':'top'},items=long_links,width=520,height=600)
+  check('extreme fixed layout still reserves readable content space',lambda:truth(page.locator('#content-scroll').bounding_box()['height']>=120))
+  check('all fixed children stay inside the dock',lambda:truth(page.locator('#header-dock').evaluate('n=>Array.from(n.children).every(c=>c.getBoundingClientRect().bottom<=n.getBoundingClientRect().bottom+1)')));ctx.close()
+
+  # Real pointer dwell creates one folder with two children, never on a short pass.
+  ctx,page,errors=setup(items=links)
+  original=order(page);a=f'[data-item="{original[0]}"]';b=f'[data-item="{original[1]}"]'
+  drag_begin(page,a,b,.5)
+  check('folder preview does not save before pointer release',lambda:eq(len(saved(page)['items']),len(links)))
+  page.wait_for_timeout(520)
+  check('dwell shows explicit folder-ready feedback',lambda:eq(page.locator('.folder-ready').count(),1))
+  page.mouse.up();page.wait_for_timeout(350)
+  folders=[i for i in saved(page)['items'] if i['type']=='folder']
+  check('release creates exactly one new folder',lambda:eq(len(folders),1))
+  check('both websites and folder persist together',lambda:eq(sorted(i['id'] for i in saved(page)['items'] if i.get('folderId')==folders[0]['id']),sorted(original[:2])))
+  check('folder feedback is cleaned after commit',lambda:eq(page.locator('.folder-pending,.folder-ready,.folder-drop-hint').count(),0))
+  check('new folder shows the two actual child icons',lambda:eq(page.locator('[data-item="'+folders[0]['id']+'"] .mini-site').count(),2));ctx.close()
+  ctx,page,errors=setup(items=links);original=order(page);drag_begin(page,'[data-item="'+original[0]+'"]','[data-item="'+original[1]+'"]',.5);page.mouse.up();page.wait_for_timeout(280)
+  check('brief overlap never creates an accidental folder',lambda:eq(sum(i['type']=='folder' for i in saved(page)['items']),0));ctx.close()
+  ctx,page,errors=setup(items=links);original=order(page);drag_begin(page,'[data-item="'+original[0]+'"]','[data-item="'+original[1]+'"]',.5);page.wait_for_timeout(520);page.keyboard.press('Escape');page.mouse.up();page.wait_for_timeout(200)
+  check('Escape cancels folder creation and restores order',lambda:eq([i['id'] for i in saved(page)['items']],original))
+  check('cancelled folder highlight is fully removed',lambda:eq(page.locator('.folder-pending,.folder-ready,.folder-drop-hint').count(),0));ctx.close()
+
+  ctx,page,errors=setup({'iconOpacity':60,'radius':14,'labelSize':16})
+  check('selected sidebar group is a true square including icon and name',lambda:truth(abs(page.locator('.group-button.active').bounding_box()['width']-page.locator('.group-button.active').bounding_box()['height'])<1))
+  check('website icon opacity and radius follow their controls',lambda:eq(page.locator('[data-item="site-google"] .tile-body').evaluate('n=>[getComputedStyle(n).opacity,getComputedStyle(n).borderRadius]'),['0.6','14px']))
+  check('all website icon display frames use equal width and height',lambda:truth(page.locator('.tile-link .tile-body').evaluate_all('ns=>ns.every(n=>Math.abs(n.getBoundingClientRect().width-n.getBoundingClientRect().height)<1)')))
+  page.locator('.sidebar-bottom [data-action="icon-settings"]').click()
+  check('dedicated sidebar icon opens icon controls',lambda:truth(page.locator('[data-range="gridSize"]').is_visible() and page.locator('[data-preference="iconShape"]').is_visible()))
+  page.locator('[data-close]').first.click();page.locator('.top-tools').hover();page.locator('.top-tools [data-action="add"]').click()
+  check('add window is a left navigation plus right content layout',lambda:eq(page.locator('.add-layout').evaluate('n=>getComputedStyle(n).display'),'grid'))
+  page.locator('[data-add-tab="widgets"]').click();check('widget category renders all thirteen choices',lambda:eq(page.locator('[data-add-widget]').count(),13))
+  page.locator('[data-add-tab="folder"]').click();check('folder category has its independent form',lambda:truth(page.locator('#folder-form').is_visible()))
+  page.locator('[data-add-tab="link"]').click();page.screenshot(path=str(OUT/'add-dialog.png'));page.locator('[data-close]').first.click();check('new settings and chooser have no JS exceptions',lambda:eq(errors,[]));ctx.close()
+
+  kinds=['weather','calendar','notes','todo','countdown','focus','workday','quote','hotlinks','calculator','habit','clock','wallpaper']
+  widget_items=[{'id':'matrix-'+kind,'type':'widget','widget':kind,'groupId':'home','title':kind,'size':'2x2','config':{}} for kind in kinds]
+  for size in [48,74,120]:
+   ctx,page,errors=setup({'gridSize':size},items=widget_items)
+   check('all 2x2 widget frames stay square at icon size '+str(size),lambda:truth(page.locator('.tile-widget .tile-body').evaluate_all('ns=>ns.every(n=>Math.abs(n.getBoundingClientRect().width-n.getBoundingClientRect().height)<1)')))
+   check('widgets retain independent rounded corners at icon size '+str(size),lambda:eq(page.locator('.tile-widget .tile-body').first.evaluate('n=>getComputedStyle(n).borderRadius'),'20px'))
+   if size==74:page.screenshot(path=str(OUT/'widget-matrix.png'))
+   check('widget matrix has no runtime errors '+str(size),lambda:eq(errors,[]));ctx.close()
   for theme in ['dark','light']:
    ctx,page,errors=setup({'theme':theme,'showSeconds':True,'surfaceStyle':'glass'})
    check(theme+' materials loaded',lambda:eq(page.locator('html').get_attribute('data-theme'),theme))

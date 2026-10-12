@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { SITE_ICON_CATALOG } from './site-icon-catalog.js';
 /* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
 
 const FAVICON_CACHE_KEY = 'qiye.favicons.local.v1';
@@ -63,6 +64,8 @@ function sitePageUrl(value) {
   } catch { return null; }
 }
 
+function originKey(pageUrl){return new URL(pageUrl).origin+'/';}
+
 function unique(values) { return [...new Set(values.filter(Boolean))].slice(0, MAX_CANDIDATES); }
 
 function requestedSize({ targetSize = 64, pixelRatio = 1 } = {}) {
@@ -118,6 +121,7 @@ function iconQuality(detail = {}, options = {}) {
 function detailFor(entry, url) {
   const detail = entry?.details?.find(item => item.url === url);
   if (detail) return detail;
+  for(const icons of Object.values(SITE_ICON_CATALOG)){const known=icons.find(icon=>icon.url===url);if(known)return known;}
   let scalable = false;
   try { scalable = /\.svg$/i.test(new URL(url).pathname); } catch { /* No inferred metadata. */ }
   return { url, scalable, kind: /\/apple-touch-icon\.png(?:\?|$)/i.test(url) ? 'apple' : 'fallback' };
@@ -137,7 +141,8 @@ export function getFaviconCandidates(siteUrl, options = {}) {
   if (!pageUrl) return [];
   const entry = currentEntry(pageUrl);
   const origin = new URL(pageUrl).origin;
-  const known = entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : [];
+  const audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
+  const known = [...(entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : []),...audited.map(icon=>icon.url)];
   const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
   const qualityOptions = { targetSize: options.targetSize, pixelRatio: options.pixelRatio };
   const conventional = [`${origin}/favicon.svg`, `${origin}/apple-touch-icon.png`, `${origin}/favicon.ico`, browserFavicon(pageUrl, options)].filter(Boolean);
@@ -152,7 +157,7 @@ export function getFaviconCandidates(siteUrl, options = {}) {
   let keepPreferred = false;
   if (preferred && (preferredQuality.adequate || !preferredQuality.measured || coolingDown)) {
     const best = declared.find(url => iconQuality(detailFor(entry, url), qualityOptions).score > preferredQuality.score);
-    keepPreferred = !best || coolingDown || !preferredQuality.measured;
+    keepPreferred = !best || !preferredQuality.measured || (coolingDown && !iconQuality(detailFor(entry,best),qualityOptions).adequate);
   }
   const first = keepPreferred ? [preferred, ...declared.filter(url => url !== preferred)] : declared;
   const last = conventional.filter(url => !keepPreferred || url !== preferred);
@@ -384,7 +389,7 @@ function parseHtmlIcons(html, pageUrl, options) {
     const rel = String(attrs.rel || '').toLowerCase().split(/\s+/);
     const url = safeImageUrl(attrs.href, base);
     if (!url) continue;
-    const kind = rel.includes('icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
+    const kind = rel.includes('icon') || rel.includes('fluid-icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
     if (kind) {
       const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length, options);
       if (icon) icons.push(icon);
@@ -407,10 +412,12 @@ function parseManifestIcons(text, manifestUrl, offset, options) {
   });
 }
 
-async function boundedText(response, limit) {
-  if (Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
+async function boundedText(response, limit, headOnly=false) {
+  const headEnd=text=>{const match=/<\/head\s*>|<body(?:\s|>)/i.exec(text);return match?match.index+match[0].length:0;};
+  if ((!headOnly || !response.body?.getReader) && Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
   if (!response.body?.getReader) {
-    const text = await response.text();
+    let text = await response.text();
+    if(headOnly&&headEnd(text))text=text.slice(0,headEnd(text));
     if (new TextEncoder().encode(text).byteLength > limit) throw new Error('large');
     return text;
   }
@@ -422,8 +429,9 @@ async function boundedText(response, limit) {
       const { done, value } = await reader.read();
       if (done) break;
       length += value.byteLength;
-      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
       text += decoder.decode(value, { stream: true });
+      if(headOnly){const end=headEnd(text);if(end&&new TextEncoder().encode(text.slice(0,end)).length<=limit){await reader.cancel().catch(()=>{});return text.slice(0,end);}}
+      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
     }
     return text + decoder.decode();
   } finally { reader.releaseLock(); }
@@ -453,7 +461,7 @@ async function fetchMetadata(url, kind, signal) {
     if (!response.ok) throw new Error('network');
     const mime = (response.headers?.get?.('content-type') || '').toLowerCase().split(';')[0].trim();
     if (mime && !(kind === 'html' ? ['text/html', 'application/xhtml+xml'].includes(mime) : /^(?:application\/(?:manifest\+json|json)|text\/json)$/.test(mime))) throw new Error('content');
-    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT), url };
+    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT, kind === 'html'), url };
   }
   throw new Error('redirect');
 }
@@ -463,7 +471,7 @@ function resultFor(pageUrl, source, errorCode = '', options) {
   return { url: candidates[0] || null, candidates, source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
 }
 
-/** Explicit user action only. When requested, the permission API is invoked
+/** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
  * synchronously, before cache initialization or any asynchronous work. Web pages
  * can read only sites that opt into CORS; no proxy bypass is attempted. */
 export function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1 } = {}) {
@@ -541,4 +549,11 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
   pending.set(pageUrl, job);
   job.finally(() => { if (pending.get(pageUrl) === job) pending.delete(pageUrl); });
   return job;
+}
+
+/** Safe diagnostic data for UI; no network and no credentials. */
+export function describeFavicon(siteUrl,iconUrl,options={}){
+ const pageUrl=sitePageUrl(siteUrl),entry=pageUrl?currentEntry(pageUrl):null;
+ const quality=getFaviconQuality(siteUrl,iconUrl,options);
+ return {source:entry?.source||'site',url:iconUrl,quality,warning:entry?.errorCode?WARNINGS[entry.errorCode]:''};
 }

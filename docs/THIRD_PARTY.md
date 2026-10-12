@@ -56,3 +56,11 @@ U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
 ## GPLv3 与素材的界限
 
 栖页原创程序以 GPL-3.0-only 发布，根目录 LICENSE 保留完整许可。此授权不改变 Inter 的 OFL-1.1，也不包含对目标网站商标/图标、用户头像/照片或远端图库素材的再授权。Commons 的图片逐张保留作者、文件页和许可；Picsum 原图遵循对应来源条件。具体获取方式和参考条款见 [WALLPAPERS.md](WALLPAPERS.md)。
+
+## v0.3.1 新增元数据来源
+
+- Deepin：linuxdeepin/deepin-wallpapers 官方仓库 `caae39a555fbeac36da0cacc0fd00d73b2706c7e` 的 `deepin/` 目录。`.reuse/dep5` 对该目录图片声明 UnionTech Software Technology Co., Ltd. / CC BY 4.0；不使用 `nonfree/` 内容。图像不复制进本仓库，元数据保留作者、原文件页和许可证。
+- Wallhaven：官方 API 的 SFW general 月度榜单元数据（2026-10-12），仅保存图片地址、尺寸和来源。原图版权仍归原权利人，**不**因栖页使用 GPLv3 而改为 GPL 或获得统一商用许可。API 文档：https://www.whvn.cc/help/api 。
+- 常用网站图标：`src/site-icon-catalog.js` 记录本次实际核验的首方图标地址与声明信息。源码包不复制商标图片；图标用于识别对应网站，权利归各原权利人。谷歌 128px 与 Figma SVG/192/256 来源另见审计工作流记录。
+
+不使用第三方图标代理，不抓取需登录的个人内容。核验事实和日期见 `docs/SOURCE-AUDIT.json`。

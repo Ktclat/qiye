@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="src/widgets.css">
   <link rel="stylesheet" href="src/sync.css">
   <link rel="stylesheet" href="src/refinements.css">
+  <link rel="stylesheet" href="src/desktop.css">
 </head>
 <body>
   <div id="wallpaper" class="wallpaper" aria-hidden="true"></div>
@@ -24,6 +25,7 @@
     <button class="side-button add-group" data-action="add-group" title="添加分组" aria-label="添加分组"></button>
     <div class="sidebar-bottom">
       <button class="side-button" data-action="local-search" title="本地搜索 · Ctrl / ⌘ K" aria-label="本地搜索"></button>
+      <button class="side-button" data-action="icon-settings" title="图标外观与提取" aria-label="图标外观与提取"></button>
       <button class="side-button" data-action="settings" title="设置" aria-label="设置"></button>
     </div>
   </aside>
@@ -49,6 +51,9 @@
     <button class="tool-button toolbar-mode" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
   </div>
   <main id="main">
+    <div id="header-dock" class="header-region" aria-label="固定时间与搜索"></div>
+    <div id="content-scroll" class="content-scroll" tabindex="-1" aria-label="桌面滚动区">
+    <div id="flow-header" class="header-region">
     <header id="clock-block" class="clock-block">
       <button id="clock" class="clock" title="点击切换极简模式" aria-label="切换极简模式"><span id="clock-time">00:00</span><span id="clock-seconds"></span><span id="clock-period"></span></button>
       <div id="date" class="date"></div>
@@ -63,10 +68,12 @@
         <div id="engine-menu" class="engine-menu" hidden></div>
         <div id="search-suggestions" class="search-suggestions" hidden></div>
       </div>
+    </div>
     <section class="desktop-wrap" aria-label="个人桌面">
       <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
       <div id="desktop" class="desktop"></div>
     </section>
+    </div>
     <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span></footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>

@@ -417,3 +417,19 @@ test('malformed quality-cache dimensions, future measurements, and non-public ic
   await flush();
   assert.doesNotMatch(records.get('qiye.favicons.local.v1'), /localhost|1000000000/);
 });
+
+test('head-only extraction stops the stream before a huge application body and keeps declared CDN icons',async t=>{
+ let cancelled=false,readCount=0;const chunk=new TextEncoder().encode('<html><head><link rel="icon" sizes="192x192" href="https://cdn.example.com/real.png"></head><body>');
+ const {api}=await setup(t,{
+   fetchImpl:async()=>({
+     ok:true,
+     headers:new Headers({'content-type':'text/html','content-length':'5000000'}),
+     body:{getReader:()=>({
+       read:async()=>{readCount++;return {done:false,value:chunk};},
+       cancel:async()=>{cancelled=true;},
+       releaseLock(){}
+     })}
+   })
+ });
+ const r=await api.discoverFavicon('https://head.example.com/',{force:true});assert.equal(r.candidates[0],'https://cdn.example.com/real.png');assert.equal(cancelled,true);assert.equal(readCount,1);
+});

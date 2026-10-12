@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates } from './favicons.js';
+import { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates, discoverFavicon } from './favicons.js';
+
+import { recoverIcoArtwork } from './icon-artwork.js';
+
+// Metadata requests have their own two-slot queue; page HTML is never fetched
+// from every render, and no permission prompt is opened automatically.
+const metadataQueue=[];let metadataActive=0;
+function queueMetadata(current,job){return new Promise(resolve=>{metadataQueue.push({current,job,resolve});pumpMetadata();});}
+function pumpMetadata(){while(metadataActive<2&&metadataQueue.length){const work=metadataQueue.shift();if(!work.current()){work.resolve(null);continue;}metadataActive++;Promise.resolve().then(work.job).catch(()=>null).then(result=>work.resolve(result)).finally(()=>{metadataActive--;pumpMetadata();});}}
 
 const faviconImageBindings = new WeakMap();
 const faviconImageFailures = new Map();
@@ -74,7 +82,8 @@ export function bindFaviconImages(root = document, options = {}) {
     const candidates = [...new Set(provided)].filter(url => typeof url === 'string' && url).slice(0, 12);
     const tried = new Set();
     let candidateIndex = 0, upgradeIndex = 0, upgrades = null, stopped = false, requestTicket = 0;
-    let best = null;
+    let best = null, enhanced=false;
+    const autoDiscover=options.autoDiscover ?? (globalThis.document?.documentElement?.dataset?.iconDiscovery==='auto');
     if (previous?.siteUrl === siteUrl && !image.hidden && image.naturalWidth && image.naturalHeight) {
       const url = image.currentSrc || image.src;
       best = { url, width: image.naturalWidth, height: image.naturalHeight, quality: getFaviconQuality(siteUrl, url, { ...sizeOptions, width: image.naturalWidth, height: image.naturalHeight }) };
@@ -96,7 +105,38 @@ export function bindFaviconImages(root = document, options = {}) {
     faviconImageWork.add(binding);
     const complete = () => {
       faviconImageWork.delete(binding);
-      if (!best) { image.hidden = true; image.removeAttribute('src'); visual.classList.remove('is-loaded'); }
+      if (!best) { image.hidden = true; image.removeAttribute('src'); visual.classList.remove('is-loaded'); visual.dataset.iconQuality='missing'; }
+      report();
+    };
+    const report=()=>{
+      if(!binding.current())return;
+      const information=best?{siteUrl,url:best.sourceUrl||best.url,width:best.width,height:best.height,requiredSize:best.quality.requiredSize,scalable:best.quality.scalable,adequate:best.quality.adequate}:{siteUrl,url:null,adequate:false};
+      visual.dataset.iconQuality=best?(best.quality.adequate?'sharp':'low'):'missing';
+      visual.dataset.iconWidth=String(best?.width||0);visual.dataset.iconHeight=String(best?.height||0);
+      visual.dataset.iconSource=information.url||'';
+      try{options.onStatus?.(information);}catch{/* Observer callbacks cannot interrupt loading. */}
+    };
+    const enhance=async()=>{
+      if(enhanced||!autoDiscover||!binding.current()){complete();return;}
+      enhanced=true;
+      try{
+        const result=await queueMetadata(binding.current,async()=>{
+          const recovered=best&&!best.quality.adequate?await recoverIcoArtwork(best.sourceUrl||best.url,{requiredSize:best.quality.requiredSize}):null;
+          const metadata=(!recovered||Math.min(recovered.width,recovered.height)<sizeOptions.targetSize*sizeOptions.pixelRatio)?await discoverFavicon(siteUrl,{...sizeOptions,requestPermission:false}):null;
+          return {recovered,metadata};
+        });
+        if(!binding.current()){binding.cancel();return;}
+        const choices=[];
+        if(result?.recovered&&(!best||Math.min(result.recovered.width,result.recovered.height)>Math.min(best.width,best.height)))choices.push({url:result.recovered.dataUrl,sourceUrl:result.recovered.url});
+        for(const url of result?.metadata?.candidates||[])if(!tried.has(url))choices.push({url});
+        let index=0;
+        const next=()=>{
+          if(!binding.current()){binding.cancel();return;}
+          if(best?.quality.adequate||index>=Math.min(3,choices.length)){complete();return;}
+          const choice=choices[index++];load(choice.url,!!best,next,choice.sourceUrl);
+        };
+        next();
+      }catch{complete();}
     };
     const nextUsable = (values, start) => {
       for (let index = start; index < values.length; index++) {
@@ -106,7 +146,7 @@ export function bindFaviconImages(root = document, options = {}) {
       }
       return null;
     };
-    const load = (url, background, done) => {
+    const load = (url, background, done, sourceUrl=null) => {
       faviconImageQueue.push({ binding, start: release => {
         const ticket = ++requestTicket;
         let target;
@@ -136,10 +176,10 @@ export function bindFaviconImages(root = document, options = {}) {
           if (!active()) { if (!binding.current()) binding.cancel(); else cleanup(true); return; }
           const width = target.naturalWidth, height = target.naturalHeight;
           if (!width || !height) { failed(); return; }
-          const quality = getFaviconQuality(siteUrl, url, { ...sizeOptions, width, height });
+          const quality = getFaviconQuality(siteUrl, sourceUrl||url, { ...sizeOptions, width, height });
           cleanup(false);
           faviconImageFailures.delete(url);
-          try { Promise.resolve(rememberFavicon(siteUrl, url, { width, height })).catch(() => {}); }
+          try { Promise.resolve(rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
           catch { /* Cache quotas do not hide a successfully loaded image. */ }
           if (!best || quality.score > best.quality.score) {
             if (background) {
@@ -151,10 +191,11 @@ export function bindFaviconImages(root = document, options = {}) {
               image.replaceWith(target);
               image = target;
             }
-            best = { url, width, height, quality };
+            best = { url, sourceUrl, width, height, quality };
             image.hidden = false;
             visual.classList.add('is-loaded');
           }
+          report();
           done(true);
         };
         target.onerror = failed;
@@ -177,14 +218,14 @@ export function bindFaviconImages(root = document, options = {}) {
         }).slice(0, 3);
       }
       const next = nextUsable(upgrades, upgradeIndex);
-      if (!next) { complete(); return; }
+      if (!next) { enhance(); return; }
       upgradeIndex = next.index;
       load(next.url, true, advanceUpgrade);
     };
     const advanceInitial = () => {
       if (!binding.current()) { binding.cancel(); return; }
       const next = nextUsable(candidates, candidateIndex);
-      if (!next) { complete(); return; }
+      if (!next) { enhance(); return; }
       candidateIndex = next.index;
       load(next.url, !!best, loaded => loaded ? advanceUpgrade() : advanceInitial());
     };

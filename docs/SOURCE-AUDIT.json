@@ -1,0 +1,26 @@
+{
+  "checked": "2026-10-12",
+  "deepinRevision": "caae39a555fbeac36da0cacc0fd00d73b2706c7e",
+  "deepinPhotos": 7,
+  "wallhavenPhotos": 23,
+  "wallhavenAPIHeaders": {
+    "Content-Type": "application/json"
+  },
+  "iconOrigins": [
+    "https://www.bing.com/",
+    "https://www.baidu.com/",
+    "https://duckduckgo.com/",
+    "https://github.com/",
+    "https://www.youtube.com/",
+    "https://www.notion.so/",
+    "https://developer.mozilla.org/",
+    "https://excalidraw.com/"
+  ],
+  "auditRun": "https://github.com/Ktclat/qiye/actions/runs/38237519884",
+  "extraAuditRun": "https://github.com/Ktclat/qiye/actions/runs/38239577616",
+  "extraOrigins": [
+    "https://www.google.com/",
+    "https://www.figma.com/"
+  ],
+  "wallhavenCORS": "No Access-Control-Allow-Origin returned in this audit; metadata snapshot chosen for the static site."
+}

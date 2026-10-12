@@ -33,7 +33,7 @@ function deferred() {
 function harness(extra={}) {
  const dialog={open:true};
  const context=vm.createContext({
-  safeUrl,icon,iconNames,URL,Promise,Date,dialog,bindFaviconImages,
+  safeUrl,icon,iconNames,URL,Promise,Date,dialog,bindFaviconImages,state:{settings:{gridSize:74}},
   $:(selector,root)=>root.querySelector(selector),
   $$:(selector,root)=>[...root.querySelectorAll(selector)],
   getFaviconCandidates:()=>['https://example.com/favicon.ico'],

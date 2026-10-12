@@ -1,6 +1,6 @@
 # 栖页 Qiye · 隐私与权限
 
-版本：v0.3.0　更新：2026-10-12（香港时间）
+版本：v0.3.1　更新：2026-10-12（香港时间）
 
 ## 本机保存与公开网站
 
@@ -85,8 +85,18 @@ WebDAV 使用 Basic 凭据与 HTTPS 传输，仅本机 `localhost` / `127.0.0.1`
 运行与网络验收边界见 [QA.md](QA.md)。字体来源和完整许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。浏览器存储说明见 [Chrome Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage)，外部 API 与协议出处见 [README](../README.md#官方参考)。
 
 
-## v0.3.0 图库与界面补充
+## v0.3.1 图库与界面补充
 
 新增 Commons 来源使用 `commons.wikimedia.org/w/api.php` 和 `upload.wikimedia.org` 的 HTTPS 位图；明示启用后按用户选择来源获取，不在新标签页组件渲染时获取列表。仅接受已识别的 CC/公共领域许可并保留来源，不转发凭据。Unsplash/Pexels 为用户主动打开的原网站入口。清单缓存仅在当前页面内保留最近 5 页。
 
 拖动预览不写存储；松手才提交。侧栏滚轮模式、内容滚动条设置进入桌面备份。头像/本地壁纸只本机读取但会随用户选择的备份/WebDAV 同步；不称为零联网同步。界面行为不收集统计数据。细节见 [壁纸文档](WALLPAPERS.md)。
+
+## v0.3.1 图标补充与壁纸来源
+
+默认开启“自动补充高清图标”。正常图标失败或实际像素不足时，页面可能读取目标网站公开 HTML 的 head、同源 Manifest，或者下载最多 1 MiB 的 ICO 来提取其中真实的大尺寸帧。请求删除查询与片段，省略凭据和 Referer，不运行目标网页脚本；扩展只使用已有权限，不自动申请新权限。可在侧栏“图标”入口关闭。关闭后仍允许正常图片显示和用户主动提取。
+
+常用站点的已核验首方/CDN 图标地址随源码提供，图片运行时从其来源加载；不打包商标图像，也不把整个收藏列表交给图标代理。请求目的站点会获知客户端 IP 和访问其资源这一事实。
+
+图标清晰度、候选地址缓存仍独立于桌面。ICO 原生帧解码为本机 PNG 缓存，键为 `qiye.icon-artwork.v1`，最多 16 条、约 2.4 MB 文本容量、7 天有效；不进入 JSON 备份或 WebDAV。缓存失败不会清除桌面。
+
+启用壁纸图库后，Deepin 图片连接 raw.githubusercontent.com；Wallhaven 缩略图连接 th.wallhaven.cc，完整图片连接 w.wallhaven.cc。两个来源使用随版本分发的元数据精选清单，不是客户端无期限轮询原网站。旧的 Unsplash、Pexels 仅外链栏目已移除；已有用户收藏中的同名网站不删除。作者与许可/来源链接保留，不代表所有图片有相同授权。

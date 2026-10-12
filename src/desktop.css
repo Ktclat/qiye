@@ -1,0 +1,121 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+   v0.3.1: separate scrolling and pinned regions; square desktop geometry. */
+html,body{height:100%;min-height:0;overflow:hidden}
+#main{display:flex;flex-direction:column;height:100dvh;min-height:0;padding:0;overflow:hidden}
+.content-scroll{flex:1;min-height:0;overflow:auto;overflow-x:hidden;overscroll-behavior:contain;padding:0 34px 104px;scrollbar-gutter:stable;outline:none;position:relative}
+.header-region{display:flex;flex-direction:column;align-items:center;flex:none;position:relative;isolation:isolate;min-width:0;gap:0}
+#flow-header{padding-top:max(60px,calc(6vh + var(--clock-offset-y) + var(--nav-header-space)));padding-bottom:24px}
+#header-dock{padding: max(60px,calc(6vh + clamp(-20px,var(--clock-offset-y),10vh) + var(--nav-header-space))) 40px 30px;z-index:12;max-height:none}
+#flow-header[hidden],#header-dock[hidden]{display:none}
+#main .clock-block,#main .clock-block.is-stuck,#main .search-wrapper{position:relative;top:auto;flex:none;margin-left:auto;margin-right:auto}
+#main .clock-block,#main .clock-block.is-stuck{padding:0 12px 6px;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;transition:none;border-radius:0}
+#main .clock-block .clock{color:var(--clock-color);text-shadow:0 2px 22px #00152518}
+#main .clock-block .date{color:var(--clock-color);opacity:.88}
+.clock-theme-color #main .clock,.clock-theme-color #main .date{color:var(--fg)}
+#main .search-wrapper{margin-top:max(12px,calc(24px + var(--search-offset-y)));z-index:24}
+#main .header-region>.search-wrapper:first-child{margin-top:0}
+#header-dock>.search-wrapper{margin-top:max(12px,calc(24px + clamp(-12px,var(--search-offset-y),8vh)))}
+#main .search-form{transition:background-color .15s,box-shadow .15s;border-width:1px}
+#main .search-wrapper.is-stuck .search-form{box-shadow:none}
+#main .desktop-wrap{margin:0 auto;max-width:var(--desktop-max-width);width:100%;padding-top:6px}
+#main.has-pinned-header .desktop-wrap{padding-top:0}
+.minimal #main{padding:0;margin:0}
+.minimal #flow-header,.minimal #header-dock{padding-top:max(70px,calc(24vh + var(--clock-offset-y)));max-height:none}
+html.hide-content-scrollbar .content-scroll{scrollbar-width:none;scrollbar-gutter:auto}
+html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;width:0;height:0}
+/* Each unit is a real square. Widget 2×2 and 4×2 frames no longer inherit the
+   icon's label reservation or the icon-radius slider. */
+.desktop{grid-template-columns:repeat(var(--columns),minmax(0,var(--cell-size)));grid-auto-rows:var(--cell-size);justify-content:center;align-items:stretch;grid-auto-flow:row;gap:var(--gap);padding:0 0 12px}
+.tile{min-height:0;justify-content:flex-start;container-type:inline-size;gap:0}
+.tile-widget .tile-body{width:100%;height:100%;max-width:none;max-height:none;flex:1;aspect-ratio:auto;border-radius:20px;background:none;box-shadow:0 5px 20px rgb(5 15 25 / .10)}
+.tile-widget>.tile-label{display:none}
+.widget-inner{border-radius:inherit;padding:clamp(10px,7cqi,17px);font-size:clamp(11px,5.8cqi,13px)}
+.tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
+.widget-inner h3,.widget-inner strong{max-width:100%}
+.tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:calc(100% - var(--label-space,24px));aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
+.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
+.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - 26px);height:calc(var(--cell-size)*2 + var(--gap) - 26px)}
+.tile-link>.tile-label,.tile-folder>.tile-label{height:var(--label-space,24px);padding-top:6px;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
+.tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
+.tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
+.tile-link .site-visual,.tile-link .site-visual.is-loaded,.folder-site .site-visual,.preview-icon .site-visual{width:100%;height:100%;border-radius:inherit;overflow:hidden;background:transparent;aspect-ratio:1}
+.tile-link .site-favicon,.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;filter:none!important;border-radius:inherit;padding:0}
+html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .tile-link .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .folder-site .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .mini-site .site-visual.is-loaded{background:color-mix(in srgb,var(--tile-color,#64748b) 14%,var(--panel))}
+html[data-icon-shape=original] .tile-link .tile-body:has(.is-loaded),html[data-icon-shape=original] .tile-link .site-visual{border-radius:0!important;background:none!important}
+.tile-link .tile-body{opacity:var(--icon-opacity)}
+.folder-preview{padding:10px;width:100%;height:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:8px;align-content:center}
+.folder-preview .mini-site{width:100%;height:100%;max-height:none;border-radius:clamp(4px,calc(var(--icon-radius)*.6),16px)!important;overflow:hidden!important;aspect-ratio:1}
+.folder-preview .mini-site .site-visual{border-radius:inherit;overflow:hidden}
+.folder-preview .mini-site .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+.tile-folder[data-size="1x1"] .folder-preview{gap:5px;padding:7px}
+.tile-folder[data-size="1x1"] .mini-site .site-glyph{font-size:12px}
+.folder-grid .folder-site{width:var(--tile-size);height:var(--tile-size);border-radius:var(--icon-radius);padding:0;overflow:hidden;opacity:var(--icon-opacity)}
+.folder-grid .folder-item{align-items:center;min-width:0}
+.folder-grid .folder-item .folder-name{font-size:var(--label-size)}
+.preview-icon{border-radius:var(--icon-radius)}
+.engine-mark,.engine-mark .site-visual{background:none!important;border:0;border-radius:0;overflow:hidden;aspect-ratio:1}
+.engine-mark .site-favicon{padding:0;width:100%;height:100%;border-radius:0;filter:none;object-fit:contain}
+/* Selected navigation item is a square encompassing icon and label, not a strip. */
+html[data-navigation=sidebar] .group-button{width:min(64px,calc(var(--sidebar-width) - 6px));height:min(64px,calc(var(--sidebar-width) - 6px));min-height:0;aspect-ratio:1;flex:0 0 auto;gap:3px;padding:3px 2px;border-radius:12px;margin:0 auto;font-size:10px;line-height:12px;border:0;color:var(--muted)}
+html[data-navigation=sidebar] .group-button .icon{width:19px;height:19px}
+html[data-navigation=sidebar] .group-button span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:12px}
+html[data-navigation=sidebar] .group-button.active{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
+.group-button.active:before{display:none!important}
+.sidebar-bottom{gap:4px;padding-bottom:14px}
+.groups{flex:1;max-height:none;min-height:0}
+.brand{flex:none}
+/* Two-column content chooser. No tab is nested inside a form. */
+.app-dialog.add-dialog{width:min(940px,calc(100vw - 36px));padding:0;max-height:calc(100dvh - 40px);overflow:hidden}
+.add-dialog #dialog-content{height:min(740px,calc(100dvh - 44px));display:flex;flex-direction:column;min-height:0}
+.add-dialog .dialog-head{padding:24px 28px 20px;flex:none}
+.add-layout{display:grid;grid-template-columns:166px minmax(0,1fr);flex:1;min-height:0;border-top:1px solid var(--panel-border)}
+.add-nav{display:flex;flex-direction:column;gap:6px;padding:18px 10px;border-right:1px solid var(--panel-border)}
+.add-nav button{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;color:var(--muted);text-align:left;font-size:13px}
+.add-nav button[aria-selected=true]{background:var(--accent-soft);color:var(--fg);font-weight:600}
+.add-nav button:hover{color:var(--fg);background:var(--panel-2)}
+.add-nav p{margin-top:auto;color:var(--muted);font-size:10px;line-height:1.8;padding:10px}
+.add-content{overflow:auto;overscroll-behavior:contain;padding:24px 28px 28px;min-width:0;min-height:0}
+.add-content .catalog{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.add-content .catalog-card{min-width:0;padding:16px;align-items:flex-start;border-radius:14px}
+.add-content .form-preview{margin-top:0}
+.icon-settings-preview{display:flex;gap:16px;align-items:center;padding:16px 0 24px;flex-wrap:wrap}
+.icon-settings-preview .tile{width:var(--cell-size);height:var(--cell-size);flex:none}
+.icon-status{font-size:11px;color:var(--muted);line-height:1.6;max-width:100%;overflow-wrap:anywhere}
+.icon-status[data-quality=low]{color:var(--w-error,#cf9352)}
+.icon-source-options{display:flex;gap:8px;overflow:auto;padding:6px 0 12px}
+.icon-source-options button{width:64px;flex:none;padding:5px;border:1px solid var(--panel-border);border-radius:12px;font-size:9px;color:var(--muted)}
+.icon-source-options img{width:42px;height:42px;object-fit:contain;display:block;margin:auto}
+.icon-source-options button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+/* Folder hover uses a dwell preview; edges retain real-time reorder. */
+body.is-dragging .tile.folder-pending .tile-body{transform:scale(.92)!important;outline:2px dashed var(--accent);outline-offset:4px}
+body.is-dragging .tile.folder-ready .tile-body{transform:scale(1.04)!important;outline:2px solid var(--accent);outline-offset:4px;background:var(--accent-soft)!important}
+.folder-drop-hint{position:fixed;z-index:1002;pointer-events:none;transform:translate(-50%,0);padding:7px 11px;border-radius:9px;color:var(--fg);background:var(--panel);border:1px solid var(--panel-border);font-size:11px;box-shadow:0 5px 16px #0002}
+@media(max-width:650px){
+ .content-scroll{padding-left:16px;padding-right:16px}
+ #header-dock{padding-left:18px;padding-right:18px;padding-bottom:24px}
+ #flow-header{padding-top:max(74px,calc(8vh + var(--clock-offset-y) + var(--nav-header-space)))}
+ .app-dialog.add-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}
+ .add-dialog #dialog-content{height:calc(100dvh - 24px)}
+ .add-layout{grid-template-columns:96px minmax(0,1fr)}
+ .add-nav{padding:12px 5px}.add-nav button{flex-direction:column;gap:6px;padding:12px 5px;font-size:11px}
+ .add-content{padding:18px 12px}.add-content .catalog{grid-template-columns:1fr}
+ .add-content .two-columns{grid-template-columns:1fr}.add-dialog .dialog-head{padding:18px}
+ .tile-widget .tile-body{border-radius:16px}.widget-inner{padding:10px}
+}
+@media(max-height:600px){#header-dock{padding-top:48px;padding-bottom:18px}#header-dock .clock{font-size:min(var(--clock-size),54px)}#header-dock>.search-wrapper{margin-top:12px}}
+
+/* Dock height is content-driven, not a shrinking sticky overlay. On shorter
+   screens the chosen clock size is bounded so a scrollable desktop remains. */
+#header-dock{padding-top:max(52px,calc(6vh + clamp(-20px,var(--clock-offset-y),8vh) + var(--nav-header-space)))}
+#header-dock #clock{font-size:min(var(--clock-size),17dvh)}
+#header-dock>.search-wrapper{margin-top:max(12px,calc(24px + clamp(-12px,var(--search-offset-y),4vh)))}
+.widget-inner .wallpaper-launcher{padding:20px;background:linear-gradient(transparent,rgba(8,31,30,.55));color:#fff}
+@container(max-width:170px){.widget-inner .wallpaper-launcher{padding:12px}.wallpaper-launcher strong{font-size:17px}.wallpaper-launcher>span:not(.wallpaper-eyebrow):not(.wallpaper-launch-arrow){font-size:9px}}
+html[data-navigation=sidebar] .group-button .icon{width:18px;height:18px}
+html[data-navigation=sidebar] .group-button{gap:2px;padding:2px}
+@media(max-height:600px){#header-dock{padding-top:calc(48px + var(--nav-header-space));padding-bottom:16px}#header-dock #clock{font-size:min(var(--clock-size),12dvh)}}
+
+/* Keep the fixed quote outside the desktop scrollport as well. */
+.content-scroll{margin-bottom:var(--quote-safe-space,84px);padding-bottom:28px}
+
+.icon-settings-preview .tile{pointer-events:none}

@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../src/favicon-view.js', import.meta.url), 'utf8');
-const executable = source.replace(/^import .*;\n/m, '').replace(/^export /gm, '') + '\nglobalThis.bind = bindFaviconImages;';
+const executable = source.replace(/^import .*;\n/gm, '').replace(/^export /gm, '') + '\nglobalThis.bind = bindFaviconImages;';
 
 // Run the production renderer with observable browser image and timer boundaries.
 // Metadata ranking and persistence have their own integration tests.
@@ -212,4 +212,19 @@ test('upgrade claims receive attempted URLs and measured dimensions, and detache
   detached.image.load(192);
   assert.equal(h.remembered.length, 1);
   assert.equal(h.timers.size, 0);
+});
+
+test('automatic metadata enhancement upgrades a small source without permission prompts or hiding it',async()=>{
+ let discoveries=0;const h=harness({recoverIcoArtwork:async()=>null,discoverFavicon:async(site,o)=>{discoveries++;assert.equal(o.requestPermission,false);return {candidates:['https://example.com/declared.svg']};}});
+ const v=h.visual();h.bind(v.root,{autoDiscover:true,targetSize:74,pixelRatio:2});v.image.load(16);
+ const initial=v.image;await new Promise(setImmediate);
+ assert.equal(discoveries,1);assert.equal(v.image,initial);assert.equal(v.image.hidden,false);
+ assert.equal(h.requests.at(-1).url,'https://example.com/declared.svg');h.requests.at(-1).image.load(74);
+ assert.notEqual(v.image,initial);assert.equal(v.element.dataset.iconQuality,'sharp');
+});
+test('disabled automatic extraction retains the original source without any metadata requests',async()=>{
+ let calls=0;const h=harness({discoverFavicon:async()=>{calls++;}}),v=h.visual();h.bind(v.root,{autoDiscover:false});v.image.load(16);await new Promise(setImmediate);assert.equal(calls,0);assert.equal(v.image.hidden,false);assert.equal(v.element.dataset.iconQuality,'low');
+});
+test('late metadata cannot hydrate a detached group or replace a subsequent manual binding',async()=>{
+ let done;const h=harness({recoverIcoArtwork:async()=>null,discoverFavicon:()=>new Promise(r=>done=r)}),v=h.visual();h.bind(v.root,{autoDiscover:true});v.image.load(16);await new Promise(setImmediate);v.element.isConnected=false;done({candidates:['https://example.com/late.svg']});await new Promise(setImmediate);assert.equal(h.requests.length,1);
 });

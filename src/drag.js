@@ -2,7 +2,8 @@
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
 const CLICK_GUARD_MS = 550;
-const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside'];
+const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
+export const FOLDER_DWELL_MS = 500;
 
 /** Return an ordered copy without changing item objects or unrelated entries. */
 export function reorderById(entries, sourceId, targetId, position = 'before') {
@@ -56,6 +57,13 @@ export function resolveDropIntent({ state, source, target, point }) {
      point.y > rect.top + rect.height * .2 && point.y < rect.bottom - rect.height * .2) {
   return { kind:'folder', itemId:item.id, groupId:destination.groupId, folderId:destination.id };
  }
+ // Only two top-level websites can form a new folder. Widgets and folders
+ // must never become children of another folder.
+ if(item.type==='link'&&destination.type==='link'&&rect&&
+    point.x>rect.left+rect.width*.28&&point.x<rect.right-rect.width*.28&&
+    point.y>rect.top+rect.height*.18&&point.y<rect.bottom-rect.height*.30) {
+  return {kind:'create-folder',itemId:item.id,targetId:destination.id,groupId:destination.groupId};
+ }
  return { kind:'reorder', itemId:item.id, targetId:destination.id, position:dropPosition(rect, point) };
 }
 
@@ -80,10 +88,11 @@ export function createDesktopDragController({
 }) {
  if(!doc || typeof getState!=='function' || typeof onDrop!=='function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
  const win=doc.defaultView || globalThis, listeners=[], animations=new Map();
- let session=null, frame=null, holdTimer=null, ghost=null, suppression=null, busy=false, destroyed=false;
+ let session=null, frame=null, holdTimer=null, ghost=null, mergeHint=null, suppression=null, busy=false, destroyed=false;
  const listen=(node,type,fn,options=true)=>{node.addEventListener(type,fn,options);listeners.push(()=>node.removeEventListener(type,fn,options));};
  const element=t=>t?.nodeType===3?t.parentElement:t;
  const grid=()=>doc.getElementById('desktop'), groups=()=>doc.getElementById('groups');
+ const scrollport=()=>doc.getElementById('content-scroll')||doc.scrollingElement||doc.documentElement;
  const reduced=()=>getState().settings?.reducedEffects || win.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  const nodes=root=>[...root.querySelectorAll(root===groups()?'[data-group]':'[data-item]')];
  const id=node=>node.dataset.item || node.dataset.group;
@@ -118,7 +127,7 @@ export function createDesktopDragController({
   const s=session.source;
   return s.kind==='group'?canDragGroups() && getState().groups.some(g=>g.id===s.id):getState().items.some(i=>i.id===s.id && !i.folderId && i.groupId===getActiveGroupId());
  }
- function unmark(){doc.querySelectorAll('.drop-inside').forEach(n=>n.classList.remove('drop-inside'));}
+ function unmark(){for(const name of DROP_CLASSES)doc.querySelectorAll('.'+name).forEach(n=>n.classList.remove(name));}
  function restore(s){
   if(!s?.original || !s.source.root.isConnected)return;
   const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
@@ -127,7 +136,7 @@ export function createDesktopDragController({
   animate(before,list);
  }
  function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
-  const s=session;session=null;clearTimeout(holdTimer);holdTimer=null;
+  clearMerge();const s=session;session=null;clearTimeout(holdTimer);holdTimer=null;
   if(frame!==null)win.cancelAnimationFrame(frame);frame=null;
   if(s?.active && guard)suppression={x:s.x,y:s.y,pointerId:s.pointerId,until:Date.now()+CLICK_GUARD_MS,waitForRelease};
   if(revert)restore(s);
@@ -142,6 +151,15 @@ export function createDesktopDragController({
    }else image.remove();
   }
   if(s?.capture){try{s.capture.releasePointerCapture(s.pointerId);}catch{}}
+ }
+ function clearMerge(){
+  if(session)session.merge=null;
+  mergeHint?.remove();mergeHint=null;
+ }
+ function showMerge(target,ready){
+  target.classList.add(ready?'folder-ready':'folder-pending');
+  if(!mergeHint&&doc.createElement){mergeHint=doc.createElement('div');mergeHint.className='folder-drop-hint';mergeHint.setAttribute('role','status');doc.body.append(mergeHint);}
+  if(mergeHint){const rect=target.getBoundingClientRect();mergeHint.textContent=ready?'松手创建文件夹':'停留片刻，创建文件夹';mergeHint.style.left=(rect.left+rect.width/2)+'px';mergeHint.style.top=Math.min(win.innerHeight-40,rect.bottom+10)+'px';}
  }
  const cancel=()=>clean({waitForRelease:true});
  function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
@@ -174,18 +192,18 @@ export function createDesktopDragController({
   if(!valid())return cancel();
   const s=session,point={x:s.x,y:s.y},hit=doc.elementFromPoint(s.x,s.y);unmark();
   s.special=null;s.inside=false;
-  if(!hit?.closest)return;
+  if(!hit?.closest){clearMerge();return;}
   const g=hit.closest('[data-group]');
   if(g && groups()?.contains(g) && s.source.kind==='item'){
    const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:'group',id:g.dataset.group,rect:g.getBoundingClientRect()},point});
-   if(intent){s.special=intent;g.classList.add('drop-inside');}return;
+   clearMerge();if(intent){s.special=intent;g.classList.add('drop-inside');}return;
   }
   const root=s.source.root;
-  if(!root.contains(hit))return;
+  if(!root.contains(hit)){clearMerge();return;}
   s.inside=true;
   // Use untransformed current layout for stable FLIP hit testing. Compensate
   // for document/nav scrolling without repeatedly forcing full grid layout.
-  const scrollY=root===groups()?root.scrollTop:(doc.scrollingElement?.scrollTop||0);
+  const scrollY=root===groups()?root.scrollTop:(scrollport()?.scrollTop||0);
   const scrollX=root===groups()?root.scrollLeft:0;
   if(!s.layout || scrollY!==s.scrollY || scrollX!==s.scrollX){
    const dy=(s.scrollY??scrollY)-scrollY,dx=(s.scrollX??scrollX)-scrollX;
@@ -193,7 +211,7 @@ export function createDesktopDragController({
    else s.layout=boxes(nodes(root));s.scrollY=scrollY;s.scrollX=scrollX;
   }
   const own=s.layout.get(s.source.element);
-  if(own && s.x>=own.left && s.x<=own.right && s.y>=own.top && s.y<=own.bottom)return;
+  if(own && s.x>=own.left && s.x<=own.right && s.y>=own.top && s.y<=own.bottom){clearMerge();return;}
   let dest=null,rect=null,best=Infinity;
   for(const [node,r] of s.layout){
    if(node===s.source.element)continue;
@@ -201,8 +219,15 @@ export function createDesktopDragController({
    const d=dx*dx+dy*dy;
    if(d<best){best=d;dest=node;rect=r;}
   }
-  if(!dest)return;
+  if(!dest){clearMerge();return;}
   const intent=resolveDropIntent({state:getState(),source:s.source,target:{kind:s.source.kind==='group'?'group':'item',id:id(dest),rect},point});
+  if(intent?.kind==='create-folder'){
+   if(s.merge?.id!==dest.dataset.item)s.merge={id:dest.dataset.item,since:Date.now()};
+   const ready=Date.now()-s.merge.since>=FOLDER_DWELL_MS;
+   if(ready)s.special=intent;else s.dirty=true;
+   showMerge(dest,ready);return;
+  }
+  clearMerge();
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
   if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
@@ -210,10 +235,10 @@ export function createDesktopDragController({
  }
  function scroll(){
   if(!session?.active)return false;
-  const s=session,hit=doc.elementFromPoint(s.x,s.y),nav=groups(),page=doc.scrollingElement||doc.documentElement;
+  const s=session,hit=doc.elementFromPoint(s.x,s.y),nav=groups(),page=scrollport();
   let el=nav?.contains(hit)?nav:page;
   const horizontal=el===nav && getState().settings?.navigationMode==='top';
-  const r=el===page?{left:0,right:win.innerWidth,top:0,bottom:win.innerHeight}:el.getBoundingClientRect();
+  const r=el===doc.scrollingElement||el===doc.documentElement?{left:0,right:win.innerWidth,top:0,bottom:win.innerHeight}:el.getBoundingClientRect();
   const property=horizontal?'scrollLeft':'scrollTop',before=el[property];
   const delta=edgeScrollDelta(horizontal?s.x:s.y,horizontal?r.left:Math.max(0,r.top),horizontal?r.right:Math.min(win.innerHeight,r.bottom));
   const limit=Math.max(0,horizontal?el.scrollWidth-el.clientWidth:el.scrollHeight-el.clientHeight);

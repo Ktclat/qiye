@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { DIRECT_WALLPAPERS } from './wallpaper-catalog.js';
 /* Public wallpaper provider. No account, API key, or application server. */
 
 export const wallpaperProviders = Object.freeze([
@@ -38,6 +39,7 @@ function wallpaperSourceUrl(value) {
 
 /** Safe, canonical data shared by the widget, background settings, and backups. */
 export function normalizeWallpaperPhoto(value) {
+  if(['deepin','wallhaven'].includes(value?.provider))return normalizeCatalogWallpaper(value);
   if(value?.provider === 'commons') return normalizeCommonsPhoto(value);
   if (!value || typeof value !== 'object' || Array.isArray(value) || value.provider !== 'picsum') return null;
   const id = String(value.id ?? '');
@@ -221,3 +223,20 @@ export async function resolveCommonsWallpaper(photo,{signal,fetchImpl=globalThis
  if(!url)throw new Error('无法获取高清壁纸，原背景已保留');
  return {...safe,url};
 }
+
+/** Catalog snapshots preserve the verified author/license/URL relationship.
+ * Imported backups cannot turn this into an arbitrary remote-image loader. */
+export function normalizeCatalogWallpaper(value){
+ if(!value||typeof value!=='object')return null;
+ const item=DIRECT_WALLPAPERS.find(p=>p.provider===value.provider&&p.id===value.id);
+ if(!item)return null;
+ for(const key of ['url','thumbnail','sourceUrl','licenseUrl'])if(value[key]!==undefined&&value[key]!==item[key])return null;
+ return {...item};
+}
+export async function fetchCatalogWallpaperPage(provider,{page=1,signal}={}){
+ if(!['deepin','wallhaven'].includes(provider)||!Number.isInteger(page)||page<1||page>50)throw Error('壁纸页码无效');
+ if(signal?.aborted)throw Error('已取消');
+ const perPage=provider==='deepin'?4:12;
+ return DIRECT_WALLPAPERS.filter(p=>p.provider===provider).slice((page-1)*perPage,page*perPage).map(p=>({...p}));
+}
+export function catalogWallpaperPages(provider){return Math.max(1,Math.ceil(DIRECT_WALLPAPERS.filter(p=>p.provider===provider).length/(provider==='deepin'?4:12)));}
