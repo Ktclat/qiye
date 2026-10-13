@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { TILE_SIZES } from './widget-sizes.js';
 import { t, localizeSeed } from './i18n.js';
 import { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } from './validation.js';
 import { getWidgetDefinition, newWidgetConfig, validateWidgetConfig } from './widget-registry.js';
@@ -13,13 +14,13 @@ import { normalizeIconSelection } from './icon-selection.js';
  * URL fields, imported object shape, size limits and references are checked here.
  */
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 export const STORAGE_KEY = `qiye.state.v${SCHEMA_VERSION}`;
 export const MAX_BACKUP_BYTES = 6 * 1024 * 1024;
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
 
 const LIMITS = Object.freeze({ groups: 30, items: 1200 });
-const SIZES = new Set(['1x1', '2x1', '2x2', '4x2']);
+const SIZES = new Set(TILE_SIZES);
 const BASE_ENGINES = [
   { id: 'bing', name: '必应', letter: 'b', color: '#0EA5A6', url: 'https://www.bing.com/search?q={q}' },
   { id: 'baidu', name: '百度', letter: '百', color: '#3866F5', url: 'https://www.baidu.com/s?wd={q}' },
@@ -53,11 +54,11 @@ export const DEFAULT_STATE = deepFreeze({
     language: 'auto', theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
-    gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
+    gridSize: 60, gap: 24, radius: 19, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
-    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, dialogScale: 100, showWallpaperCredit: true, clockWeight: 400,
+    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, dialogScale: 100, windowSize: 100, settingsPresentation: 'sidebar', showWallpaperCredit: true, clockWeight: 400,
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
     searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
     showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
@@ -244,6 +245,8 @@ function validateSettings(raw) {
     uiFont: enumeration(v.uiFont, ['inter', 'system'], 'settings.uiFont'),
     uiScale: number(v.uiScale, 'settings.uiScale', 85, 120),
     dialogScale: number(v.dialogScale, 'settings.dialogScale', 75, 150),
+    windowSize: number(v.windowSize, 'settings.windowSize', 75, 125),
+    settingsPresentation: enumeration(v.settingsPresentation, ['sidebar', 'window'], 'settings.settingsPresentation'),
     showWallpaperCredit: bool(v.showWallpaperCredit, 'settings.showWallpaperCredit'),
     clockWeight: number(v.clockWeight, 'settings.clockWeight', 200, 700),
     clockOffsetX: number(v.clockOffsetX, 'settings.clockOffsetX', -30, 30),

@@ -24,7 +24,7 @@ GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码
 
 项目尚未正式推出，**不需要兼容旧版本**。允许直接调整数据结构、组件接口与功能，不保留旧字段、迁移器、兼容别名或按版本回退的分支。默认值仅用于创建新数据；导入与持久化必须验证完整的当前格式，不能通过自动补字段掩盖缺失数据。
 
-当前桌面格式为 `schemaVersion: 3`，存储键为 `qiye.state.v3`。结构发生破坏性变化时同步更新版本标识、创建逻辑、校验、测试夹具和文档；不实现历史格式读取。多标签页修订冲突、存储失败保留和 WebDAV 条件写入仍是当前功能的正确性要求。
+当前桌面格式为 `schemaVersion: 4`，存储键为 `qiye.state.v4`。结构发生破坏性变化时同步更新版本标识、创建逻辑、校验、测试夹具和文档；不实现历史格式读取。多标签页修订冲突、存储失败保留和 WebDAV 条件写入仍是当前功能的正确性要求。
 
 ## 修改与验证
 
@@ -57,4 +57,4 @@ GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码
 
 ## 版本与发布
 
-新组件使用 [组件 API v1](docs/WIDGETS.md)。发布时同步修改 manifest.json 与 package.json，运行预览构建更新生成的版本模块和 HTML，再提交完整源码。推送新版本到 main 或匹配标签即可触发测试和 Release，详见 [RELEASES.md](docs/RELEASES.md)。
+新组件使用 [组件 API v2](docs/WIDGETS.md)。发布时同步修改 manifest.json 与 package.json，运行预览构建更新生成的版本模块和 HTML，再提交完整源码。推送新版本到 main 或匹配标签即可触发测试和 Release，详见 [RELEASES.md](docs/RELEASES.md)。

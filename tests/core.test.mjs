@@ -87,7 +87,7 @@ function extensionFixture(initial) {
 
 test('default state is valid, rich, immutable, and exports a lossless backup', () => {
   const checked = validateImport(DEFAULT_STATE);
-  assert.equal(checked.settings.gridSize, 74);
+  assert.equal(checked.settings.gridSize, 60);
   assert.equal(checked.items.find(i=>i.widget==='weather').config.enabled, false);
   assert.equal(checked.settings.pinClock, false);
   assert.equal(checked.settings.pinSearch, false);

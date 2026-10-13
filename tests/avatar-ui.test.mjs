@@ -29,7 +29,7 @@ function declaration(prefix) {
 }
 const productionCode = [
   ...['const clone =', 'const esc =', 'let state =', 'let persistedState =', 'let editing =',
-    'let dialogKind =', 'let desktopDrag =', 'let avatarRequestSequence ='].map(declaration),
+    'let dialogKind =', 'let desktopDrag =', 'let avatarRequestSequence =', 'let viewerCleanup='].map(declaration),
   ...['persist', 'renderAvatar', 'uploadAvatar', 'openDialog', 'closeDialog', 'resetAvatar'].map(extractFunction),
   declaration("dialog.addEventListener('close'"),
   `globalThis.app = {

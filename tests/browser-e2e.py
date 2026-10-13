@@ -46,15 +46,15 @@ with sync_playwright() as p:
   page=ctx.new_page();page.set_default_timeout(7000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.route('https://**/*',route_external)
   payload=json.dumps(state,ensure_ascii=False)
   if args.local_document:
-   page.evaluate('''data=>{const m=new Map([['qiye.state.v3',data]]);Object.defineProperty(window,'localStorage',{value:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),clear:()=>m.clear()}})}''',payload)
+   page.evaluate('''data=>{const m=new Map([['qiye.state.v4',data]]);Object.defineProperty(window,'localStorage',{value:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),clear:()=>m.clear()}})}''',payload)
    page.set_content((ROOT/'Qiye-preview.html').read_text(encoding='utf-8'),wait_until='domcontentloaded')
   else:
-   page.add_init_script('if(!localStorage.getItem("qiye.state.v3"))localStorage.setItem("qiye.state.v3",'+json.dumps(payload)+')')
+   page.add_init_script('if(!localStorage.getItem("qiye.state.v4"))localStorage.setItem("qiye.state.v4",'+json.dumps(payload)+')')
    page.goto(base+'/',wait_until='domcontentloaded')
   page.locator('[data-item]').first.wait_for();page.wait_for_timeout(300)
   assert not page.locator('#dialog').is_visible(), 'Fixture must load without opening storage recovery'
   return ctx,page,errors
- def saved(page):return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v3"))')
+ def saved(page):return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v4"))')
  def order(page):return page.locator('#desktop>[data-item]').evaluate_all('(ns)=>ns.map(n=>n.dataset.item)')
  def center(page,sel):r=page.locator(sel).bounding_box();return r['x']+r['width']/2,r['y']+r['height']/2
  def drag_begin(page,source,target,endfrac=.9):
@@ -129,7 +129,7 @@ with sync_playwright() as p:
   check('widget move and folder menu produce no errors',lambda:eq(errors,[]))
   retain_assets(page,['site-google'])
   drag_begin(page,'#desktop [data-item="site-google"]','#groups [data-group="work"]',.5);page.mouse.up()
-  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.id==="site-google").groupId==="work"')
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.id==="site-google").groupId==="work"')
   check_assets(page,'cross-group move')
   check('cross-group move removes only the moved item',lambda:eq(page.locator('#desktop [data-item="site-google"]').count(),0));ctx.close()
 

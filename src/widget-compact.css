@@ -1,0 +1,28 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+.widget-heading .widget-title { display:flex; align-items:center; gap:6px; border:0; background:none; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
+.widget-heading .widget-title:hover { color:var(--accent); }
+.widget-inner.widget-compact { padding:0; background:rgb(var(--surface-rgb) / .88); color:var(--fg); }
+.widget-compact>button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; height:100%; padding:7px; border:0; background:none; color:inherit; cursor:pointer; border-radius:inherit; overflow:hidden; }
+.widget-compact>button:hover { background:#ffffff08; }
+.widget-compact .compact-symbol { display:grid; place-items:center; color:#4c9aff; }
+.widget-compact .compact-symbol .widget-icon { width:25px; height:25px; }
+.widget-compact .compact-value { font-size:clamp(14px,24cqi,28px); font-weight:600; line-height:1.1; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.widget-compact .compact-value:empty { display:none; }
+.widget-compact:has(.compact-value:not(:empty)) .compact-symbol { display:none; }
+.widget-compact .compact-caption { display:block; max-width:100%; font-size:11px; line-height:1.3; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; opacity:.72; }
+.compact-calendar .compact-value { color:#fff; background:#327cf5; border-radius:9px; padding:3px 10px; }
+.compact-notes { background:#f5e6ac!important; color:#4c452c!important; }
+.compact-notes .compact-value { font-size:12px; white-space:normal; max-height:34px; }
+.tile[data-size="1x2"] .widget-compact>button { gap:12px; }
+.tile[data-size="2x1"] .widget-compact>button { flex-direction:row; gap:12px; }
+.tile[data-size="2x1"] .compact-caption { max-width:50%; }
+.tile-widget[data-size="2x2"] .widget-inner:not(.widget-compact) { padding:12px; }
+.tile-widget[data-size="2x2"] .w-weather-current strong { font-size:40px; }
+.tile-widget[data-size="2x2"] .w-focus-ring { width:100px; height:100px; }
+.tile-widget[data-size="2x2"] .w-focus-ring strong { font-size:26px; }
+.tile-widget[data-size="2x2"] .w-workday-time { font-size:27px; }
+.tile-widget[data-size="2x2"] .w-clock-time { font-size:30px; }
+.tile-widget[data-size="2x2"] .w-countdown-number strong { font-size:46px; }
+.tile-widget[data-size="2x2"] .w-weather-details { display:none; }
+.tile-widget[data-size="2x2"] .w-weather-off { gap:4px; }
+.tile-widget[data-size="2x2"] .w-weather-off .weather-art { max-height:52px; }

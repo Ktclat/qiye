@@ -2,7 +2,7 @@
 import { t } from './i18n.js';
 // Opt in through widget-extensions.js; not installed on users' desktops by default.
 export const counterWidget = {
-  apiVersion: 1,
+  apiVersion: 2,
   type: 'counter', title: '计数器', description: '每张卡片独立保存的计数器', icon: 'plus', size: '2x2',
   fields: [
     { key: 'label', label: '计数名称', type: 'text', default: '今天的小进步', maxLength: 60, required: true },

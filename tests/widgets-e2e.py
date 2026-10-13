@@ -47,12 +47,12 @@ with sync_playwright() as p:
         if extension:
             page.route('**/widget-extensions.js', lambda route: route.fulfill(content_type='text/javascript', body="import { counterWidget } from './widget-example.js'; export const widgetExtensions = [counterWidget];"))
         payload = json.dumps(state or base_state, ensure_ascii=False)
-        page.add_init_script('if(!localStorage.getItem("qiye.state.v3"))localStorage.setItem("qiye.state.v3",' + json.dumps(payload) + ')')
+        page.add_init_script('if(!localStorage.getItem("qiye.state.v4"))localStorage.setItem("qiye.state.v4",' + json.dumps(payload) + ')')
         page.goto(base, wait_until='domcontentloaded')
         page.locator('[data-item]').first.wait_for()
         return context, page
 
-    def saved(page): return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v3"))')
+    def saved(page): return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v4"))')
 
     def add(page, widget):
         page.locator('.top-tools [data-action=add]').click()
@@ -66,7 +66,7 @@ with sync_playwright() as p:
         for scale in [75, 100, 150]:
             page.locator('#range-dialogScale').fill(str(scale))
             page.locator('#range-dialogScale').dispatch_event('change')
-            page.wait_for_function('(s)=>JSON.parse(localStorage.getItem("qiye.state.v3")).settings.dialogScale===s', arg=scale)
+            page.wait_for_function('(s)=>JSON.parse(localStorage.getItem("qiye.state.v4")).settings.dialogScale===s', arg=scale)
             rect = page.locator('#dialog').bounding_box()
             check(f'{scale}% settings remains inside viewport', rect['x'] >= -1 and rect['y'] >= -1 and rect['x'] + rect['width'] <= 1441 and rect['y'] + rect['height'] <= 951)
             check(f'{scale}% actually scales controls', abs(float(page.locator('#dialog').evaluate('n=>getComputedStyle(n).zoom')) - scale / 100) < .001)
@@ -101,7 +101,7 @@ with sync_playwright() as p:
         context, page = setup(state)
         original = page.locator('[data-item=notes-2] textarea').input_value()
         page.locator('[data-item=notes-1] textarea').fill('first note only')
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.id==="notes-1").data?.notes==="first note only"')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.id==="notes-1").data?.notes==="first note only"')
         check('editing one note leaves sibling unchanged', page.locator('[data-item=notes-2] textarea').input_value() == original)
         for widget in ['todo', 'habit']:
             second_before = page.locator(f'[data-item={widget}-2] li').all_text_contents()
@@ -109,7 +109,7 @@ with sync_playwright() as p:
             page.locator(f'[data-item={widget}-1] input[name=text]').press('Enter')
             check(f'{widget} new entry is isolated', page.locator(f'[data-item={widget}-2] li').all_text_contents() == second_before)
         page.locator('[data-item=focus-1] [data-action=widget-focus-toggle]').click()
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.id==="focus-1").data?.focus.running')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.id==="focus-1").data?.focus.running')
         check('focus timers run independently', page.locator('[data-item=focus-2] [data-live=focus-button]').inner_text() == '开始')
         page.reload(); page.locator('[data-item=notes-1] textarea').wait_for()
         check('independent notes survive reload', page.locator('[data-item=notes-1] textarea').input_value() == 'first note only' and page.locator('[data-item=notes-2] textarea').input_value() == original)
@@ -128,7 +128,7 @@ with sync_playwright() as p:
         context, page = setup(extension=True)
         add(page, 'counter')
         page.locator('[data-counter-add]').click()
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.widget==="counter").config.count===1')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.widget==="counter").config.count===1')
         page.locator('[data-widget=counter] [data-action=widget-config]').click()
         page.locator('[name=config-label]').fill('My counter'); page.locator('[name=config-count]').fill('5')
         page.locator('#widget-form button[type=submit]').click(); page.locator('#dialog').wait_for(state='hidden')
@@ -141,6 +141,18 @@ with sync_playwright() as p:
         page.locator('[data-counter-add]').first.click()
         page.wait_for_function('document.querySelector("[data-counter-value]").textContent!=="5"')
         check('remount does not duplicate listeners', page.locator('[data-counter-value]').first.inner_text() == '6')
+        first_id=next(i['id'] for i in saved(page)['items'] if i.get('widget')=='counter')
+        page.locator(f'[data-item="{first_id}"]').click(button='right',position={'x':3,'y':3});page.locator('#context-menu [data-size="1x1"]').click()
+        page.locator(f'[data-item="{first_id}"] [data-compact]').wait_for()
+        check('extension compact view is a host launcher',page.locator(f'[data-item="{first_id}"] [data-counter-add]').count()==0)
+        page.locator(f'[data-item="{first_id}"] [data-action=widget-open]').click();page.locator('#dialog [data-counter-add]').click()
+        page.wait_for_function('(id)=>JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.id===id).config.count===7',arg=first_id)
+        page.locator('#dialog [data-close]').click();page.locator('#dialog').wait_for(state='hidden')
+        check('extension viewer saves without changing desktop size',next(i for i in saved(page)['items'] if i['id']==first_id)['size']=='1x1')
+        page.locator('.top-tools [data-action=add]').click();page.locator('[name=widgetSize]').select_option('4x2')
+        check('chooser disables unsupported extension size',page.locator('[data-add-widget=counter]').is_disabled())
+        page.locator('[name=widgetSize]').select_option('1x1');check('chooser supports extension compact size',page.locator('[data-add-widget=counter]').is_enabled())
+
         context.close()
         check('no uncaught runtime errors', errors == [])
         print(f'{len(checks)} widget/browser checks passed.', flush=True)

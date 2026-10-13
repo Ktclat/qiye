@@ -6,13 +6,16 @@ export function mountWidgetExtensions(container, host, registry = { get: getWidg
   const instances = [];
   for (const root of container.querySelectorAll('[data-widget]')) {
     const definition = registry.get(root.dataset.widget);
-    if (!definition || definition.builtin) continue;
+    if (!definition || definition.builtin || root.dataset.compact) continue;
     const controller = new AbortController();
     const getItem = () => host.getState().items.find(item => item.id === root.dataset.widgetId && item.widget === definition.type);
     const active = () => !controller.signal.aborted && root.isConnected && !!getItem();
     const report = error => { if (!error?.notified) host.toast?.(`${definition.title}：${error?.message || t("组件运行失败")}`); };
     const api = Object.freeze({
       root, t, locale: getLocale(), formatDate, formatNumber,
+      size: root.dataset.displaySize || getItem()?.size,
+      openSettings: () => { if(active())host.openDialog?.('widget-config', {item:getItem()}); },
+      openDetail: () => { if(active())host.openDialog?.('widget-detail', {item:getItem()}); },
       signal: controller.signal,
       getConfig: () => structuredClone(getItem()?.config || {}),
       async updateConfig(patch) {

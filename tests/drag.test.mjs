@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDesktopDragController, edgeScrollDelta, reorderById, resolveDropIntent } from '../src/drag.js';
+import { createDesktopDragController, edgeScrollDelta, reorderById, resolveDropIntent, DRAG_HOLD_MS } from '../src/drag.js';
 
 const bounds = (left, top, width = 100, height = 100) => ({left, top, width, height, right:left + width, bottom:top + height});
 const initial = () => ({
@@ -148,6 +148,24 @@ test('touch swipe scrolls; holding the surface arms touch sorting',async()=>{
  h.pointer('pointerup',n,150,260,{pointerType:'touch'});h.pointer('pointerdown',n,120,250,{pointerType:'touch'});await new Promise(r=>setTimeout(r,350));
  assert.equal(h.controller.isDragging(),true);assert.equal(h.doc.emit('touchmove',{}).defaultPrevented,true);h.controller.destroy();
 });
+
+test('mouse hold starts once without movement; cancellation suppresses the release click',async()=>{
+ const h=harness(),n=h.nodes.a.control;
+ h.pointer('pointerdown',n,120,250);
+ await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));
+ assert.equal(h.controller.isDragging(),true);
+ assert.equal(h.doc.querySelectorAll('.drag-ghost').length,1);
+ h.controller.cancel();h.pointer('pointerup',n,120,250);
+ assert.equal(h.doc.emit('click',{clientX:120,clientY:250,pointerId:1,detail:1}).defaultPrevented,true);
+ assert.equal(h.doc.querySelectorAll('.drag-ghost').length,0);h.controller.destroy();
+});
+
+test('moving before hold does not start a second session when the timer would expire',async()=>{
+ const h=harness();start(h);
+ await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));
+ assert.equal(h.doc.querySelectorAll('.drag-ghost').length,1);
+ h.controller.cancel();assert.equal(h.doc.querySelectorAll('.drag-ghost').length,0);h.controller.destroy();
+});
 test('Escape restores original DOM and suppresses only the later release click',async()=>{
  const h=harness();start(h);assert.notEqual(h.order()[0],'a');const e=h.doc.emit('keydown',{key:'Escape'});assert.equal(e.defaultPrevented,true);assert.deepEqual(h.order(),['a','b','folder','note']);
  h.pointer('pointerup',h.nodes.a.tile,315,265);await h.flush();assert.equal(h.drops.length,0);assert.equal(h.frames.size,0);assert.equal(h.doc.emit('click',{clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,true);h.controller.destroy();
@@ -165,7 +183,7 @@ test('drop into a folder or another group commits exactly once',async()=>{
  }
 });
 test('native image dragging cannot compete and destroy removes document/window listeners',()=>{
- const h=harness();assert.equal(h.doc.emit('dragstart',{target:h.nodes.a.control}).defaultPrevented,true);assert.equal(h.doc.emit('dragstart',{target:h.nodes.note.control}).defaultPrevented,false);start(h);h.controller.destroy();assert.ok([...h.doc.listeners.values(),...h.win.listeners.values()].every(a=>!a.length));assert.equal(h.frames.size,0);
+ const h=harness();assert.equal(h.doc.emit('dragstart',{target:h.nodes.a.control}).defaultPrevented,true);assert.equal(h.doc.emit('dragstart',{target:h.nodes.note.control}).defaultPrevented,true);start(h);h.controller.destroy();assert.ok([...h.doc.listeners.values(),...h.win.listeners.values()].every(a=>!a.length));assert.equal(h.frames.size,0);
 });
 test('page edge scroll continues until cancellation',()=>{const h=harness();start(h,{y:792,hit:h.grid});assert.ok(h.page.scrollTop>0);h.tick();assert.ok(h.page.scrollTop>0);h.controller.cancel();assert.equal(h.frames.size,0);h.controller.destroy();});
 test('top navigation reorders actual group nodes horizontally',async()=>{

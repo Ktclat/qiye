@@ -11,7 +11,10 @@ if version != json.loads((root/'package.json').read_text(encoding='utf-8'))['ver
 (root/'src/version.js').write_text('// SPDX-License-Identifier: GPL-3.0-only\n// Generated from manifest.json by scripts/build-preview.py.\nexport const APP_VERSION = '+json.dumps(version)+';\n',encoding='utf-8')
 modules=[]
 def inline_imports(source):
- return re.sub(r"import\s*\{([^}]+)\}\s*from\s*'\./([a-z0-9-]+)\.js';", lambda m:'const {'+m[1]+'} = __'+m[2].replace('-','_')+';', source)
+ def binding(match):
+  names = re.sub(r'\s+as\s+', ': ', match[1])
+  return 'const {'+names+'} = __'+match[2].replace('-','_')+';'
+ return re.sub(r"import\s*\{([^}]+)\}\s*from\s*'\./([a-z0-9-]+)\.js';", binding, source)
 
 IMPORT = re.compile(r"import\s*\{([^}]+)\}\s*from\s*'\./([a-z0-9-]+)\.js';")
 ordered = []

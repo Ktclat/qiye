@@ -54,12 +54,12 @@ with sync_playwright() as p:
   page.route('https://**/*',external)
   data=json.dumps(state,ensure_ascii=False)
   if args.local_document:
-   page.evaluate('''s=>{const m=new Map([['qiye.state.v3',s]]);Object.defineProperty(window,'localStorage',{value:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)}})}''',data)
+   page.evaluate('''s=>{const m=new Map([['qiye.state.v4',s]]);Object.defineProperty(window,'localStorage',{value:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)}})}''',data)
    page.set_content((ROOT/'Qiye-preview.html').read_text(encoding='utf-8'),wait_until='domcontentloaded')
   else:
-   page.add_init_script('if(!localStorage.getItem("qiye.state.v3"))localStorage.setItem("qiye.state.v3",'+json.dumps(data)+')');page.goto(base+'/',wait_until='domcontentloaded')
+   page.add_init_script('if(!localStorage.getItem("qiye.state.v4"))localStorage.setItem("qiye.state.v4",'+json.dumps(data)+')');page.goto(base+'/',wait_until='domcontentloaded')
   page.locator('#desktop [data-item="native-test"]').wait_for();return ctx,page,errors,requests,policy
- def saved(page):return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v3"))')
+ def saved(page):return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v4"))')
  def link(page):return next(i for i in saved(page)['items'] if i['id']=='native-test')
  def edit(page):
   page.locator('#desktop [data-item="native-test"]').click(button='right');page.locator('#context-menu [data-context="edit"]').click();page.locator('#link-form').wait_for()
@@ -133,7 +133,7 @@ with sync_playwright() as p:
   page.locator('#brand-button').click();page.locator('[data-settings-tab=layout]').click()
   check('editor scrollbar setting defaults to visible',lambda:eq(page.locator('[data-setting=hideEditorScrollbar]').is_checked(),False))
   page.locator('[data-setting=hideEditorScrollbar]').check()
-  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).settings.hideEditorScrollbar===true')
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).settings.hideEditorScrollbar===true')
   check('editor setting does not change desktop scrollbar preference',lambda:eq(saved(page)['settings']['hideScrollbar'],False));close(page)
   edit(page)
   check('editor scrollbar hidden but overflow remains scrollable',lambda:ok(page.locator('#dialog').evaluate('n=>getComputedStyle(n).scrollbarWidth==="none" && n.scrollHeight>n.clientHeight && getComputedStyle(n).overflowY!=="hidden"')))
@@ -145,7 +145,7 @@ with sync_playwright() as p:
   page.locator('[data-add-tab=widgets]').click()
   check('widget catalog scrollbars are not affected by editor preference',lambda:ok(page.locator('.add-content').evaluate('n=>getComputedStyle(n).scrollbarWidth!=="none"')));close(page)
   page.locator('#brand-button').click();page.locator('[data-settings-tab=layout]').click();page.locator('[data-setting=hideEditorScrollbar]').uncheck()
-  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).settings.hideEditorScrollbar===false');close(page);edit(page)
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).settings.hideEditorScrollbar===false');close(page);edit(page)
   check('editor scrollbar can be restored',lambda:ok(page.locator('#dialog').evaluate('n=>getComputedStyle(n).scrollbarWidth!=="none"')));close(page)
   check('editor scrollbar flows have no runtime errors',lambda:eq(errors,[]));ctx.close()
 
@@ -153,8 +153,8 @@ with sync_playwright() as p:
   check('settings uses navigation title and no tall header',lambda:eq([page.locator('#dialog .dialog-head').count(),page.locator('#workspace-title').inner_text()],[0,'设置']))
   check('dialog accessible label resolves to navigation title',lambda:eq(page.locator('#dialog').get_attribute('aria-labelledby'),'workspace-title'))
   page.locator('[data-settings-tab=sidebar]').click();check('sidebar accent starts neutral',lambda:eq(page.locator('html').get_attribute('data-sidebar-accent'),'neutral'))
-  page.locator('[data-setting=sidebarUseAccent]').check();page.wait_for_function('document.documentElement.dataset.sidebarAccent==="theme" && JSON.parse(localStorage.getItem("qiye.state.v3")).settings.sidebarUseAccent===true');check('theme accent opt-in persists',lambda:eq(saved(page)['settings']['sidebarUseAccent'],True))
-  page.locator('[data-setting=sidebarUseAccent]').uncheck();page.wait_for_function('document.documentElement.dataset.sidebarAccent==="neutral" && JSON.parse(localStorage.getItem("qiye.state.v3")).settings.sidebarUseAccent===false')
+  page.locator('[data-setting=sidebarUseAccent]').check();page.wait_for_function('document.documentElement.dataset.sidebarAccent==="theme" && JSON.parse(localStorage.getItem("qiye.state.v4")).settings.sidebarUseAccent===true');check('theme accent opt-in persists',lambda:eq(saved(page)['settings']['sidebarUseAccent'],True))
+  page.locator('[data-setting=sidebarUseAccent]').uncheck();page.wait_for_function('document.documentElement.dataset.sidebarAccent==="neutral" && JSON.parse(localStorage.getItem("qiye.state.v4")).settings.sidebarUseAccent===false')
   page.screenshot(path=str(OUT/'settings-light.png'));close(page)
   before=page.locator('.search-form').evaluate('(n)=>{const s=getComputedStyle(n);return [s.boxShadow,s.borderTopColor,s.backdropFilter,s.backgroundColor]}')
   page.locator('#search-input').click();after=page.locator('.search-form').evaluate('(n)=>{const s=getComputedStyle(n);return [s.boxShadow,s.borderTopColor,s.backdropFilter,s.backgroundColor]}')
@@ -169,7 +169,7 @@ with sync_playwright() as p:
   page.locator('[data-gallery-preview]').first.click();check('preview stays inside one dialog',lambda:eq(page.locator('dialog[open]').count(),1));check('preview does not change wallpaper',lambda:eq(saved(page)['settings'].get('remoteWallpaper'),oldbg))
   check('preview carries author and original source link',lambda:ok('Test Photographer' in page.locator('.preview-credit').inner_text()))
   page.keyboard.press('Escape');page.locator('[data-gallery-preview]').first.wait_for();check('Escape returns to gallery rather than closing parent',lambda:ok(page.locator('#dialog').is_visible()))
-  page.locator('.wallpaper-photo-card').first.hover();page.locator('[data-gallery-apply]').first.click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).settings.remoteWallpaper?.id==="10"');check('apply persists wallpaper explicitly',lambda:eq(saved(page)['settings']['remoteWallpaper']['id'],'10'))
+  page.locator('.wallpaper-photo-card').first.hover();page.locator('[data-gallery-apply]').first.click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).settings.remoteWallpaper?.id==="10"');check('apply persists wallpaper explicitly',lambda:eq(saved(page)['settings']['remoteWallpaper']['id'],'10'))
   page.screenshot(path=str(OUT/'wallpaper-library-light.png'));check('workspace changes produce no uncaught errors',lambda:eq(errors,[]));ctx.close()
 
   for width in [520,390]:

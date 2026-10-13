@@ -40,6 +40,8 @@ jobs:
           python3 tests/widgets-e2e.py --output test-results/widgets
           python3 tests/daily-widgets-e2e.py
           python3 tests/daily-widgets-e2e.py --preview
+          python3 tests/interaction-e2e.py
+          python3 tests/interaction-e2e.py --preview
           python3 tests/extension-e2e.py
       - name: Package extension, source and standalone preview
         run: |

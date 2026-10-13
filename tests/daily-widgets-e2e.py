@@ -66,12 +66,12 @@ with sync_playwright() as p:
 
             page.route('https://**/*', route_api)
             payload = json.dumps(state, ensure_ascii=False)
-            page.add_init_script('if(!localStorage.getItem("qiye.state.v3"))localStorage.setItem("qiye.state.v3",'+json.dumps(payload)+')')
+            page.add_init_script('if(!localStorage.getItem("qiye.state.v4"))localStorage.setItem("qiye.state.v4",'+json.dumps(payload)+')')
             page.goto(base, wait_until='domcontentloaded'); page.locator('[data-widget=calendar]').wait_for()
 
-            def saved(): return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v3"))')
+            def saved(): return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v4"))')
             def close(): page.locator('[data-close]').first.click(); page.locator('#dialog').wait_for(state='hidden')
-            def memo_count(count): page.wait_for_function('(count)=>JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.widget==="memo").data.entries.length===count',arg=count)
+            def memo_count(count): page.wait_for_function('(count)=>JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.widget==="memo").data.entries.length===count',arg=count)
 
             check(f'{language} sets document language', page.locator('html').get_attribute('lang')==language)
             page.locator('[data-widget=calendar] [data-action=widget-calendar-detail]').click()
@@ -139,7 +139,7 @@ with sync_playwright() as p:
             check(f'{language} closing flushes pending edits', any(e['text']=='Close flushes this draft' for e in next(i for i in saved()['items'] if i.get('widget')=='memo')['data']['entries']))
             check(f'{language} events survive reload', next(i for i in saved()['items'] if i.get('widget')=='calendar')['data']['events'][0]['title'].startswith('Review <script>'))
             page.locator('[data-widget=memo] [data-action=widget-memo-open]').last.click()
-            page.evaluate('''() => { window.originalSetItem = Storage.prototype.setItem; Storage.prototype.setItem = function(key,value) { if(key === "qiye.state.v3") throw new DOMException("Quota exceeded", "QuotaExceededError"); return window.originalSetItem.call(this,key,value); }; }''')
+            page.evaluate('''() => { window.originalSetItem = Storage.prototype.setItem; Storage.prototype.setItem = function(key,value) { if(key === "qiye.state.v4") throw new DOMException("Quota exceeded", "QuotaExceededError"); return window.originalSetItem.call(this,key,value); }; }''')
             page.locator('#memo-text').fill('Recover this failed draft')
             page.locator('.widget-save-feedback').wait_for(state='visible')
             close();page.locator('[data-widget=memo] [data-action=widget-memo-open]').last.click()
@@ -177,7 +177,7 @@ with sync_playwright() as p:
             page.screenshot(path=str(OUT/f'memo-mobile-{language}.png'),animations='disabled');close()
             page.locator('#brand-button').click();page.locator('[data-settings-tab=appearance]').click()
             page.locator('#range-dialogScale').fill('150');page.locator('#range-dialogScale').dispatch_event('change')
-            page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).settings.dialogScale===150');close()
+            page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).settings.dialogScale===150');close()
             for selector in ['[data-action=widget-calendar-detail]','[data-widget=memo] [data-action=widget-memo-open]','[data-action=widget-weather-detail]']:
                 page.locator(selector).last.click()
                 check(f'{language} 360px at 150% fits {selector}',page.locator('#dialog').evaluate('n=>n.scrollWidth<=n.clientWidth+1') and page.locator('#widget-detail-body').evaluate('n=>n.scrollWidth<=n.clientWidth+1'))

@@ -1,0 +1,53 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+#dialog { width:min(var(--form-width,700px),var(--dialog-width)); }
+#dialog.workspace-dialog,#dialog.widget-app-dialog {
+  width:min(var(--window-width,1060px),var(--dialog-width));
+  height:min(var(--window-height,690px),var(--dialog-height));
+}
+#dialog.settings-dialog { width:min(var(--settings-width,920px),var(--dialog-width)); }
+#dialog.settings-drawer {
+  position:fixed; inset:0 0 0 auto; margin:0;
+  width:min(var(--drawer-width,580px),calc(var(--dialog-width) + 24px / var(--dialog-scale)));
+  height:calc(var(--dialog-height) + 24px / var(--dialog-scale));
+  max-height:calc(var(--dialog-height) + 24px / var(--dialog-scale));
+  border-radius:22px 0 0 22px; border-right:0;
+  animation:settings-enter .26s cubic-bezier(.2,.75,.2,1);
+}
+#dialog.settings-drawer .settings-layout { grid-template-columns:138px minmax(0,1fr); }
+#dialog.settings-drawer .settings-nav { padding:24px 8px; }
+#dialog.settings-drawer .settings-nav-button { gap:8px; padding:11px 8px; font-size:12px; }
+#dialog.settings-drawer .settings-nav-button.active { position:relative; border-color:transparent; background:var(--nav-selection); }
+#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:11px; bottom:11px; width:3px; background:#299bff; border-radius:4px; }
+#dialog.settings-drawer .settings-content { padding:52px 22px 28px; }
+#dialog.settings-drawer .workspace-title { font-size:25px; }
+#dialog.settings-drawer .two-columns { grid-template-columns:1fr; }
+#dialog.settings-drawer.compact-dialog .settings-layout { grid-template-columns:1fr; }
+#dialog.settings-drawer.compact-dialog .settings-content { padding:18px 12px; }
+#dialog.settings-drawer .setting-row { flex-wrap:wrap; gap:10px; }
+#dialog.widget-app-expanded,#dialog.workspace-expanded { width:var(--dialog-width); height:var(--dialog-height); }
+.workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
+.context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
+.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:18px; min-height:39px; padding:9px 10px; border-radius:9px; font-size:13px; }
+.context-menu>button>.icon { order:2; width:17px; height:17px; opacity:.86; }
+.context-menu>button:hover { background:#ffffff13; }
+.context-menu hr { margin:4px 6px; border:0; border-top:1px solid #ffffff13; }
+.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; }
+.context-menu .size-options button { padding:6px 2px; font-size:11px; }
+.context-menu .size-options .selected { color:#49a8ff; background:#299bff25; }
+html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 16px 48px #0002; }
+html[data-theme=light] .context-menu>button:hover { background:#00000008; }
+.widget-viewer { padding:20px; }
+.widget-viewer .widget-inner { height:380px; width:100%; min-height:0; container-type:inline-size; border-radius:20px; padding:22px; font-size:14px; }
+.widget-viewer-tools { display:flex; justify-content:flex-end; margin-top:16px; }
+@keyframes settings-enter { from { transform:translateX(30px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+body.reduce-effects #dialog.settings-drawer { animation:none; }
+@media(prefers-reduced-motion:reduce) { #dialog.settings-drawer { animation:none; } }
+@media(max-width:700px) {
+  #dialog.settings-drawer .settings-layout { grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); }
+}
+@media(max-width:520px) {
+  #dialog.settings-drawer .settings-layout { grid-template-columns:100px minmax(0,1fr); }
+  #dialog.settings-drawer .settings-nav-button { gap:4px; padding:10px 5px; }
+  #dialog.settings-drawer .settings-nav-button .icon { display:none; }
+  #dialog.settings-drawer .settings-content { padding:50px 12px 20px; }
+}

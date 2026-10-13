@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { t, localizeSeed } from './i18n.js';
 import { keys, string, number, bool, enumeration, array, unique, date, time, invalid } from './validation.js';
+import { TILE_SIZES, REQUIRED_WIDGET_SIZES } from './widget-sizes.js';
 import { widgetExtensions } from './widget-extensions.js';
 
 const builtins = [
@@ -20,7 +21,7 @@ const builtins = [
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
 ];
 
-export const WIDGET_API_VERSION = 1;
+export const WIDGET_API_VERSION = 2;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
@@ -40,7 +41,7 @@ function fieldValue(field, value, path) {
 }
 
 export function createWidgetRegistry(extensions = []) {
-  const definitions = new Map(builtins.map(entry => [entry.type, Object.freeze({ ...entry, builtin: true, sizes: Object.freeze(['2x2', '4x2']) })]));
+  const definitions = new Map(builtins.map(entry => [entry.type, Object.freeze({ ...entry, builtin: true, sizes: TILE_SIZES })]));
   for (const source of extensions) {
     const entry = { ...source };
     if (!/^[a-z][a-z0-9-]{0,39}$/.test(entry.type) || ['constructor', 'prototype'].includes(entry.type)) throw new Error(t("组件 type 必须是小写字母、数字或连字符"));
@@ -49,9 +50,10 @@ export function createWidgetRegistry(extensions = []) {
     for (const key of ['title', 'description']) string(entry[key], `widget.${key}`, 160);
     if (typeof entry.render !== 'function') throw new Error(`${t("组件 {v0} 缺少 render", {v0: entry.type})}`);
     for (const hook of ['mount', 'update']) if (entry[hook] !== undefined && typeof entry[hook] !== 'function') throw new Error(`${t("组件 {v0} 的 {v1} 必须是函数", {v0: entry.type, v1: hook})}`);
-    entry.sizes = Object.freeze([...(entry.sizes || ['2x2', '4x2'])]);
-    if (!entry.sizes.length || entry.sizes.some(size => !['2x2', '4x2'].includes(size))) throw new Error(t("组件尺寸只支持 2x2 / 4x2"));
-    entry.size ||= entry.sizes[0];
+    entry.sizes = Object.freeze([...(entry.sizes || REQUIRED_WIDGET_SIZES)]);
+    if (entry.sizes.some(size => !TILE_SIZES.includes(size)) || REQUIRED_WIDGET_SIZES.some(size => !entry.sizes.includes(size))) throw new Error(t('组件必须支持 1x1 和 2x2，其他尺寸可选'));
+    unique(entry.sizes, 'widget.sizes');
+    entry.size ||= '2x2';
     if (!entry.sizes.includes(entry.size)) throw new Error(t("组件默认尺寸不在 sizes 中"));
     entry.fields = Object.freeze((entry.fields || []).map(field => {
       if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(field.key) || ['constructor', 'prototype', '__proto__'].includes(field.key)) throw new Error(t("组件配置字段无效"));

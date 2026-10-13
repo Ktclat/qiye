@@ -1,4 +1,4 @@
-# v0.6.0 验证记录
+# v0.7.0 验证记录
 
 日期：2026-10-14。本轮在 Windows 使用 Microsoft Edge 155.0.4283.45，由 Playwright 1.56.0 驱动；另以其配套 Chromium 141.0.7390.37 复核解压扩展。网页使用真实 HTTP origin / localStorage；扩展检查使用临时浏览器配置和实际 `chrome.storage.local`，不读取用户浏览器数据。本地使用 Node.js 26.3.0、Python 3.14.6；CI 目标为 Node.js 22、Python 3.13。
 
@@ -6,18 +6,19 @@
 
 | 检查 | 结果 |
 | --- | --- |
-| `npm test` | 302 项：当前 schema、日期 / 闰年 / ISO 周 / 调休、备忘录、天气解析 / 缓存、i18n / 占位符、草稿并发 / 保存失败 / 同组件冲突，以及原有存储、同步、拖拽与图标行为 |
+| `npm test` | 308 项：当前 schema、日期 / 闰年 / ISO 周 / 调休、备忘录、天气解析 / 缓存、i18n / 占位符、草稿并发 / 保存失败 / 同组件冲突，以及原有存储、同步、拖拽与图标行为 |
 | Python 发布测试 | 3 项：版本触发策略、非法版本、确定性 ZIP 与路径限制 |
 | `tests/browser-e2e.py` | 108 项桌面检查，随后执行 68 项编辑器 / 工作区检查 |
-| `tests/widgets-e2e.py` | 30 项组件 API、实例隔离、缩放与生命周期检查 |
+| `tests/widgets-e2e.py` | 34 项组件 API、实例隔离、缩放与生命周期检查 |
 | `tests/daily-widgets-e2e.py` | 81 项：专用日历 / 备忘录布局、最大化及选区 / 滚动保留、日期差 / 加减 / 工作日即时计算、节日时间线及跳转、键盘标签、手机列表切换、中英两种语言 / 深浅主题、日程 XSS 转义与存储、备忘录搜索 / 置顶 / 导出 / 撤销 / 关闭提交 / 延迟写入时等待关闭、存储配额失败保留 / 重开 / 导出 / 重试、天气部分失败 / 离线缓存 / 搜索 / 单位、语言即时切换 / 默认语言、360px / 150% 详情布局 |
 | `tests/daily-widgets-e2e.py --preview` | 同样 81 项在生成的独立 HTML 上验证 |
+| `tests/interaction-e2e.py` / `--preview` | 各 44 项：全部 14 个组件 / 5 个尺寸、长按按钮拖动与取消、完整详情编辑、抽屉 / 窗口偏好应用时机、独立大小、目录筛选与目标分组、菜单命令 |
 | `tests/extension-e2e.py` | 7 项实际解压扩展检查：MV3 service worker 启动、模块加载、语言持久化、备忘录 chrome.storage.local 保存 / 刷新、popup 语言、manifest 本地化占位符解析 |
 | 打包与构建 | 生成扩展 / 源码 / 独立 HTML / SHA-256；分发包含 `_locales`、英文文档和新模块；Pages 从同源预览生成 |
 
-以上合计 375 项浏览器 / 扩展检查。英文设置各分类额外检查中文残留：只保留语言自称“简体中文”和原站图标文字。详情页截图人工检查了深浅主题、长文本、窄屏、24 小时横向滚动与 7 天列表。源代码中每个静态 `t` 中文消息键都有英文词条；自动测试检查全部占位符一致及用户内容不被翻译。
+以上合计 467 项浏览器 / 扩展检查。英文设置各分类额外检查中文残留：只保留语言自称“简体中文”和原站图标文字。详情页截图人工检查了深浅主题、长文本、窄屏、24 小时横向滚动与 7 天列表。源代码中每个静态 `t` 中文消息键都有英文词条；自动测试检查全部占位符一致及用户内容不被翻译。
 
-本轮移除了旧的通用日历 / 备忘录布局；新增检查覆盖固定历法引擎、农历闰月、24 节气、年度节日、翻译缓存隔离与日期加减边界。图标圆角回归现在显式启用“统一圆角”设置，默认状态单独验证为原始轮廓和透明底色。源模块与单文件预览的最新日常组件用例均在 Chromium 141 上通过，Edge 155 也完成此前同轮 79 项检查。保存延迟和配额失败用例继续通过。
+本轮补充了鼠标长按、同一次拖动不会重复启动、完整尺寸契约、窗口配置严格校验、单文件脚本语法检查、扩展紧凑入口和详情持久化。源码和单文件交互均在 Chromium 141 上通过；Edge 155 完成主要界面回归。日历 / 备忘录原有草稿保存和错误恢复检查继续通过。
 
 ## 复现
 
@@ -31,6 +32,8 @@ python tests/browser-e2e.py --output test-results
 python tests/widgets-e2e.py --output test-results/widgets
 python tests/daily-widgets-e2e.py
 python tests/daily-widgets-e2e.py --preview
+python tests/interaction-e2e.py
+python tests/interaction-e2e.py --preview
 python tests/extension-e2e.py
 python scripts/package-release.py
 python scripts/build-pages.py /path/to/qiye-pages
@@ -46,4 +49,4 @@ python scripts/verify-live.py --expected /path/to/qiye-pages
 
 没有宣称完整复刻 iTab。中国调休仅覆盖 2026 年；未实现日历循环提醒 / 系统通知、备忘录富文本 / 附件和所有地区的法定节日。语言先支持简体中文与英语。草稿失败恢复仅在当前页面内有效，刷新之前需重试保存或导出。
 
-远程 Actions、Release 与 Pages 部署状态以对应提交的 [GitHub Actions](https://github.com/Ktclat/qiye/actions) 为准。本地通过不等于远程成功。历史结果见 [QA-v050.md](QA-v050.md)、[QA-v040.md](QA-v040.md)、[QA-v032.md](QA-v032.md)；审阅发现见 [REVIEW-v060.md](REVIEW-v060.md)。
+远程 Actions、Release 与 Pages 部署状态以对应提交的 [GitHub Actions](https://github.com/Ktclat/qiye/actions) 为准。本地通过不等于远程成功。历史结果见 [QA-v060.md](QA-v060.md)、[QA-v050.md](QA-v050.md)、[QA-v040.md](QA-v040.md)、[QA-v032.md](QA-v032.md)；审阅发现见 [REVIEW-v070.md](REVIEW-v070.md)。

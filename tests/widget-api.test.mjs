@@ -6,6 +6,39 @@ import { newWidgetData, widgetContentSummary } from '../src/widget-data.js';
 import { DEFAULT_STATE, validateImport, exportState } from '../src/core.js';
 import { mountWidgetExtensions } from '../src/widget-runtime.js';
 import { dialogMetrics } from '../src/dialog-scale.js';
+import { renderWidget } from '../src/widgets.js';
+import { TILE_SIZES } from '../src/widget-sizes.js';
+
+test('every builtin supports the five sizes, escapes compact titles and exposes a launcher', () => {
+  for (const definition of listWidgetDefinitions()) {
+    assert.deepEqual(definition.sizes,TILE_SIZES);
+    for(const size of TILE_SIZES) {
+      const item={id:'sample',widget:definition.type,title:'<img src=x>',size,config:newWidgetConfig(definition.type),data:newWidgetData(definition.type)};
+      const html=renderWidget(item,DEFAULT_STATE);
+      assert.ok(html.includes('data-widget='));
+      if(['1x1','1x2','2x1'].includes(size)) {
+        assert.ok(html.includes('data-action="widget-open"'));
+        assert.ok(html.includes('&lt;img src=x&gt;'));
+        assert.ok(!html.includes('<textarea'));
+      }
+    }
+  }
+});
+
+test('extension sizes require both compact and full layouts with no duplicate entries', () => {
+  for(const sizes of [['2x2'],['1x1'],['1x1','2x2','3x3'],['1x1','2x2','2x2']])assert.throws(()=>createWidgetRegistry([{...counterWidget,sizes}]));
+  assert.deepEqual(createWidgetRegistry([{...counterWidget,sizes:TILE_SIZES}]).get('counter').sizes,TILE_SIZES);
+});
+
+test('window presentation and independent size persist under the current strict schema', () => {
+  const state=structuredClone(DEFAULT_STATE);
+  for(const presentation of ['window','sidebar'])for(const size of [75,100,125]) {
+    Object.assign(state.settings,{settingsPresentation:presentation,windowSize:size});
+    assert.deepEqual(validateImport(exportState(state)).settings,state.settings);
+  }
+  for(const size of [74,126,'100',NaN]) { state.settings.windowSize=size;assert.throws(()=>validateImport(state)); }
+  state.settings.windowSize=100;state.settings.settingsPresentation='unknown';assert.throws(()=>validateImport(state));
+});
 
 test('packaged extension registration supplies defaults without changing builtins', () => {
   const registry = createWidgetRegistry([counterWidget]);
@@ -13,12 +46,12 @@ test('packaged extension registration supplies defaults without changing builtin
   assert.equal(registry.list().length, 15);
   assert.deepEqual(registry.newConfig('counter'), { label: '今天的小进步', count: 0 });
   assert.ok(Object.isFrozen(registry.get('counter').fields[0]));
-  assert.deepEqual(registry.get('counter').sizes, ['2x2', '4x2']);
+  assert.deepEqual(registry.get('counter').sizes, ['1x1', '2x2']);
 });
 
 test('registry rejects conflicting IDs, unsupported API, malformed fields and values', () => {
   for (const definition of [
-    { ...counterWidget, type: 'todo' }, { ...counterWidget, apiVersion: 2 }, { ...counterWidget, type: '"><script>' },
+    { ...counterWidget, type: 'todo' }, { ...counterWidget, apiVersion: 1 }, { ...counterWidget, type: '"><script>' },
     { ...counterWidget, render: null }, { ...counterWidget, sizes: ['1x1'] },
     { ...counterWidget, fields: [...counterWidget.fields, counterWidget.fields[0]] },
     { ...counterWidget, fields: [{ key: 'constructor', type: 'text', label: 'bad', default: '' }] },
@@ -102,8 +135,8 @@ test('per-card data enforces limits, references and running timer invariants', (
 
 test('unsupported widget sizes are rejected instead of silently changed', () => {
   const state = structuredClone(DEFAULT_STATE);
-  state.items.find(item => item.widget === 'notes').size = '1x1';
-  assert.throws(() => validateImport(state), /组件不支持此尺寸/);
+  state.items.find(item => item.widget === 'notes').size = '3x3';
+  assert.throws(() => validateImport(state), /卡片尺寸不受支持/);
 });
 
 test('dialog scaling and attribution options are required, validate and round trip', () => {

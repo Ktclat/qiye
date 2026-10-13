@@ -23,7 +23,7 @@ Windows can be scaled from 75% to 150% in **Settings → Theme & materials**. Li
 2. Open `chrome://extensions/` or `edge://extensions/`, enable Developer mode and choose **Load unpacked**.
 3. Select the folder containing `manifest.json`, then open a new tab.
 
-The standalone preview HTML and the public website use the same production modules. Each browser origin keeps separate local data. JSON export / import and your own WebDAV service can transfer the current format. The project is pre-release: only **schema 3** is accepted, with no migration or compatibility for earlier versions.
+The standalone preview HTML and the public website use the same production modules. Each browser origin keeps separate local data. JSON export / import and your own WebDAV service can transfer the current format. The project is pre-release: only **schema 4** is accepted, with no migration or compatibility for earlier versions.
 
 Weather, wallpapers and site icons depend on external services. The web app is subject to browser CORS rules; optional extension permissions are requested for browser integrations and relevant site access. WebDAV credentials stay local and are not included in desktop backups. See the [privacy details](docs/PRIVACY.md).
 
@@ -50,3 +50,8 @@ python scripts/package-release.py
 A new version pushed to `main`, or a matching version tag, triggers verification and a GitHub Release with extension, source, preview and checksum assets. Publish the generated website to `gh-pages` as part of every delivery; pushing source alone does not update the website.
 
 Licensed under **GPL-3.0-only**. Included fonts, site icons and external images retain their respective licenses. Bundled source widgets must have compatible licenses; independent external services use their own terms.
+
+
+## 0.7.0 desktop interactions
+
+Hold a card or widget button for 320 ms to drag; short clicks retain their actions. All built-in widgets support 1×1, 1×2, 2×1, 2×2 and 4×2. Compact tiles open the full interactive view. Settings open as a right drawer by default; choose a centered window in Appearance (applied next time). Window size (75–125%) is independent of UI scaling (75–150%). The redesigned chooser includes previews, search, categories and target groups. The context menu retains its commands with a subtle spring animation. See [Widget API v2](docs/WIDGETS.md) for third-party development and marketplace preparation.

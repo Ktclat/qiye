@@ -29,6 +29,7 @@ html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;widt
 .tile{min-height:0;justify-content:flex-start;container-type:inline-size;gap:0}
 .tile-widget .tile-body{width:100%;height:100%;max-width:none;max-height:none;flex:1;aspect-ratio:auto;border-radius:20px;background:none;box-shadow:0 5px 20px rgb(5 15 25 / .10)}
 .tile-widget>.tile-label{display:none}
+.drag-ghost.tile-widget .tile-body{height:100%}
 .widget-inner{border-radius:inherit;padding:clamp(10px,7cqi,17px);font-size:clamp(11px,5.8cqi,13px)}
 .tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
 .widget-inner h3,.widget-inner strong{max-width:100%}

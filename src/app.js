@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { renderCatalog, filterCatalog, updateCatalogSize } from './widget-catalog.js';
+import { TILE_SIZES, sizeLabel } from './widget-sizes.js';
 import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
 import { chineseLunarDate } from './calendar.js';
@@ -437,7 +439,7 @@ function updateToolbar() {
 function applySettings() {
  setLocale(state.settings.language);localizeDocument();document.title=t("栖页 · 新标签页");
  const s = state.settings;
- applyDialogScale(dialog, s.dialogScale);
+ applyDialogScale(dialog, s.dialogScale, globalThis, s.windowSize);
  const theme = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : s.theme;
 
  const root = document.documentElement;
@@ -605,7 +607,10 @@ function selectField(name,label,value,options) { return `<label class="field"><s
 function formActions(label=t("保存")) { return `<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="secondary-button" type="button" data-close>${t("取消")}</button><button class="primary-button" type="submit">${icon('check')}${esc(label)}</button></div>`; }
 function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})); }
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="${t("图标颜色 {v0}", {v0: c})}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="${t("自定义图标颜色")}" value="${esc(selected || COLORS[0])}"></div>`; }
+let viewerCleanup=()=>{};
 function openDialog(kind,data={}) {
+ viewerCleanup(); viewerCleanup=()=>{};
+ if(kind!=='settings' || !dialog.open || dialogKind!=='settings')dialog.classList.toggle('settings-drawer',kind==='settings' && state.settings.settingsPresentation==='sidebar');
  widgetDetails.close(); cleanupCitySearch();
  desktopDrag?.cancel();
  hideSearchMenus(); $('#context-menu').hidden = true;
@@ -619,7 +624,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
- dialog.classList.remove('widget-app-expanded');
+ dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  dialog.classList.toggle('add-dialog',kind==='add');
@@ -628,8 +633,9 @@ function openDialog(kind,data={}) {
  document.body.classList.remove('shortcuts-open');
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
- if (kind === 'add') html = addDialog(data.tab || 'link',data);
+ if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
+ else if (kind === 'widget-detail' && !['calendar','memo','weather'].includes(detailWidget)) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
  else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=(dedicatedWidget?'':dialogHeader(item.title))+`<div id="widget-detail-body" class="${dedicatedWidget?'widget-app-body':'widget-detail-body'}">${widgetDetails.render(item,data)}</div>`; }
  else if (kind === 'widget-config') html = widgetConfigDialog(state.items.find(i=>i.id===data.item?.id) || data.item);
  else if (kind === 'weather') { const item = state.items.find(i=>i.widget==='weather') || {id:uid(),widget:'weather',title:t('天气'),config:newWidgetConfig('weather')}; html = widgetConfigDialog(item); }
@@ -649,7 +655,14 @@ function openDialog(kind,data={}) {
  dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
- if (kind==='widget-detail') widgetDetails.mount($('#widget-detail-body'),data);
+ if (kind==='widget-detail') {
+  const viewer=$('#widget-viewer-body');
+  if(viewer) {
+    const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
+    const timer=setInterval(()=>refreshLiveWidgets(viewer,state),1000);
+    viewerCleanup=()=>{clearInterval(timer);cleanup();renderDesktop({preserveWidgets:true});};
+  } else widgetDetails.mount($('#widget-detail-body'),data);
+ }
  cleanupCitySearch=bindCitySearch($('#widget-form'));
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
@@ -657,6 +670,7 @@ function openDialog(kind,data={}) {
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
+ viewerCleanup();viewerCleanup=()=>{};
  const pending = widgetDetails.close();
  if (pending) {
   const closingData = dialogData;
@@ -694,12 +708,12 @@ function linkEditorForm(item){
 function addDialog(tab,data) {
  const item = data.item;
  let content = '';
- if (tab === 'widgets') content = `<div class="widget-catalog-tools"><label class="field"><span>${t("查找小组件")}</span><input id="widget-query" type="search" placeholder="${t("搜索名称或用途")}" autocomplete="off"></label>${selectField('widgetSize',t("添加尺寸"),'default',[{value:'default',label:t("组件推荐")},{value:'2x2',label:'2 × 2'},{value:'4x2',label:'4 × 2'}])}</div><p id="widget-catalog-empty" class="widget-catalog-empty" role="status" hidden>${t("没有找到匹配的组件")}</p><div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(t(w.title))}</h3><p>${esc(t(w.description))}</p><small>${t("{v0} 卡片", {v0: esc(w.size || '2x2')})}</small></span></button>`).join('')}</div>`;
+ if (tab === 'widgets' || tab === 'sites') content = renderCatalog({state,groupId:data.groupId||currentGroup().id,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title',t("文件夹名称"),item?.title || '',{required:true,maxlength:24,placeholder:t("例如：灵感收藏")})}${selectField('groupId',t("所在分组"),item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">${t("把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。")}</p>${formActions(item?t("保存文件夹"):t("创建文件夹"))}</form>`;
  else content = linkEditorForm(item);
- const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):dialogCloseButton();
+ const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):dialogCloseButton()+`<button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>`;
  if(item)return head+`<div class="dialog-body">${content}</div>`;
- const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'link',name:t("网站"),icon:'link'},{id:'folder',name:t("文件夹"),icon:'folder'}];
+ const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'}];
  return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}"><h2 class="workspace-title" id="workspace-title">${t("添加")}</h2>${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div>`;
 
 }
@@ -803,6 +817,8 @@ function settingsDialog(tab) {
   <div class="section-label">${t("字体")}</div>
   ${preferenceSelect('uiFont',t("界面字体"),[['inter',t("Inter + 系统中文")],['system',t("系统字体")]],t("Inter 随扩展提供；中文使用设备上的系统字体。"))}
   ${settingRange('uiScale',t("界面文字比例"),85,120,'%')}
+  ${preferenceSelect('settingsPresentation',t('设置打开方式'),[['sidebar',t('侧边面板')],['window',t('居中窗口')]],t('关闭设置后重新打开生效。'))}
+  ${settingRange('windowSize',t('窗口大小'),75,125,'%')}
   ${settingRange('dialogScale',t("选项窗口缩放"),75,150,'%')}
   <p class="help-text">${t("设置、添加、壁纸与编辑窗口整体缩放，工具栏收藏窗口也会跟随。立即预览并保存。")}</p>
   <button class="secondary-button" data-action="reset-dialog-scale">${t("恢复窗口缩放为 100%")}</button>
@@ -893,7 +909,7 @@ function widgetConfigDialog(item) {
  else if(type==='notes') content += selectField('color',t("便签颜色"),c.color,[{value:'yellow',label:t("奶油黄")},{value:'pink',label:t("浅樱粉")},{value:'mint',label:t("薄荷绿")}]);
  else if(definition && !definition.builtin) content += renderExtensionSettings(item);
  else content += `<p class="help-text">${t("直接在卡片中使用这个组件。右键卡片可以调整尺寸或位置。")}</p>`;
- content += selectField('size',t("卡片尺寸"),item.size || '2x2',(definition?.sizes || ['2x2','4x2']).map(value=>({value,label:value==='2x2'?t("2 × 2 · 标准"):t("4 × 2 · 宽卡片")})));
+ content += selectField('size',t("卡片尺寸"),item.size || '2x2',(definition?.sizes || TILE_SIZES).map(value=>({value,label:sizeLabel(value)})));
  return dialogHeader(`${t("设置{v0}", {v0: item.title})}`,t("修改后会保存到当前浏览器。")) + `<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}" data-type="${esc(type)}">${content}${formActions()}</form></div>`;
 }
 function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div id="local-results" class="local-results"></div></div>`; }
@@ -933,8 +949,9 @@ async function addWidget(type) {
  const w=widgetCatalog.find(x=>x.type===type); if(!w)return;
  const selectedSize=$('[name=widgetSize]',dialog)?.value;
  const data=newWidgetData(type);
- const item={id:uid(),groupId:currentGroup().id,type:'widget',widget:type,title:t(w.title),size:w.sizes.includes(selectedSize)?selectedSize:w.size,config:newWidgetConfig(type),data};
- state.items.push(item);await commit();closeDialog();toast(`${t("已添加{v0}，右键可调整设置。", {v0: w.title})}`);
+ const groupId=$('#catalog-group',dialog)?.value||currentGroup().id;
+ const item={id:uid(),groupId,type:'widget',widget:type,title:t(w.title),size:w.sizes.includes(selectedSize)?selectedSize:w.size,config:newWidgetConfig(type),data};
+ state.items.push(item);state.activeGroupId=groupId;await commit();closeDialog();toast(`${t("已添加{v0}，右键可调整设置。", {v0: t(w.title)})}`);
 }
 async function removeItem(id) {
  const item=state.items.find(i=>i.id===id); if(!item)return;
@@ -971,9 +988,10 @@ function openContext(event,{itemId,groupId}={}) {
  const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
- if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.type==='widget'?getWidgetDefinition(item.widget).sizes:['1x1','2x1','2x2','4x2']).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
+ menu.getAnimations().forEach(animation=>animation.cancel());
  menu.innerHTML=html;menu.hidden=false;
  const scale=dialog.open?(Number(getComputedStyle(dialog).zoom)||1):1;
  const host=dialog.open?dialog.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};
@@ -983,6 +1001,7 @@ function openContext(event,{itemId,groupId}={}) {
  menu.style.position=dialog.open?'absolute':'fixed';
  menu.style.left=Math.max(8,Math.min(event.clientX-host.left,host.width-r.width-8))/scale+'px';
  menu.style.top=(Math.max(8,Math.min(event.clientY-host.top,host.height-r.height-8))/scale+(dialog.open?dialog.scrollTop:0))+'px';
+ if(!state.settings.reducedEffects && !matchMedia('(prefers-reduced-motion: reduce)').matches)menu.animate([{opacity:0,transform:'scale(.92)'},{opacity:1,transform:'scale(1.018)',offset:.72},{opacity:1,transform:'scale(1)'}],{duration:230,easing:'cubic-bezier(.2,.75,.2,1)'});
 }
 function confirmDeleteGroup(id) {
  const group=state.groups.find(g=>g.id===id);if(!group || state.groups.length<2)return;
@@ -1007,7 +1026,6 @@ document.addEventListener('click', async event=>{
  try {
  if(target.matches('[data-close]'))return closeDialog();
  if(target.closest('.wallpaper-browser') && await wallpaperLibrary.handleClick(target))return;
- if(target.hasAttribute('data-drag-handle'))return;
  if(target.dataset.extractEngineIcon)return await extractEngineFavicon(target);
  if(target.dataset.group){state.activeGroupId=target.dataset.group;await commit();document.body.classList.remove('navigation-open');updateToolbar();return;}
  if(target.dataset.engine){state.settings.searchEngine=target.dataset.engine;await persist();renderEngine();hideSearchMenus();$('#search-input').focus();return;}
@@ -1018,7 +1036,10 @@ document.addEventListener('click', async event=>{
  if(target.dataset.editItem)return openDialog('edit-item',{id:target.dataset.editItem});
  if(target.dataset.deleteItem){await removeItem(target.dataset.deleteItem);return;}
  if(target.dataset.iconChoice)return chooseLinkIcon(target);
- if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab});
+ if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab,groupId:$('#catalog-group')?.value||dialogData.groupId});
+ if(target.dataset.catalogCategory){$$('[data-catalog-category]',dialog).forEach(button=>button.setAttribute('aria-pressed',String(button===target)));filterCatalog(dialog);return;}
+ if(target.dataset.addSite){const source=DEFAULT_STATE.items.find(item=>item.id===target.dataset.addSite);if(source){const groupId=$('#catalog-group').value;state.items.push({...clone(source),id:uid(),groupId,folderId:null});state.activeGroupId=groupId;await commit();closeDialog();}return;}
+ if(target.dataset.action==='workspace-expand'){dialog.classList.toggle('workspace-expanded');return;}
  if(target.dataset.addWidget)return await addWidget(target.dataset.addWidget);
  if(target.dataset.settingsTab)return openDialog('settings',{tab:target.dataset.settingsTab});
  if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});if(form.id==='link-form')updateLinkPreview(form);return;}
@@ -1147,7 +1168,7 @@ dialog.addEventListener('submit',async event=>{
 document.addEventListener('input', event=>{
  const input=event.target;
  if(input.id==='search-input')suggestions();
- if(input.id==='widget-query'){const query=input.value.trim().toLocaleLowerCase();let count=0;$$('[data-add-widget]',dialog).forEach(card=>{card.hidden=!card.textContent.toLocaleLowerCase().includes(query);if(!card.hidden)count++;});$('#widget-catalog-empty').hidden=count>0;}
+ if(input.id==='widget-query')filterCatalog(dialog);
  if(input.id==='local-query')renderLocalResults(input.value);
  if(input.dataset.settingColor){state.settings[input.dataset.settingColor]=input.value;const output=$('#color-value-'+input.dataset.settingColor);if(output)output.textContent=input.value;applySettings();}
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
@@ -1158,6 +1179,7 @@ document.addEventListener('input', event=>{
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
+  if(input.name==='widgetSize'){updateCatalogSize(dialog);return;}
   if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
   if(input.dataset.preference){state.settings[input.dataset.preference]=input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
@@ -1210,6 +1232,7 @@ $('#search-input').addEventListener('keydown',async event=>{
 $('#search-suggestions').addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();const buttons=$$('button',$('#search-suggestions')),index=buttons.indexOf(document.activeElement),next=(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;buttons[next]?.focus();}});
 $('#clock').addEventListener('click',async()=>{state.settings.minimal=!state.settings.minimal;applySettings();await persist();});
 document.addEventListener('keydown',event=>{
+ if(event.key==='Enter' && event.target.matches('.tile-widget')){const item=state.items.find(i=>i.id===event.target.dataset.item);if(item){event.preventDefault();openDialog('widget-detail',{item});return;}}
  if(event.key==='Escape'){document.body.classList.remove('shortcuts-open','navigation-open');document.body.classList.add('shortcuts-dismissed');$('#shortcuts-button').setAttribute('aria-expanded','false');updateToolbar();hideSearchMenus();$('#context-menu').hidden=true;if(dialog.open)return; if(editing){editing=false;renderDesktop();}else if(state.settings.minimal){state.settings.minimal=false;applySettings();persist().catch(()=>{});}return;}
  if(event.key==='Enter'&&event.target.id==='local-query'){event.preventDefault();if(localScope==='history')chooseLocalScope('history').catch(err=>toast(err.message));else renderLocalResults(event.target.value);return;}
  const typing=/INPUT|TEXTAREA|SELECT/.test(event.target.tagName)||event.target.isContentEditable;
@@ -1221,7 +1244,7 @@ document.addEventListener('keydown',event=>{
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
-dialog.addEventListener('close',()=>{widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';});
+dialog.addEventListener('close',()=>{if(dialog.open)return;viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='widget-detail'){event.preventDefault();void closeDialog();}});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');
@@ -1302,7 +1325,7 @@ async function init() {
  subscribeState(incoming=>{if(saving || !incoming || incoming.updatedAt===state.updatedAt)return;state=incoming;persistedState=clone(incoming);if(!dialog.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName || ''))renderDesktop();});
  new ResizeObserver(updateGrid).observe($('.desktop-wrap'));
  new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
- window.addEventListener('resize',()=>{updateHeaderPlacement();applyDialogScale(dialog,state.settings.dialogScale);},{passive:true});
+ window.addEventListener('resize',()=>{updateHeaderPlacement();applyDialogScale(dialog,state.settings.dialogScale,globalThis,state.settings.windowSize);},{passive:true});
  document.fonts?.ready.then(updateHeaderPlacement);
  $('#content-scroll').addEventListener('scroll',hideSearchMenus,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);

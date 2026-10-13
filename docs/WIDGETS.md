@@ -1,6 +1,6 @@
-# 小组件开发指南 · API v1
+# 小组件开发指南 · API v2
 
-栖页 v0.6.0 提供随扩展打包的组件接口。新增组件只需导出定义并登记到 `src/widget-extensions.js`，目录、备份校验、配置表单和生命周期由宿主接入。模块随源码审阅和打包，不从网址下载执行脚本，也不是隔离沙箱或在线插件商店。
+栖页 v0.7.0 提供随扩展打包的组件接口。新增组件只需导出定义并登记到 `src/widget-extensions.js`，目录、备份校验、配置表单和生命周期由宿主接入。模块随源码审阅和打包，不从网址下载执行脚本，也不是隔离沙箱或在线插件商店。
 
 ## 五分钟接入
 
@@ -19,13 +19,13 @@ export const widgetExtensions = [counterWidget];
 
 ```js
 export const example = {
-  apiVersion: 1,
+  apiVersion: 2,
   type: 'your-type',
   title: '组件名称',
   description: '在目录中可搜索的用途说明',
   icon: 'note',
   size: '2x2',
-  sizes: ['2x2', '4x2'],
+  sizes: ['1x1', '2x2', '4x2'],
   fields: [
     { key: 'text', label: '内容', type: 'text', default: '', maxLength: 500 },
     { key: 'count', label: '数量', type: 'number', default: 0, min: 0, max: 9999, integer: true },
@@ -33,7 +33,7 @@ export const example = {
     { key: 'mode', label: '模式', type: 'select', default: 'simple',
       options: [{ value: 'simple', label: '简洁' }, { value: 'full', label: '完整' }] },
   ],
-  render({ item, config, escapeHtml, t, locale }) {
+  render({ item, config, escapeHtml, t, locale, size }) {
     return `<p>${escapeHtml(config.text)}</p>`;
   },
   mount(context) { /* 可选：监听和异步任务；同步返回清理函数 */ },
@@ -43,11 +43,11 @@ export const example = {
 
 | 字段 | 约束 |
 | --- | --- |
-| `apiVersion` | 当前仅接受整数 `1` |
+| `apiVersion` | 当前仅接受整数 `2` |
 | `type` | 小写字母开头，后接小写字母、数字、连字符，最长 40 字符；不可重复或覆盖内置类型 |
 | `title` / `description` | 非空文本，最长 160 字符 |
 | `icon` | 已有 `src/icons.js` 名称；找不到时使用宿主回退图标 |
-| `size` / `sizes` | 默认尺寸必须在支持列表中；目前支持 `2x2`、`4x2` |
+| `size` / `sizes` | 必须包含 `1x1` 和 `2x2`；另外可声明 `1x2`、`2x1`、`4x2`；默认 `2x2`，`size` 必须在列表内，重复尺寸会被拒绝 |
 | `fields` | 配置字段唯一、显式声明；每个字段必须提供合法 `default` |
 | `render` | 必需，同步返回 HTML 字符串；不发请求、不保存、不绑定事件 |
 | `mount` | 可选，同步返回清理函数或 `undefined`；异步任务可在函数内部启动 |
@@ -65,6 +65,8 @@ export const example = {
 | `t(message, values)` | 当前语言的界面翻译与占位符替换，见 [I18N.md](I18N.md) |
 | `locale` | 此次挂载的 `zh-CN` / `en`；语言改变后宿主重新渲染 / 挂载 |
 | `formatDate(value, options)` / `formatNumber(value, options)` | 当前语言的 Intl 格式化 |
+| `size` | 当前呈现尺寸；紧凑卡片打开详情时为 `2x2`，不修改桌面保存的尺寸 |
+| `openSettings()` / `openDetail()` | 请求宿主打开当前实例的设置 / 完整交互窗口 |
 | `signal` | 卸载时中止的 `AbortSignal`；可用于事件监听和 `fetch` |
 | `getConfig()` | 当前实例配置的深拷贝；每次操作读取最新值 |
 | `await updateConfig(patch)` | 合并并校验当前实例配置，通过宿主保存队列写入；成功后更新显示；失败抛错；卸载/移除后返回 `false` |
@@ -89,6 +91,16 @@ mount({ root, signal, getConfig, updateConfig, toast }) {
 
 单个组件 render、mount、update 失败不会阻止其他卡片显示；update 失败后本次挂载停止刷新并提示一次。不要返回 Promise 作为 render、mount 或 update 的返回值。异步事件中的异常应由组件捕获；保存层已通知的错误带 `notified`，无需重复提示。
 
+## 尺寸、展开与拖拽
+
+`src/widget-sizes.js` 是尺寸契约的唯一来源。默认图标本体 60 px、标签预留 24 px、网格间距 24 px：单格 84 px，`2x2` 为 192 × 192 px，`4x2` 为 408 × 192 px，`1x2` 为 84 × 192 px，`2x1` 为 192 × 84 px。图标大小、标签文字和间距仍可由用户调整；可用列数不足时限制横向跨度。
+
+所有组件必须支持 `1x1`、`2x2`。`1x1`、`1x2`、`2x1` 由宿主显示可点击的摘要入口，完整操作在详情中完成，避免把表单压入小格。内置摘要显示日期、计时、温度或条目数量；外部组件显示图标与名称。紧凑模式不调用扩展 `render` / `mount` / `update`，因此无需自行隐藏窄卡片中的按钮。点击后宿主以 `2x2` 布局渲染完整功能并挂载生命周期；关闭时清理监听和计时器。详情与桌面使用同一实例配置，切勿把呈现尺寸写回存储。桌面大卡片的标题和空白处也能展开，已有输入、按钮和链接仍执行各自操作。
+
+按住卡片任意普通表面或按钮约 320 ms 即开始拖动；短按按钮照常操作。不需要拖动手柄。已聚焦的输入框、文本域、可编辑内容和原生下拉框保留文字选择/编辑；触屏提前移动则按滚动处理。拖动中按 Esc 或取消指针，恢复原顺序且不误触按钮；释放只提交一次。键盘聚焦卡片后 Enter 展开，Alt + 方向键调整顺序。不要拦截宿主的捕获阶段指针事件。
+
+添加目录会调用 `render` 生成 **inert 静态预览**，不会 `mount` 或联网；实现不得在 render 中产生副作用。目录按实际名称/用途搜索，支持分类、尺寸与目标分组。没有虚构安装数或热度排名。
+
 ## 当前存储结构
 
 新增第三方模块的数据保存在卡片 `config`，示意：
@@ -102,7 +114,7 @@ mount({ root, signal, getConfig, updateConfig, toast }) {
 
 每张卡片必须包含 `config` 与 `data` 对象。日历为 `{ events: [{ id, date, title }] }`，备忘录为 `{ entries: [{ id, title, text, pinned, createdAt, updatedAt }] }`。便签的数据为 `{ notes: string }`，待办为 `{ todos: [...] }`，习惯为 `{ habits: [...] }`，专注为 `{ focus: { duration, remaining, endAt, running } }`；其他组件使用 `data: {}`。新增卡片通过 `newWidgetData(type)` 创建空内容/默认计时器；复制卡片深拷贝内容。倒数日、摘录、下班设置、世界时钟使用各自完整 config；天气使用独立的 `{ city: { name, latitude, longitude }, enabled, unit }`，`unit` 为 `celsius` / `fahrenheit`；日历 config 为 `{ weekStart: 0 | 1, showLunar: boolean, holidays: "none" | "CN" }`。桌面根级不保存组件内容。
 
-项目尚未正式推出，不维护旧版本兼容或迁移。桌面仅使用 `schemaVersion: 3`，存储键为 `qiye.state.v3`；所有导入/导出与 WebDAV 通过同一校验边界。旧格式、缺失必需字段、未知字段、未安装的组件类型或不支持的尺寸均被明确拒绝，不静默转换或丢弃内容。变更模块字段时直接更新当前定义、默认值、测试与文档。
+项目尚未正式推出，不维护旧版本兼容或迁移。桌面仅使用 `schemaVersion: 4`，存储键为 `qiye.state.v4`；所有导入/导出与 WebDAV 通过同一校验边界。旧格式、缺失必需字段、未知字段、未安装的组件类型或不支持的尺寸均被明确拒绝，不静默转换或丢弃内容。变更模块字段时直接更新当前定义、默认值、测试与文档。
 
 不要把 DOM、函数、定时器、凭据或缓存写入 config/data。整份备份仍有 6 MiB 限制；内置单实例限制为日历 500 条日程（标题 160 字符）；备忘录 200 条（每条标题 120 字符、正文 100000 字符）；便签 100000 字符、待办 500 项、习惯 100 项、每个习惯 3660 天、专注 1–180 分钟。
 
@@ -112,7 +124,7 @@ mount({ root, signal, getConfig, updateConfig, toast }) {
 
 默认离线可用；网络功能需明确启用，站点权限需用户操作申请，提供超时、取消、缓存、请求去重和错误状态。远端内容仅当数据，不执行远程脚本；文字经过 `escapeHtml` / `textContent`，URL 单独按协议和来源校验。`escapeHtml` 不是 URL 校验器。保留扩展 CSP，不添加 `eval` 或内联事件。
 
-支持主题变量 `--fg`、`--muted`、`--panel`、`--accent`，使用 `.widget-inner` 范围和内部滚动；不要撑破网格。卡片独立圆角不跟随网站图标圆角，最小网格与 `2x2` / `4x2` 均需验证。减少动态效果时停用非必要动画。
+支持主题变量 `--fg`、`--muted`、`--panel`、`--accent`，使用 `.widget-inner` 范围和内部滚动；不要撑破网格。卡片独立圆角不跟随网站图标圆角，最小网格与所有声明尺寸均需验证。减少动态效果时停用非必要动画。
 
 ```sh
 npm test
@@ -123,7 +135,7 @@ python tests/daily-widgets-e2e.py
 python tests/daily-widgets-e2e.py --preview
 ```
 
-测试覆盖重复注册、缺失/非法 config、旧格式拒绝、实例隔离、保存失败、卸载后回包、重绑不重复监听、刷新持久化。新模块还应验收深浅主题、两种尺寸、拖动、复制、删除/撤销、JSON/WebDAV 往返。现有完整示例及自动化测试见 `src/widget-example.js`、`tests/widget-api.test.mjs`、`tests/widgets-e2e.py`。
+测试覆盖重复注册、缺失/非法 config、旧格式拒绝、实例隔离、保存失败、卸载后回包、重绑不重复监听、刷新持久化。新模块还应验收深浅主题、声明的每种尺寸、拖动、复制、删除/撤销、JSON/WebDAV 往返。现有完整示例及自动化测试见 `src/widget-example.js`、`tests/widget-api.test.mjs`、`tests/widgets-e2e.py`。
 
 ## 代码分工
 
@@ -173,3 +185,14 @@ python tests/daily-widgets-e2e.py --preview
 - `lunar-engine.js`：固定上游源码及 MIT 完整许可；只替换 UMD 外壳，不从 CDN 加载。更新方法与哈希见第三方文档。
 
 日历默认尺寸为 `4x2`、周日开头；`2x2` 和周一开头仍是当前可选设置。法定调休与民俗节日分开：节日名称本身不会被当作放假或工作日依据。黄历为传统文化资料，不作为现实事务决策依据。普通 `countWorkdays` 模型函数仍提供包含首尾的计数，工具页显式扣除开始日，计算口径不隐式改变。
+
+
+## 为组件市场准备的提交契约
+
+当前采用源码审阅并随扩展打包。市场索引和在线安装尚未上线。作者可通过 PR 提交独立模块、样式、默认配置、翻译和测试，无需改动核心存储分支；参考 `widget-example.js`。
+
+未来市场条目应包含：稳定 `type`、组件版本、宿主 `apiVersion`、中英文名称与说明、作者、源码仓库、许可证及声明、分类、支持尺寸、配置字段说明、预览截图、所需网络域名与数据用途。打包来源需固定到可审阅的 commit / 文件摘要，更新时说明配置变更；不支持旧 API 或旧格式的条目应明确拒绝。当前这些条目信息属于提交材料，尚无可被运行时读取的市场 manifest。
+
+验收顺序：离线首次渲染 → 两个实例独立操作 → 每种尺寸 / 详情 / 设置 → 长按、短按、触屏滚动与键盘 → 中英文与深浅主题 → 75%–150% 窗口缩放 → 保存失败 / 关闭清理 → 备份及 WebDAV 当前格式往返 → 扩展和单文件网页同源构建。截图不可代替可复现的运行测试。
+
+后续若开放非随包组件，需先设计隔离运行环境、能力授权、安装/卸载与更新验证；当前接口里的 `root` 和源码权限不构成沙箱，不能直接拿来执行任意远端脚本。市场可以先承担发现和源码分发，扩展商店的安装能力另行设计。

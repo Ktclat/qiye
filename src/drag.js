@@ -2,6 +2,7 @@
 import { t } from './i18n.js';
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
+export const DRAG_HOLD_MS = 320;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
 export const FOLDER_DWELL_MS = 500;
@@ -105,7 +106,7 @@ export function createDesktopDragController({
    if(!old || reduced() || !node.animate || node===session?.source.element)continue;
    const x=old.left-next.left,y=old.top-next.top;
    if(Math.abs(x)+Math.abs(y)<.5)continue;
-   const a=node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:190,easing:'cubic-bezier(.2,.75,.2,1)'});
+   const a=node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:230,easing:'cubic-bezier(.2,.8,.2,1)'});
    animations.set(node,a);a.onfinish=()=>{if(animations.get(node)===a)animations.delete(node);};
   }
  }
@@ -115,10 +116,12 @@ export function createDesktopDragController({
   if(tile && grid()?.contains(tile)){
    const item=getState().items.find(i=>i.id===tile.dataset.item);
    if(!item || item.folderId || item.groupId!==getActiveGroupId())return null;
-   if(t.closest('input,textarea,select,[contenteditable],[data-no-drag]'))return null;
+   if(t.closest('select,[data-no-drag]'))return null;
+   const editor=t.closest('input,textarea,[contenteditable]');
+   if(editor && doc.activeElement===editor)return null;
    const control=t.closest('button,a');
-   if(control && control.dataset.openLink!==item.id && control.dataset.openFolder!==item.id && !(item.widget==='wallpaper' && control.dataset.action==='wallpaper'))return null;
-   return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title};
+   const holdOnly=!!editor || !!control && control.dataset.openLink!==item.id && control.dataset.openFolder!==item.id;
+   return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title,holdOnly};
   }
   if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
   return null;
@@ -165,6 +168,8 @@ export function createDesktopDragController({
  const cancel=()=>clean({waitForRelease:true});
  function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
  function begin(){
+  if(session?.active)return;
+  clearTimeout(holdTimer);holdTimer=null;
   if(!valid())return clean();
   const s=session,rect=s.source.element.getBoundingClientRect();s.active=true;
   s.original=[...s.source.root.children];s.offsetX=s.startX-rect.left;s.offsetY=s.startY-rect.top;s.lastSwap=0;
@@ -174,6 +179,7 @@ export function createDesktopDragController({
   ghost.setAttribute('aria-hidden','true');ghost.inert=true;
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
   doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
+  if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
   try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   doc.getSelection?.()?.removeAllRanges();
   moveGhost();try{onStart();}catch(e){onError(e);}
@@ -257,16 +263,15 @@ export function createDesktopDragController({
   suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
   const source=sourceAt(e);if(!source)return;
   session={source,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
-  if(e.pointerType==='touch'){
-   session.touch=true;holdTimer=setTimeout(()=>{holdTimer=null;if(session)begin();},330);
-  }
+  session.touch=e.pointerType==='touch';
+  holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},DRAG_HOLD_MS);
  }
  function move(e){
   if(!session || e.pointerId!==session.pointerId)return;
   if(e.pointerType==='mouse' && e.buttons===0)return cancel();
   session.x=e.clientX;session.y=e.clientY;
   if(!session.active && Math.hypot(session.x-session.startX,session.y-session.startY)>=DRAG_THRESHOLD){
-   if(session.touch && holdTimer!==null)return clean({guard:false});begin();
+   if((session.touch || session.source.holdOnly) && holdTimer!==null)return clean({guard:false});begin();
   }
   if(session?.active){e.preventDefault();session.dirty=true;}
  }
@@ -312,7 +317,7 @@ export function createDesktopDragController({
  });
  listen(doc,'dragstart',e=>{if(sourceAt({target:e.target}))e.preventDefault();});
  listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
- listen(doc,'selectstart',e=>{if(session)e.preventDefault();});
+ listen(doc,'selectstart',e=>{if(session?.active)e.preventDefault();});
  listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
  return {cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
 }

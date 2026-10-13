@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { isCompactWidget } from './widget-sizes.js';
 import { t } from './i18n.js';
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
 
@@ -68,7 +69,7 @@ function configButton(label = t("设置组件")) {
 }
 
 function header(label, iconName, action = configButton()) {
-  return `<div class="widget-heading"><span>${iconName ? icon(iconName) : ''}${escapeHtml(label)}</span>${action}</div>`;
+  return `<div class="widget-heading"><button type="button" class="widget-title" data-action="widget-open">${iconName ? icon(iconName) : ''}${escapeHtml(label)}</button>${action}</div>`;
 }
 
 function uid() {
@@ -298,19 +299,40 @@ function renderWallpaper(item, state) {
  return `<div class="wallpaper-widget-art" aria-hidden="true"></div>${photo ? `<img class="wallpaper-widget-photo" src="${escapeHtml(photo.thumbnail)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">` : ''}<button class="wallpaper-launcher" data-action="wallpaper" aria-label="${t("打开壁纸中心")}"><span class="wallpaper-eyebrow">WALLPAPERS</span><strong>${t("换一片风景")}</strong><span>${t("自定义 · 官方背景 · 摄影图库")}</span><span class="wallpaper-launch-arrow" aria-hidden="true">↗</span></button>`;
 }
 
+function compactModel(item) {
+  const type=item.widget, now=new Date(), data=item.data, config=item.config;
+  let value='', caption=item.title;
+  if(type==='calendar'){value=String(now.getDate());caption=formatDate(now,{month:'short',weekday:'short'});}
+  else if(type==='weather'){const current=weatherState(config.city);value=current.data?temperature(current.data.temperature,config.unit):'—';caption=config.city.name;}
+  else if(type==='todo')value=String(data.todos.filter(entry=>!entry.done).length);
+  else if(type==='memo')value=String(data.entries.length);
+  else if(type==='notes')value=data.notes.split('\n').find(Boolean)?.slice(0,14)||'';
+  else if(type==='focus')value=timerText(focusRemaining(data.focus));
+  else if(type==='countdown'){value=countdownView(item).number;caption=config.title;}
+  else if(type==='workday')value=workdayStatus(config).text;
+  else if(type==='clock'){value=timeInZone(config.timeZone,now);caption=config.label;}
+  else if(type==='habit')value=String(data.habits.filter(entry=>entry.dates.includes(localDateKey(now))).length)+'/'+data.habits.length;
+  return {value,caption};
+}
+function renderCompact(item) {
+  const view=compactModel(item), definition=getWidgetDefinition(item.widget);
+  return `<div class="widget-inner widget-compact compact-${escapeHtml(item.widget)}" data-widget="${escapeHtml(item.widget)}" data-widget-id="${escapeHtml(item.id)}" data-compact="true"><button type="button" data-action="widget-open" aria-label="${escapeHtml(item.title)}"><span class="compact-symbol" aria-hidden="true">${icon(definition.icon)}</span><strong class="compact-value">${escapeHtml(view.value)}</strong><span class="compact-caption">${escapeHtml(view.caption)}</span></button></div>`;
+}
+
 export function renderWidget(item, state) {
   const definition = getWidgetDefinition(item.widget);
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   const type = item.widget;
+  if (isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
     try {
-      content = definition.render({ item: structuredClone(item), config: structuredClone(item.config), escapeHtml, t, locale:getLocale() });
+      content = definition.render({ item: structuredClone(item), config: structuredClone(item.config), escapeHtml, t, locale:getLocale(), size:item.size });
       if (content && typeof content.then === 'function') Promise.resolve(content).catch(() => {});
       if (typeof content !== 'string') throw new Error(t("render 必须同步返回 HTML 字符串"));
     }
     catch { content = `<p class="w-empty-list">${t("组件加载失败，请检查组件实现")}</p>`; }
-    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}">${header(item.title)}${content}</div>`;
+    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${header(item.title)}${content}</div>`;
   }
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
@@ -319,7 +341,7 @@ export function renderWidget(item, state) {
 }
 
 function findItem(root, state) { return state.items?.find((item) => item.id === root?.dataset.widgetId); }
-function widgetRoots(container, type) { return container.querySelectorAll(`[data-widget="${type}"]`); }
+function widgetRoots(container, type) { return container.querySelectorAll(`[data-widget="${type}"]:not([data-compact])`); }
 function setText(root, selector, value) { const element = root.querySelector(`[data-live="${selector}"]`); if (element && element.textContent !== String(value)) element.textContent = String(value); }
 
 function updateWeatherCards(binding) {
@@ -334,7 +356,7 @@ function updateWeatherCards(binding) {
 function ensureWeather(binding, force = false) {
   if (!binding.alive) return;
   const state = binding.context.getState();
-  for (const root of widgetRoots(binding.container, 'weather')) {
+  for (const root of binding.container.querySelectorAll('[data-widget=weather]')) {
     const item = findItem(root, state);
     if (!item?.config.enabled) continue;
     const city = item.config.city, key = cityKey(city), current = weatherState(city);
@@ -401,7 +423,14 @@ export function bindWidgets(container, context) {
 
   async function click(event) {
     const target = event.target.closest?.('[data-action^="widget-"],[data-calendar-date]');
-    if (!target || !container.contains(target)) return;
+    if (!target || !container.contains(target)) {
+      const root=event.target.closest?.('[data-widget]');
+      if(root && !event.target.closest('button,a,input,textarea,select,[contenteditable]')) {
+        const item=findItem(root,context.getState());
+        if(item){event.stopPropagation();context.openDialog('widget-detail',{item});}
+      }
+      return;
+    }
     const root = target.closest('[data-widget]');
     if (!root) return;
     const state = context.getState();
@@ -411,6 +440,7 @@ export function bindWidgets(container, context) {
     if (target.dataset.calendarDate) { event.preventDefault(); event.stopPropagation(); context.openDialog('widget-detail',{item,date:target.dataset.calendarDate}); return; }
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
+    if (action === 'widget-open') { context.openDialog('widget-detail',{item}); return; }
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
     const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
     if (['widget-calendar-detail','widget-weather-detail','widget-memo-open','widget-memo-new'].includes(action)) { context.openDialog('widget-detail', { item, memoId: target.dataset.memoId, newMemo: action === 'widget-memo-new' }); return; }
@@ -566,9 +596,14 @@ export function bindWidgets(container, context) {
 }
 
 export function refreshLiveWidgets(container, state) {
+  for(const root of container.querySelectorAll('[data-compact]')) {
+    const item=findItem(root,state);if(!item)continue;
+    const view=compactModel(item);
+    for(const key of ['value','caption']) {const el=root.querySelector(`.compact-${key}`);if(el && el.textContent!==view[key])el.textContent=view[key];}
+  }
   const now = new Date();
   const binding = bindings.get(container);
-  for (const root of widgetRoots(container, 'focus')) {
+  for (const root of container.querySelectorAll('[data-widget=focus]')) {
     const item = findItem(root, state);
     if (!item) continue;
     const focus = item.data.focus;

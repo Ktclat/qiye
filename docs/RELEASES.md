@@ -56,7 +56,7 @@ git push origin v0.5.1
 | `qiye-X.Y.Z-preview.html` | 可直接打开的独立网页预览 |
 | `qiye-X.Y.Z-SHA256SUMS.txt` | 上述三个文件的 SHA-256 校验值 |
 
-扩展 ZIP 解压后，在 `chrome://extensions/` 或 `edge://extensions/` 开启开发者模式，加载包含 manifest.json 的目录。浏览器不会因为下载 ZIP 自动安装；此流程不签发 CRX，不自动上传 Chrome/Edge 商店。保留安装路径并重新加载扩展。项目未正式推出，不保证旧数据或旧备份可用；当前仅使用 schema 3，开发阶段的数据结构变化不提供迁移。
+扩展 ZIP 解压后，在 `chrome://extensions/` 或 `edge://extensions/` 开启开发者模式，加载包含 manifest.json 的目录。浏览器不会因为下载 ZIP 自动安装；此流程不签发 CRX，不自动上传 Chrome/Edge 商店。保留安装路径并重新加载扩展。项目未正式推出，不保证旧数据或旧备份可用；当前仅使用 schema 4，开发阶段的数据结构变化不提供迁移。
 
 本地打包无需第三方 Python 库：`python scripts/package-release.py --output dist`。文件采用明确的路径/后缀清单，并使用固定 ZIP 时间戳，排除 `.git`、测试工具、本机备份、密钥和日志。不要在 `src`、`docs` 等发布源码目录放私人文件。
 
