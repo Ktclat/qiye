@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { WINDOW_SIZES } from './window-layout.js';
 import { TILE_SIZES } from './widget-sizes.js';
 import { t, localizeSeed } from './i18n.js';
 import { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } from './validation.js';
@@ -14,7 +15,7 @@ import { normalizeIconSelection } from './icon-selection.js';
  * URL fields, imported object shape, size limits and references are checked here.
  */
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 export const STORAGE_KEY = `qiye.state.v${SCHEMA_VERSION}`;
 export const MAX_BACKUP_BYTES = 6 * 1024 * 1024;
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -54,18 +55,18 @@ export const DEFAULT_STATE = deepFreeze({
     language: 'auto', theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
-    gridSize: 60, gap: 24, radius: 19, showLabels: true, clockSize: 70,
+    gridSize: 60, gap: 30, radius: 18, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
-    sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
+    sidebarVisibility: 'always', sidebarLabels: true, useThemeColor: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
-    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, dialogScale: 100, windowSize: 100, settingsPresentation: 'sidebar', showWallpaperCredit: true, clockWeight: 400,
+    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, windowSize: 100, settingsPresentation: 'sidebar', showWallpaperCredit: true, clockWeight: 400,
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
     searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
     showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
     iconShape: 'original', iconBackdrop: 'none', autoExtractIcons: true,
     iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
     desktopMaxWidth: 1350, themeColor: '#79d7b4',
-    showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false,
+    showClock: true, showDate: true, showSearch: true, showAddTile: false,
     searchEngine: 'bing', customEngines: [], dailyWallpaper: false, quote: true,
     wallpaperApiEnabled: false, remoteWallpaper: null
   },
@@ -235,7 +236,7 @@ function validateSettings(raw) {
     sidebarPosition: enumeration(v.sidebarPosition, ['left', 'right'], 'settings.sidebarPosition'),
     navigationMode: enumeration(v.navigationMode, ['sidebar', 'top'], 'settings.navigationMode'),
     sidebarVisibility: enumeration(v.sidebarVisibility, ['always', 'auto', 'hidden'], 'settings.sidebarVisibility'),
-    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), sidebarUseAccent: bool(v.sidebarUseAccent, 'settings.sidebarUseAccent'), avatar,
+    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), useThemeColor: bool(v.useThemeColor, 'settings.useThemeColor'), avatar,
     toolbarVisibility: enumeration(v.toolbarVisibility, ['always', 'auto'], 'settings.toolbarVisibility'),
     surfaceStyle: enumeration(v.surfaceStyle, ['solid', 'glass', 'acrylic', 'mica'], 'settings.surfaceStyle'),
     surfaceOpacity: number(v.surfaceOpacity, 'settings.surfaceOpacity', 20, 100),
@@ -244,8 +245,7 @@ function validateSettings(raw) {
     animateGroups: bool(v.animateGroups, 'settings.animateGroups'),
     uiFont: enumeration(v.uiFont, ['inter', 'system'], 'settings.uiFont'),
     uiScale: number(v.uiScale, 'settings.uiScale', 85, 120),
-    dialogScale: number(v.dialogScale, 'settings.dialogScale', 75, 150),
-    windowSize: number(v.windowSize, 'settings.windowSize', 75, 125),
+    windowSize: enumeration(v.windowSize, WINDOW_SIZES, 'settings.windowSize'),
     settingsPresentation: enumeration(v.settingsPresentation, ['sidebar', 'window'], 'settings.settingsPresentation'),
     showWallpaperCredit: bool(v.showWallpaperCredit, 'settings.showWallpaperCredit'),
     clockWeight: number(v.clockWeight, 'settings.clockWeight', 200, 700),
@@ -268,7 +268,6 @@ function validateSettings(raw) {
     themeColor: opaqueColor(v.themeColor, 'settings.themeColor'),
     showClock: bool(v.showClock, 'settings.showClock'), showDate: bool(v.showDate, 'settings.showDate'),
     showSearch: bool(v.showSearch, 'settings.showSearch'),
-    clockFollowTheme: bool(v.clockFollowTheme, 'settings.clockFollowTheme'),
     showAddTile: bool(v.showAddTile, 'settings.showAddTile'),
     dailyWallpaper: bool(v.dailyWallpaper, 'settings.dailyWallpaper'), quote: bool(v.quote, 'settings.quote'),
     wallpaperApiEnabled: bool(v.wallpaperApiEnabled, 'settings.wallpaperApiEnabled'),

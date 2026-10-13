@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 export const englishMessages = {
+  "壁纸": "Wallpaper",
+  "全局使用主题色": "Use accent color everywhere",
+  "统一用于时间、导航、按钮和组件；关闭后使用默认配色。": "Apply to the clock, navigation, buttons and widgets. Turn off to use default colors.",
+  "调整窗口可用空间，内容自动重新排版，文字和控件保持清晰。": "Adjust available window space. Content reflows while text and controls keep their natural size.",
+  "上一个尺寸": "Previous size",
+  "下一个尺寸": "Next size",
+  "预览尺寸": "Preview size",
+  "点击编辑": "Click to edit",
+  "准备开始": "Ready to focus",
+  "点击打开": "Click to open",
+
   "壁纸来源不受支持，请重新选择。": "Unsupported wallpaper source. Please choose again.",
   "完整壁纸加载超时，原背景已保留。": "Wallpaper loading timed out. Your background was kept.",
   "完整壁纸暂时无法加载，请换一张或重试。": "The wallpaper could not load. Retry or choose another image.",

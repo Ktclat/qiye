@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import { renderCatalog, filterCatalog, updateCatalogSize } from './widget-catalog.js';
-import { TILE_SIZES, sizeLabel } from './widget-sizes.js';
+import { renderCatalog, filterCatalog, changeCatalogSize } from './widget-catalog.js';
+import { TILE_SIZES, sizeLabel, gridMetrics } from './widget-sizes.js';
 import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
 import { chineseLunarDate } from './calendar.js';
 import { createWidgetDetails, bindCitySearch } from './widget-details.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
 import { APP_VERSION } from './version.js';
-import { applyDialogScale } from './dialog-scale.js';
+import { applyWindowSize, WINDOW_SIZES } from './window-layout.js';
+import { themeTokens } from './theme.js';
 import { getWidgetDefinition, newWidgetConfig } from './widget-registry.js';
 import { newWidgetData, widgetContentSummary } from './widget-data.js';
 import { renderExtensionSettings, readExtensionSettings } from './widget-settings.js';
@@ -362,7 +363,7 @@ function positionHeaderRegions() {
  document.body.classList.toggle('has-flow-header',!flow.hidden);
 }
 function updatePinnedHeader() {
- // Kept as a small compatibility hook; scrolling never mutates header styling.
+ // Scrolling never changes the appearance of either header region.
  $('#clock-block').classList.remove('is-stuck');
  $('.search-wrapper').classList.remove('is-stuck');
 }
@@ -377,7 +378,7 @@ function updateHeaderPlacement() {
   const left=box.left+parseFloat(css.paddingLeft||0),right=box.right-parseFloat(css.paddingRight||0);
   const property=`--${key}-shift`,previous=parseFloat(el.style.getPropertyValue(property))||0,rect=el.getBoundingClientRect();
   if(el.hidden||!rect.width){el.style.setProperty(property,'0px');continue;}
-  const desired=state.settings[key+'OffsetX']*window.innerWidth/100;
+  const desired=window.innerWidth/2-(rect.left-previous+rect.width/2)+state.settings[key+'OffsetX']*window.innerWidth/100;
   const offset=Math.max(left-(rect.left-previous),Math.min(right-(rect.right-previous),desired));
   el.style.setProperty(property,`${Math.round(offset*100)/100}px`);
  }
@@ -439,8 +440,9 @@ function updateToolbar() {
 function applySettings() {
  setLocale(state.settings.language);localizeDocument();document.title=t("栖页 · 新标签页");
  const s = state.settings;
- applyDialogScale(dialog, s.dialogScale, globalThis, s.windowSize);
- const theme = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : s.theme;
+ applyWindowSize(dialog, s.windowSize);
+ const { theme, accent, ink } = themeTokens(s, matchMedia('(prefers-color-scheme: dark)').matches);
+ const metrics = gridMetrics(s, window.innerWidth);
 
  const root = document.documentElement;
  root.dataset.theme = theme;
@@ -448,14 +450,14 @@ function applySettings() {
  root.dataset.navigation = s.navigationMode;
  root.dataset.sidebarPosition = s.sidebarPosition;
  root.dataset.sidebarVisibility = s.sidebarVisibility;
- root.dataset.sidebarAccent = s.sidebarUseAccent?'theme':'neutral';
+ root.dataset.accent = s.useThemeColor?'custom':'default';
  root.dataset.font = s.uiFont;
  root.dataset.iconShape=s.iconShape;
  root.dataset.iconDiscovery=s.autoExtractIcons?'auto':'manual';
  root.dataset.iconBackdrop=s.iconBackdrop;
  const properties = {
-  '--gap':s.gap+'px','--tile-size':s.gridSize+'px','--radius':s.radius+'px',
-  '--label-space':Math.max(24,Math.ceil(s.labelSize*1.3)+6)+'px','--cell-size':(s.gridSize+Math.max(24,Math.ceil(s.labelSize*1.3)+6))+'px','--icon-radius':Math.min(s.radius,s.gridSize/2)+'px',
+  '--gap':metrics.gap+'px','--tile-size':metrics.cell+'px','--radius':s.radius+'px',
+  '--label-space':Math.max(24,Math.ceil(s.labelSize*1.3)+6)+'px','--cell-size':metrics.cell+'px','--icon-radius':Math.min(s.radius,s.gridSize/2)+'px',
   '--clock-size':s.clockSize+'px','--clock-weight':s.clockWeight,
   '--clock-offset-y':s.clockOffsetY+'px','--search-offset-y':s.searchOffsetY+'px',
   '--search-width':s.searchWidth+'px','--search-height':s.searchHeight+'px','--search-radius':s.searchRadius+'px',
@@ -463,7 +465,7 @@ function applySettings() {
   '--surface-opacity':s.surfaceOpacity/100,'--surface-blur':s.surfaceBlur+'px','--ui-scale':s.uiScale/100,
   '--quote-safe-space':s.quote?'84px':'0px',
   '--icon-opacity':s.iconOpacity/100,'--label-size':s.labelSize+'px','--label-color':s.labelColor,
-  '--clock-color':s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':s.themeColor,
+  '--clock-color':s.useThemeColor?accent:s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':accent,'--accent-ink':ink,
   '--wallpaper-blur':s.blur+'px','--wallpaper-dim':s.dim/100
  };
  for (const [key,value] of Object.entries(properties)) root.style.setProperty(key,String(value));
@@ -473,7 +475,6 @@ function applySettings() {
  document.body.classList.toggle('reduce-effects', !!s.reducedEffects);
  root.classList.toggle('hide-content-scrollbar', !!s.hideScrollbar);
  root.classList.toggle('hide-editor-scrollbar', !!s.hideEditorScrollbar);
- document.body.classList.toggle('clock-theme-color', !!s.clockFollowTheme);
  document.body.classList.toggle('pin-clock', s.pinClock && (s.showClock || s.showDate));
  document.body.classList.toggle('pin-search', s.pinSearch && s.showSearch);
  $('#clock-block').hidden = !s.showClock && !s.showDate;
@@ -509,7 +510,7 @@ function applySettings() {
 function updateGrid() {
  const wrap = $('.desktop-wrap');
  const width = wrap.getBoundingClientRect().width;
- currentGridColumns = Math.max(2,Math.min(16,Math.floor((width + state.settings.gap)/(state.settings.gridSize + Math.max(24,Math.ceil(state.settings.labelSize*1.3)+6) + state.settings.gap))));
+ currentGridColumns = Math.max(2,Math.min(16,Math.floor((width + gridMetrics(state.settings,window.innerWidth).gap)/(gridMetrics(state.settings,window.innerWidth).cell + gridMetrics(state.settings,window.innerWidth).gap))));
  document.documentElement.style.setProperty('--columns', currentGridColumns);
  $$('.tile[data-size]').forEach(el => { const [w,h] = el.dataset.size.split('x').map(Number); el.style.gridColumn = `span ${Math.min(w,currentGridColumns)}`; el.style.gridRow = `span ${h}`; });
 }
@@ -725,7 +726,7 @@ function settingSwitch(key,title,help='') { return `<label class="setting-row"><
 function settingRange(key,title,min,max,unit='px') { return `<div class="range-setting"><header><label for="range-${key}">${title}</label><output id="output-${key}">${state.settings[key]}${unit}</output></header><input id="range-${key}" type="range" min="${min}" max="${max}" value="${state.settings[key]}" data-range="${key}" data-unit="${unit}"></div>`; }
 
 function preferenceSelect(key,title,options,help='') {
- return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong>${help?`<small>${help}</small>`:''}</span><select class="preference-select" data-preference="${key}" aria-label="${title}">${options.map(([value,label])=>`<option value="${value}" ${state.settings[key]===value?'selected':''}>${label}</option>`).join('')}</select></label>`;
+ return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong>${help?`<small>${help}</small>`:''}</span><select class="preference-select" data-preference="${key}" aria-label="${title}">${options.map(([value,label])=>`<option value="${value}" ${String(state.settings[key])===String(value)?'selected':''}>${label}</option>`).join('')}</select></label>`;
 }
 function settingColor(key,title) {
  return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong></span><span class="setting-color-value"><code id="color-value-${key}">${esc(state.settings[key])}</code><input type="color" class="color-input" data-setting-color="${key}" value="${esc(state.settings[key])}" aria-label="${title}"></span></label>`;
@@ -794,7 +795,6 @@ function settingsDialog(tab) {
   ${settingSwitch('hour12',t("使用 12 小时制"))}
   ${settingRange('clockSize',t("时钟字号"),30,160)}
   ${settingRange('clockWeight',t("时钟字重"),200,700,'')}
-  ${settingSwitch('clockFollowTheme',t("时间颜色跟随主题"),t("关闭后使用下方的自定义颜色。"))}
   ${settingColor('clockColor',t("时间颜色"))}
   <div class="section-label">${t("日期")}</div>
   ${settingSwitch('showDate',t("显示月日"))}
@@ -804,6 +804,7 @@ function settingsDialog(tab) {
  else if(tab==='appearance') content = `
   <div class="section-label">${t("主题")}</div>
   <div class="theme-options">${[{id:'light',title:t("浅色"),icon:'sun'},{id:'dark',title:t("深色"),icon:'moon'},{id:'auto',title:t("跟随系统"),icon:'globe'}].map(t=>`<button class="theme-option ${s.theme===t.id?'selected':''}" data-theme="${t.id}" aria-pressed="${s.theme===t.id}">${icon(t.icon)}${t.title}</button>`).join('')}</div>
+  ${settingSwitch('useThemeColor',t("全局使用主题色"),t("统一用于时间、导航、按钮和组件；关闭后使用默认配色。"))}
   ${settingColor('themeColor',t("主题色"))}
   <div class="section-label">${t("界面材质")}</div>
   <div class="material-options">${[
@@ -818,10 +819,7 @@ function settingsDialog(tab) {
   ${preferenceSelect('uiFont',t("界面字体"),[['inter',t("Inter + 系统中文")],['system',t("系统字体")]],t("Inter 随扩展提供；中文使用设备上的系统字体。"))}
   ${settingRange('uiScale',t("界面文字比例"),85,120,'%')}
   ${preferenceSelect('settingsPresentation',t('设置打开方式'),[['sidebar',t('侧边面板')],['window',t('居中窗口')]],t('关闭设置后重新打开生效。'))}
-  ${settingRange('windowSize',t('窗口大小'),75,125,'%')}
-  ${settingRange('dialogScale',t("选项窗口缩放"),75,150,'%')}
-  <p class="help-text">${t("设置、添加、壁纸与编辑窗口整体缩放，工具栏收藏窗口也会跟随。立即预览并保存。")}</p>
-  <button class="secondary-button" data-action="reset-dialog-scale">${t("恢复窗口缩放为 100%")}</button>
+  ${preferenceSelect('windowSize',t('窗口大小'),WINDOW_SIZES.map(size=>[String(size),`${size}%`]),t('调整窗口可用空间，内容自动重新排版，文字和控件保持清晰。'))}
   <div class="button-row"><button class="secondary-button" data-action="wallpaper">${t("{v0}壁纸与背景", {v0: icon('wallpaper')})}</button></div>`;
  else if(tab==='layout') content = `
   <div class="section-label">${t("时间与搜索的滚动方式")}</div>
@@ -852,7 +850,6 @@ function settingsDialog(tab) {
   ${settingRange('sidebarWidth',t("侧边栏宽度"),40,120)}
   ${settingRange('sidebarOpacity',t("导航透明度"),0,100,'%')}
   ${settingSwitch('sidebarLabels',t("显示分组名称"))}
-  ${settingSwitch('sidebarUseAccent',t("选中分组使用主题色"),t("默认使用与导航材质协调的中性色，开启后使用全局主题色。"))}
   ${preferenceSelect('sidebarWheelMode',t("侧栏滚轮行为"),[['scroll',t("滚动分组列表")],['switch',t("切换当前分组")]],t("默认仅滚动导航列表以查看被遮挡的分组，不会切换桌面。编辑时始终滚动列表。"))}
   <p class="help-text">${t("分组支持右键重命名和编辑图标；编辑桌面时可拖动调整分组顺序。")}</p>`;
  else if(tab==='data') content = `
@@ -947,7 +944,7 @@ function confirmDialog(data) { return dialogHeader(data.title)+`<div class="dial
 
 async function addWidget(type) {
  const w=widgetCatalog.find(x=>x.type===type); if(!w)return;
- const selectedSize=$('[name=widgetSize]',dialog)?.value;
+ const selectedSize=$(`[data-catalog-widget="${type}"]`,dialog)?.dataset.previewSize;
  const data=newWidgetData(type);
  const groupId=$('#catalog-group',dialog)?.value||currentGroup().id;
  const item={id:uid(),groupId,type:'widget',widget:type,title:t(w.title),size:w.sizes.includes(selectedSize)?selectedSize:w.size,config:newWidgetConfig(type),data};
@@ -1037,6 +1034,7 @@ document.addEventListener('click', async event=>{
  if(target.dataset.deleteItem){await removeItem(target.dataset.deleteItem);return;}
  if(target.dataset.iconChoice)return chooseLinkIcon(target);
  if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab,groupId:$('#catalog-group')?.value||dialogData.groupId});
+ if(target.dataset.catalogSize || target.dataset.catalogStep){changeCatalogSize(target,state);return;}
  if(target.dataset.catalogCategory){$$('[data-catalog-category]',dialog).forEach(button=>button.setAttribute('aria-pressed',String(button===target)));filterCatalog(dialog);return;}
  if(target.dataset.addSite){const source=DEFAULT_STATE.items.find(item=>item.id===target.dataset.addSite);if(source){const groupId=$('#catalog-group').value;state.items.push({...clone(source),id:uid(),groupId,folderId:null});state.activeGroupId=groupId;await commit();closeDialog();}return;}
  if(target.dataset.action==='workspace-expand'){dialog.classList.toggle('workspace-expanded');return;}
@@ -1073,7 +1071,6 @@ document.addEventListener('click', async event=>{
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
- if(action==='reset-dialog-scale'){state.settings.dialogScale=100;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
  if(action==='reset-positions'){for(const key of ['clockOffsetX','clockOffsetY','searchOffsetX','searchOffsetY'])state.settings[key]=0;applySettings();await persist();openDialog('settings',{tab:'layout'});return;}
  if(action==='reset-preferences')return openDialog('confirm',{title:t("恢复默认设置？"),message:t("显示、搜索、头像和壁纸偏好将恢复默认。网站、分组、笔记与待办会保留。"),label:t("重置设置"),callback:async()=>{
   const previous=clone(state.settings);state.settings=clone(DEFAULT_STATE.settings);avatarRequestSequence++;
@@ -1179,10 +1176,9 @@ document.addEventListener('input', event=>{
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
-  if(input.name==='widgetSize'){updateCatalogSize(dialog);return;}
   if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
-  if(input.dataset.preference){state.settings[input.dataset.preference]=input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
+  if(input.dataset.preference){state.settings[input.dataset.preference]=input.dataset.preference==='windowSize'?Number(input.value):input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
   if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
@@ -1325,7 +1321,7 @@ async function init() {
  subscribeState(incoming=>{if(saving || !incoming || incoming.updatedAt===state.updatedAt)return;state=incoming;persistedState=clone(incoming);if(!dialog.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName || ''))renderDesktop();});
  new ResizeObserver(updateGrid).observe($('.desktop-wrap'));
  new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
- window.addEventListener('resize',()=>{updateHeaderPlacement();applyDialogScale(dialog,state.settings.dialogScale,globalThis,state.settings.windowSize);},{passive:true});
+ window.addEventListener('resize',()=>{updateHeaderPlacement();applyWindowSize(dialog,state.settings.windowSize);const metrics=gridMetrics(state.settings,window.innerWidth);for(const [key,value] of Object.entries({'--cell-size':metrics.cell,'--tile-size':metrics.cell,'--gap':metrics.gap}))document.documentElement.style.setProperty(key,`${value}px`);updateGrid();},{passive:true});
  document.fonts?.ready.then(updateHeaderPlacement);
  $('#content-scroll').addEventListener('scroll',hideSearchMenus,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);

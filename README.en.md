@@ -4,7 +4,7 @@
 
 Qiye is an account-free, customizable new tab for Chrome and Edge. Organize websites, folders and everyday widgets, use your own wallpaper, and optionally sync through your own WebDAV server. Personal content stays in your browser unless you export it or enable synchronization.
 
-Version **0.6.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+Version **0.8.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
 
 Website icons now default to their original outline with no added background. Choose rounded frames or an adaptive background explicitly in icon settings.
 
@@ -15,15 +15,15 @@ Website icons now default to their original outline with no added background. Ch
 - **Weather:** independent city and °C / °F settings per card, worldwide city search, current observations, 24-hour and 7-day forecasts, precipitation probability, feels-like temperature, wind, humidity, UV, sunrise / sunset, US AQI and PM2.5. Enable network access for each weather card. Data comes from Open-Meteo / CAMS; missing measurements remain unknown, and failed requests keep cached forecasts.
 - **Other widgets:** quick sticky notes, to-dos, focus timer, countdown, workday countdown, habits, quotes, world clocks, calculator, wallpaper gallery and links to trending pages.
 
-Windows can be scaled from 75% to 150% in **Settings → Theme & materials**. Light / dark themes, keyboard access and narrow layouts are supported. The implementation is independent and takes interaction references from iTab; it does not use iTab private APIs or claim complete feature parity.
+Windows can be sized to 75%, 100%, 125% or 150% without zooming text or controls in **Settings → Theme & materials**. Light / dark themes, keyboard access and narrow layouts are supported. The implementation is independent and takes interaction references from iTab; it does not use iTab private APIs or claim complete feature parity.
 
 ## Install
 
-1. Download `qiye-0.6.0-chrome-edge.zip` from Releases and extract it.
+1. Download `qiye-0.8.0-chrome-edge.zip` from Releases and extract it.
 2. Open `chrome://extensions/` or `edge://extensions/`, enable Developer mode and choose **Load unpacked**.
 3. Select the folder containing `manifest.json`, then open a new tab.
 
-The standalone preview HTML and the public website use the same production modules. Each browser origin keeps separate local data. JSON export / import and your own WebDAV service can transfer the current format. The project is pre-release: only **schema 4** is accepted, with no migration or compatibility for earlier versions.
+The standalone preview HTML and the public website use the same production modules. Each browser origin keeps separate local data. JSON export / import and your own WebDAV service can transfer the current format. The project is pre-release: only **schema 5** is accepted, with no migration or compatibility for earlier versions.
 
 Weather, wallpapers and site icons depend on external services. The web app is subject to browser CORS rules; optional extension permissions are requested for browser integrations and relevant site access. WebDAV credentials stay local and are not included in desktop backups. See the [privacy details](docs/PRIVACY.md).
 
@@ -54,4 +54,12 @@ Licensed under **GPL-3.0-only**. Included fonts, site icons and external images 
 
 ## 0.7.0 desktop interactions
 
-Hold a card or widget button for 320 ms to drag; short clicks retain their actions. All built-in widgets support 1×1, 1×2, 2×1, 2×2 and 4×2. Compact tiles open the full interactive view. Settings open as a right drawer by default; choose a centered window in Appearance (applied next time). Window size (75–125%) is independent of UI scaling (75–150%). The redesigned chooser includes previews, search, categories and target groups. The context menu retains its commands with a subtle spring animation. See [Widget API v2](docs/WIDGETS.md) for third-party development and marketplace preparation.
+Hold a card or widget button for 320 ms to drag; short clicks retain their actions. All built-in widgets support 1×1, 1×2, 2×1, 2×2 and 4×2. Compact tiles open the full interactive view. Settings open as a right drawer by default; choose a centered window in Appearance (applied next time). In v0.8.0, window sizing replaces UI zoom. The redesigned chooser includes previews, search, categories and target groups. The context menu retains its commands with a subtle spring animation. See [Widget API v3](docs/WIDGETS.md) for third-party development and marketplace preparation.
+
+## 0.8.0 layouts and themes
+
+The desktop and chooser share exact grid dimensions: 60×60, 60×150, 150×60, 150×150 and 330×150 CSS pixels at the default settings on a desktop viewport. Labels sit in the 30 px gap. Small viewports reduce these dimensions, with a minimum 48 px cell. Each built-in widget uses distinct compact, portrait, landscape and wide layouts; the wide countdown includes a target-date sheet.
+
+Every chooser card has independent previous / next controls and accessible size dots. Adding a widget uses its current preview size. Previews are inert, use the production renderer and never mount or request data. Window presets resize available space while the content reflows. A single **Use accent color everywhere** switch covers the clock, navigation, buttons and widget controls. Native select menus have explicit light and dark palettes.
+
+[Widget API v3](docs/WIDGETS.md) gives extensions their own renderer and lifecycle at every declared size, including 1×1. Only the current API and schema are accepted; there are no migrations.

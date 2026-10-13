@@ -1,3 +1,4 @@
+import { themeTokens } from './src/theme.js';
 import { t, setLocale, localizeDocument } from './src/i18n.js';
 // SPDX-License-Identifier: GPL-3.0-only
 import { loadState, addCurrentTab, safeUrl } from './src/core.js';
@@ -19,10 +20,10 @@ async function initialize() {
   try {
     const state = await loadState();
     setLocale(state.settings.language);localizeDocument();document.title=t("收藏到栖页");
-    const scale = state.settings.dialogScale / 100;
-    document.body.style.zoom = scale;
-    document.body.style.maxHeight = `${600 / scale}px`;
-    document.body.style.overflowY = 'auto';
+    const tokens = themeTokens(state.settings, matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = tokens.theme;
+    document.documentElement.style.setProperty('--accent', tokens.accent);
+    document.documentElement.style.setProperty('--accent-ink', tokens.ink);
     for (const group of state.groups) {
       const option = document.createElement('option');
       option.value = group.id;

@@ -5,7 +5,7 @@ import { counterWidget } from '../src/widget-example.js';
 import { newWidgetData, widgetContentSummary } from '../src/widget-data.js';
 import { DEFAULT_STATE, validateImport, exportState } from '../src/core.js';
 import { mountWidgetExtensions } from '../src/widget-runtime.js';
-import { dialogMetrics } from '../src/dialog-scale.js';
+import { windowMetrics } from '../src/window-layout.js';
 import { renderWidget } from '../src/widgets.js';
 import { TILE_SIZES } from '../src/widget-sizes.js';
 
@@ -36,7 +36,7 @@ test('window presentation and independent size persist under the current strict 
     Object.assign(state.settings,{settingsPresentation:presentation,windowSize:size});
     assert.deepEqual(validateImport(exportState(state)).settings,state.settings);
   }
-  for(const size of [74,126,'100',NaN]) { state.settings.windowSize=size;assert.throws(()=>validateImport(state)); }
+  for(const size of [74,151,'100',NaN]) { state.settings.windowSize=size;assert.throws(()=>validateImport(state)); }
   state.settings.windowSize=100;state.settings.settingsPresentation='unknown';assert.throws(()=>validateImport(state));
 });
 
@@ -139,21 +139,21 @@ test('unsupported widget sizes are rejected instead of silently changed', () => 
   assert.throws(() => validateImport(state), /卡片尺寸不受支持/);
 });
 
-test('dialog scaling and attribution options are required, validate and round trip', () => {
+test('window sizing and attribution options are required, validate and round trip', () => {
   const state = structuredClone(DEFAULT_STATE);
-  delete state.settings.dialogScale; delete state.settings.showWallpaperCredit;
+  delete state.settings.windowSize; delete state.settings.showWallpaperCredit;
   assert.throws(() => validateImport(state));
   for (const scale of [75, 100, 150]) {
-    state.settings.dialogScale = scale; state.settings.showWallpaperCredit = false;
-    assert.equal(validateImport(exportState(state)).settings.dialogScale, scale);
+    state.settings.windowSize = scale; state.settings.showWallpaperCredit = false;
+    assert.equal(validateImport(exportState(state)).settings.windowSize, scale);
     assert.equal(validateImport(state).settings.showWallpaperCredit, false);
     for (const width of [360, 768, 1440]) {
-      const result = dialogMetrics(scale, width, 600);
-      assert.ok(Math.abs(result.width * result.scale - (width - 24)) < 0.001);
-      assert.ok(result.height * result.scale <= 576.001);
+      const result = windowMetrics(scale, width, 600);
+      assert.ok(result.windowWidth <= width - 24);
+      assert.ok(result.windowHeight <= 576.001);
     }
   }
-  for (const scale of [0, 74, 151, Infinity, '100']) { state.settings.dialogScale = scale; assert.throws(() => validateImport(state)); }
+  for (const scale of [0, 74, 151, Infinity, '100']) { state.settings.windowSize = scale; assert.throws(() => validateImport(state)); }
 });
 
 function runtimeHarness({ failSave = false, failUpdate = false } = {}) {

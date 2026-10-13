@@ -20,10 +20,10 @@ test('automatic icons need no explicit image and invalid selection rejects the w
  data.items.find(i=>i.type==='link').iconUrl='javascript:alert(1)';assert.throws(()=>validateImport(data));
 });
 test('sidebar accent defaults to neutral and only explicit valid choices are restored',()=>{
- const data=structuredClone(DEFAULT_STATE);delete data.settings.sidebarUseAccent;
+ const data=structuredClone(DEFAULT_STATE);delete data.settings.useThemeColor;
  assert.throws(()=>validateImport(data));
- data.settings.sidebarUseAccent=true;assert.equal(validateImport(exportState(data)).settings.sidebarUseAccent,true);
- data.settings.sidebarUseAccent='true';assert.throws(()=>validateImport(data));
+ data.settings.useThemeColor=true;assert.equal(validateImport(exportState(data)).settings.useThemeColor,true);
+ data.settings.useThemeColor='true';assert.throws(()=>validateImport(data));
 });
 test('icon labels report actual supplied dimensions without claiming synthesized HD',()=>{
  assert.equal(iconSelectionLabel('https://example.com/a.png',16,16),'16 × 16');

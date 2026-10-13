@@ -16,7 +16,7 @@ html[data-theme=light] .toast{background:rgb(249 251 254 / .96);border-color:#cf
 html[data-theme=light] .toast button{color:#236eab}
 /* Active group is neutral by default; geometry stays square at any rail width. */
 html[data-navigation=sidebar] .group-button.active,html[data-navigation=top] .group-button.active{background:var(--nav-selection);box-shadow:inset 0 0 0 1px var(--nav-selection-border);color:var(--fg)}
-html[data-sidebar-accent=theme] .group-button.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}
+html[data-accent=custom] .group-button.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}
 /* Focusing search does not add a second pane, ring, blur layer or dark border. */
 #main .search-form,#main .search-form:focus-within,#main .search-wrapper.is-stuck .search-form{box-shadow:none!important;outline:none;border-color:var(--panel-border);background-color:rgb(var(--surface-rgb) / var(--search-opacity));transition:none}
 #main .search-wrapper{filter:none}
@@ -167,8 +167,8 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-wi
 html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}
 
-/* Viewport limits are in unzoomed CSS pixels so even 150% retains reachable controls. */
-#dialog{zoom:var(--dialog-scale,1);width:min(700px,var(--dialog-width,calc(100vw - 24px)));max-width:var(--dialog-width);max-height:var(--dialog-height);}
+/* Window content reflows inside viewport limits. */
+#dialog{width:min(700px,var(--dialog-width,calc(100vw - 24px)));max-width:var(--dialog-width);max-height:var(--dialog-height);}
 #dialog.workspace-dialog{width:min(1040px,var(--dialog-width));height:min(780px,var(--dialog-height));max-height:var(--dialog-height)}
 #dialog.workspace-dialog.wallpaper-dialog{width:min(1220px,var(--dialog-width));height:min(810px,var(--dialog-height))}
 #dialog.site-editor-dialog{width:min(840px,var(--dialog-width))}

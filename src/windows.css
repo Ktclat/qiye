@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-#dialog { width:min(var(--form-width,700px),var(--dialog-width)); }
+#dialog { width:min(var(--form-width,640px),var(--dialog-width)); container-type:inline-size; container-name:window; }
 #dialog.workspace-dialog,#dialog.widget-app-dialog {
-  width:min(var(--window-width,1060px),var(--dialog-width));
-  height:min(var(--window-height,690px),var(--dialog-height));
+  width:min(var(--window-width,980px),var(--dialog-width));
+  height:min(var(--window-height,640px),var(--dialog-height));
 }
-#dialog.settings-dialog { width:min(var(--settings-width,920px),var(--dialog-width)); }
+#dialog.settings-dialog { width:min(var(--settings-width,880px),var(--dialog-width)); }
 #dialog.settings-drawer {
   position:fixed; inset:0 0 0 auto; margin:0;
-  width:min(var(--drawer-width,580px),calc(var(--dialog-width) + 24px / var(--dialog-scale)));
-  height:calc(var(--dialog-height) + 24px / var(--dialog-scale));
-  max-height:calc(var(--dialog-height) + 24px / var(--dialog-scale));
+  width:var(--drawer-width,480px);
+  height:100dvh;
+  max-height:100dvh;
   border-radius:22px 0 0 22px; border-right:0;
   animation:settings-enter .26s cubic-bezier(.2,.75,.2,1);
 }
@@ -17,7 +17,7 @@
 #dialog.settings-drawer .settings-nav { padding:24px 8px; }
 #dialog.settings-drawer .settings-nav-button { gap:8px; padding:11px 8px; font-size:12px; }
 #dialog.settings-drawer .settings-nav-button.active { position:relative; border-color:transparent; background:var(--nav-selection); }
-#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:11px; bottom:11px; width:3px; background:#299bff; border-radius:4px; }
+#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:11px; bottom:11px; width:3px; background:var(--accent); border-radius:4px; }
 #dialog.settings-drawer .settings-content { padding:52px 22px 28px; }
 #dialog.settings-drawer .workspace-title { font-size:25px; }
 #dialog.settings-drawer .two-columns { grid-template-columns:1fr; }
@@ -33,7 +33,7 @@
 .context-menu hr { margin:4px 6px; border:0; border-top:1px solid #ffffff13; }
 .context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; }
 .context-menu .size-options button { padding:6px 2px; font-size:11px; }
-.context-menu .size-options .selected { color:#49a8ff; background:#299bff25; }
+.context-menu .size-options .selected { color:var(--accent); background:var(--accent-soft); }
 html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 16px 48px #0002; }
 html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 .widget-viewer { padding:20px; }
@@ -42,12 +42,18 @@ html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 @keyframes settings-enter { from { transform:translateX(30px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 body.reduce-effects #dialog.settings-drawer { animation:none; }
 @media(prefers-reduced-motion:reduce) { #dialog.settings-drawer { animation:none; } }
-@media(max-width:700px) {
-  #dialog.settings-drawer .settings-layout { grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); }
+@container window (max-width:620px) {
+  .settings-layout,#dialog.settings-drawer .settings-layout { grid-template-columns:110px minmax(0,1fr); grid-template-rows:1fr; }
+  .settings-nav { display:flex; flex-direction:column; overflow-y:auto; padding:22px 6px; }
+  .settings-content,#dialog.settings-drawer .settings-content { padding:50px 14px 22px; }
+  .settings-nav-button { padding:10px 5px; gap:5px; font-size:11px; }
+  .settings-nav-button .icon { display:none; }
+  .two-columns { grid-template-columns:1fr; }
 }
-@media(max-width:520px) {
-  #dialog.settings-drawer .settings-layout { grid-template-columns:100px minmax(0,1fr); }
-  #dialog.settings-drawer .settings-nav-button { gap:4px; padding:10px 5px; }
-  #dialog.settings-drawer .settings-nav-button .icon { display:none; }
-  #dialog.settings-drawer .settings-content { padding:50px 12px 20px; }
+@container window (max-width:760px) {
+  .calendar-detail { grid-template-columns:1fr; padding:10px; }
+  .calendar-month-panel { padding:12px; min-height:380px; }
+  .calendar-day-panel { min-height:250px; }
+  .calendar-app-header h2 { font-size:18px; gap:8px; }
+  .calendar-app-icon { width:32px; height:32px; border-radius:10px; }
 }

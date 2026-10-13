@@ -26,3 +26,8 @@ footer button { display: flex; align-items: center; gap: 16px; padding: 4px 0; c
 footer button:hover { color: #eff6e9; }
 .local-label { color: #71897f; font-size: 10px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+:root { --popup-surface:#171e23; --popup-field:#222c34; --popup-fg:#e9eee9; color:var(--popup-fg); background:var(--popup-surface); }
+:root[data-theme=light] { color-scheme:light; --popup-surface:#f7f9fc; --popup-field:#fff; --popup-fg:#242c38; }
+input,select,option { background:var(--popup-field); color:var(--popup-fg); color-scheme:inherit; }
+button[type=submit] { background:var(--accent); color:var(--accent-ink); }

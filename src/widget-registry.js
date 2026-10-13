@@ -21,7 +21,7 @@ const builtins = [
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
 ];
 
-export const WIDGET_API_VERSION = 2;
+export const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { renderWidgetSummary } from './widget-summary.js';
 import { isCompactWidget } from './widget-sizes.js';
 import { t } from './i18n.js';
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
@@ -125,8 +126,9 @@ function countdownView(item, now = new Date()) {
 }
 
 function renderCountdown(item) {
-  const view = countdownView(item);
-  return `${header(t("倒数日"), 'flag')}<div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div><span class="w-countdown-orbit" aria-hidden="true"></span>`;
+  const view = countdownView(item), parts = validDateParts(item.config.date);
+  const date = parts ? new Date(parts[0],parts[1]-1,parts[2]) : null;
+  return `${header(t('倒数日'), 'flag')}<div class="countdown-layout"><div class="countdown-date-sheet" aria-hidden="true"><span>${date ? escapeHtml(formatDate(date,{month:'short'})) : '—'}</span><strong>${date ? date.getDate() : '—'}</strong><small>${date ? escapeHtml(formatDate(date,{weekday:'long'})) : ''}</small></div><div class="countdown-overview"><div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div></div></div>`;
 }
 
 export function focusRemaining(focus, now = Date.now()) {
@@ -300,30 +302,59 @@ function renderWallpaper(item, state) {
 }
 
 function compactModel(item) {
-  const type=item.widget, now=new Date(), data=item.data, config=item.config;
-  let value='', caption=item.title;
-  if(type==='calendar'){value=String(now.getDate());caption=formatDate(now,{month:'short',weekday:'short'});}
-  else if(type==='weather'){const current=weatherState(config.city);value=current.data?temperature(current.data.temperature,config.unit):'—';caption=config.city.name;}
-  else if(type==='todo')value=String(data.todos.filter(entry=>!entry.done).length);
-  else if(type==='memo')value=String(data.entries.length);
-  else if(type==='notes')value=data.notes.split('\n').find(Boolean)?.slice(0,14)||'';
-  else if(type==='focus')value=timerText(focusRemaining(data.focus));
-  else if(type==='countdown'){value=countdownView(item).number;caption=config.title;}
-  else if(type==='workday')value=workdayStatus(config).text;
-  else if(type==='clock'){value=timeInZone(config.timeZone,now);caption=config.label;}
-  else if(type==='habit')value=String(data.habits.filter(entry=>entry.dates.includes(localDateKey(now))).length)+'/'+data.habits.length;
-  return {value,caption};
+  const type = item.widget, now = new Date(), data = item.data, config = item.config;
+  let value = '', caption = item.title, detail = '', meta = '', unit = '';
+  if (type === 'calendar') {
+    value = String(now.getDate()); caption = formatDate(now, {weekday:'short'});
+    detail = formatDate(now, {month:'short'}); meta = config.showLunar ? chineseLunarDate(now) : String(now.getFullYear());
+  } else if (type === 'weather') {
+    const weather = config.enabled ? weatherState(config.city).data : null;
+    value = weather ? temperature(weather.temperature, config.unit) : '—'; caption = config.city.name;
+    detail = weather ? weatherDescription(weather.code) : t('启用天气');
+    meta = weather && weather.min !== null && weather.max !== null ? `${temperature(weather.min,config.unit)} / ${temperature(weather.max,config.unit)}` : '';
+  } else if (type === 'todo') {
+    const pending = data.todos.filter(entry => !entry.done);
+    value = String(pending.length); caption = t('待办清单'); detail = pending[0]?.text || t('给今天安排一件小事');
+    meta = todoSummary(data);
+  } else if (type === 'memo') {
+    value = String(data.entries.length); caption = t('备忘录');
+    const latest = [...data.entries].sort((a,b) => b.updatedAt-a.updatedAt)[0];
+    detail = latest?.title || t('记录一个想法'); meta = latest?.text.slice(0,50) || '';
+  } else if (type === 'notes') {
+    value = data.notes || t('记录一个想法'); caption = t('便签'); detail = t('点击编辑');
+  } else if (type === 'focus') {
+    value = timerText(focusRemaining(data.focus)); caption = t('专注计时');
+    detail = data.focus.running ? t('专心做好一件事') : t('准备开始'); meta = t('{v0} 分钟，留给自己', {v0:data.focus.duration});
+  } else if (type === 'countdown') {
+    const view = countdownView(item);
+    value = view.number; caption = config.title; detail = view.caption; meta = view.date; unit = view.unit;
+  } else if (type === 'workday') {
+    const view = workdayStatus(config);
+    value = view.text; caption = t('下班倒计时'); detail = view.caption;
+    meta = t('距发薪日') + ' ' + t('{v0} 天', {v0:view.paydays});
+  } else if (type === 'clock') {
+    value = timeInZone(config.timeZone,now); caption = config.label;
+    detail = zoneDate(config.timeZone,now); meta = config.timeZone;
+  } else if (type === 'habit') {
+    value = data.habits.filter(entry => entry.dates.includes(localDateKey(now))).length + '/' + data.habits.length;
+    caption = t('习惯打卡'); detail = data.habits[0]?.name || t('记录一个想法'); meta = formatDate(now,{month:'short',day:'numeric'});
+  } else if (type === 'quote') {
+    const quote = getQuote(item); value = quote.text; caption = quote.author; detail = t('每日一句');
+  } else if (type === 'wallpaper') { caption = t('壁纸'); detail = t('换一片风景'); meta = t('打开壁纸中心'); }
+  else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
+  else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
+  return {value, caption, detail, meta, unit};
 }
 function renderCompact(item) {
-  const view=compactModel(item), definition=getWidgetDefinition(item.widget);
-  return `<div class="widget-inner widget-compact compact-${escapeHtml(item.widget)}" data-widget="${escapeHtml(item.widget)}" data-widget-id="${escapeHtml(item.id)}" data-compact="true"><button type="button" data-action="widget-open" aria-label="${escapeHtml(item.title)}"><span class="compact-symbol" aria-hidden="true">${icon(definition.icon)}</span><strong class="compact-value">${escapeHtml(view.value)}</strong><span class="compact-caption">${escapeHtml(view.caption)}</span></button></div>`;
+  return renderWidgetSummary(item, compactModel(item), icon(getWidgetDefinition(item.widget).icon));
 }
 
 export function renderWidget(item, state) {
   const definition = getWidgetDefinition(item.widget);
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
+  item = { ...item, size: item.size || definition.size };
   const type = item.widget;
-  if (isCompactWidget(item.size)) return renderCompact(item);
+  if (definition.builtin && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
     try {
@@ -332,12 +363,12 @@ export function renderWidget(item, state) {
       if (typeof content !== 'string') throw new Error(t("render 必须同步返回 HTML 字符串"));
     }
     catch { content = `<p class="w-empty-list">${t("组件加载失败，请检查组件实现")}</p>`; }
-    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${header(item.title)}${content}</div>`;
+    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${isCompactWidget(item.size) ? '' : header(item.title)}${content}</div>`;
   }
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   const color = type === 'notes' && ['yellow', 'pink', 'mint'].includes(item.config?.color) ? ` w-notes-${item.config.color}` : '';
-  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
+  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
 }
 
 function findItem(root, state) { return state.items?.find((item) => item.id === root?.dataset.widgetId); }
@@ -599,7 +630,7 @@ export function refreshLiveWidgets(container, state) {
   for(const root of container.querySelectorAll('[data-compact]')) {
     const item=findItem(root,state);if(!item)continue;
     const view=compactModel(item);
-    for(const key of ['value','caption']) {const el=root.querySelector(`.compact-${key}`);if(el && el.textContent!==view[key])el.textContent=view[key];}
+    for(const key of ['value','caption','detail','meta','unit']) {const el=root.querySelector(`.compact-${key}`);if(el && el.textContent!==view[key])el.textContent=view[key];}
   }
   const now = new Date();
   const binding = bindings.get(container);

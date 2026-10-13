@@ -25,7 +25,7 @@ const appearanceSettings = {
   showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
   iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
   desktopMaxWidth: 1350, themeColor: '#79d7b4',
-  showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false
+  showClock: true, showDate: true, showSearch: true, useThemeColor: false, showAddTile: false
 };
 
 afterEach(() => {
@@ -181,7 +181,7 @@ test('independent layout, material and avatar choices survive storage and backup
     searchRadius: 0, showSearchHistory: true, showWeekday: false, showLunar: false, showWallpaperButton: false,
     iconOpacity: 65, labelSize: 16, labelColor: '#ABCDEF', clockColor: '#123456',
     desktopMaxWidth: 1800, themeColor: '#88aAcC',
-    showClock: false, showDate: false, showSearch: false, clockFollowTheme: true, showAddTile: true
+    showClock: false, showDate: false, showSearch: false, useThemeColor: true, showAddTile: true
   });
   const saved = await saveState(state);
   assert.deepEqual(await loadState(), saved);
@@ -213,7 +213,7 @@ test('explicit invalid layout booleans and selections never overwrite a stored d
     sidebarVisibility: ['always', 'auto', 'hidden'], toolbarVisibility: ['always', 'auto'],
     surfaceStyle: ['solid', 'glass', 'acrylic', 'mica'], uiFont: ['inter', 'system']
   };
-  for (const key of ['sidebarLabels', 'reducedEffects', 'animateGroups', 'showClock', 'showDate', 'showSearch', 'clockFollowTheme', 'showAddTile',
+  for (const key of ['sidebarLabels', 'reducedEffects', 'animateGroups', 'showClock', 'showDate', 'showSearch', 'useThemeColor', 'showAddTile',
     'showSearchHistory', 'showWeekday', 'showLunar', 'showWallpaperButton', 'searchNewTab', 'rememberGroup', 'scrollGroups']) {
     for (const value of [undefined, null, 0, 1, 'true', 'false', [], {}]) {
       const state = fresh(); state.settings[key] = value;

@@ -26,10 +26,10 @@ with sync_playwright() as p:
         page=context.new_page();page.set_default_timeout(10000);errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.route('https://**/*',lambda r:r.abort())
-        page.add_init_script('if(!localStorage.getItem("qiye.state.v4"))localStorage.setItem("qiye.state.v4",'+json.dumps(json.dumps(state))+')')
+        page.add_init_script('if(!localStorage.getItem("qiye.state.v5"))localStorage.setItem("qiye.state.v5",'+json.dumps(json.dumps(state))+')')
         page.goto(f'http://127.0.0.1:{server.server_port}/'+('Qiye-preview.html' if args.preview else ''))
         page.locator('[data-item=calendar]').wait_for()
-        def saved():return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v4"))')
+        def saved():return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v5"))')
         def close():
             page.locator('#dialog [data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
         check('all 14 compact widgets render',page.locator('#desktop [data-compact]').count()==14)
@@ -46,7 +46,7 @@ with sync_playwright() as p:
         a=button.bounding_box();b=page.locator('[data-item=notes]').bounding_box()
         page.mouse.move(a['x']+a['width']/2,a['y']+a['height']/2);page.mouse.down();page.wait_for_timeout(380)
         page.mouse.move(b['x']+b['width']-5,b['y']+b['height']/2,steps=12);page.wait_for_timeout(120);page.mouse.up()
-        page.wait_for_function('(order)=>JSON.parse(localStorage.getItem("qiye.state.v4")).items.map(i=>i.id).join()!==order',arg=','.join(original))
+        page.wait_for_function('(order)=>JSON.parse(localStorage.getItem("qiye.state.v5")).items.map(i=>i.id).join()!==order',arg=','.join(original))
         check('long press button drag commits without opening detail',not page.locator('#dialog').is_visible())
         for item in state['items']:
             widget=item['widget'];page.locator(f'[data-item={widget}] [data-action=widget-open]').click()
@@ -56,14 +56,14 @@ with sync_playwright() as p:
                 check('compact calculator evaluates in viewer',page.locator('#dialog [data-widget-input=calculator]').input_value()=='42')
             if widget=='notes':page.locator('#dialog textarea').fill('Compact note survives closing')
             close()
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.widget==="notes").data.notes.includes("survives")')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="notes").data.notes.includes("survives")')
         check('viewer edits persist',True)
         for size in ['1x1','1x2','2x1','2x2','4x2']:
             # Persist a size change through the host's real context menu.
             for item in state['items']:
                 tile=page.locator(f'[data-item={item["id"]}]');tile.click(button='right',position={'x':3,'y':3})
                 page.locator(f'#context-menu [data-size="{size}"]').click()
-                page.wait_for_function('([id,size])=>JSON.parse(localStorage.getItem("qiye.state.v4")).items.find(i=>i.id===id).size===size',arg=[item['id'],size])
+                page.wait_for_function('([id,size])=>JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id===id).size===size',arg=[item['id'],size])
             check(f'all widgets accept {size}',all(i['size']==size for i in saved()['items']))
             check(f'{size} controls stay within their frame',page.locator('#desktop .widget-inner').evaluate_all('''ns=>ns.every(n=>{const r=n.getBoundingClientRect();return [...n.querySelectorAll('button,input,textarea')].filter(e=>e.getClientRects().length).every(e=>{const b=e.getBoundingClientRect();return b.left>=r.left-1 && b.right<=r.right+1 && b.top>=r.top-1 && b.bottom<=r.bottom+1})})'''))
             if size=='2x2':page.screenshot(path=str(OUT/'widgets.png'),animations='disabled')
@@ -73,9 +73,9 @@ with sync_playwright() as p:
         page.locator('[data-settings-tab=general]').click();check('switching settings tabs retains drawer',page.locator('#dialog').evaluate('n=>n.classList.contains("settings-drawer")'))
         close();page.locator('#brand-button').click();check('reopening applies centered presentation',not page.locator('#dialog').evaluate('n=>n.classList.contains("settings-drawer")'))
         page.locator('[data-settings-tab=appearance]').click();before=page.locator('#dialog').bounding_box()['width']
-        page.locator('#range-windowSize').fill('75');page.locator('#range-windowSize').dispatch_event('change')
-        check('window size changes independently of scale',page.locator('#dialog').bounding_box()['width']<before and page.locator('#range-dialogScale').input_value()=='100')
-        page.locator('#range-windowSize').fill('100');page.locator('#range-windowSize').dispatch_event('change')
+        page.locator('[data-preference=windowSize]').select_option('75')
+        check('window size changes independently of scale',page.locator('#dialog').bounding_box()['width']<before and page.locator('#dialog').evaluate('n=>getComputedStyle(n).zoom')=='1')
+        page.locator('[data-preference=windowSize]').select_option('100')
         page.locator('[data-preference=settingsPresentation]').select_option('sidebar');close();page.locator('#brand-button').click()
         page.screenshot(path=str(OUT/'settings.png'),animations='disabled');close()
         page.locator('.top-tools [data-action=add]').click();check('add defaults to widget showcase',page.locator('[data-catalog-card]').count()==14)
@@ -84,7 +84,7 @@ with sync_playwright() as p:
         page.locator('#widget-query').fill('nothing-matches');check('combined search shows empty state',page.locator('#widget-catalog-empty').is_visible())
         page.locator('[data-add-tab=sites]').click();page.locator('#widget-query').fill('github');page.locator('#catalog-group').select_option('code')
         page.locator('[data-catalog-card]:visible [data-add-site]').first.click();page.locator('#dialog').wait_for(state='hidden');check('website picker honors target group',saved()['items'][-1]['groupId']=='code')
-        page.locator('.top-tools [data-action=add]').click();page.locator('#catalog-group').select_option('life');page.locator('[name=widgetSize]').select_option('1x1');page.locator('[data-add-widget=calculator]').click();page.locator('#dialog').wait_for(state='hidden')
+        page.locator('.top-tools [data-action=add]').click();page.locator('#catalog-group').select_option('life');page.locator('[data-catalog-widget=calculator] [data-catalog-size="1x1"]').click();page.locator('[data-add-widget=calculator]').click();page.locator('#dialog').wait_for(state='hidden')
         check('widget picker honors size and group',saved()['items'][-1]['size']=='1x1' and saved()['items'][-1]['groupId']=='life')
         page.locator('#dialog').wait_for(state='hidden')
         page.locator(f'[data-item="{saved()["items"][-1]["id"]}"]').wait_for()
