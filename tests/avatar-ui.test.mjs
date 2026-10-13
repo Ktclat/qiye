@@ -102,7 +102,7 @@ function harness({ initialAvatar = null, writer } = {}) {
     renderDesktop: () => context.app?.renderAvatar(),
     exportBackup() {}, hideSearchMenus() {}, bindFaviconImages() {},
     settingsDialog: () => '<section id="avatar-panel"></section>',
-    updateLinkPreview() {}
+    updateLinkPreview() {}, cancelLinkFaviconVisit() {}
   });
   new vm.Script(productionCode, { filename: 'avatar-ui-extracted-from-app.js' }).runInContext(context);
   context.app.renderAvatar();

@@ -104,6 +104,12 @@ try:
             page.locator('#dialog [data-widget-input=calculator]').press('Enter')
             check('Published compact calculator opens a working detail view', page.locator('#dialog [data-widget-input=calculator]').input_value() == '42')
             close()
+            page.locator('#desktop [data-item=site-github]').click(button='right')
+            page.locator('#context-menu [data-context=edit]').click()
+            check('Published website editor has the visit fallback', page.locator('[data-action=visit-favicon]').inner_text() == '访问网站')
+            check('Published web fallback explains tab access and retains upload', '网页版可上传本机图片' in page.locator('.visit-icon-control').inner_text() and page.locator('[data-icon-choice=upload]').is_visible())
+            page.screenshot(path=str(args.output / 'live-icon-visit.png'), animations='disabled')
+            close()
             check('No uncaught JavaScript exceptions', not errors)
             report['page_errors'] = errors
             report['result'] = 'passed'

@@ -4,9 +4,11 @@
 
 Qiye is an account-free, customizable new tab for Chrome and Edge. Organize websites, folders and everyday widgets, use your own wallpaper, and optionally sync through your own WebDAV server. Personal content stays in your browser unless you export it or enable synchronization.
 
-Version **0.8.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+Version **0.8.1** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
 
 Website icons now default to their original outline with no added background. Choose rounded frames or an adaptive background explicitly in icon settings.
+
+If direct icon extraction fails, choose **Visit to get icon** in the website editor. Wait for the visited tab to show its icon, then return to Qiye. Select the new **Tab icon** candidate and save. The extension reads its browser favicon cache and stores a portable PNG; the selected image no longer needs the site's cookies or image server. This reuses the existing `favicon` permission without adding `tabs`, history or script-injection access. Canceling, changing the URL, closing the editor or a two-minute timeout stops the operation. Generic browser fallback icons are rejected. The web version explains its limitation and offers visiting the site or uploading an image; captured images already saved in a current-format backup also work on the web.
 
 ## Everyday widgets
 
@@ -19,7 +21,7 @@ Windows can be sized to 75%, 100%, 125% or 150% without zooming text or controls
 
 ## Install
 
-1. Download `qiye-0.8.0-chrome-edge.zip` from Releases and extract it.
+1. Download `qiye-0.8.1-chrome-edge.zip` from Releases and extract it.
 2. Open `chrome://extensions/` or `edge://extensions/`, enable Developer mode and choose **Load unpacked**.
 3. Select the folder containing `manifest.json`, then open a new tab.
 

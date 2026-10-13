@@ -9,6 +9,7 @@ import { icon, iconNames } from '../src/icons.js';
 import { bindFaviconImages } from '../src/favicon-view.js';
 
 const source=await readFile(new URL('../src/app.js',import.meta.url),'utf8');
+const capturedPng='data:image/png;base64,'+(await readFile(new URL('../icons/icon32.png',import.meta.url))).toString('base64');
 
 // Execute production UI functions with controllable image/permission boundaries.
 function extractFunction(name) {
@@ -26,8 +27,8 @@ const declaration=prefix=>{
 };
 const code=[
  declaration('const esc ='),declaration('const faviconFormStates ='),declaration('let faviconRequestSequence ='),
- ...['tileInk','siteGlyph','renderLinkIconChoices','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon'].map(extractFunction),
- 'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon,view:form=>faviconFormStates.get(form)};'
+ ...['tileInk','siteGlyph','renderLinkIconChoices','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon','visitLinkFavicon'].map(extractFunction),
+ 'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon,visitLinkFavicon,view:form=>faviconFormStates.get(form)};'
 ].join('\n\n');
 function deferred() {
  let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};
@@ -36,7 +37,8 @@ function harness(extra={}) {
  const dialog={open:true};
  const context=vm.createContext({t, getLocale,
   normalizeIconSelection,
-  safeUrl,icon,iconNames,URL,Promise,Date,dialog,bindFaviconImages,state:{settings:{gridSize:74}},
+  safeUrl,icon,iconNames,URL,Promise,Date,AbortController,dialog,bindFaviconImages,state:{settings:{gridSize:74}},
+  canVisitForFavicon:()=>true,
   $:(selector,root)=>root.querySelector(selector),
   $$:(selector,root)=>[...root.querySelectorAll(selector)],
   getFaviconCandidates:()=>['https://example.com/favicon.ico'],
@@ -55,6 +57,49 @@ function linkForm(url='https://example.com/') {
  form.querySelector=selector=>nodes[selector];
  return {form,button,preview,status,title,shownUrl};
 }
+
+test('visited browser icon is appended as a draft without selecting it or replacing earlier candidates', async () => {
+ const h=harness({visitForFavicon:async pageUrl=>({dataUrl:capturedPng,pageUrl})}),f=linkForm();
+ f.form.elements.iconUrl={value:'https://example.com/chosen.png'};
+ h.app.updateLinkPreview(f.form);const view=h.app.view(f.form);
+ view.variants=[{url:'https://example.com/previous.png'}];
+ await h.app.visitLinkFavicon(f.button);
+ assert.equal(f.form.elements.iconUrl.value,'https://example.com/chosen.png');
+ assert.equal(view.variants.length,2);assert.equal(view.variants[1].url,capturedPng);
+ assert.equal(view.variants[1].browserIcon,true);assert.equal(view.visitController,null);
+ await h.app.visitLinkFavicon(f.button);assert.equal(view.variants.length,2,'duplicate cache images are not repeated');
+});
+
+test('changing destination, canceling, or closing the form cannot apply a late captured icon', async () => {
+ for(const operation of ['url','mode','cancel','close']){
+  const done=deferred();let signal;
+  const h=harness({visitForFavicon:(_url,options)=>{signal=options.signal;return done.promise;}}),f=linkForm();
+  const pending=h.app.visitLinkFavicon(f.button);
+  if(operation==='url'){f.form.elements.url.value='https://another.example/';h.app.updateLinkPreview(f.form);}
+  else if(operation==='mode'){f.form.elements.iconMode.value='text';h.app.updateLinkPreview(f.form);assert.match(f.status.textContent,/已取消获取/);}
+  else if(operation==='cancel')await h.app.visitLinkFavicon({disabled:false,closest:()=>f.form});
+  else h.dialog.open=false;
+  if(operation!=='close')assert.equal(signal.aborted,true);
+  done.resolve({dataUrl:capturedPng,pageUrl:'https://example.com/'});await pending;
+  assert.equal(h.app.view(f.form).variants.length,0);
+ }
+});
+
+test('web visit uses an isolated tab and does not advertise automatic tab capture', async () => {
+ const opened=[];
+ const h=harness({canVisitForFavicon:()=>false,window:{open:(...args)=>opened.push(args)}}),f=linkForm();
+ await h.app.visitLinkFavicon(f.button);
+ assert.deepEqual(opened,[['https://example.com/','_blank','noopener,noreferrer']]);
+ assert.match(f.status.textContent,/网页版无法读取其他标签页/);assert.equal(h.app.view(f.form).variants.length,0);
+});
+
+test('a full candidate list keeps earlier artwork and explains why the captured image was not appended', async () => {
+ const h=harness({visitForFavicon:async pageUrl=>({dataUrl:capturedPng,pageUrl})}),f=linkForm();
+ h.app.updateLinkPreview(f.form);const view=h.app.view(f.form);
+ view.variants=Array.from({length:48},(_,i)=>({url:`https://example.com/${i}.png`}));
+ await h.app.visitLinkFavicon(f.button);
+ assert.equal(view.variants.length,48);assert.equal(view.visitController,null);assert.match(f.status.textContent,/候选图标已满/);
+});
 
 test('automatic icons use an inert image and escaped text; text mode and unsafe URLs make no image request',()=>{
  const {app}=harness();

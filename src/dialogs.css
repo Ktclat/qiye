@@ -77,6 +77,9 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .icon-upload-choice .icon{width:22px;height:22px}
 .icon-section .icon-status{font-size:11px;line-height:1.65;margin:9px 0;color:var(--muted)}
 .icon-section .icon-quality-summary{font-size:10px;opacity:.85;margin-top:-4px}
+.visit-icon-control{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:12px 0}
+.visit-icon-control .secondary-button{flex:none;min-height:36px;padding:7px 12px;font-size:12px}
+.visit-icon-control .icon-status{flex:1 1 210px;margin:0}
 .icon-text-field{display:flex!important;align-items:center;gap:12px;margin:15px 0 13px!important}
 .icon-text-field>span{margin:0!important;flex:none;min-width:56px}
 .icon-text-field input{width:min(240px,100%)!important;min-width:0}

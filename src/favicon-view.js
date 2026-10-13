@@ -150,7 +150,7 @@ export function bindFaviconImages(root = document, options = {}) {
       return null;
     };
     const load = (url, background, done, sourceUrl=null) => {
-      faviconImageQueue.push({ binding, start: release => {
+      const job = { binding, start: release => {
         const ticket = ++requestTicket;
         let target;
         try { target = background ? new globalThis.Image() : image; }
@@ -209,8 +209,15 @@ export function bindFaviconImages(root = document, options = {}) {
         if (!background) { target.hidden = true; visual.classList.remove('is-loaded'); }
         tried.add(url);
         try { target.src = url; } catch { failed(); }
-      } });
-      pumpFaviconImageQueue();
+      } };
+      // Already validated local artwork needs no network slot. A blocked remote
+      // site must not hold up an upload or a captured browser-cache image.
+      if (url.startsWith('data:')) {
+        if (binding.current()) job.start(() => {}); else binding.cancel();
+      } else {
+        faviconImageQueue.push(job);
+        pumpFaviconImageQueue();
+      }
     };
     const advanceUpgrade = () => {
       if (!binding.current()) { binding.cancel(); return; }

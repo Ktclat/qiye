@@ -19,6 +19,7 @@ import { webDAVStateFingerprint } from './webdav.js';
 import { createSyncController } from './sync-ui.js';
 import { getFaviconCandidates, discoverFavicon, faviconCacheReady } from './favicons.js';
 import { normalizeIconSelection } from './icon-selection.js';
+import { canVisitForFavicon, visitForFavicon } from './tab-favicon.js';
 import { bindFaviconImages } from './favicon-view.js';
 import { normalizeAvatarFile } from './avatar.js';
 import { readSearchHistory, rememberSearch, clearSearchHistory } from './search-history.js';
@@ -149,6 +150,7 @@ function updateLinkPreview(form, options = {}) {
   // The destination and icon artwork are independent. Invalidate only pending
   // discovery/upload work; keep decoded candidates, their DOM and the selection.
   const changedUrl=view.url!==url;
+  if(view.visitController){view.visitController.abort();view.visitController=null;view.message=t('已取消获取，已打开的网站会保留。');}
   view.request=++faviconRequestSequence;view.busy=false;
   view.identity=identity;view.url=url;view.mode=mode;
   if(changedUrl){
@@ -181,8 +183,13 @@ function updateLinkPreview(form, options = {}) {
  const textPreview=$('[data-text-icon-preview]',form);
  if(textPreview){textPreview.textContent=form.elements.icon.value || form.elements.title.value.slice(0,2) || t("文");textPreview.style.background=form.elements.color.value;textPreview.style.color=tileInk(form.elements.color.value);}
  if(form.elements.icon){form.elements.icon.readOnly=mode!=='text';form.elements.icon.setAttribute?.('aria-disabled',String(mode!=='text'));}
- button.disabled=view.busy || !view.url;
+ button.disabled=view.busy || !!view.visitController || !view.url;
  button.textContent=view.busy ? t("获取中…") : t("获取图标");
+ const visitButton=$('[data-action="visit-favicon"]',form);
+ if(visitButton){
+  visitButton.disabled=!view.url;
+  visitButton.textContent=view.visitController?t('取消获取'):canVisitForFavicon()?t('访问网站取图标'):t('访问网站');
+ }
  status.textContent=view.message || (mode === 'text' ? t("文字图标 · 可编辑下方文字与颜色。") : t("保留当前图标，或获取网站提供的其他图标。"));
  renderLinkIconChoices(form,view);
 }
@@ -199,7 +206,7 @@ function renderLinkIconChoices(form, view) {
    const template=document.createElement('template');
    template.innerHTML=`<button type="button" class="icon-choice" data-icon-choice="candidate" aria-pressed="false" disabled><span class="choice-art"><span class="site-visual" data-favicon-site="${esc(entry.sourceSite||view.previewSite||view.url)}" data-favicon-selected="${esc(entry.url)}"><span class="site-fallback" aria-hidden="true">…</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span></span><span data-icon-label></span><small data-icon-dimensions>${t("加载中")}</small></button>`;
    row=template.content.firstElementChild;row.dataset.iconUrl=entry.url;
-   row.title=`${entry.source||t("网站图标")} · ${entry.url}`;
+   row.title=entry.url.startsWith('data:')?(entry.source||t('本机图片')):`${entry.source||t("网站图标")} · ${entry.url}`;
    results.append(row);
   }
   if(needsBinding){
@@ -208,13 +215,13 @@ function renderLinkIconChoices(form, view) {
     if(!form.isConnected||faviconFormStates.get(form)!==view||!row.isConnected)return;
     row.disabled=!info.url;row.dataset.iconReady=info.url?'true':'false';
     $('[data-icon-dimensions]',row).textContent=info.url?(info.scalable?t("SVG · 矢量"):`${info.width} × ${info.height}`):t("不可用");
-    if(info.url)row.title=`${entry.source||t("网站图标")} · ${info.scalable?'SVG':info.width+' × '+info.height+'px'}\n${entry.url}`;
+    if(info.url)row.title=`${entry.source||t("网站图标")} · ${info.scalable?'SVG':info.width+' × '+info.height+'px'}${entry.url.startsWith('data:')?'':'\n'+entry.url}`;
     row.classList.toggle('icon-unavailable',!info.url);
     view.measurements.set(entry.url,Boolean(info.url));
    }});
   }
   row.dataset.iconIndex=String(index);
-  $('[data-icon-label]',row).textContent=`${t("网站图标 {v0}", {v0: index+1})}`;
+  $('[data-icon-label]',row).textContent=entry.browserIcon?t('标签页图标'):`${t("网站图标 {v0}", {v0: index+1})}`;
  }
  const selection=form.elements.iconUrl?.value||'';
  for(const row of $$('[data-icon-choice]',form)){
@@ -268,13 +275,48 @@ async function extractLinkFavicon(button) {
 async function uploadSiteIcon(input){
  const form=input.closest('#link-form'),file=input.files?.[0];input.value='';if(!form||!file)return;
  updateLinkPreview(form);const view=faviconFormStates.get(form),request=++faviconRequestSequence;
+ view.visitController?.abort();view.visitController=null;view.busy=false;
  view.request=request;view.message=t("正在处理本机图标…");updateLinkPreview(form);
  try{
   const image=await normalizeAvatarFile(file);if(!isLinkPreviewCurrent(form,view,request))return;
   form.elements.iconUrl.value=image;form.elements.iconMode.value='auto';
-  view.variants=[...(view.variants||[]).filter(v=>!v.url.startsWith('data:')).slice(0,47),{url:image,source:t("本机上传"),sourceSite:view.previewSite||view.url}];
+  view.variants=[...(view.variants||[]).filter(v=>v.url!==image).slice(0,47),{url:image,source:t("本机上传"),sourceSite:view.previewSite||view.url}];
   view.choice='candidate';form.dataset.iconChoice='candidate';view.message=t("已处理本机图标，保存后生效。");updateLinkPreview(form);
  }catch(error){if(isLinkPreviewCurrent(form,view,request)){view.message=error.message;updateLinkPreview(form);}}
+}
+function cancelLinkFaviconVisit() {
+ faviconFormStates.get($('#link-form',dialog))?.visitController?.abort();
+}
+async function visitLinkFavicon(button) {
+ const form=button.closest('#link-form');if(!form || button.disabled)return;
+ updateLinkPreview(form);const view=faviconFormStates.get(form);
+ if(view.visitController){
+  view.visitController.abort();view.visitController=null;view.message=t('已取消获取，已打开的网站会保留。');updateLinkPreview(form);return;
+ }
+ if(!view.url)return;
+ if(!canVisitForFavicon()){
+  window.open(view.url,'_blank','noopener,noreferrer');
+  view.message=t('网页版无法读取其他标签页的图标；可使用扩展版，或保存图片后通过“上传”选择。');updateLinkPreview(form);return;
+ }
+ const controller=new AbortController(),request=++faviconRequestSequence;
+ view.visitController=controller;view.request=request;view.busy=false;
+ view.message=t('正在打开网站…');updateLinkPreview(form);
+ try{
+  const result=await visitForFavicon(view.url,{signal:controller.signal,onWaiting:phase=>{
+   if(!isLinkPreviewCurrent(form,view,request)||controller.signal.aborted)return;
+   view.message=phase==='reading'?t('正在读取标签页图标…'):t('请在网站图标显示后返回栖页，图标会加入候选。');updateLinkPreview(form);
+  }});
+  if(!isLinkPreviewCurrent(form,view,request)||controller.signal.aborted)return;
+  if(!view.variants.some(entry=>entry.url===result.dataUrl)){
+   if(view.variants.length>=48){view.message=t('候选图标已满，请保存或重新打开编辑窗口后再试。');return;}
+   view.variants.push({url:result.dataUrl,source:t('浏览器标签页缓存'),sourceSite:result.pageUrl,browserIcon:true});
+  }
+  view.message=t('已加入标签页图标，请选中后保存；图标已转为本地图片。');
+ }catch(error){
+  if(isLinkPreviewCurrent(form,view,request)&&!controller.signal.aborted)view.message=error.message||t('无法读取浏览器图标缓存。');
+ }finally{
+  if(view.visitController===controller){view.visitController=null;if(form.isConnected&&dialog.open)updateLinkPreview(form);}
+ }
 }
 function toast(message, undo, actionLabel=t("撤销")) {
  clearTimeout(lastToastTimer); const el = $('#toast');
@@ -652,6 +694,7 @@ function openDialog(kind,data={}) {
  else if (kind === 'confirm') html = confirmDialog(data);
  else return;
  document.body.append($('#context-menu'));
+ cancelLinkFaviconVisit();
  $('#dialog-content').innerHTML = html;
  dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
  if (!dialog.open) dialog.showModal();
@@ -671,6 +714,7 @@ function openDialog(kind,data={}) {
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
+ cancelLinkFaviconVisit();
  viewerCleanup();viewerCleanup=()=>{};
  const pending = widgetDetails.close();
  if (pending) {
@@ -699,6 +743,7 @@ function linkEditorForm(item){
   </div>
   <span hidden id="link-preview-title"></span><span hidden id="link-preview-url"></span>
   <p id="favicon-status" class="icon-status" role="status" aria-live="polite"></p><p id="favicon-quality" class="icon-status icon-quality-summary"></p>
+  <div class="visit-icon-control"><button type="button" class="secondary-button" data-action="visit-favicon">${canVisitForFavicon()?t('访问网站取图标'):t('访问网站')}</button><p class="icon-status">${canVisitForFavicon()?t('直接获取失败时，可访问网站，等标签页显示图标后返回。'):t('读取标签页图标需要 Chrome / Edge 扩展版；网页版可上传本机图片。')}</p></div>
   <label class="field icon-text-field"><span>${t("图标文字")}</span><input name="icon" value="${esc(value.icon||value.title?.slice(0,2)||'')}" maxlength="8" placeholder="${t("例如：知、G、🌿")}"></label>
   <div class="field icon-color-field"><span>${t("图标颜色")}</span>${colorsHtml(color)}</div>
   <input type="file" id="site-icon-upload" accept="image/png,image/jpeg,image/webp" hidden>
@@ -1077,6 +1122,7 @@ document.addEventListener('click', async event=>{
   await commit();openDialog('settings');toast(t("已恢复默认设置。"),async()=>{state.settings=previous;await commit();if(dialog.open)openDialog('settings');toast(t("已撤销重置设置。"));});
  }});
  if(action==='extract-favicon')return await extractLinkFavicon(target);
+ if(action==='visit-favicon')return await visitLinkFavicon(target);
  if(action?.startsWith('webdav-'))return await syncController.handleAction(action);
  if(action==='open-sync')return openDialog('settings',{tab:'sync'});
  if(action==='add-wallpaper-widget'){
@@ -1240,7 +1286,7 @@ document.addEventListener('keydown',event=>{
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
-dialog.addEventListener('close',()=>{if(dialog.open)return;viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
+dialog.addEventListener('close',()=>{if(dialog.open)return;cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='widget-detail'){event.preventDefault();void closeDialog();}});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');

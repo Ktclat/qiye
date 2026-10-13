@@ -116,7 +116,7 @@ test('timeouts, empty decoded images, and stale events retain text fallback and 
   assert.equal(h.requests.length, 3);
 });
 
-test('all icon requests share four slots and detached group requests are cancelled before the next group loads', () => {
+test('remote icon requests share four slots and detached group requests are cancelled before the next group loads', () => {
   const h = harness(), firstGroup = Array.from({ length: 7 }, (_, index) => h.visual(`https://site-${index}.example.com/`));
   h.bind({ querySelectorAll: () => firstGroup.map(view => view.element) });
   assert.equal(h.requests.length, 4);
@@ -132,6 +132,20 @@ test('all icon requests share four slots and detached group requests are cancell
   secondGroup.forEach(view => view.image.load(128));
   assert.equal(h.remembered.length, 2);
   assert.equal(h.timers.size, 0);
+});
+
+test('a local captured image loads immediately while remote image slots are blocked', async () => {
+  const png = await readFile(new URL('../icons/icon32.png', import.meta.url));
+  const local = `data:image/png;base64,${png.toString('base64')}`;
+  const h = harness(), remote = Array.from({ length: 5 }, (_, i) => h.visual(`https://blocked-${i}.example/`));
+  h.bind({ querySelectorAll: () => remote.map(view => view.element) });
+  assert.equal(h.requests.length, 4);
+  const captured = h.visual(); captured.element.dataset.faviconSelected = local;
+  h.bind(captured.root); assert.equal(h.requests.at(-1).url, local);
+  captured.image.load(32); assert.equal(captured.image.hidden, false);
+  assert.equal(h.requests.length, 5, 'local completion must not release a remote slot');
+  remote[0].image.load(128); assert.equal(h.requests.length, 6, 'remote slots retain the four-request limit');
+  assert.equal(h.remembered.some(entry => entry.url === local), false, 'chosen artwork does not replace the global cache');
 });
 
 test('a low-resolution icon remains visible while at most three upgrades are tried and only a better result replaces it', () => {
