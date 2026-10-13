@@ -3,12 +3,37 @@
 from pathlib import Path
 import re
 import base64
+import json
 root=Path(__file__).resolve().parents[1]
+version=json.loads((root/'manifest.json').read_text(encoding='utf-8'))['version']
+if version != json.loads((root/'package.json').read_text(encoding='utf-8'))['version']:
+ raise SystemExit('manifest.json and package.json versions differ')
+(root/'src/version.js').write_text('// SPDX-License-Identifier: GPL-3.0-only\n// Generated from manifest.json by scripts/build-preview.py.\nexport const APP_VERSION = '+json.dumps(version)+';\n',encoding='utf-8')
 modules=[]
 def inline_imports(source):
  return re.sub(r"import\s*\{([^}]+)\}\s*from\s*'\./([a-z-]+)\.js';", lambda m:'const {'+m[1]+'} = __'+m[2].replace('-','_')+';', source)
 
-for name in ('wallpaper-catalog','site-icon-catalog','icon-artwork','avatar','icon-selection','favicons','favicon-view','wallpapers','wallpaper-library','core','webdav','widgets','icons','sync-ui','drag','keyed-view','search-history'):
+IMPORT = re.compile(r"import\s*\{([^}]+)\}\s*from\s*'\./([a-z-]+)\.js';")
+ordered = []
+visiting = set()
+visited = set()
+
+def visit(name):
+ if name in visiting: raise SystemExit('Circular module import: ' + name)
+ if name in visited: return
+ visiting.add(name)
+ source = (root/'src'/f'{name}.js').read_text(encoding='utf-8')
+ for match in IMPORT.finditer(source): visit(match[2])
+ if re.search(r'^\s*import\b', IMPORT.sub('', source), re.M):
+  raise SystemExit('Only named relative .js imports are supported: ' + name)
+ if re.search(r'^export\s+(?:default|\{|\*)', source, re.M):
+  raise SystemExit('Use named declaration exports in: ' + name)
+ visiting.remove(name)
+ visited.add(name)
+ if name != 'app': ordered.append(name)
+
+visit('app')
+for name in ordered:
  source=(root/'src'/f'{name}.js').read_text(encoding='utf-8')
  exports=re.findall(r'^export\s+(?:async\s+)?(?:function|const|let|class)\s+(\w+)',source,re.M)
  if not exports: raise SystemExit('No exports in '+name)

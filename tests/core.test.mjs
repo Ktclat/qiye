@@ -1,3 +1,4 @@
+import { widgetData, withNote } from './state-fixtures.mjs';
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -13,7 +14,7 @@ const originalChrome = globalThis.chrome;
 const originalLocalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 const cleanups = [];
 const avatarPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMI6LkDAALoAbn/7VoOAAAAAElFTkSuQmCC';
-const v023Settings = {
+const appearanceSettings = {
   searchNewTab: true, rememberGroup: true, scrollGroups: true,
   sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
   sidebarVisibility: 'always', sidebarLabels: true, avatar: null,
@@ -110,34 +111,15 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
   assert.ok(ENGINES.every(engine => safeUrl(engine.url.replace('{q}', 'test'))));
 });
 
-test('missing pin settings scroll both controls while preserving legacy desktop layouts', async () => {
-  const legacy = fresh();
-  delete legacy.settings.pinClock;
-  delete legacy.settings.pinSearch;
-  legacy.settings.gridSize = 90;
-  legacy.settings.theme = 'light';
-  legacy.groups.reverse();
-  legacy.items.reverse();
-  legacy.activeGroupId = 'design';
-  legacy.notes = '保留旧桌面的布局与内容';
-  const fixture = extensionFixture(legacy);
-  const loaded = await loadState();
-  assert.deepEqual(loaded, {
-    ...legacy,
-    settings: { ...legacy.settings, pinClock: false, pinSearch: false }
-  });
-  assert.equal(loaded.schemaVersion, 1);
-  assert.equal(fixture.writes, 0, 'loading a legacy record must not silently replace it');
-  assert.deepEqual(fixture.records[STORAGE_KEY], legacy);
-  assert.deepEqual(validateImport(exportState(loaded)), loaded);
-  for (const missing of ['pinClock', 'pinSearch']) {
+test('incomplete settings are rejected without changing the stored desktop', async () => {
+  for (const key of Object.keys(DEFAULT_STATE.settings)) {
     const partial = fresh();
-    const other = missing === 'pinClock' ? 'pinSearch' : 'pinClock';
-    delete partial.settings[missing];
-    partial.settings[other] = false;
-    const normalized = validateImport(partial);
-    assert.equal(normalized.settings[missing], false);
-    assert.equal(normalized.settings[other], false, 'an existing opt-out remains independent');
+    delete partial.settings[key];
+    const fixture = extensionFixture(partial);
+    assert.throws(() => validateImport(partial), /数据校验失败/, key);
+    await assert.rejects(loadState(), /本地数据异常/, key);
+    assert.equal(fixture.writes, 0);
+    assert.deepEqual(fixture.records[STORAGE_KEY], partial);
   }
 });
 
@@ -175,23 +157,14 @@ test('explicit non-boolean pin settings cannot overwrite stored desktop data', a
   assert.deepEqual(fixture.records[STORAGE_KEY], original);
 });
 
-test('v0.2.2 layouts migrate appearance preferences without writing or replacing user data', async () => {
-  const legacy = fresh();
-  for (const key of Object.keys(v023Settings)) delete legacy.settings[key];
-  legacy.settings.pinClock = false;
-  legacy.settings.pinSearch = false;
-  legacy.settings.theme = 'light';
-  legacy.settings.clockSize = 160;
-  legacy.groups.reverse();
-  legacy.items.reverse();
-  legacy.activeGroupId = 'design';
-  const fixture = extensionFixture(legacy);
-  const migrated = await loadState();
-  assert.deepEqual(migrated, { ...legacy, settings: { ...legacy.settings, ...v023Settings } });
-  assert.equal(migrated.schemaVersion, 1);
+test('only the current schema is loaded and no previous storage key is read', async () => {
+  const fixture = extensionFixture();
+  fixture.records['qiye.state.v1'] = { schemaVersion: 1, notes: 'obsolete record' };
+  assert.deepEqual(await loadState(), fresh());
   assert.equal(fixture.writes, 0);
-  assert.deepEqual(fixture.records[STORAGE_KEY], legacy);
-  assert.deepEqual(validateImport(exportState(migrated)), migrated);
+  assert.deepEqual(fixture.records['qiye.state.v1'], { schemaVersion: 1, notes: 'obsolete record' });
+  const old = fresh(); old.schemaVersion = 1;
+  assert.throws(() => validateImport(old), /仅支持当前数据格式/);
 });
 
 test('independent layout, material and avatar choices survive storage and backup round trips', async () => {
@@ -213,35 +186,23 @@ test('independent layout, material and avatar choices survive storage and backup
   const saved = await saveState(state);
   assert.deepEqual(await loadState(), saved);
   assert.deepEqual(validateImport(exportState(saved)), saved);
-  for (const key of Object.keys(v023Settings)) assert.deepEqual(saved.settings[key], state.settings[key], key);
+  for (const key of Object.keys(appearanceSettings)) assert.deepEqual(saved.settings[key], state.settings[key], key);
   assert.equal(fixture.writes, 1);
 });
 
-test('legacy search-tab behavior is inherited once and later search choices remain independent', async () => {
+test('search and website opening choices round trip independently', async () => {
   for (const openNewTab of [false, true]) {
-    const legacy = fresh();
-    legacy.settings.openNewTab = openNewTab;
-    delete legacy.settings.searchNewTab;
-    const fixture = extensionFixture(legacy);
-    const migrated = await loadState();
-    assert.equal(migrated.settings.searchNewTab, openNewTab);
-    assert.equal(migrated.settings.openNewTab, openNewTab);
-    assert.equal(fixture.writes, 0);
-    assert.deepEqual(fixture.records[STORAGE_KEY], legacy);
-    assert.deepEqual(validateImport(exportState(migrated)), migrated);
-    migrated.settings.searchNewTab = !openNewTab;
-    const saved = await saveState(migrated);
-    const restored = validateImport(exportState(saved));
-    assert.equal(restored.settings.searchNewTab, !openNewTab);
-    assert.equal(restored.settings.openNewTab, openNewTab);
-    assert.deepEqual(await loadState(), saved);
+    for (const searchNewTab of [false, true]) {
+      const state = fresh();
+      Object.assign(state.settings, { openNewTab, searchNewTab });
+      extensionFixture(state);
+      const saved = await saveState(state);
+      assert.equal(saved.settings.searchNewTab, searchNewTab);
+      assert.equal(saved.settings.openNewTab, openNewTab);
+      assert.deepEqual(validateImport(exportState(saved)), saved);
+      assert.deepEqual(await loadState(), saved);
+    }
   }
-  const ancient = fresh();
-  delete ancient.settings.openNewTab;
-  delete ancient.settings.searchNewTab;
-  const defaults = validateImport(ancient).settings;
-  assert.equal(defaults.openNewTab, true);
-  assert.equal(defaults.searchNewTab, true);
 });
 
 test('explicit invalid layout booleans and selections never overwrite a stored desktop', async () => {
@@ -337,7 +298,7 @@ test('unsafe, animated, malformed or oversized avatars cannot enter persistent s
 test('avatar data counts toward the existing complete backup size limit', () => {
   const state = fresh();
   state.settings.customWallpaper = `data:image/png;base64,${Buffer.alloc(MAX_MEDIA_BYTES).toString('base64')}`;
-  state.todos = Array.from({ length: 500 }, (_, i) => ({ id: `large-todo-${i}`, text: 'a'.repeat(1000), done: false }));
+  widgetData(state, 'todo').todos = Array.from({ length: 500 }, (_, i) => ({ id: `large-todo-${i}`, text: 'a'.repeat(1000), done: false }));
   assert.ok(JSON.stringify(state).length < MAX_BACKUP_BYTES);
   assert.doesNotThrow(() => validateImport(state));
   // A bounded PNG ancillary chunk stands in for an avatar with more image data.
@@ -351,28 +312,15 @@ test('avatar data counts toward the existing complete backup size limit', () => 
   assert.throws(() => exportState(state), /6 MiB/);
 });
 
-test('legacy backups gain automatic icons while text choices survive storage and backup round trips', async () => {
-  for (const version of ['0.1', '0.2']) {
-    const legacy = fresh();
-    for (const item of legacy.items) delete item.iconMode;
-    if (version === '0.1') {
-      delete legacy.settings.wallpaperApiEnabled;
-      delete legacy.settings.remoteWallpaper;
-      legacy.items = legacy.items.filter(item => item.widget !== 'wallpaper');
-    }
-    const fixture = extensionFixture(legacy);
-    const loaded = await loadState();
-    assert.equal(fixture.writes, 0, 'normalizing an old record must not silently write it');
-    for (const item of loaded.items.filter(item => item.type === 'link')) {
-      assert.equal(item.iconMode, 'auto');
-      assert.equal(item.icon, legacy.items.find(old => old.id === item.id).icon);
-    }
-    assert.deepEqual(validateImport(exportState(loaded)), loaded);
-    loaded.items.find(item => item.type === 'link').iconMode = 'text';
-    const saved = await saveState(loaded);
+test('explicit icon choices survive storage and backup round trips', async () => {
+  for (const iconMode of ['auto', 'text']) {
+    extensionFixture();
+    const state = fresh();
+    state.items.find(item => item.type === 'link').iconMode = iconMode;
+    const saved = await saveState(state);
     assert.deepEqual(await loadState(), saved);
     assert.deepEqual(validateImport(exportState(saved)), saved);
-    assert.equal(saved.items.find(item => item.type === 'link').iconMode, 'text');
+    assert.equal(saved.items.find(item => item.type === 'link').iconMode, iconMode);
   }
   const appended = await appendLink({ title: '自选文字图标', url: 'https://example.org/text-icon', iconMode: 'text' });
   assert.equal(appended.item.iconMode, 'text');
@@ -444,10 +392,10 @@ test('prototype pollution, unsupported fields, and inherited state are rejected'
 test('import limits prevent oversized backups, lists, notes, and malformed media', () => {
   assert.throws(() => validateImport(' '.repeat(MAX_BACKUP_BYTES + 1)), /6 MiB/);
   const state = fresh();
-  state.notes = 'a'.repeat(100001);
+  widgetData(state).notes = 'a'.repeat(100001);
   assert.throws(() => validateImport(state), /notes/);
-  state.notes = '';
-  state.todos = Array.from({ length: 501 }, (_, i) => ({ id: `test-${i}`, text: 'task', done: false }));
+  widgetData(state).notes = '';
+  widgetData(state, 'todo').todos = Array.from({ length: 501 }, (_, i) => ({ id: `test-${i}`, text: 'task', done: false }));
   assert.throws(() => validateImport(state), /todos/);
   const media = fresh();
   media.settings.customWallpaper = 'data:image/svg+xml;base64,PHN2Zy8+';
@@ -503,19 +451,19 @@ test('invalid references and duplicate ids reject the entire backup without drop
   const noGroup = fresh();
   noGroup.activeGroupId = 'deleted';
   assert.throws(() => validateImport(noGroup), /对应分组不存在/);
-  const future = fresh(); future.schemaVersion = 2;
-  assert.throws(() => validateImport(future), /仅支持栖页 v1/);
+  const future = fresh(); future.schemaVersion = 999;
+  assert.throws(() => validateImport(future), /仅支持当前数据格式/);
 });
 
 test('date, timer, location, and widget configuration values are validated', () => {
   const state = fresh();
-  state.countdown.date = '2026-02-29';
+  state.items.find(item => item.widget === 'countdown').config.date = '2026-02-29';
   assert.throws(() => validateImport(state), /有效日期/);
-  state.countdown.date = '2028-02-29';
-  assert.equal(validateImport(state).countdown.date, '2028-02-29');
-  state.focus.running = true;
+  state.items.find(item => item.widget === 'countdown').config.date = '2028-02-29';
+  assert.equal(validateImport(state).items.find(item => item.widget === 'countdown').config.date, '2028-02-29');
+  widgetData(state, 'focus').focus.running = true;
   assert.throws(() => validateImport(state), /结束时间/);
-  state.focus.running = false;
+  widgetData(state, 'focus').focus.running = false;
   state.settings.weatherCity.latitude = 91;
   assert.throws(() => validateImport(state), /latitude/);
   state.settings.weatherCity.latitude = 22;
@@ -525,7 +473,7 @@ test('date, timer, location, and widget configuration values are validated', () 
 
 test('custom search engines require a safe explicit search placeholder', () => {
   const state = fresh();
-  state.settings.customEngines = [{ id: 'custom-docs', name: '文档', url: 'https://example.org/search?q={q}' }];
+  state.settings.customEngines = [{ id: 'custom-docs', name: '文档', letter: '文', color: '#6BA39A', url: 'https://example.org/search?q={q}' }];
   state.settings.searchEngine = 'custom-docs';
   const checked = validateImport(state);
   assert.equal(checked.settings.customEngines[0].letter, '文');
@@ -542,8 +490,8 @@ test('fresh loads return separate defaults without creating storage records', as
   const fixture = extensionFixture();
   const one = await loadState();
   const two = await loadState();
-  one.notes = 'private edit';
-  assert.notEqual(two.notes, one.notes);
+  widgetData(one).notes = 'private edit';
+  assert.notEqual(widgetData(two).notes, widgetData(one).notes);
   assert.equal(fixture.writes, 0);
   assert.equal(fixture.records[STORAGE_KEY], undefined);
 });
@@ -565,7 +513,7 @@ test('failed storage writes leave the old record and do not notify UI subscriber
   let notifications = 0;
   cleanups.push(subscribeState(() => { notifications += 1; }));
   fixture.failWrite = true;
-  const changed = fresh(); changed.notes = 'new draft';
+  const changed = fresh(); widgetData(changed).notes = 'new draft';
   await assert.rejects(saveState(changed), /保存失败/);
   assert.deepEqual(fixture.records[STORAGE_KEY], original);
   assert.equal(notifications, 0);
@@ -574,19 +522,19 @@ test('failed storage writes leave the old record and do not notify UI subscriber
 test('saving snapshots state immediately and subscribers receive isolated copies once', async () => {
   const fixture = extensionFixture(fresh());
   const notifications = [];
-  cleanups.push(subscribeState(state => { state.notes = 'subscriber mutation'; }));
+  cleanups.push(subscribeState(state => { widgetData(state).notes = 'subscriber mutation'; }));
   cleanups.push(subscribeState(state => notifications.push(state)));
-  const input = fresh(); input.notes = 'snapshot';
+  const input = fresh(); widgetData(input).notes = 'snapshot';
   const saving = saveState(input);
-  input.notes = 'mutated after save called';
+  widgetData(input).notes = 'mutated after save called';
   const saved = await saving;
-  assert.equal(saved.notes, 'snapshot');
-  assert.equal(fixture.records[STORAGE_KEY].notes, 'snapshot');
+  assert.equal(widgetData(saved).notes, 'snapshot');
+  assert.equal(widgetData(fixture.records[STORAGE_KEY]).notes, 'snapshot');
   assert.equal(notifications.length, 1);
-  assert.equal(notifications[0].notes, 'snapshot');
+  assert.equal(widgetData(notifications[0]).notes, 'snapshot');
   assert.ok(saved.updatedAt > 0);
-  saved.notes = 'later return mutation';
-  assert.equal(fixture.records[STORAGE_KEY].notes, 'snapshot');
+  widgetData(saved).notes = 'later return mutation';
+  assert.equal(widgetData(fixture.records[STORAGE_KEY]).notes, 'snapshot');
 });
 
 test('cross-context storage updates notify subscribers while invalid records are ignored', () => {
@@ -594,11 +542,11 @@ test('cross-context storage updates notify subscribers while invalid records are
   const notifications = [];
   const unsubscribe = subscribeState(value => notifications.push(value));
   cleanups.push(unsubscribe);
-  const change = fresh(); change.notes = 'changed by another tab'; change.updatedAt = 12345678;
+  const change = fresh(); widgetData(change).notes = 'changed by another tab'; change.updatedAt = 12345678;
   fixture.dispatch(change);
   fixture.dispatch({ ...change, schemaVersion: 9 });
   assert.equal(notifications.length, 1);
-  assert.equal(notifications[0].notes, change.notes);
+  assert.equal(widgetData(notifications[0]).notes, widgetData(change).notes);
   unsubscribe();
   fixture.dispatch({ ...change, updatedAt: 12345679 });
   assert.equal(notifications.length, 1);
@@ -607,7 +555,7 @@ test('cross-context storage updates notify subscribers while invalid records are
 test('stale whole-state saves cannot erase links appended by another extension surface', async () => {
   const fixture = extensionFixture(fresh());
   const stale = await loadState();
-  stale.notes = 'unsaved local draft';
+  widgetData(stale).notes = 'unsaved local draft';
   const appended = await appendLink({ title: '来自右键菜单', url: 'https://example.org/new-from-menu' });
   const latest = copy(fixture.records[STORAGE_KEY]);
   const writes = fixture.writes;
@@ -616,7 +564,7 @@ test('stale whole-state saves cannot erase links appended by another extension s
   assert.equal(conflict?.code, 'STATE_CONFLICT');
   assert.deepEqual(conflict.currentState, latest);
   assert.ok(conflict.currentState.items.some(item => item.id === appended.item.id));
-  conflict.currentState.notes = 'mutating error data must not mutate stored data';
+  widgetData(conflict.currentState).notes = 'mutating error data must not mutate stored data';
   assert.deepEqual(fixture.records[STORAGE_KEY], latest);
   assert.equal(fixture.writes, writes);
 });
@@ -625,18 +573,18 @@ test('concurrent snapshots with one base revision allow one commit and reject a 
   const fixture = extensionFixture(fresh());
   const first = await loadState();
   const second = copy(first);
-  first.notes = 'first draft';
-  second.notes = 'second draft';
+  widgetData(first).notes = 'first draft';
+  widgetData(second).notes = 'second draft';
   const outcomes = await Promise.allSettled([saveState(first), saveState(second)]);
   assert.equal(outcomes[0].status, 'fulfilled');
   assert.equal(outcomes[1].status, 'rejected');
   assert.equal(outcomes[1].reason.code, 'STATE_CONFLICT');
-  assert.equal(fixture.records[STORAGE_KEY].notes, 'first draft');
+  assert.equal(widgetData(fixture.records[STORAGE_KEY]).notes, 'first draft');
   assert.equal(fixture.writes, 1);
   const retry = copy(outcomes[1].reason.currentState);
-  retry.notes = 'second draft';
+  widgetData(retry).notes = 'second draft';
   const saved = await saveState(retry);
-  assert.equal(saved.notes, 'second draft');
+  assert.equal(widgetData(saved).notes, 'second draft');
   assert.ok(saved.updatedAt > outcomes[0].value.updatedAt);
 });
 
@@ -644,16 +592,16 @@ test('explicit restore and reset may replace an old revision or damaged storage 
   const fixture = extensionFixture(fresh());
   await appendLink({ title: 'Temporary', url: 'https://example.org/temporary' });
   const restored = fresh();
-  restored.notes = 'explicitly restored backup';
+  widgetData(restored).notes = 'explicitly restored backup';
   const result = await saveState(restored, { replace: true });
-  assert.equal(result.notes, 'explicitly restored backup');
+  assert.equal(widgetData(result).notes, 'explicitly restored backup');
   assert.equal(result.items.length, DEFAULT_STATE.items.length);
   fixture.records[STORAGE_KEY] = { schemaVersion: 999, notes: 'damaged record' };
   await assert.rejects(saveState(fresh()), /原数据已保留/);
   const reset = await saveState(fresh(), { replace: true });
   assert.deepEqual(await loadState(), reset);
   const original = copy(fixture.records[STORAGE_KEY]);
-  await assert.rejects(saveState({ ...fresh(), schemaVersion: 99 }, { replace: true }), /仅支持栖页 v1/);
+  await assert.rejects(saveState({ ...fresh(), schemaVersion: 99 }, { replace: true }), /仅支持当前数据格式/);
   assert.deepEqual(fixture.records[STORAGE_KEY], original);
 });
 
@@ -663,10 +611,10 @@ test('rapid explicit resets never reuse an earlier snapshot revision', async () 
   try {
     Date.now = () => 1000;
     const first = await saveState(fresh());
-    const second = await saveState({ ...first, notes: 'second commit' });
+    const second = await saveState(withNote(first, 'second commit'));
     const reset = await saveState(fresh(), { replace: true });
     assert.ok(reset.updatedAt > second.updatedAt);
-    await assert.rejects(saveState({ ...first, notes: 'stale first commit' }), error => error.code === 'STATE_CONFLICT');
+    await assert.rejects(saveState(withNote(first, 'stale first commit')), error => error.code === 'STATE_CONFLICT');
     const importedFuture = { ...fresh(), updatedAt: 8640000000000000 };
     const restored = await saveState(importedFuture, { replace: true });
     assert.equal(restored.updatedAt, reset.updatedAt + 1);
@@ -755,7 +703,7 @@ test('HTTP preview uses the identical key and surfaces quota errors without clea
   assert.ok(records.has(STORAGE_KEY));
   const original = records.get(STORAGE_KEY);
   failWrite = true;
-  await assert.rejects(saveState({ ...saved, notes: 'not persisted' }), /保存失败/);
+  await assert.rejects(saveState(withNote(saved, 'not persisted')), /保存失败/);
   assert.equal(records.get(STORAGE_KEY), original);
   records.set(STORAGE_KEY, 'broken-json');
   await assert.rejects(loadState(), /原数据已保留/);

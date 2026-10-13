@@ -46,14 +46,15 @@ with sync_playwright() as p:
   page=ctx.new_page();page.set_default_timeout(7000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.route('https://**/*',route_external)
   payload=json.dumps(state,ensure_ascii=False)
   if args.local_document:
-   page.evaluate('''data=>{const m=new Map([['qiye.state.v1',data]]);Object.defineProperty(window,'localStorage',{value:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),clear:()=>m.clear()}})}''',payload)
-   page.set_content((ROOT/'Qiye-preview.html').read_text(),wait_until='domcontentloaded')
+   page.evaluate('''data=>{const m=new Map([['qiye.state.v2',data]]);Object.defineProperty(window,'localStorage',{value:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),clear:()=>m.clear()}})}''',payload)
+   page.set_content((ROOT/'Qiye-preview.html').read_text(encoding='utf-8'),wait_until='domcontentloaded')
   else:
-   page.add_init_script('if(!localStorage.getItem("qiye.state.v1"))localStorage.setItem("qiye.state.v1",'+json.dumps(payload)+')')
+   page.add_init_script('if(!localStorage.getItem("qiye.state.v2"))localStorage.setItem("qiye.state.v2",'+json.dumps(payload)+')')
    page.goto(base+'/',wait_until='domcontentloaded')
   page.locator('[data-item]').first.wait_for();page.wait_for_timeout(300)
+  assert not page.locator('#dialog').is_visible(), 'Fixture must load without opening storage recovery'
   return ctx,page,errors
- def saved(page):return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v1"))')
+ def saved(page):return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v2"))')
  def order(page):return page.locator('#desktop>[data-item]').evaluate_all('(ns)=>ns.map(n=>n.dataset.item)')
  def center(page,sel):r=page.locator(sel).bounding_box();return r['x']+r['width']/2,r['y']+r['height']/2
  def drag_begin(page,source,target,endfrac=.9):
@@ -128,7 +129,7 @@ with sync_playwright() as p:
   check('widget move and folder menu produce no errors',lambda:eq(errors,[]))
   retain_assets(page,['site-google'])
   drag_begin(page,'#desktop [data-item="site-google"]','#groups [data-group="work"]',.5);page.mouse.up()
-  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v1")).items.find(i=>i.id==="site-google").groupId==="work"')
+  page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v2")).items.find(i=>i.id==="site-google").groupId==="work"')
   check_assets(page,'cross-group move')
   check('cross-group move removes only the moved item',lambda:eq(page.locator('#desktop [data-item="site-google"]').count(),0));ctx.close()
 
@@ -218,8 +219,7 @@ with sync_playwright() as p:
   page.locator('[data-add-tab="folder"]').click();check('folder category has its independent form',lambda:truth(page.locator('#folder-form').is_visible()))
   page.locator('[data-add-tab="link"]').click();page.screenshot(path=str(OUT/'add-dialog.png'));page.locator('[data-close]').first.click();check('new settings and chooser have no JS exceptions',lambda:eq(errors,[]));ctx.close()
 
-  kinds=['weather','calendar','notes','todo','countdown','focus','workday','quote','hotlinks','calculator','habit','clock','wallpaper']
-  widget_items=[{'id':'matrix-'+kind,'type':'widget','widget':kind,'groupId':'home','title':kind,'size':'2x2','config':{}} for kind in kinds]
+  widget_items=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {listWidgetDefinitions,newWidgetConfig} from './src/widget-registry.js';import {newWidgetData} from './src/widget-data.js';console.log(JSON.stringify(listWidgetDefinitions().map(({type})=>({id:'matrix-'+type,type:'widget',widget:type,groupId:'home',title:type,size:'2x2',config:newWidgetConfig(type),data:newWidgetData(type)}))))"],cwd=ROOT))
   for size in [48,74,120]:
    ctx,page,errors=setup({'gridSize':size},items=widget_items)
    check('all 2x2 widget frames stay square at icon size '+str(size),lambda:truth(page.locator('.tile-widget .tile-body').evaluate_all('ns=>ns.every(n=>Math.abs(n.getBoundingClientRect().width-n.getBoundingClientRect().height)<1)')))

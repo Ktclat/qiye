@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } from './validation.js';
+import { getWidgetDefinition, newWidgetConfig, validateWidgetConfig } from './widget-registry.js';
+import { newWidgetData, validateWidgetData } from './widget-data.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { validateAvatarDataUrl } from './avatar.js';
 import { normalizeIconSelection } from './icon-selection.js';
@@ -9,14 +12,13 @@ import { normalizeIconSelection } from './icon-selection.js';
  * URL fields, imported object shape, size limits and references are checked here.
  */
 
-export const STORAGE_KEY = 'qiye.state.v1';
+export const SCHEMA_VERSION = 2;
+export const STORAGE_KEY = `qiye.state.v${SCHEMA_VERSION}`;
 export const MAX_BACKUP_BYTES = 6 * 1024 * 1024;
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
 
-const LIMITS = Object.freeze({ groups: 30, items: 1200, todos: 500, habits: 100, dates: 3660, notes: 100000 });
-const WIDGETS = new Set(['weather', 'calendar', 'notes', 'todo', 'countdown', 'focus', 'quote', 'hotlinks', 'workday', 'calculator', 'habit', 'clock', 'wallpaper']);
+const LIMITS = Object.freeze({ groups: 30, items: 1200 });
 const SIZES = new Set(['1x1', '2x1', '2x2', '4x2']);
-const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 const BASE_ENGINES = [
   { id: 'bing', name: '必应', letter: 'b', color: '#0EA5A6', url: 'https://www.bing.com/search?q={q}' },
   { id: 'baidu', name: '百度', letter: '百', color: '#3866F5', url: 'https://www.baidu.com/s?wd={q}' },
@@ -39,12 +41,12 @@ function link(id, groupId, title, url, icon, color, folderId = null, iconMode = 
   return { id, groupId, type: 'link', title, url, icon, iconMode, color, size: '1x1', folderId };
 }
 
-function widget(id, widgetType, title, size = '2x2', config = {}, groupId = 'home') {
-  return { id, groupId, type: 'widget', widget: widgetType, title, size, config };
+function widget(id, widgetType, title, size = '2x2', config = {}, groupId = 'home', data = newWidgetData(widgetType)) {
+  return { id, groupId, type: 'widget', widget: widgetType, title, size, config: { ...newWidgetConfig(widgetType), ...config }, data };
 }
 
 export const DEFAULT_STATE = deepFreeze({
-  schemaVersion: 1,
+  schemaVersion: SCHEMA_VERSION,
   updatedAt: 0,
   settings: {
     theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
@@ -54,7 +56,7 @@ export const DEFAULT_STATE = deepFreeze({
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
-    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, clockWeight: 400,
+    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, dialogScale: 100, showWallpaperCredit: true, clockWeight: 400,
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
     searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
     showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
@@ -83,8 +85,14 @@ export const DEFAULT_STATE = deepFreeze({
     link('site-github', 'home', 'GitHub', 'https://github.com/', 'github', '#24292F'),
     link('site-chatgpt', 'home', 'ChatGPT', 'https://chatgpt.com/', 'sparkles', '#10A37F'),
     widget('wallpaper-home', 'wallpaper', '发现壁纸', '4x2'),
-    widget('notes-home', 'notes', '灵感便签', '2x2', { color: 'yellow' }),
-    widget('todo-home', 'todo', '今日待办'),
+    widget('notes-home', 'notes', '灵感便签', '2x2', { color: 'yellow' }, 'home', {
+      notes: '把忽然想到的事，留在这一页。\n\n试试拖动卡片，让它成为你的日常。'
+    }),
+    widget('todo-home', 'todo', '今日待办', '2x2', {}, 'home', { todos: [
+      { id: 'todo-explore', text: '换一张喜欢的壁纸', done: false },
+      { id: 'todo-create', text: '添加一个常用网站', done: false },
+      { id: 'todo-break', text: '给自己留一点休息时间', done: true }
+    ] }),
     link('site-youtube', 'home', 'YouTube', 'https://www.youtube.com/', 'play', '#F44349'),
     link('site-zhihu', 'home', '知乎', 'https://www.zhihu.com/', '知', '#1677FF'),
     link('site-douban', 'home', '豆瓣', 'https://www.douban.com/', '豆', '#2DA854'),
@@ -125,22 +133,12 @@ export const DEFAULT_STATE = deepFreeze({
     link('life-spotify', 'life', 'Spotify', 'https://open.spotify.com/', 'music', '#1DB954'),
     link('life-map', 'life', '高德地图', 'https://www.amap.com/', 'map', '#4D90FE'),
     link('life-douban', 'life', '豆瓣', 'https://www.douban.com/', '豆', '#2DA854'),
-    widget('habit-life', 'habit', '小习惯', '2x2', {}, 'life'),
+    widget('habit-life', 'habit', '小习惯', '2x2', {}, 'life', { habits: [
+      { id: 'habit-water', name: '好好喝水', dates: [] },
+      { id: 'habit-read', name: '读十分钟书', dates: [] }
+    ] }),
     widget('quote-life', 'quote', '留一点空白', '2x2', {}, 'life'),
     widget('calculator-life', 'calculator', '随手算', '2x2', {}, 'life')
-  ],
-  notes: '把忽然想到的事，留在这一页。\n\n试试拖动卡片，让它成为你的日常。',
-  todos: [
-    { id: 'todo-explore', text: '换一张喜欢的壁纸', done: false },
-    { id: 'todo-create', text: '添加一个常用网站', done: false },
-    { id: 'todo-break', text: '给自己留一点休息时间', done: true }
-  ],
-  focus: { duration: 25, remaining: 1500, endAt: null, running: false },
-  countdown: { title: '新年，新的期待', date: '2027-01-01' },
-  workday: { endTime: '18:00', payday: 10, monthlySalary: 0 },
-  habits: [
-    { id: 'habit-water', name: '好好喝水', dates: [] },
-    { id: 'habit-read', name: '读十分钟书', dates: [] }
   ]
 });
 
@@ -169,51 +167,7 @@ export function safeUrl(input) {
   } catch { return null; }
 }
 
-function invalid(path, reason) { throw new Error(`数据校验失败：${path}${reason ? ` ${reason}` : ''}`); }
-function plain(value, path) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) invalid(path, '必须是对象');
-  const prototype = Object.getPrototypeOf(value);
-  if (prototype !== Object.prototype && prototype !== null) invalid(path, '不能包含特殊对象');
-  return value;
-}
-function keys(value, allowed, path) {
-  plain(value, path);
-  for (const key of Object.keys(value)) {
-    if (FORBIDDEN_KEYS.has(key)) invalid(path, '包含不安全字段');
-    if (!allowed.includes(key)) invalid(`${path}.${key}`, '不是支持的字段');
-  }
-  return value;
-}
-function string(value, path, max = 120, allowEmpty = false) {
-  if (typeof value !== 'string' || value.length > max || (!allowEmpty && !value.trim())) invalid(path, `必须是${allowEmpty ? '' : '非空'}文本，最多 ${max} 个字符`);
-  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) invalid(path, '包含控制字符');
-  return value;
-}
-function id(value, path) {
-  if (typeof value !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(value)) invalid(path, '标识格式不正确');
-  return value;
-}
-function number(value, path, min, max, integer = false) {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value))) invalid(path, `必须是 ${min}–${max} 范围内的${integer ? '整数' : '数字'}`);
-  return value;
-}
-function bool(value, path) { if (typeof value !== 'boolean') invalid(path, '必须是布尔值'); return value; }
-function enumeration(value, values, path) { if (!values.includes(value)) invalid(path, '包含不支持的值'); return value; }
-function array(value, path, max, min = 0) { if (!Array.isArray(value) || value.length < min || value.length > max) invalid(path, `必须是 ${min}–${max} 项的数组`); return value; }
-function color(value, path) { if (typeof value !== 'string' || !/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)) invalid(path, '必须是十六进制颜色'); return value; }
-function opaqueColor(value, path) { if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value)) invalid(path, '必须是六位十六进制颜色'); return value; }
 function url(value, path) { const result = safeUrl(value); if (!result) invalid(path, '只支持安全的 http / https 地址'); return result; }
-function date(value, path) {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) invalid(path, '日期格式须为 YYYY-MM-DD');
-  const [year, month, day] = value.split('-').map(Number);
-  const check = new Date(`${value}T12:00:00Z`);
-  if (year < 1900 || year > 2200 || check.getUTCFullYear() !== year || check.getUTCMonth() + 1 !== month || check.getUTCDate() !== day) invalid(path, '不是有效日期');
-  return value;
-}
-function time(value, path) { if (typeof value !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)) invalid(path, '时间格式须为 HH:MM'); return value; }
-function unique(values, path) { if (new Set(values).size !== values.length) invalid(path, '存在重复标识'); }
-function maybe(value, fallback) { return value === undefined ? fallback : value; }
-function byteLength(value) { return new TextEncoder().encode(value).byteLength; }
 
 function validateMedia(value, type) {
   if (value === null) return null;
@@ -229,10 +183,7 @@ function validateMedia(value, type) {
 function validateSettings(raw) {
   const defaults = DEFAULT_STATE.settings;
   keys(raw, Object.keys(defaults), 'settings');
-  const v = { ...defaults, ...raw };
-  // Search previously shared openNewTab. Splitting this choice must preserve an
-  // old desktop's explicit same-tab preference, including restored backups.
-  if (!Object.hasOwn(raw, 'searchNewTab')) v.searchNewTab = v.openNewTab;
+  const v = raw;
   const customEngines = array(v.customEngines, 'settings.customEngines', 12).map((engine, i) => {
     const path = `settings.customEngines[${i}]`;
     keys(engine, ['id', 'name', 'letter', 'color', 'url'], path);
@@ -243,7 +194,7 @@ function validateSettings(raw) {
     const checked = url(template.replaceAll('{q}', 'qiye-search-token'), `${path}.url`);
     if (!checked.includes('qiye-search-token')) invalid(`${path}.url`, '搜索词占位符无效');
     const name = string(engine.name, `${path}.name`, 40);
-    return { id: engineId, name, letter: string(maybe(engine.letter, name.slice(0, 1)), `${path}.letter`, 4), color: color(maybe(engine.color, '#6BA39A'), `${path}.color`), url: template };
+    return { id: engineId, name, letter: string(engine.letter, `${path}.letter`, 4), color: color(engine.color, `${path}.color`), url: template };
   });
   unique(customEngines.map(e => e.id), 'settings.customEngines');
   if (![...ENGINES, ...customEngines].some(e => e.id === v.searchEngine)) invalid('settings.searchEngine', '找不到对应搜索引擎');
@@ -289,6 +240,8 @@ function validateSettings(raw) {
     animateGroups: bool(v.animateGroups, 'settings.animateGroups'),
     uiFont: enumeration(v.uiFont, ['inter', 'system'], 'settings.uiFont'),
     uiScale: number(v.uiScale, 'settings.uiScale', 85, 120),
+    dialogScale: number(v.dialogScale, 'settings.dialogScale', 75, 150),
+    showWallpaperCredit: bool(v.showWallpaperCredit, 'settings.showWallpaperCredit'),
     clockWeight: number(v.clockWeight, 'settings.clockWeight', 200, 700),
     clockOffsetX: number(v.clockOffsetX, 'settings.clockOffsetX', -30, 30),
     clockOffsetY: number(v.clockOffsetY, 'settings.clockOffsetY', -60, 160),
@@ -318,34 +271,6 @@ function validateSettings(raw) {
   };
 }
 
-function validateConfig(widgetType, raw, path) {
-  const v = raw === undefined ? {} : raw;
-  const fields = {
-    countdown: ['title', 'date'], workday: ['endTime', 'payday', 'workdays'], clock: ['timeZone', 'label'],
-    quote: ['text', 'author', 'quoteIndex'], notes: ['color']
-  };
-  keys(v, fields[widgetType] || [], path);
-  const out = {};
-  if (v.title !== undefined) out.title = string(v.title, `${path}.title`, 120);
-  if (v.date !== undefined) out.date = date(v.date, `${path}.date`);
-  if (v.endTime !== undefined) out.endTime = time(v.endTime, `${path}.endTime`);
-  if (v.payday !== undefined) out.payday = number(v.payday, `${path}.payday`, 1, 31, true);
-  if (v.workdays !== undefined) {
-    out.workdays = array(v.workdays, `${path}.workdays`, 7).map(day => number(day, `${path}.workdays`, 0, 6, true));
-    unique(out.workdays, `${path}.workdays`);
-  }
-  if (v.timeZone !== undefined) {
-    out.timeZone = string(v.timeZone, `${path}.timeZone`, 80);
-    try { new Intl.DateTimeFormat('en', { timeZone: out.timeZone }).format(); } catch { invalid(`${path}.timeZone`, '不是有效时区'); }
-  }
-  if (v.label !== undefined) out.label = string(v.label, `${path}.label`, 60);
-  if (v.text !== undefined) out.text = string(v.text, `${path}.text`, 1000, true);
-  if (v.author !== undefined) out.author = string(v.author, `${path}.author`, 120, true);
-  if (v.quoteIndex !== undefined) out.quoteIndex = number(v.quoteIndex, `${path}.quoteIndex`, 0, 1000000, true);
-  if (v.color !== undefined) out.color = enumeration(v.color, ['yellow', 'pink', 'mint'], `${path}.color`);
-  return out;
-}
-
 /** Parse and validate before any storage mutation. Invalid records are never silently dropped. */
 export function validateImport(raw) {
   let data;
@@ -363,13 +288,14 @@ export function validateImport(raw) {
     }
     data = raw;
   }
+  plain(data, 'state');
+  if (data.schemaVersion !== SCHEMA_VERSION) invalid('schemaVersion', `仅支持当前数据格式（schemaVersion: ${SCHEMA_VERSION}）`);
   keys(data, Object.keys(DEFAULT_STATE), 'state');
-  if (data.schemaVersion !== 1) invalid('schemaVersion', '仅支持栖页 v1 备份');
   const settings = validateSettings(plain(data.settings, 'settings'));
   const groups = array(data.groups, 'groups', LIMITS.groups, 1).map((group, i) => {
     const path = `groups[${i}]`;
     keys(group, ['id', 'name', 'icon'], path);
-    return { id: id(group.id, `${path}.id`), name: string(group.name, `${path}.name`, 40), icon: string(maybe(group.icon, 'folder'), `${path}.icon`, 40) };
+    return { id: id(group.id, `${path}.id`), name: string(group.name, `${path}.name`, 40), icon: string(group.icon, `${path}.icon`, 40) };
   });
   unique(groups.map(g => g.id), 'groups');
   const groupIds = new Set(groups.map(g => g.id));
@@ -379,24 +305,24 @@ export function validateImport(raw) {
     const path = `items[${i}]`;
     plain(item, path);
     const type = enumeration(item.type, ['link', 'folder', 'widget'], `${path}.type`);
-    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'iconUrl', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config'];
+    const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'iconUrl', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config', 'data'];
     keys(item, allowed, path);
     const groupId = id(item.groupId, `${path}.groupId`);
     if (!groupIds.has(groupId)) invalid(`${path}.groupId`, '对应分组不存在');
     const base = { id: id(item.id, `${path}.id`), groupId, type, title: string(item.title, `${path}.title`, 120) };
-    const size = maybe(item.size, type === 'link' ? '1x1' : '2x2');
+    const size = item.size;
     if (!SIZES.has(size)) invalid(`${path}.size`, '卡片尺寸不受支持');
     if (type === 'widget') {
-      if (!WIDGETS.has(item.widget)) invalid(`${path}.widget`, '组件类型不受支持');
-      return { ...base, widget: item.widget, size, config: validateConfig(item.widget, item.config, `${path}.config`) };
+      if (!getWidgetDefinition(item.widget)) invalid(`${path}.widget`, '组件类型不受支持');
+      if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, '组件不支持此尺寸');
+      return { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
     }
-    const appearance = { icon: string(maybe(item.icon, type === 'folder' ? 'folder' : item.title.slice(0, 1)), `${path}.icon`, 80), color: color(maybe(item.color, '#6BA39A'), `${path}.color`), size };
+    const appearance = { icon: string(item.icon, `${path}.icon`, 80), color: color(item.color, `${path}.color`), size };
     if (type === 'folder') return { ...base, ...appearance };
-    // Old backups acquire automatic discovery without losing their text fallback.
-    const iconMode = enumeration(maybe(item.iconMode, 'auto'), ['auto', 'text'], `${path}.iconMode`);
+    const iconMode = enumeration(item.iconMode, ['auto', 'text'], `${path}.iconMode`);
     const iconUrl = normalizeIconSelection(item.iconUrl);
     if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, '需要安全的 HTTPS 图标地址或有效的本地静态图片');
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === undefined || item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
@@ -404,32 +330,9 @@ export function validateImport(raw) {
     const folder = folderMap.get(item.folderId);
     if (!folder || folder.groupId !== item.groupId) invalid(`items.${item.id}.folderId`, '文件夹不存在或不属于同一分组');
   }
-  const todos = array(maybe(data.todos, []), 'todos', LIMITS.todos).map((todo, i) => {
-    const path = `todos[${i}]`; keys(todo, ['id', 'text', 'done'], path);
-    return { id: id(todo.id, `${path}.id`), text: string(todo.text, `${path}.text`, 1000), done: bool(todo.done, `${path}.done`) };
-  });
-  unique(todos.map(todo => todo.id), 'todos');
-  const f = maybe(data.focus, DEFAULT_STATE.focus);
-  keys(f, ['duration', 'remaining', 'endAt', 'running'], 'focus');
-  const focus = { duration: number(f.duration, 'focus.duration', 1, 180, true), remaining: number(f.remaining, 'focus.remaining', 0, 10800), endAt: f.endAt === null ? null : number(f.endAt, 'focus.endAt', 0, 8640000000000000), running: bool(f.running, 'focus.running') };
-  if (focus.running && focus.endAt === null) invalid('focus.endAt', '运行中的番茄钟必须包含结束时间');
-  const cd = maybe(data.countdown, DEFAULT_STATE.countdown);
-  keys(cd, ['title', 'date'], 'countdown');
-  const wd = maybe(data.workday, DEFAULT_STATE.workday);
-  keys(wd, ['endTime', 'payday', 'monthlySalary'], 'workday');
-  const habits = array(maybe(data.habits, []), 'habits', LIMITS.habits).map((habit, i) => {
-    const path = `habits[${i}]`; keys(habit, ['id', 'name', 'dates'], path);
-    const dates = array(habit.dates, `${path}.dates`, LIMITS.dates).map(v => date(v, `${path}.dates`));
-    unique(dates, `${path}.dates`);
-    return { id: id(habit.id, `${path}.id`), name: string(habit.name, `${path}.name`, 120), dates };
-  });
-  unique(habits.map(habit => habit.id), 'habits');
   return {
-    schemaVersion: 1, updatedAt: number(maybe(data.updatedAt, 0), 'updatedAt', 0, 8640000000000000),
-    settings, activeGroupId, groups, items, notes: string(maybe(data.notes, ''), 'notes', LIMITS.notes, true), todos, focus,
-    countdown: { title: string(cd.title, 'countdown.title', 120), date: date(cd.date, 'countdown.date') },
-    workday: { endTime: time(wd.endTime, 'workday.endTime'), payday: number(wd.payday, 'workday.payday', 1, 31, true), monthlySalary: number(wd.monthlySalary, 'workday.monthlySalary', 0, 1000000000) },
-    habits
+    schemaVersion: SCHEMA_VERSION, updatedAt: number(data.updatedAt, 'updatedAt', 0, 8640000000000000),
+    settings, activeGroupId, groups, items
   };
 }
 
@@ -569,7 +472,7 @@ export async function saveState(state, options = {}) {
 export async function appendLink(linkData, groupId) {
   const checkedUrl = safeUrl(linkData?.url);
   if (!checkedUrl) throw new Error('只能添加 http 或 https 网页。浏览器内部页面无法收藏到栖页。');
-  const iconMode = enumeration(maybe(linkData.iconMode, 'auto'), ['auto', 'text'], 'link.iconMode');
+  const iconMode = enumeration(linkData.iconMode === undefined ? 'auto' : linkData.iconMode, ['auto', 'text'], 'link.iconMode');
   const title = typeof linkData.title === 'string' && linkData.title.trim() ? linkData.title.trim().slice(0, 120) : new URL(checkedUrl).hostname;
   return withWriteLock(async () => {
     const state = await loadState();

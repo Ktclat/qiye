@@ -115,7 +115,7 @@ test('storage errors and absent storage never throw or interrupt a search', () =
 
 test('explicit clearing removes only local search history while desktop backups stay unchanged', () => {
   const fixture = storageFixture('["local-only secret"]');
-  const desktopKey = 'qiye.state.v1';
+  const desktopKey = 'qiye.state.v2';
   const desktop = exportState(DEFAULT_STATE);
   fixture.values.set(desktopKey, desktop);
   assert.deepEqual(readSearchHistory(false), []);

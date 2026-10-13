@@ -1,3 +1,4 @@
+import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_STATE, exportState, MAX_BACKUP_BYTES } from '../src/core.js';
@@ -133,13 +134,13 @@ test('credentials remain local and are excluded from remote body, backups and st
 });
 
 test('first sync with differing existing remote is a review, without a PUT', async () => {
-  const remote = { ...clone(DEFAULT_STATE), notes: 'other device' };
+  const remote = withNote(clone(DEFAULT_STATE), 'other device');
   const h = harness({ remote });
   await h.client.saveConfig(config);
   const result = await h.client.synchronize(h.local, { manual: true });
   assert.equal(result.status, 'conflict');
   assert.equal(result.reason, 'first-sync');
-  assert.equal(result.remoteState.notes, 'other device');
+  assert.equal(widgetData(result.remoteState).notes, 'other device');
   assert.ok(result.review);
   assert.equal(h.calls.filter(call => call.method === 'PUT').length, 0);
   assert.equal((await h.client.status()).hasBaseline, false);
@@ -156,22 +157,22 @@ test('same content on different local updatedAt revisions does not upload repeat
 test('local-only change auto uploads using a strong If-Match precondition', async () => {
   const h = await established();
   const previousETag = h.server.etag;
-  h.setLocal({ ...h.local, notes: 'saved new note', updatedAt: 88 });
+  h.setLocal(withNote(h.local, 'saved new note', 88));
   const result = await h.client.synchronize(h.local);
   assert.equal(result.status, 'uploaded');
   const lastPut = h.calls.filter(call => call.method === 'PUT').at(-1);
   assert.equal(lastPut.headers['If-Match'], previousETag);
   assert.equal(lastPut.headers['If-None-Match'], undefined);
-  assert.equal(h.server.state.notes, 'saved new note');
+  assert.equal(widgetData(h.server.state).notes, 'saved new note');
 });
 
 test('remote-only change returns a download without overwriting local storage', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'remote change', updatedAt: 50 });
+  h.server.replace(withNote(h.local, 'remote change', 50));
   const result = await h.client.synchronize(h.local);
   assert.equal(result.status, 'download-ready');
-  assert.equal(result.state.notes, 'remote change');
-  assert.notEqual(h.local.notes, 'remote change');
+  assert.equal(widgetData(result.state).notes, 'remote change');
+  assert.notEqual(widgetData(h.local).notes, 'remote change');
   assert.equal((await h.client.status()).lastAction, 'uploaded');
   h.setLocal({ ...result.state, updatedAt: 70 });
   assert.equal((await h.client.completeDownload(result, h.local)).status, 'downloaded');
@@ -180,7 +181,7 @@ test('remote-only change returns a download without overwriting local storage', 
 
 test('download cannot be marked complete before it is applied to actual local storage', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'remote' });
+  h.server.replace(withNote(h.local, 'remote'));
   const result = await h.client.synchronize(h.local);
   await assert.rejects(h.client.completeDownload(result, h.local), { code: 'DOWNLOAD_NOT_APPLIED' });
   await assert.rejects(h.client.completeDownload(result, result.state), { code: 'LOCAL_CHANGED' });
@@ -189,7 +190,7 @@ test('download cannot be marked complete before it is applied to actual local st
 
 test('a reviewed download rechecks both versions then applies and acknowledges without a false conflict', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'review this download', updatedAt: 101 });
+  h.server.replace(withNote(h.local, 'review this download', 101));
   const first = await h.client.synchronize(h.local);
   assert.equal(first.status, 'download-ready');
   const checked = await h.client.synchronize(h.local, { manual: true, mode: 'download', review: first.review });
@@ -202,81 +203,81 @@ test('a reviewed download rechecks both versions then applies and acknowledges w
 
 test('both-device changes require review and keep both originals', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'server edit' });
-  h.setLocal({ ...h.local, notes: 'local edit' });
+  h.server.replace(withNote(h.local, 'server edit'));
+  h.setLocal(withNote(h.local, 'local edit'));
   const result = await h.client.synchronize(h.local);
   assert.equal(result.status, 'conflict');
   assert.equal(result.reason, 'both-changed');
-  assert.equal(h.local.notes, 'local edit');
-  assert.equal(h.server.state.notes, 'server edit');
+  assert.equal(widgetData(h.local).notes, 'local edit');
+  assert.equal(widgetData(h.server.state).notes, 'server edit');
 });
 
 test('reviewed upload binds the remote ETag and explicit local snapshot', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'server edit' });
-  h.setLocal({ ...h.local, notes: 'local choice' });
+  h.server.replace(withNote(h.local, 'server edit'));
+  h.setLocal(withNote(h.local, 'local choice'));
   const conflict = await h.client.synchronize(h.local, { manual: true });
   const reviewedETag = h.server.etag;
   const result = await h.client.synchronize(h.local, { manual: true, mode: 'upload', review: conflict.review });
   assert.equal(result.status, 'uploaded');
   assert.equal(h.calls.filter(call => call.method === 'PUT').at(-1).headers['If-Match'], reviewedETag);
-  assert.equal(h.server.state.notes, 'local choice');
+  assert.equal(widgetData(h.server.state).notes, 'local choice');
 });
 
 test('a stale remote review never overwrites the changed remote', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'server first' });
-  h.setLocal({ ...h.local, notes: 'local choice' });
+  h.server.replace(withNote(h.local, 'server first'));
+  h.setLocal(withNote(h.local, 'local choice'));
   const conflict = await h.client.synchronize(h.local, { manual: true });
-  h.server.replace({ ...h.local, notes: 'server newer' });
+  h.server.replace(withNote(h.local, 'server newer'));
   const result = await h.client.synchronize(h.local, { manual: true, mode: 'upload', review: conflict.review });
   assert.equal(result.status, 'conflict');
   assert.equal(result.reason, 'review-stale');
-  assert.equal(h.server.state.notes, 'server newer');
+  assert.equal(widgetData(h.server.state).notes, 'server newer');
 });
 
 test('a changed local review requires comparing again', async () => {
   const h = await established();
-  h.server.replace({ ...h.local, notes: 'server' });
-  h.setLocal({ ...h.local, notes: 'local first' });
+  h.server.replace(withNote(h.local, 'server'));
+  h.setLocal(withNote(h.local, 'local first'));
   const conflict = await h.client.synchronize(h.local, { manual: true });
-  h.setLocal({ ...h.local, notes: 'local newer' });
+  h.setLocal(withNote(h.local, 'local newer'));
   const result = await h.client.synchronize(h.local, { manual: true, mode: 'download', review: conflict.review });
   assert.equal(result.reason, 'review-stale');
-  assert.equal(h.local.notes, 'local newer');
+  assert.equal(widgetData(h.local).notes, 'local newer');
 });
 
 test('ETag race between GET and PUT gives 412 and a fresh conflict', async () => {
   const h = await established();
-  h.setLocal({ ...h.local, notes: 'local upload' });
-  h.hook.beforePut = server => server.replace({ ...h.local, notes: 'concurrent device' });
+  h.setLocal(withNote(h.local, 'local upload'));
+  h.hook.beforePut = server => server.replace(withNote(h.local, 'concurrent device'));
   const result = await h.client.synchronize(h.local, { manual: true });
   assert.equal(result.status, 'conflict');
   assert.equal(result.reason, 'write-conflict');
-  assert.equal(result.remoteState.notes, 'concurrent device');
-  assert.equal(h.server.state.notes, 'concurrent device');
+  assert.equal(widgetData(result.remoteState).notes, 'concurrent device');
+  assert.equal(widgetData(h.server.state).notes, 'concurrent device');
 });
 
 test('concurrent first creators cannot overwrite each other after a 404', async () => {
   const h = harness();
   await h.client.saveConfig(config);
-  h.hook.beforePut = server => server.replace({ ...h.local, notes: 'other creator' });
+  h.hook.beforePut = server => server.replace(withNote(h.local, 'other creator'));
   const result = await h.client.synchronize(h.local, { manual: true });
   assert.equal(result.reason, 'write-conflict');
-  assert.equal(h.server.state.notes, 'other creator');
+  assert.equal(widgetData(h.server.state).notes, 'other creator');
   assert.equal((await h.client.status()).hasBaseline, false);
 });
 
 test('missing strong ETag permits reads but rejects existing-file overwrite', async () => {
   const h = await established({ etags: false });
-  h.setLocal({ ...h.local, notes: 'local changes' });
+  h.setLocal(withNote(h.local, 'local changes'));
   await assert.rejects(h.client.synchronize(h.local, { manual: true }), { code: 'NO_STRONG_ETAG' });
   assert.equal(h.calls.filter(call => call.method === 'PUT').length, 1);
   assert.equal((await h.client.testConnection(config)).hasStrongETag, false);
 });
 
 test('weak ETags are not accepted as write preconditions', async () => {
-  const remote = { ...clone(DEFAULT_STATE), notes: 'existing' };
+  const remote = withNote(clone(DEFAULT_STATE), 'existing');
   const h = harness({ fetchOverride: async () => new Response(exportState(remote), { headers: { ETag: 'W/"weak"' } }) });
   await h.client.saveConfig(config);
   const conflict = await h.client.synchronize(h.local, { manual: true });
@@ -329,36 +330,36 @@ test('an HTTP error never exposes the response body and never marks sync complet
 test('PUT acceptance without a matching read-back is not reported as successful sync', async () => {
   const h = harness();
   await h.client.saveConfig(config);
-  h.hook.afterPut = server => server.replace({ ...h.local, notes: 'later writer' });
+  h.hook.afterPut = server => server.replace(withNote(h.local, 'later writer'));
   const result = await h.client.synchronize(h.local, { manual: true });
   assert.equal(result.reason, 'after-write-changed');
   assert.equal((await h.client.status()).hasBaseline, false);
-  assert.equal(h.local.notes, DEFAULT_STATE.notes);
+  assert.equal(widgetData(h.local).notes, widgetData(DEFAULT_STATE).notes);
 });
 
 test('stale caller snapshot and changes during GET both stop before PUT', async () => {
   const h = await established();
   const stale = h.local;
-  h.setLocal({ ...h.local, notes: 'latest local' });
+  h.setLocal(withNote(h.local, 'latest local'));
   const before = h.calls.length;
   assert.equal((await h.client.synchronize(stale, { manual: true })).status, 'local-changed');
   assert.equal(h.calls.length, before);
-  h.hook.beforeGet = () => { h.setLocal({ ...h.local, notes: 'typed while waiting' }); };
+  h.hook.beforeGet = () => { h.setLocal(withNote(h.local, 'typed while waiting')); };
   assert.equal((await h.client.synchronize(h.local, { manual: true })).status, 'local-changed');
   assert.equal(h.calls.filter(call => call.method === 'PUT').length, 1);
 });
 
 test('a new local edit during PUT remains unsynced and uploads on the next sync', async () => {
   const h = await established();
-  h.setLocal({ ...h.local, notes: 'first saved note' });
-  h.hook.beforePut = () => { h.setLocal({ ...h.local, notes: 'newer local note' }); };
+  h.setLocal(withNote(h.local, 'first saved note'));
+  h.hook.beforePut = () => { h.setLocal(withNote(h.local, 'newer local note')); };
   const result = await h.client.synchronize(h.local);
   assert.equal(result.status, 'uploaded');
-  assert.equal(h.local.notes, 'newer local note');
-  assert.equal(h.server.state.notes, 'first saved note');
+  assert.equal(widgetData(h.local).notes, 'newer local note');
+  assert.equal(widgetData(h.server.state).notes, 'first saved note');
   delete h.hook.beforePut;
   assert.equal((await h.client.synchronize(h.local)).status, 'uploaded');
-  assert.equal(h.server.state.notes, 'newer local note');
+  assert.equal(widgetData(h.server.state).notes, 'newer local note');
 });
 
 test('config identity changes clear baseline; toggle changes preserve it; clear deletes credentials', async () => {
@@ -414,4 +415,13 @@ test('fingerprint compares validated content and rejects credentials added to a 
   const a = clone(DEFAULT_STATE), b = { ...a, updatedAt: 123 };
   assert.equal(await webDAVStateFingerprint(a), await webDAVStateFingerprint(b));
   await assert.rejects(webDAVStateFingerprint({ ...a, webdav: { password: 'secret' } }));
+});
+
+
+test('WebDAV requires complete current configuration without field backfill', () => {
+  for (const key of Object.keys(config)) {
+    const incomplete = { ...config }; delete incomplete[key];
+    assert.throws(() => validateWebDAVConfig(incomplete), { code: 'INVALID_CONFIG' });
+  }
+  assert.throws(() => validateWebDAVConfig({ ...config, oldOption: true }), { code: 'INVALID_CONFIG' });
 });

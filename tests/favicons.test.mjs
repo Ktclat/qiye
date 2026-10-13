@@ -8,7 +8,7 @@ const jsonResponse = value => new Response(JSON.stringify(value), { headers: { '
 const runtime = { id: 'test-extension', getURL: path => `chrome-extension://test-extension/${path.replace(/^\//, '')}` };
 
 async function setup(t, { fetchImpl, chrome, initialCache, waitForCache = true } = {}) {
-  const records = new Map(initialCache ? [['qiye.favicons.local.v1', JSON.stringify(initialCache)]] : []);
+  const records = new Map(initialCache ? [['qiye.favicons.local.v2', JSON.stringify(initialCache)]] : []);
   const written = [];
   const replacements = {
     fetch: fetchImpl || (async () => { throw new TypeError('network blocked'); }),
@@ -121,11 +121,11 @@ test('duplicate declarations remain unique and conventional paths plus Chrome st
   assert.equal(chromeUrl.searchParams.get('pageUrl'), 'https://example.com/');
   assert.equal(chromeUrl.searchParams.get('size'), '64');
   assert.equal(api.rememberFavicon('https://example.com/', chromeUrl.href), false);
-  api.rememberFavicon('https://example.com/', 'https://cdn.example.com/legacy-working.png');
-  const legacyPreferred = api.getFaviconCandidates('https://example.com/');
-  assert.equal(legacyPreferred.length, 12);
-  assert.equal(legacyPreferred[0], 'https://cdn.example.com/legacy-working.png');
-  assert.equal(legacyPreferred.at(-1), chromeUrl.href, 'adding an older preferred image cannot evict the reserved Chrome fallback');
+  api.rememberFavicon('https://example.com/', 'https://cdn.example.com/known-working.png');
+  const preferredCandidates = api.getFaviconCandidates('https://example.com/');
+  assert.equal(preferredCandidates.length, 12);
+  assert.equal(preferredCandidates[0], 'https://cdn.example.com/known-working.png');
+  assert.equal(preferredCandidates.at(-1), chromeUrl.href, 'adding a previously loaded image cannot evict the reserved Chrome fallback');
 });
 
 test('concurrent extraction coalesces; successful declarations have a seven-day TTL', async t => {
@@ -177,7 +177,7 @@ test('CORS failures produce a sanitized fallback and ten-minute negative cache, 
 
 test('successful image cache persists separately, strips page queries, and rejects unsafe stored entries', async t => {
   const now = Date.now();
-  const { api, records, written } = await setup(t, { initialCache: { version: 1, entries: [
+  const { api, records, written } = await setup(t, { initialCache: { version: 2, entries: [
     { pageUrl: 'https://example.com/', preferred: 'https://cdn.example.com/cached.png', candidates: ['https://localhost/private.svg', 'chrome-extension://test-extension/_favicon/', 'https://example.com/good.png'], loadedAt: now, checkedAt: now },
     { pageUrl: 'https://localhost/', preferred: 'https://example.com/private.png', loadedAt: now },
     { pageUrl: 'https://future.example.com/', preferred: 'https://example.com/future.png', loadedAt: now + 99_999_999 },
@@ -187,8 +187,8 @@ test('successful image cache persists separately, strips page queries, and rejec
   assert.equal(api.rememberFavicon('https://example.com/?secret=2#fragment', 'https://cdn.example.com/new.png'), true);
   assert.equal(api.rememberFavicon('https://example.com/', 'https://user:secret@example.com/x.png'), false);
   await flush();
-  const persisted = JSON.parse(records.get('qiye.favicons.local.v1'));
-  assert.deepEqual([...new Set(written)], ['qiye.favicons.local.v1']);
+  const persisted = JSON.parse(records.get('qiye.favicons.local.v2'));
+  assert.deepEqual([...new Set(written)], ['qiye.favicons.local.v2']);
   assert.equal(persisted.entries.length, 1);
   assert.equal(persisted.entries[0].pageUrl, 'https://example.com/');
   assert.equal(persisted.entries[0].preferred, 'https://cdn.example.com/new.png');
@@ -311,7 +311,7 @@ test('successful measurements survive reload and a smaller fallback cannot repla
   api.rememberFavicon(site, small, { width: 16, height: 16 });
   assert.equal(api.getFaviconCandidates(site, { targetSize: 64, pixelRatio: 2 })[0], sharp);
   await flush();
-  const stored = JSON.parse(records.get('qiye.favicons.local.v1'));
+  const stored = JSON.parse(records.get('qiye.favicons.local.v2'));
   assert.equal(stored.version, 2);
   assert.equal(stored.entries[0].preferred, sharp);
   assert.equal(stored.entries[0].details.find(detail => detail.url === small).actualWidth, 16);
@@ -348,10 +348,10 @@ test('quality upgrades are bounded, skip attempted URLs, and persist a size-awar
   t.after(() => { Date.now = actualNow; });
   const site = 'https://example.com/', small = `${site}small.ico`;
   const { api, records } = await setup(t, {
-    initialCache: { version: 1, entries: [{ pageUrl: site, preferred: small, loadedAt: now, checkedAt: now, candidates: ['/first.png', '/second.png', '/third.png', '/fourth.png'].map(path => new URL(path, site).href) }] },
+    initialCache: { version: 2, entries: [{ pageUrl: site, preferred: small, loadedAt: now, checkedAt: now, candidates: ['/first.png', '/second.png', '/third.png', '/fourth.png'].map(path => new URL(path, site).href) }] },
     fetchImpl: async () => { fetches++; return htmlResponse('<link rel=icon href=/fresh.svg>'); },
   });
-  assert.equal(api.getFaviconCandidates(site)[0], small, 'legacy loaded icons remain visible until their dimensions can be measured');
+  assert.equal(api.getFaviconCandidates(site)[0], small, 'loaded icons with unknown dimensions remain visible until their dimensions can be measured');
   api.rememberFavicon(site, small, { width: 16, height: 16 });
   const options = { width: 16, height: 16, targetSize: 64, pixelRatio: 2, attempted: [`${site}first.png`] };
   const upgrades = api.takeFaviconUpgradeCandidates(site, small, options);
@@ -361,7 +361,7 @@ test('quality upgrades are bounded, skip attempted URLs, and persist a size-awar
   assert.deepEqual(api.takeFaviconUpgradeCandidates(site, small, options), []);
   assert.equal(api.getFaviconCandidates(site, options)[0], small, 'a new render uses the known working image during the cooldown');
   await flush();
-  assert.equal(JSON.parse(records.get('qiye.favicons.local.v1')).entries[0].upgradeSize, 128);
+  assert.equal(JSON.parse(records.get('qiye.favicons.local.v2')).entries[0].upgradeSize, 128);
   const restored = await import(`../src/favicons.js?test=${++moduleId}`);
   await restored.faviconCacheReady;
   assert.deepEqual(restored.takeFaviconUpgradeCandidates(site, small, options), []);
@@ -415,7 +415,7 @@ test('malformed quality-cache dimensions, future measurements, and non-public ic
   api.rememberFavicon(site, `${site}unknown.png`, { width: 16, height: 16 });
   assert.ok(api.takeFaviconUpgradeCandidates(site, `${site}unknown.png`).length > 0);
   await flush();
-  assert.doesNotMatch(records.get('qiye.favicons.local.v1'), /localhost|1000000000/);
+  assert.doesNotMatch(records.get('qiye.favicons.local.v2'), /localhost|1000000000/);
 });
 
 test('head-only extraction stops the stream before a huge application body and keeps declared CDN icons',async t=>{
@@ -447,4 +447,14 @@ test('explicit candidate enumeration reads manifest even when HTML already conta
  assert.equal(new Set(result.variants.map(v=>v.url)).size,result.variants.length);
  assert.ok(result.variants.every(v=>v.url.startsWith('https://example.com/')));
  assert.ok(result.variants.find(v=>v.url.endsWith('/native.png')).source==='网站声明');
+});
+
+
+test('obsolete favicon caches are ignored without reading their entries', async t => {
+  const oldImage = 'https://cdn.example.com/obsolete.png';
+  const { api, written } = await setup(t, { initialCache: { version: 1, entries: [
+    { pageUrl: 'https://example.com/', preferred: oldImage, loadedAt: Date.now(), candidates: [oldImage] }
+  ] } });
+  assert.ok(!api.getFaviconCandidates('https://example.com/').includes(oldImage));
+  assert.equal(written.length, 0);
 });

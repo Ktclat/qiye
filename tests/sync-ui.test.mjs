@@ -1,3 +1,4 @@
+import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -83,13 +84,13 @@ test('manual sync requests permission before local persistence and remote reques
 
 test('remote download is reviewed, rechecked and applied only after the user chooses it',async()=>{
   const h=await harness({baseline:true});
-  h.setRemote({...h.local,notes:'来自另一台设备'});
+  h.setRemote(withNote(h.local, '来自另一台设备'));
   await h.controller.handleAction('webdav-sync');
   assert.equal(h.dialogs.at(-1).kind,'sync-review');
-  assert.notEqual(h.local.notes,'来自另一台设备');
+  assert.notEqual(widgetData(h.local).notes,'来自另一台设备');
   assert.equal(h.events.includes('apply-remote'),false);
   await h.controller.handleAction('webdav-use-remote');
-  assert.equal(h.local.notes,'来自另一台设备');
+  assert.equal(widgetData(h.local).notes,'来自另一台设备');
   assert.equal((await h.client.status()).lastAction,'downloaded');
   assert.equal(h.events.filter(event=>event==='apply-remote').length,1);
   assert.equal(h.dialogs.length,1,'rechecking a valid download must not show a false conflict');
@@ -99,31 +100,31 @@ test('remote download is reviewed, rechecked and applied only after the user cho
 
 test('changing remote after a review shows a new review rather than replacing local content',async()=>{
   const h=await harness({baseline:true});
-  h.setRemote({...h.local,notes:'remote first'});
+  h.setRemote(withNote(h.local, 'remote first'));
   await h.controller.handleAction('webdav-sync');
-  h.setRemote({...h.local,notes:'remote newer'});
+  h.setRemote(withNote(h.local, 'remote newer'));
   await h.controller.handleAction('webdav-use-remote');
   assert.equal(h.events.includes('apply-remote'),false);
   assert.equal(h.dialogs.length,2);
   assert.equal(h.dialogs.at(-1).data.result.reason,'review-stale');
-  assert.notEqual(h.local.notes,'remote newer');
+  assert.notEqual(widgetData(h.local).notes,'remote newer');
   h.controller.dispose();
 });
 
 test('failed local save is never acknowledged as a completed download',async()=>{
   const h=await harness({baseline:true,applyFailure:true});
-  h.setRemote({...h.local,notes:'remote replacement'});
+  h.setRemote(withNote(h.local, 'remote replacement'));
   await h.controller.handleAction('webdav-sync');
   await h.controller.handleAction('webdav-use-remote');
   assert.match(h.message,/本机保存失败/);
   assert.equal((await h.client.status()).lastAction,'uploaded');
-  assert.notEqual(h.local.notes,'remote replacement');
+  assert.notEqual(widgetData(h.local).notes,'remote replacement');
   h.controller.dispose();
 });
 
 test('automatic remote changes prompt a review and never apply over the desktop',async()=>{
   const h=await harness({baseline:true,automatic:true});
-  h.setRemote({...h.local,notes:'automatic remote update'});
+  h.setRemote(withNote(h.local, 'automatic remote update'));
   await h.fireTimer();
   assert.equal(h.dialogs.length,0,'automatic checks should offer a toast, not force-open a modal');
   assert.equal(h.events.includes('apply-remote'),false);
@@ -131,7 +132,7 @@ test('automatic remote changes prompt a review and never apply over the desktop'
   assert.ok(notice);
   notice.callback();
   assert.equal(h.dialogs.at(-1).kind,'sync-review');
-  assert.notEqual(h.local.notes,'automatic remote update');
+  assert.notEqual(widgetData(h.local).notes,'automatic remote update');
   h.controller.dispose();
 });
 

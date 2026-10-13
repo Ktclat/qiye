@@ -1,31 +1,42 @@
-# v0.3.3 验证记录
+# v0.4.0 验证记录
+
+日期：2026-10-13。本轮在 Windows 上使用真实 HTTP origin 和 localStorage，浏览器为本机 Microsoft Edge 155.0.4283.45（Playwright 1.56.0 驱动）。外部图片/API 为受控夹具或显式禁网。
+
+## 通过的检查
+
+| 检查 | 结果 |
+| --- | --- |
+| `npm test` | 278 项通过，覆盖组件 API、独立实例数据、生命周期与缩放；历史迁移用例改为旧格式/缺失字段拒绝及当前格式往返 |
+| `python -m unittest discover -s tests -p release_test.py` | 3 项通过：版本/触发策略、非法版本、确定性 ZIP 与路径限制 |
+| `tests/browser-e2e.py` | 108 项桌面检查通过，随后自动执行 68 项编辑器/工作区检查，全部通过 |
+| `tests/widgets-e2e.py` | 30 项通过：75/100/150% 缩放，360px 深浅色窄屏，缩放恢复/持久化，组件隔离、搜索/尺寸、扩展示例与卸载重绑 |
+| `scripts/package-release.py` | 成功生成 v0.4.0 扩展、源码、独立 HTML、SHA-256 文件 |
+| `scripts/build-preview.py` | 成功从生产模块依赖图生成独立预览和版本模块；生成 HTML 实际启动、125% 缩放通过 |
+| 分发包检查 | SHA-256 与文件匹配；扩展包内所有模块导入目标存在，未混入开发工具或测试目录 |
+
+统一使用 schema 2 测试夹具，验证每张卡片独立内容、备份/WebDAV 摘要聚合，以及旧存储键不会被读取或迁移。历史 QA 文档仅记录当时结果，不构成当前兼容性要求。
+
+更新两项旧 UI 预期：图库不再重复展示来源提示；窄屏使用横向分类导航。来源预览中的真实作者/链接检查继续保留。截图与 JSON 报告位于本机 `output/playwright/`；CI 输出在 `test-results/` 并上传 artifact。
 
 ## 复现
 
 ```sh
 npm test
-python3 scripts/build-pages.py /path/outside/source/qiye-pages
-python3 -m pip install playwright==1.56.0
-python3 -m playwright install --with-deps chromium
-python3 tests/browser-e2e.py --output test-results
+python -m unittest discover -s tests -p release_test.py
+python scripts/build-preview.py
+python -m pip install playwright==1.56.0
+python -m playwright install chromium
+python tests/browser-e2e.py --output test-results
+python tests/widgets-e2e.py --output test-results/widgets
+python scripts/package-release.py
 ```
 
-主套件结束后自动运行 editor-e2e.py；任意失败均返回非零。
-
-## 本版检查
-
-- 265 项 Node 逻辑与集成测试，包含键控节点复用、无二次 DOM 移动、旧版浏览器回退、仅更新变动项、滚动条偏好迁移与严格校验、主站 / 子站图标独立选择、过期请求保护与候选追加去重。
-- HTTP 模式：108 项桌面检查 + 68 项编辑器 / 工作区检查。断言排序及组件移动后原图片对象仍连接、已解码且不隐藏，没有改写其 src / hidden；跨分组移动只移除被移动项。同组组件移动保留其他输入框及未提交的待办草稿。
-- 编辑器断言更换网址后候选节点未重建；先从主站获取、再改为子站、提取失败后仍能选择主站图标；保存网址 / 图标分别正确并可刷新恢复。上传图标也不被网址修改清空。
-- 独立编辑窗口滚动条偏好可开关、保存，并作用于添加网站区域；滚轮继续滚动，不影响桌面或组件目录。
-- 保留原先的拖动创建文件夹、回滚 / 取消、头部布局、各种尺寸、深浅色和图库安全检查。
-
-本机网络策略不允许访问本机 HTTP 服务，因此本机使用 --local-document 隔离模式（存储替身）：107 + 66 项检查。该模式缺少三个 HTTP 刷新持久化检查，不等于正常 origin 验收；发布工作流会运行正常 HTTP 与真实 localStorage，最终结果以 Actions 为准。
-
-外部图片 / API 使用明确的受控夹具；它们不证明所有原站能高清取图。正式 Pages 另以从 main 重建的字节校验确认版本。
+可通过 `CHROMIUM_PATH` 指定本机 Chrome/Edge 可执行文件。`browser-e2e.py` 已包含编辑器检查，不需要再次单独运行。测试用本地服务器与临时浏览器上下文，不读取用户浏览器配置。发布 CI 在 Linux 上安装 Chromium 与所需系统依赖。
 
 ## 验收边界
 
-没有使用用户 WebDAV 地址或凭据；真实 Chrome / Edge 全部安装授权流程、Safari / iOS 触屏手感与低功耗设备性能矩阵仍未全量验收。网站原图分辨率、CORS、反盗链和可用性仍决定实际提取效果。本版不自动推测父域或扩大权限，主站到子站的使用由用户明确选择。固定到某个图标地址不改变图片本身的版权和可用性。
+上表记录本地验证；远程 Actions、Release 和网页部署结果以对应提交的 GitHub 运行记录为准，不能用本地通过代替远程状态。没有访问用户 WebDAV 服务或凭据。完整扩展安装、可选权限弹窗、真实 WebDAV 冲突与 CORS、触屏和低功耗设备性能仍需实机验收。
 
-历史：[v0.3.2](QA-v032.md)、[v0.3.1](QA-v031.md)、[v0.3.0](QA-v030.md)。
+本轮通过的是受控网络与实际 DOM/存储行为，不代表所有图标原站、天气、图库上游均可用，也不代表全面复刻 iTab。独立组件代码与宿主处于同一权限环境，不提供第三方脚本沙箱。
+
+历史版本的验证记录见 `QA-v032.md`、`QA-v031.md`、`QA-v030.md`；本次审阅及剩余技术债见 [REVIEW-v040.md](REVIEW-v040.md)。

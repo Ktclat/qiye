@@ -46,11 +46,20 @@ test('duplicate keys fail before changing the previous rendered view',()=>{
  const r=root();reconcileKeyedChildren(r,[entry('a')]);const before=[...r.children];r.changes.length=0;
  assert.throws(()=>reconcileKeyedChildren(r,[entry('b'),entry('b')]));assert.deepEqual(r.children,before);assert.deepEqual(r.changes,[]);
 });
-test('editor scrollbar preference migrates independently and round-trips in backups',()=>{
- const old=structuredClone(DEFAULT_STATE);delete old.settings.hideEditorScrollbar;old.settings.hideScrollbar=true;
- const migrated=validateImport(old);assert.equal(migrated.settings.hideEditorScrollbar,false);assert.equal(migrated.settings.hideScrollbar,true);
- migrated.settings.hideEditorScrollbar=true;const restored=validateImport(exportState(migrated));assert.equal(restored.settings.hideEditorScrollbar,true);
+test('editor scrollbar preference round trips independently', () => {
+  const state = structuredClone(DEFAULT_STATE);
+  state.settings.hideScrollbar = true;
+  state.settings.hideEditorScrollbar = false;
+  let restored = validateImport(exportState(state));
+  assert.equal(restored.settings.hideEditorScrollbar, false);
+  assert.equal(restored.settings.hideScrollbar, true);
+  state.settings.hideEditorScrollbar = true;
+  restored = validateImport(exportState(state));
+  assert.equal(restored.settings.hideEditorScrollbar, true);
+  delete state.settings.hideEditorScrollbar;
+  assert.throws(() => validateImport(state));
 });
+
 test('invalid editor scrollbar choices are rejected, not coerced',()=>{
  for(const value of ['true',1,null,{},[]]){const input=structuredClone(DEFAULT_STATE);input.settings.hideEditorScrollbar=value;assert.throws(()=>validateImport(input));}
 });

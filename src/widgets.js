@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
 
-import { createWallpaperBrowser, normalizeWallpaperPhoto } from './wallpapers.js';
+import { normalizeWallpaperPhoto } from './wallpapers.js';
+import { listWidgetDefinitions, getWidgetDefinition } from './widget-registry.js';
+import { mountWidgetExtensions } from './widget-runtime.js';
 
 const DAY = 86_400_000;
 const WEATHER_TTL = 30 * 60_000;
@@ -9,9 +11,6 @@ const WEATHER_CACHE_KEY = 'qiye.weather.cache.v1';
 const bindings = new WeakMap();
 const weatherRequests = new Map();
 const weatherStates = new Map();
-const wallpaperBindings = new Set();
-const WALLPAPER_CACHE_KEY = 'qiye.wallpaper.cache.v1';
-let wallpaperBrowser = null;
 const quotes = [
   '把今天过得慢一点，认真看一朵云，认真完成一件小事。',
   '让注意力回到手边，下一步就会慢慢清楚。',
@@ -25,21 +24,7 @@ const quotes = [
   '专心走好脚下的一小段路，远方也就近了一些。',
 ];
 
-export const widgetCatalog = [
-  { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
-  { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
-  { type: 'calendar', title: '日历', description: '公历月份与中国农历', size: '2x2', icon: 'calendar' },
-  { type: 'notes', title: '便签', description: '随手记录，自动保存到本机', size: '2x2', icon: 'note' },
-  { type: 'todo', title: '待办清单', description: '添加、勾选和删除日常任务', size: '2x2', icon: 'check' },
-  { type: 'countdown', title: '倒数日', description: '记住值得期待的日子', size: '2x2', icon: 'flag' },
-  { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer' },
-  { type: 'workday', title: '下班倒计时', description: '工作日下班与发薪日倒计时', size: '2x2', icon: 'briefcase' },
-  { type: 'quote', title: '每日一句', description: '给日常留一点思考的空白', size: '4x2', icon: 'quote' },
-  { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending' },
-  { type: 'calculator', title: '计算器', description: '加减乘除、括号和百分比计算', size: '2x2', icon: 'calculator' },
-  { type: 'habit', title: '习惯打卡', description: '每日打卡和连续天数', size: '2x2', icon: 'sparkles' },
-  { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
-];
+export const widgetCatalog = listWidgetDefinitions();
 
 export function escapeHtml(value = '') {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -117,7 +102,7 @@ export function daysUntil(value, now = new Date()) {
 
 const chineseDays = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
 let lunarFormatter;
-try { lunarFormatter = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { month: 'long', day: 'numeric' }); } catch { /* Older browser: hide unsupported lunar text. */ }
+try { lunarFormatter = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { month: 'long', day: 'numeric' }); } catch { /* Hide unavailable calendar data. */ }
 
 export function chineseLunarDate(date = new Date()) {
   if (!lunarFormatter) return '';
@@ -145,17 +130,17 @@ function renderCalendar(monthDate = new Date(), today = new Date()) {
   return `<div class="w-calendar-top"><span><strong>${month + 1}<small>月</small></strong><em>${year}</em></span><div><button type="button" class="widget-icon-button" data-action="widget-calendar-prev" aria-label="上个月">${icon('chevronLeft')}</button><button type="button" class="widget-icon-button w-calendar-today-button" data-action="widget-calendar-today" aria-label="回到本月" title="回到本月">今</button><button type="button" class="widget-icon-button" data-action="widget-calendar-next" aria-label="下个月">${icon('chevronRight')}</button></div></div><div class="w-calendar-weekdays">${['一', '二', '三', '四', '五', '六', '日'].map((value) => `<span>${value}</span>`).join('')}</div><div class="w-calendar-grid" style="--calendar-rows:${count / 7}">${cells}</div><div class="w-calendar-lunar">${escapeHtml(chineseLunarDate(today) ? `农历 ${chineseLunarDate(today)}` : '每一天，都值得期待')}</div>`;
 }
 
-function renderNotes(item, state) {
-  return `${header('随手记', 'note')}<textarea class="w-notes-input" data-widget-input="notes" aria-label="便签内容" placeholder="写下一点灵感，\n或今天想做的小事…" maxlength="100000" spellcheck="false">${escapeHtml(state.notes || '')}</textarea><div class="w-notes-footer"><span data-live="notes-status">已保存在本机</span><span class="w-notes-fold" aria-hidden="true"></span></div>`;
+function renderNotes(data) {
+  return `${header('随手记', 'note')}<textarea class="w-notes-input" data-widget-input="notes" aria-label="便签内容" placeholder="写下一点灵感，\n或今天想做的小事…" maxlength="100000" spellcheck="false">${escapeHtml(data.notes)}</textarea><div class="w-notes-footer"><span data-live="notes-status">已保存在本机</span><span class="w-notes-fold" aria-hidden="true"></span></div>`;
 }
 
 function todoList(state) {
-  const todos = Array.isArray(state.todos) ? state.todos : [];
+  const todos = state.todos;
   return todos.length ? todos.map((todo) => `<li class="w-todo-row${todo.done ? ' is-done' : ''}"><label><input type="checkbox" data-action="widget-todo-toggle" data-todo-id="${escapeHtml(todo.id)}"${todo.done ? ' checked' : ''} aria-label="${escapeHtml(`${todo.done ? '取消完成' : '完成'}：${todo.text}`)}"><span title="${escapeHtml(todo.text)}">${escapeHtml(todo.text)}</span></label><button type="button" class="widget-icon-button w-row-delete" data-action="widget-todo-delete" data-todo-id="${escapeHtml(todo.id)}" aria-label="${escapeHtml(`删除：${todo.text}`)}">${icon('close')}</button></li>`).join('') : '<li class="w-empty-list">给今天安排一件小事</li>';
 }
 
 function todoSummary(state) {
-  const todos = Array.isArray(state.todos) ? state.todos : [];
+  const todos = state.todos;
   return `${todos.filter((todo) => todo.done).length}/${todos.length}`;
 }
 
@@ -163,25 +148,15 @@ function renderTodo(state) {
   return `${header('今日待办', 'check', '<span class="w-todo-summary" data-live="todo-summary">' + todoSummary(state) + '</span>')}<ul class="w-todo-list" data-live="todo-list">${todoList(state)}</ul><form class="w-inline-form" data-widget-form="todo"><input type="text" name="text" autocomplete="off" maxlength="240" placeholder="添加一项待办" aria-label="新待办"><button type="submit" class="widget-icon-button" aria-label="添加待办">${icon('plus')}</button></form>`;
 }
 
-function countdownConfig(item, state) {
-  return { title: item.config?.title || state.countdown?.title || '下一个小期待', date: item.config?.date || state.countdown?.date || '' };
-}
-
-function countdownView(item, state, now = new Date()) {
-  const config = countdownConfig(item, state);
+function countdownView(item, now = new Date()) {
+  const config = item.config;
   const days = daysUntil(config.date, now);
   return { title: config.title, number: days === null ? '—' : Math.abs(days).toString(), caption: days === null ? '设置一个期待的日子' : days < 0 ? '已经过去' : days === 0 ? '就是今天' : '还有', unit: days === 0 ? '♥' : '天', date: validDateParts(config.date) ? config.date.replaceAll('-', '.') : '点击右上角设置' };
 }
 
-function renderCountdown(item, state) {
-  const view = countdownView(item, state);
+function renderCountdown(item) {
+  const view = countdownView(item);
   return `${header('倒数日', 'flag')}<div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div><span class="w-countdown-orbit" aria-hidden="true"></span>`;
-}
-
-function focusState(state) {
-  const focus = state.focus || {};
-  const duration = Number.isFinite(Number(focus.duration)) ? Math.max(1, Math.min(180, Number(focus.duration))) : 25;
-  return { duration, remaining: Number.isFinite(Number(focus.remaining)) ? Math.max(0, Number(focus.remaining)) : duration * 60, running: focus.running === true && Number.isFinite(Number(focus.endAt)) && Number(focus.endAt) > 0, endAt: Number(focus.endAt) || null };
 }
 
 export function focusRemaining(focus, now = Date.now()) {
@@ -194,18 +169,10 @@ function timerText(seconds) {
 }
 
 function renderFocus(state) {
-  const focus = focusState(state);
+  const focus = state.focus;
   const remaining = focusRemaining(focus);
   const progress = Math.max(0, Math.min(1, remaining / (focus.duration * 60)));
   return `${header('专注时刻', 'timer')}<div class="w-focus-ring" data-live="focus-ring" style="--focus-progress:${progress}"><div><strong data-live="focus-time">${timerText(remaining)}</strong><span data-live="focus-label">${focus.running ? '专心做好一件事' : remaining === 0 ? '这一轮，完成了' : `${focus.duration} 分钟，留给自己`}</span></div></div><div class="w-focus-controls"><button type="button" class="w-focus-start" data-action="widget-focus-toggle"><span data-live="focus-button-icon">${icon(focus.running ? 'pause' : 'play')}</span><span data-live="focus-button">${focus.running ? '暂停' : remaining === 0 ? '再来一轮' : remaining < focus.duration * 60 ? '继续' : '开始'}</span></button><button type="button" class="widget-icon-button" data-action="widget-focus-reset" title="重置计时" aria-label="重置计时">${icon('reset')}</button></div>`;
-}
-
-function getWorkConfig(item, state) {
-  const merged = { endTime: '18:00', payday: 10, workdays: [1, 2, 3, 4, 5], ...state.workday, ...item.config };
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(merged.endTime)) merged.endTime = '18:00';
-  merged.payday = Math.max(1, Math.min(31, Number(merged.payday) || 10));
-  merged.workdays = Array.isArray(merged.workdays) ? merged.workdays.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6) : [1, 2, 3, 4, 5];
-  return merged;
 }
 
 export function workdayStatus(config, now = new Date()) {
@@ -220,19 +187,19 @@ export function workdayStatus(config, now = new Date()) {
   return { remaining, isWorkday, text: !isWorkday ? '休息日' : remaining === 0 ? '已下班' : `${String(Math.floor(remaining / 3600)).padStart(2, '0')}:${String(Math.floor((remaining % 3600) / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`, caption: !isWorkday ? '今天，把时间留给生活' : remaining === 0 ? '今天辛苦了，好好休息' : '距离下班还有', paydays: Math.round((dayStamp(payDate) - dayStamp(now)) / DAY) };
 }
 
-function renderWorkday(item, state) {
-  const config = getWorkConfig(item, state);
+function renderWorkday(item) {
+  const config = item.config;
   const status = workdayStatus(config);
   return `${header('下班倒计时', 'briefcase')}<div class="w-workday-caption" data-live="workday-caption">${status.caption}</div><strong class="w-workday-time" data-live="workday-time">${status.text}</strong><div class="w-workday-finish">每天 ${escapeHtml(config.endTime)} 准时收工</div><div class="w-workday-pay"><span>距发薪日</span><strong data-live="workday-pay">${status.paydays === 0 ? '就是今天' : `${status.paydays} 天`}</strong></div>`;
 }
 
 function getQuote(item, now = new Date()) {
-  return item.config?.text ? { text: item.config.text, author: item.config.author || '我的摘录' } : { text: quotes[((Math.floor(dayStamp(now) / DAY) + (Number(item.config?.quoteIndex) || 0)) % quotes.length + quotes.length) % quotes.length], author: '栖页随笔' };
+  return item.config.text ? { text: item.config.text, author: item.config.author || '我的摘录' } : { text: quotes[((Math.floor(dayStamp(now) / DAY) + item.config.quoteIndex) % quotes.length + quotes.length) % quotes.length], author: '栖页随笔' };
 }
 
 function renderQuote(item) {
   const quote = getQuote(item);
-  return `${header('给今天的一句话', 'quote', `<div class="widget-heading-actions">${item.config?.text ? '' : `<button type="button" class="widget-icon-button" data-action="widget-quote-next" title="换一句" aria-label="换一句">${icon('reset')}</button>`}${configButton()}</div>`)}<blockquote class="w-quote-text" data-live="quote-text" title="${escapeHtml(quote.text)}">${escapeHtml(quote.text)}</blockquote><div class="w-quote-author" data-live="quote-author">— ${escapeHtml(quote.author)}</div><span class="w-quote-decoration" aria-hidden="true">“</span>`;
+  return `${header('给今天的一句话', 'quote', `<div class="widget-heading-actions">${item.config.text ? '' : `<button type="button" class="widget-icon-button" data-action="widget-quote-next" title="换一句" aria-label="换一句">${icon('reset')}</button>`}${configButton()}</div>`)}<blockquote class="w-quote-text" data-live="quote-text" title="${escapeHtml(quote.text)}">${escapeHtml(quote.text)}</blockquote><div class="w-quote-author" data-live="quote-author">— ${escapeHtml(quote.author)}</div><span class="w-quote-decoration" aria-hidden="true">“</span>`;
 }
 
 const hotlinks = [
@@ -318,7 +285,7 @@ export function habitStreak(dates, now = new Date()) {
 }
 
 function habitList(state, now = new Date()) {
-  const habits = Array.isArray(state.habits) ? state.habits : [];
+  const habits = state.habits;
   return habits.length ? habits.map((habit) => {
     const done = Array.isArray(habit.dates) && habit.dates.includes(localDateKey(now));
     const streak = habitStreak(habit.dates, now);
@@ -339,8 +306,8 @@ function zoneDate(zone, now) {
 }
 
 function renderClock(item, now = new Date()) {
-  const zone = item.config?.timeZone || 'Asia/Hong_Kong';
-  const label = item.config?.label || (zone === 'Asia/Hong_Kong' ? '香港' : zone.split('/').pop()?.replaceAll('_', ' '));
+  const zone = item.config.timeZone;
+  const label = item.config.label;
   return `${header(label || '世界时钟', 'globe')}<strong class="w-clock-time" data-live="world-time">${timeInZone(zone, now, true)}</strong><div class="w-clock-date" data-live="world-date">${escapeHtml(zoneDate(zone, now))}</div><div class="w-clock-world"><span>伦敦<strong data-live="world-london">${timeInZone('Europe/London', now)}</strong></span><span>纽约<strong data-live="world-newyork">${timeInZone('America/New_York', now)}</strong></span></div>`;
 }
 
@@ -415,88 +382,27 @@ function renderWeather(item, state) {
   return `${top}<div class="w-weather-current"><strong>${Math.round(weather.temperature)}<sup>°</sup></strong>${weatherArt(weather.code, weather.isDay)}</div><div class="w-weather-description">${escapeHtml(detail)}</div><div class="w-weather-details">${weather.feelsLike !== null ? `<span>体感 ${Math.round(weather.feelsLike)}°</span>` : ''}${weather.humidity !== null ? `<span>湿度 ${Math.round(weather.humidity)}%</span>` : ''}</div><button type="button" class="w-weather-update${current.status === 'error' ? ' is-error' : ''}" data-action="widget-weather-retry" title="${escapeHtml(current.status === 'error' ? current.error : '重新获取天气')}"${current.status === 'loading' ? ' disabled' : ''}>${current.status === 'loading' ? '正在更新…' : current.status === 'error' ? `缓存 ${updated} · 更新失败 ↻` : `${stale ? '缓存' : '更新'} ${updated} · Open-Meteo ↻`}</button>`;
 }
 
-function cachedWallpaper() {
-  try {
-    const stored = globalThis.localStorage?.getItem(WALLPAPER_CACHE_KEY) || '';
-    if (stored.length > 5000) return null;
-    const cache = JSON.parse(stored || '{}');
-    if (!Number.isFinite(cache.at) || Date.now() - cache.at > 86_400_000 || cache.at > Date.now() + 60_000) return null;
-    const photo = normalizeWallpaperPhoto(cache.photo);
-    return photo ? { photo, page: Number.isInteger(cache.page) && cache.page >= 1 && cache.page <= 1000 ? cache.page : 1 } : null;
-  } catch { return null; }
-}
-
-function currentWallpaperBrowser(state) {
-  if (!wallpaperBrowser) {
-    const cached = cachedWallpaper();
-    wallpaperBrowser = createWallpaperBrowser({
-      initialPhoto: cached?.photo || normalizeWallpaperPhoto(state.settings?.remoteWallpaper),
-      startPage: cached?.page || 1 + Math.floor(Math.random() * 20),
-      onChange: (reason) => {
-        const current = wallpaperBrowser.getState();
-        if (current.status === 'ready' && current.photo) {
-          try { globalThis.localStorage?.setItem(WALLPAPER_CACHE_KEY, JSON.stringify({ at: Date.now(), page: current.page, photo: current.photo })); } catch { /* Browsing still works without local cache. */ }
-        }
-        for (const binding of wallpaperBindings) {
-          if (reason === 'image') syncWallpaperImages(binding);
-          else updateWallpaperCards(binding);
-        }
-      },
-    });
-  }
-  return wallpaperBrowser;
-}
-
-function wallpaperStatus(current) {
-  if (current.applying) return '正在应用壁纸…';
-  if (current.status === 'loading') return '正在寻找下一处风景…';
-  if (current.status === 'error') return current.error;
-  if (current.imageStatus === 'error') return '照片暂时无法加载，可以换一张';
-  if (current.imageStatus === 'loading') return '照片加载中…';
-  return '';
-}
-
 function renderWallpaper(item, state) {
  const photo = state.settings.wallpaperApiEnabled && normalizeWallpaperPhoto(state.settings.remoteWallpaper);
  return `<div class="wallpaper-widget-art" aria-hidden="true"></div>${photo ? `<img class="wallpaper-widget-photo" src="${escapeHtml(photo.thumbnail)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">` : ''}<button class="wallpaper-launcher" data-action="wallpaper" aria-label="打开壁纸中心"><span class="wallpaper-eyebrow">WALLPAPERS</span><strong>换一片风景</strong><span>自定义 · 官方背景 · 摄影图库</span><span class="wallpaper-launch-arrow" aria-hidden="true">↗</span></button>`;
 }
 
-function updateWallpaperCards(binding) {
-  if (!binding.alive) return;
-  const state = binding.context.getState();
-  for (const root of widgetRoots(binding.container, 'wallpaper')) {
-    const item = findItem(root, state);
-    if (item) root.innerHTML = renderWallpaper(item, state);
-  }
-  syncWallpaperImages(binding);
-}
-
-function syncWallpaperImages(binding) {
-  if (!binding.alive || !wallpaperBrowser) return;
-  const state = binding.context.getState();
-  const current = wallpaperBrowser.getState();
-  for (const root of widgetRoots(binding.container, 'wallpaper')) {
-    const image = root.querySelector('[data-widget-image="wallpaper"]');
-    if (!image || image.dataset.photoId !== current.photo?.id || state.settings?.wallpaperApiEnabled !== true) continue;
-    root.classList.toggle('has-wallpaper-image', current.imageStatus === 'ready');
-    root.classList.toggle('has-wallpaper-error', current.imageStatus === 'error');
-    const apply = root.querySelector('[data-action="widget-wallpaper-apply"]');
-    if (apply) {
-      apply.disabled = current.imageStatus !== 'ready' || current.applying;
-      apply.textContent = current.applying ? '应用中…' : normalizeWallpaperPhoto(state.settings?.remoteWallpaper)?.id === current.photo.id ? '已设为壁纸' : '设为壁纸';
-    }
-    setText(root, 'wallpaper-status', wallpaperStatus(current));
-  }
-}
-
-function ensureWallpapers(binding) {
- // No implicit feed fetches. The gallery loads only after a user selects a source.
-}
-
 export function renderWidget(item, state) {
-  const type = widgetCatalog.some((entry) => entry.type === item.widget) ? item.widget : 'quote';
+  const definition = getWidgetDefinition(item.widget);
+  if (!definition) throw new Error(`未知组件：${item.widget}`);
+  const type = item.widget;
+  if (definition && !definition.builtin) {
+    let content;
+    try {
+      content = definition.render({ item: structuredClone(item), config: structuredClone(item.config), escapeHtml });
+      if (content && typeof content.then === 'function') Promise.resolve(content).catch(() => {});
+      if (typeof content !== 'string') throw new Error('render 必须同步返回 HTML 字符串');
+    }
+    catch { content = '<p class="w-empty-list">组件加载失败，请检查组件实现</p>'; }
+    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}">${header(item.title)}${content}</div>`;
+  }
   const now = new Date();
-  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now), notes: () => renderNotes(item, state), todo: () => renderTodo(state), countdown: () => renderCountdown(item, state), focus: () => renderFocus(state), workday: () => renderWorkday(item, state), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(state), clock: () => renderClock(item, now) };
+  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   const color = type === 'notes' && ['yellow', 'pink', 'mint'].includes(item.config?.color) ? ` w-notes-${item.config.color}` : '';
   return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
 }
@@ -562,17 +468,21 @@ function ensureWeather(binding, force = false) {
 function updateTodoCards(binding) {
   const state = binding.context.getState();
   for (const root of widgetRoots(binding.container, 'todo')) {
+    const item = findItem(root, state);
+    if (!item) continue;
     const list = root.querySelector('[data-live="todo-list"]');
-    if (list) list.innerHTML = todoList(state);
-    setText(root, 'todo-summary', todoSummary(state));
+    if (list) list.innerHTML = todoList(item.data);
+    setText(root, 'todo-summary', todoSummary(item.data));
   }
 }
 
 function updateHabitCards(binding) {
   const state = binding.context.getState();
   for (const root of widgetRoots(binding.container, 'habit')) {
+    const item = findItem(root, state);
+    if (!item) continue;
     const list = root.querySelector('[data-live="habit-list"]');
-    if (list) list.innerHTML = habitList(state);
+    if (list) list.innerHTML = habitList(item.data);
     root.dataset.widgetDay = localDateKey();
   }
 }
@@ -601,7 +511,7 @@ function calculatorAction(root, key) {
 
 export function bindWidgets(container, context) {
   bindings.get(container)?.cleanup();
-  const binding = { container, context, alive: true, noteTimer: null, notePending: false, weatherPending: null, wallpaperConsentPending: false, focusFinishing: false, cleanup: null };
+  const binding = { container, context, alive: true, noteTimer: null, notePending: false, weatherPending: null, focusFinishing: new Set(), cleanup: null };
   const persist = async () => {
     try { await context.save(); return true; }
     catch (error) { if (binding.alive && !error?.notified) context.toast?.(error?.message || '保存失败，请重试'); return false; }
@@ -620,42 +530,7 @@ export function bindWidgets(container, context) {
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
-    if (action === 'widget-wallpaper-enable' || action === 'widget-wallpaper-disable') {
-      const enabled = action === 'widget-wallpaper-enable';
-      binding.wallpaperConsentPending = true;
-      state.settings.wallpaperApiEnabled = enabled;
-      target.disabled = true;
-      const saved = await persist();
-      binding.wallpaperConsentPending = false;
-      if (!saved) {
-        if (context.getState() === state) state.settings.wallpaperApiEnabled = !enabled;
-        if (binding.alive) updateWallpaperCards(binding);
-        return;
-      }
-      if (binding.alive) {
-        context.wallpaperEnabledChanged?.(enabled);
-        updateWallpaperCards(binding);
-        if (enabled) ensureWallpapers(binding);
-      }
-      return;
-    }
-    if (action.startsWith('widget-wallpaper-')) {
-      if (state.settings?.wallpaperApiEnabled !== true) return;
-      const browser = currentWallpaperBrowser(state);
-      if (action === 'widget-wallpaper-next') await browser.next();
-      if (action === 'widget-wallpaper-refresh') await browser.nextPage();
-      if (action === 'widget-wallpaper-retry') await browser.retry();
-      if (action === 'widget-wallpaper-apply') {
-        if (typeof context.applyWallpaper !== 'function') { context.toast?.('当前页面还不能应用壁纸，请重新打开栖页'); return; }
-        try {
-          const applied = await browser.apply(context.applyWallpaper);
-          if (applied && binding.alive) syncWallpaperImages(binding);
-        } catch (error) {
-          if (binding.alive && !error?.notified) context.toast?.(error?.message || '壁纸应用失败，请重试');
-        }
-      }
-      return;
-    }
+    const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
     if (action.startsWith('widget-calendar-')) {
       const [year, month] = root.dataset.calendarMonth.split('-').map(Number);
       const date = action === 'widget-calendar-today' ? new Date() : new Date(year, month + (action === 'widget-calendar-next' ? 1 : -1), 1);
@@ -672,29 +547,28 @@ export function bindWidgets(container, context) {
     }
     if (action === 'widget-weather-retry') { ensureWeather(binding, true); return; }
     if (action === 'widget-todo-toggle') {
-      const todo = state.todos?.find((entry) => entry.id === target.dataset.todoId);
+      const todo = data.todos.find((entry) => entry.id === target.dataset.todoId);
       if (todo) todo.done = target.checked;
       updateTodoCards(binding);
       await persist();
       return;
     }
     if (action === 'widget-todo-delete') {
-      state.todos = (state.todos || []).filter((entry) => entry.id !== target.dataset.todoId);
+      data.todos = data.todos.filter((entry) => entry.id !== target.dataset.todoId);
       updateTodoCards(binding);
       await persist();
       return;
     }
     if (action === 'widget-focus-toggle' || action === 'widget-focus-reset') {
-      const focus = focusState(state);
+      const focus = data.focus;
       const remaining = focusRemaining(focus);
-      state.focus = action === 'widget-focus-reset' ? { duration: focus.duration, remaining: focus.duration * 60, running: false, endAt: null } : focus.running ? { duration: focus.duration, remaining, running: false, endAt: null } : { duration: focus.duration, remaining: remaining || focus.duration * 60, running: true, endAt: Date.now() + (remaining || focus.duration * 60) * 1000 };
+      data.focus = action === 'widget-focus-reset' ? { duration: focus.duration, remaining: focus.duration * 60, running: false, endAt: null } : focus.running ? { duration: focus.duration, remaining, running: false, endAt: null } : { duration: focus.duration, remaining: remaining || focus.duration * 60, running: true, endAt: Date.now() + (remaining || focus.duration * 60) * 1000 };
       refreshLiveWidgets(container, state);
       await persist();
       return;
     }
     if (action === 'widget-quote-next') {
-      item.config ||= {};
-      item.config.quoteIndex = (Number(item.config.quoteIndex) || 0) + 1;
+      item.config.quoteIndex = (item.config.quoteIndex + 1) % quotes.length;
       const quote = getQuote(item);
       setText(root, 'quote-text', quote.text);
       root.querySelector('[data-live="quote-text"]').title = quote.text;
@@ -704,7 +578,7 @@ export function bindWidgets(container, context) {
     }
     if (action === 'widget-calc') { calculatorAction(root, target.dataset.value); return; }
     if (action === 'widget-habit-toggle') {
-      const habit = state.habits?.find((entry) => entry.id === target.dataset.habitId);
+      const habit = data.habits.find((entry) => entry.id === target.dataset.habitId);
       if (habit) {
         const today = localDateKey();
         habit.dates = Array.isArray(habit.dates) ? habit.dates : [];
@@ -715,7 +589,7 @@ export function bindWidgets(container, context) {
       return;
     }
     if (action === 'widget-habit-delete') {
-      state.habits = (state.habits || []).filter((entry) => entry.id !== target.dataset.habitId);
+      data.habits = data.habits.filter((entry) => entry.id !== target.dataset.habitId);
       updateHabitCards(binding);
       await persist();
     }
@@ -724,12 +598,12 @@ export function bindWidgets(container, context) {
   function input(event) {
     const target = event.target;
     if (target.dataset.widgetInput === 'notes') {
-      context.getState().notes = target.value.slice(0, 100_000);
-      for (const root of widgetRoots(container, 'notes')) {
-        const other = root.querySelector('[data-widget-input="notes"]');
-        if (other !== target && other) other.value = context.getState().notes;
-        setText(root, 'notes-status', '保存中…');
-      }
+      const root = target.closest('[data-widget]');
+      const state = context.getState();
+      const item = findItem(root, state);
+      if (!item) return;
+      item.data.notes = target.value.slice(0, 100_000);
+      setText(root, 'notes-status', '保存中…');
       binding.notePending = true;
       clearTimeout(binding.noteTimer);
       binding.noteTimer = setTimeout(async () => {
@@ -750,15 +624,16 @@ export function bindWidgets(container, context) {
     const value = input?.value.trim();
     if (!value) { input?.focus(); return; }
     const state = context.getState();
+    const item = findItem(form.closest('[data-widget]'), state);
+    if (!item || !['todo', 'habit'].includes(item.widget)) return;
+    const data = item.data;
     if (form.dataset.widgetForm === 'todo') {
-      state.todos ||= [];
-      if (state.todos.length >= 500) { context.toast?.('待办最多支持 500 项，请先整理已有任务'); return; }
-      state.todos.push({ id: uid(), text: value.slice(0, 240), done: false });
+      if (data.todos.length >= 500) { context.toast?.('待办最多支持 500 项，请先整理已有任务'); return; }
+      data.todos.push({ id: uid(), text: value.slice(0, 240), done: false });
       updateTodoCards(binding);
     } else {
-      state.habits ||= [];
-      if (state.habits.length >= 100) { context.toast?.('习惯最多支持 100 项'); return; }
-      state.habits.push({ id: uid(), name: value.slice(0, 60), dates: [] });
+      if (data.habits.length >= 100) { context.toast?.('习惯最多支持 100 项'); return; }
+      data.habits.push({ id: uid(), name: value.slice(0, 60), dates: [] });
       updateHabitCards(binding);
     }
     input.value = '';
@@ -774,13 +649,6 @@ export function bindWidgets(container, context) {
     }
   }
 
-  function wallpaperImage(event) {
-    const image = event.target;
-    if (image?.dataset?.widgetImage !== 'wallpaper' || !container.contains(image) || !wallpaperBrowser) return;
-    if (event.type === 'load') wallpaperBrowser.markImageReady(image.dataset.photoId);
-    else wallpaperBrowser.markImageError(image.dataset.photoId);
-  }
-
   function flushNotes() {
     if (!binding.notePending) return;
     clearTimeout(binding.noteTimer);
@@ -792,46 +660,43 @@ export function bindWidgets(container, context) {
   container.addEventListener('input', input);
   container.addEventListener('submit', submit);
   container.addEventListener('keydown', keydown);
-  container.addEventListener('load', wallpaperImage, true);
-  container.addEventListener('error', wallpaperImage, true);
-  wallpaperBindings.add(binding);
   globalThis.addEventListener?.('pagehide', flushNotes);
   const cleanup = () => {
     if (!binding.alive) return;
     flushNotes();
     binding.alive = false;
+    binding.extensions?.cleanup();
     clearTimeout(binding.noteTimer);
     container.removeEventListener('click', click);
     container.removeEventListener('input', input);
     container.removeEventListener('submit', submit);
     container.removeEventListener('keydown', keydown);
-    container.removeEventListener('load', wallpaperImage, true);
-    container.removeEventListener('error', wallpaperImage, true);
-    wallpaperBindings.delete(binding);
     globalThis.removeEventListener?.('pagehide', flushNotes);
     if (bindings.get(container) === binding) bindings.delete(container);
   };
+  binding.extensions = mountWidgetExtensions(container, context);
   binding.cleanup = cleanup;
   bindings.set(container, binding);
   refreshLiveWidgets(container, context.getState());
   ensureWeather(binding);
-  ensureWallpapers(binding);
   return cleanup;
 }
 
 export function refreshLiveWidgets(container, state) {
   const now = new Date();
   const binding = bindings.get(container);
-  const focus = focusState(state);
-  const remaining = focusRemaining(focus, now.getTime());
-  if (focus.running && remaining === 0 && binding?.alive && !binding.focusFinishing) {
-    binding.focusFinishing = true;
-    state.focus = { duration: focus.duration, remaining: 0, endAt: null, running: false };
-    binding.context.toast?.('这一轮专注完成了，休息一下吧。');
-    Promise.resolve(binding.persist()).finally(() => { binding.focusFinishing = false; });
-  }
-  const running = focus.running && remaining > 0;
   for (const root of widgetRoots(container, 'focus')) {
+    const item = findItem(root, state);
+    if (!item) continue;
+    const focus = item.data.focus;
+    const remaining = focusRemaining(focus, now.getTime());
+    if (focus.running && remaining === 0 && binding?.alive && !binding.focusFinishing.has(item.id)) {
+      binding.focusFinishing.add(item.id);
+      item.data.focus = { duration: focus.duration, remaining: 0, endAt: null, running: false };
+      binding.context.toast?.(`${item.title}完成了，休息一下吧。`);
+      Promise.resolve(binding.persist()).finally(() => { binding.focusFinishing.delete(item.id); });
+    }
+    const running = focus.running && remaining > 0;
     setText(root, 'focus-time', timerText(remaining));
     setText(root, 'focus-label', running ? '专心做好一件事' : remaining === 0 ? '这一轮，完成了' : `${focus.duration} 分钟，留给自己`);
     setText(root, 'focus-button', running ? '暂停' : remaining === 0 ? '再来一轮' : remaining < focus.duration * 60 ? '继续' : '开始');
@@ -843,7 +708,7 @@ export function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'workday')) {
     const item = findItem(root, state);
     if (!item) continue;
-    const status = workdayStatus(getWorkConfig(item, state), now);
+    const status = workdayStatus(item.config, now);
     setText(root, 'workday-caption', status.caption);
     setText(root, 'workday-time', status.text);
     setText(root, 'workday-pay', status.paydays === 0 ? '就是今天' : `${status.paydays} 天`);
@@ -851,13 +716,13 @@ export function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'countdown')) {
     const item = findItem(root, state);
     if (!item) continue;
-    const view = countdownView(item, state, now);
+    const view = countdownView(item, now);
     for (const key of ['title', 'caption', 'number', 'unit', 'date']) setText(root, `countdown-${key}`, view[key]);
   }
   for (const root of widgetRoots(container, 'clock')) {
     const item = findItem(root, state);
     if (!item) continue;
-    const zone = item.config?.timeZone || 'Asia/Hong_Kong';
+    const zone = item.config.timeZone;
     setText(root, 'world-time', timeInZone(zone, now, true));
     setText(root, 'world-date', zoneDate(zone, now));
     setText(root, 'world-london', timeInZone('Europe/London', now));
@@ -882,8 +747,8 @@ export function refreshLiveWidgets(container, state) {
     }
   }
   if (binding?.alive) {
+    binding.extensions?.update();
     if ([...widgetRoots(container, 'habit')].some((root) => root.dataset.widgetDay !== localDateKey(now))) updateHabitCards(binding);
     ensureWeather(binding);
-    ensureWallpapers(binding);
-  }
+    }
 }

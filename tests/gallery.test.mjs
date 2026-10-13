@@ -46,7 +46,18 @@ test('only direct wallpaper sources remain; source labels and external-only entr
 });
 test('apply guards against a late result after dialog close',async()=>{const d=deferred();let guard;const h=harness({apply:async(v,o)=>{guard=o.isCurrent;await d.promise;}});h.data.settings.wallpaperApiEnabled=true;await h.click('galleryTab','picsum');const p=h.click('galleryApply','0');assert.equal(guard(),true);h.gallery.close();assert.equal(guard(),false);d.resolve();await p;assert.equal(h.gallery.getState().applying,false);});
 test('load error is actionable and retry does not silently change wallpaper',async()=>{let fail=true;const h=harness({fetchers:{picsum:async()=>{if(fail)throw Error('unavailable');return [pic()];}}});h.data.settings.wallpaperApiEnabled=true;await h.click('galleryTab','picsum');assert.match(h.gallery.render(),/重新加载/);assert.deepEqual(h.applied,[]);fail=false;await h.click('galleryRetry');await h.click('galleryApply','0');assert.equal(h.applied.length,1);});
-test('new scrollbar/wheel preferences migrate safely and reject invalid input',()=>{const old=structuredClone(DEFAULT_STATE);delete old.settings.sidebarWheelMode;delete old.settings.hideScrollbar;old.notes='untouched';const v=validateImport(old);assert.equal(v.settings.sidebarWheelMode,'scroll');assert.equal(v.settings.hideScrollbar,false);assert.equal(v.notes,'untouched');for(const bad of [{sidebarWheelMode:'execute'},{hideScrollbar:'true'}]){assert.throws(()=>validateImport({...old,settings:{...old.settings,...bad}}));}});
+test('scrollbar and wheel preferences require explicit valid values', () => {
+  for (const key of ['sidebarWheelMode', 'hideScrollbar']) {
+    const state = structuredClone(DEFAULT_STATE);
+    delete state.settings[key];
+    assert.throws(() => validateImport(state));
+  }
+  for (const invalid of [{ sidebarWheelMode: 'execute' }, { hideScrollbar: 'true' }]) {
+    const state = structuredClone(DEFAULT_STATE);
+    Object.assign(state.settings, invalid);
+    assert.throws(() => validateImport(state));
+  }
+});
 
 test('direct snapshots validate original URLs, preserve licenses, and reject forged origins',async()=>{
  const {fetchCatalogWallpaperPage}=await import('../src/wallpapers.js');

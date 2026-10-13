@@ -1,10 +1,12 @@
 # 使用 GitHub Pages 发布栖页
 
+扩展下载包的自动发布见 [RELEASES.md](RELEASES.md)。本页只描述演示网站部署。
+
 栖页在同一个 **[Ktclat/qiye](https://github.com/Ktclat/qiye)** 仓库中维护两个分支：**`main` 保存完整源码、扩展文件和测试；`gh-pages` 仅保存生成后的演示网页。** 两者使用同一份生产模块，网页更新通过重新生成和提交 `gh-pages` 完成。
 
 网页地址：**<https://ktclat.github.io/qiye/>**。
 
-**当前状态：Pages 已启用，`gh-pages` 分支的原生部署已成功。** v0.2.3 对应提交为 `188c2a0`，可查看 [pages build and deployment 运行记录](https://github.com/Ktclat/qiye/actions/runs/38161552070)。
+**发布约定：每次功能交付都同步更新网页端。** 当前沿用 `gh-pages` 分支原生部署；最新部署状态以本仓库 [Actions](https://github.com/Ktclat/qiye/actions) 的对应提交为准。
 
 ## 当前发布配置
 
@@ -118,7 +120,7 @@ GitHub Pages 的网页来源仍为 **`https://ktclat.github.io`**，来源中不
 
 ## 上线验收
 
-v0.2.3 的部署与实际浏览器观察记录见 [QA.md](QA.md)；旧版截图单独保留在 [历史记录](QA-v022.md)，不代替新版验收。每次更新后，应针对当前地址 `https://ktclat.github.io/qiye/` 核对以下项目：
+当前验证记录见 [QA.md](QA.md)；旧版结果保留在历史 QA 文档，不代替新版验收。每次更新后，应针对当前地址 `https://ktclat.github.io/qiye/` 核对以下项目：
 
 - 访问 Pages 设置中提供的地址，确认显示栖页而非 404 页面。
 - 检查时钟、分组、卡片、设置弹层及图标，确认脚本和样式正常加载。

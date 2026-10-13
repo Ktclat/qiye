@@ -2,7 +2,7 @@
 import { SITE_ICON_CATALOG } from './site-icon-catalog.js';
 /* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
 
-const FAVICON_CACHE_KEY = 'qiye.favicons.local.v1';
+const FAVICON_CACHE_KEY = 'qiye.favicons.local.v2';
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 const FAILURE_TTL = 10 * 60 * 1000;
 const MAX_ENTRIES = 200;
@@ -205,7 +205,7 @@ async function readCache() {
       const json = globalThis.localStorage?.getItem(FAVICON_CACHE_KEY);
       if (typeof json === 'string' && json.length <= 1024 * 1024) raw = JSON.parse(json);
     }
-    if (!raw || ![1, 2].includes(raw.version) || !Array.isArray(raw.entries)) return;
+    if (!raw || raw.version !== 2 || !Array.isArray(raw.entries)) return;
     const now = Date.now();
     for (const item of raw.entries.slice(0, MAX_ENTRIES)) {
       if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
@@ -222,7 +222,7 @@ async function readCache() {
         details: [], upgradeAt: time(item.upgradeAt),
         upgradeSize: Number.isInteger(item.upgradeSize) && item.upgradeSize >= 16 && item.upgradeSize <= MAX_TARGET_SIZE ? item.upgradeSize : 0,
       };
-      if (raw.version === 2 && Array.isArray(item.details)) {
+      if (Array.isArray(item.details)) {
         for (const detail of item.details.slice(0, MAX_CANDIDATES)) {
           if (!detail || typeof detail !== 'object' || Array.isArray(detail)) continue;
           const url = safeImageUrl(detail.url);

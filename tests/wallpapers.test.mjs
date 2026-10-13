@@ -29,17 +29,14 @@ test('invalid providers, mismatched photo IDs, and phishing attribution URLs are
   assert.equal(normalizeWallpaperPhoto([]), null);
 });
 
-test('legacy desktop backups acquire disabled wallpaper defaults without losing their saved layout', () => {
-  const legacy = structuredClone(DEFAULT_STATE);
-  delete legacy.settings.wallpaperApiEnabled;
-  delete legacy.settings.remoteWallpaper;
-  legacy.notes = '旧版保存的便签';
-  const migrated = validateImport(legacy);
-  assert.equal(migrated.settings.wallpaperApiEnabled, false);
-  assert.equal(migrated.settings.remoteWallpaper, null);
-  assert.equal(migrated.notes, '旧版保存的便签');
-  assert.deepEqual(migrated.items, legacy.items);
-  assert.deepEqual(migrated.groups, legacy.groups);
+test('wallpaper settings are complete in new desktops and required on import', () => {
+  assert.equal(DEFAULT_STATE.settings.wallpaperApiEnabled, false);
+  assert.equal(DEFAULT_STATE.settings.remoteWallpaper, null);
+  for (const key of ['wallpaperApiEnabled', 'remoteWallpaper']) {
+    const state = structuredClone(DEFAULT_STATE);
+    delete state.settings[key];
+    assert.throws(() => validateImport(state));
+  }
 });
 
 test('actual core validation rejects arbitrary remote backgrounds and deceptive source links', () => {

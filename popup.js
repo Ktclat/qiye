@@ -16,6 +16,10 @@ function showStatus(message, isError = false) {
 async function initialize() {
   try {
     const state = await loadState();
+    const scale = state.settings.dialogScale / 100;
+    document.body.style.zoom = scale;
+    document.body.style.maxHeight = `${600 / scale}px`;
+    document.body.style.overflowY = 'auto';
     for (const group of state.groups) {
       const option = document.createElement('option');
       option.value = group.id;

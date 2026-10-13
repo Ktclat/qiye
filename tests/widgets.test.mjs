@@ -1,3 +1,6 @@
+import { DEFAULT_STATE } from '../src/core.js';
+import { newWidgetConfig } from '../src/widget-registry.js';
+import { newWidgetData } from '../src/widget-data.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -6,13 +9,7 @@ import {
   workdayStatus,
 } from '../src/widgets.js';
 
-const baseState = {
-  settings: { weatherEnabled: false, weatherCity: { name: '香港', latitude: 22.32, longitude: 114.17 }, openNewTab: true },
-  items: [], notes: '', todos: [], habits: [],
-  focus: { duration: 25, remaining: 1500, endAt: null, running: false },
-  countdown: { title: '下一个小期待', date: '2027-01-01' },
-  workday: { endTime: '18:00', payday: 10, monthlySalary: 0 },
-};
+const baseState = structuredClone(DEFAULT_STATE);
 
 test('calculator respects precedence, parentheses, unary signs, and postfix percentages', () => {
   for (const [source, expected] of [
@@ -94,7 +91,7 @@ test('all thirteen widgets render offline without requesting external services',
   globalThis.fetch = () => { requested = true; throw new Error('unexpected network request'); };
   try {
     for (const entry of widgetCatalog) {
-      const html = renderWidget({ id: `test-${entry.type}`, widget: entry.type, config: {} }, baseState);
+      const html = renderWidget({ id: `test-${entry.type}`, widget: entry.type, config: newWidgetConfig(entry.type), data: newWidgetData(entry.type) }, baseState);
       assert.ok(html.includes(`data-widget="${entry.type}"`), entry.type);
       assert.ok(html.startsWith('<div class="widget-inner '), entry.type);
       assert.ok(!html.includes('undefined'), entry.type);
@@ -116,9 +113,9 @@ test('all thirteen widgets render offline without requesting external services',
 test('user-controlled strings cannot break textarea, HTML, or attribute boundaries', () => {
   const payload = '</textarea><img src=x onerror="alert(1)"><script>alert(1)</script>';
   assert.equal(escapeHtml('<&"\''), '&lt;&amp;&quot;&#39;');
-  const state = { ...baseState, notes: payload, todos: [{ id: 'todo-1', text: payload, done: false }], habits: [{ id: 'habit-1', name: payload, dates: [] }] };
+  const data = { notes: payload, todos: [{ id: 'todo-1', text: payload, done: false }], habits: [{ id: 'habit-1', name: payload, dates: [] }] };
   for (const widget of ['notes', 'todo', 'habit', 'countdown', 'quote', 'clock']) {
-    const html = renderWidget({ id: 'x" onclick="alert(1)', widget, config: { title: payload, text: payload, author: payload, label: payload } }, state);
+    const html = renderWidget({ id: 'x" onclick="alert(1)', widget, data, config: { ...newWidgetConfig(widget), title: payload, text: payload, author: payload, label: payload } }, baseState);
     assert.doesNotMatch(html, /<script|<img|onclick="alert/);
     assert.match(html, /&lt;/);
     assert.match(html, /data-widget-id="x&quot; onclick=&quot;alert\(1\)"/);

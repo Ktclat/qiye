@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { widgetContentSummary } from './widget-data.js';
 import { validateImport, exportState, MAX_BACKUP_BYTES, loadState } from './core.js';
 
 /**
@@ -25,8 +26,11 @@ function fail(code, message) { throw new WebDAVError(code, message); }
 
 export function validateWebDAVConfig(input, { requireEndpoint = false } = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) fail('INVALID_CONFIG', 'WebDAV 配置格式不正确。');
-  const config = { ...DEFAULT_WEBDAV_CONFIG };
-  for (const key of Object.keys(config)) if (input[key] !== undefined) config[key] = input[key];
+  const fields = Object.keys(DEFAULT_WEBDAV_CONFIG);
+  if (fields.some(key => !Object.hasOwn(input, key)) || Object.keys(input).some(key => !fields.includes(key))) {
+    fail('INVALID_CONFIG', 'WebDAV 配置字段不完整或不受支持。');
+  }
+  const config = { ...input };
   if (typeof config.enabled !== 'boolean' || typeof config.autoSync !== 'boolean') fail('INVALID_CONFIG', '同步开关格式不正确。');
   for (const key of ['endpoint', 'path', 'username', 'password']) {
     if (typeof config[key] !== 'string' || config[key].length > (key === 'endpoint' ? 4096 : 1024) || /[\u0000-\u001f\u007f]/.test(config[key])) {
@@ -153,7 +157,7 @@ function summary(state) {
     updatedAt: state.updatedAt, groups: state.groups.length,
     sites: state.items.filter(item => item.type === 'link').length,
     widgets: state.items.filter(item => item.type === 'widget').length,
-    todos: state.todos.length, notesLength: state.notes.length
+    ...widgetContentSummary(state.items)
   } : null;
 }
 
@@ -309,7 +313,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
     if (response.status === 404) return { exists: false, state: null, fingerprint: null, etag: null };
     if (response.status !== 200) throw httpError(response.status);
     let state;
-    try { state = validateImport(response.text); } catch { fail('INVALID_REMOTE', '远程文件不是兼容的栖页备份，或内容未通过校验；两端数据均未替换。'); }
+    try { state = validateImport(response.text); } catch { fail('INVALID_REMOTE', '远程文件不是当前格式的栖页备份，或内容未通过校验；两端数据均未替换。'); }
     return { exists: true, state, fingerprint: await webDAVStateFingerprint(state), etag: response.etag };
   }
 
@@ -330,7 +334,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
   }
 
   function localChanged(localFingerprint) {
-    return { status: 'local-changed', localFingerprint, message: '同步期间本机内容发生了变化，已停止应用旧版本。请保存后重新同步。' };
+    return { status: 'local-changed', localFingerprint, message: '同步期间本机内容发生了变化，已停止应用过期快照。请保存后重新同步。' };
   }
 
   function rememberReview(record, local, localFingerprint, remote, reason) {

@@ -102,7 +102,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · jel1jq",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/jel1jq"
   },
@@ -115,7 +115,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · 5ypy88",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/5ypy88"
   },
@@ -128,7 +128,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 4096,
     "height": 2731,
     "title": "Wallhaven · pomle9",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/pomle9"
   },
@@ -141,7 +141,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · d8vvlo",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/d8vvlo"
   },
@@ -154,7 +154,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 1920,
     "height": 1080,
     "title": "Wallhaven · zpvqmv",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/zpvqmv"
   },
@@ -167,7 +167,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · 1qod3w",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/1qod3w"
   },
@@ -180,7 +180,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 4928,
     "height": 3280,
     "title": "Wallhaven · lygg6r",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/lygg6r"
   },
@@ -193,7 +193,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 4571,
     "height": 2571,
     "title": "Wallhaven · zpvqyj",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/zpvqyj"
   },
@@ -206,7 +206,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 1920,
     "height": 1080,
     "title": "Wallhaven · pomo69",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/pomo69"
   },
@@ -219,7 +219,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 6192,
     "height": 4128,
     "title": "Wallhaven · lygzqq",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/lygzqq"
   },
@@ -232,7 +232,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · lygzop",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/lygzop"
   },
@@ -245,7 +245,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 5599,
     "height": 3149,
     "title": "Wallhaven · zpvdzv",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/zpvdzv"
   },
@@ -258,7 +258,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 4096,
     "height": 2304,
     "title": "Wallhaven · 9ok8q8",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/9ok8q8"
   },
@@ -271,7 +271,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 1920,
     "height": 1080,
     "title": "Wallhaven · 216d1g",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/216d1g"
   },
@@ -284,7 +284,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · xekje3",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/xekje3"
   },
@@ -297,7 +297,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · 3q7w9d",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/3q7w9d"
   },
@@ -310,7 +310,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · 8g8e62",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/8g8e62"
   },
@@ -323,7 +323,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 2556,
     "height": 1278,
     "title": "Wallhaven · 6led57",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/6led57"
   },
@@ -336,7 +336,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 3840,
     "height": 2160,
     "title": "Wallhaven · 216zzg",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/216zzg"
   },
@@ -349,7 +349,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 4000,
     "height": 5001,
     "title": "Wallhaven · w53xlp",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/w53xlp"
   },
@@ -362,7 +362,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 4898,
     "height": 3265,
     "title": "Wallhaven · jelezm",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/jelezm"
   },
@@ -375,7 +375,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 1920,
     "height": 1080,
     "title": "Wallhaven · yqk2q7",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/yqk2q7"
   },
@@ -388,7 +388,7 @@ export const DIRECT_WALLPAPERS = Object.freeze([
     "width": 7680,
     "height": 4320,
     "title": "Wallhaven · rqejzq",
-    "author": "原作者与来源见图片详情页",
+    "author": "",
     "license": "版权见原图 · 非统一商用许可",
     "licenseUrl": "https://wallhaven.cc/w/rqejzq"
   }

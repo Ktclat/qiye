@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { DEFAULT_STATE, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets, chineseLunarDate } from './widgets.js';
+import { APP_VERSION } from './version.js';
+import { applyDialogScale } from './dialog-scale.js';
+import { getWidgetDefinition, newWidgetConfig } from './widget-registry.js';
+import { newWidgetData, widgetContentSummary } from './widget-data.js';
+import { renderExtensionSettings, readExtensionSettings } from './widget-settings.js';
 import { icon, iconNames } from './icons.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { createWallpaperLibrary } from './wallpaper-library.js';
@@ -418,6 +423,7 @@ function updateToolbar() {
 }
 function applySettings() {
  const s = state.settings;
+ applyDialogScale(dialog, s.dialogScale);
  const theme = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : s.theme;
 
  const root = document.documentElement;
@@ -466,7 +472,7 @@ function applySettings() {
  if (s.dailyWallpaper && !s.customWallpaper && !remote) wallpaper = WALLPAPERS[Math.floor(Date.now()/86400000) % WALLPAPERS.length];
  const credit = $('#wallpaper-credit');
  if (credit) {
-  credit.hidden = !remote || !!s.customWallpaper;
+  credit.hidden = !s.showWallpaperCredit || !remote || !!s.customWallpaper || !remote.author || /原作者与来源见|摄影师未署名|见原始文件页/.test(remote.author);
   if (remote) {credit.href=remote.sourceUrl;credit.textContent=`${remote.author} · ${({commons:'Commons',picsum:'Picsum',deepin:'deepin',wallhaven:'Wallhaven'}[remote.provider]||remote.provider)}`;credit.title='查看壁纸摄影师与照片来源';}
   else {credit.removeAttribute('href');credit.textContent='';}
  }
@@ -653,7 +659,7 @@ function linkEditorForm(item){
 function addDialog(tab,data) {
  const item = data.item;
  let content = '';
- if (tab === 'widgets') content = `<div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
+ if (tab === 'widgets') content = `<div class="widget-catalog-tools"><label class="field"><span>查找小组件</span><input id="widget-query" type="search" placeholder="搜索名称或用途" autocomplete="off"></label>${selectField('widgetSize','添加尺寸','default',[{value:'default',label:'组件推荐'},{value:'2x2',label:'2 × 2'},{value:'4x2',label:'4 × 2'}])}</div><p id="widget-catalog-empty" class="widget-catalog-empty" role="status" hidden>没有找到匹配的组件</p><div class="catalog">${widgetCatalog.map(w=>`<button class="catalog-card" data-add-widget="${esc(w.type)}"><span class="catalog-icon">${icon(iconNames.includes(w.icon)?w.icon:({weather:'sun',calendar:'clock',notes:'note',todo:'check',countdown:'heart',focus:'clock',hotlinks:'ai',workday:'coffee',calculator:'grid',habit:'check',quote:'note',clock:'globe'}[w.type]||'grid'))}</span><span><h3>${esc(w.title)}</h3><p>${esc(w.description)}</p><small>${esc(w.size || '2x2')} 卡片</small></span></button>`).join('')}</div>`;
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title','文件夹名称',item?.title || '',{required:true,maxlength:24,placeholder:'例如：灵感收藏'})}${selectField('groupId','所在分组',item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。</p>${formActions(item?'保存文件夹':'创建文件夹')}</form>`;
  else content = linkEditorForm(item);
  const head=item?dialogHeader(item.type==='folder'?'编辑文件夹':'编辑图标'):dialogCloseButton();
@@ -719,8 +725,7 @@ function settingsDialog(tab) {
   <div class="icon-settings-preview" aria-label="图标外观预览">${state.items.filter(i=>i.type==='link'&&!i.folderId).slice(0,3).map(i=>renderTile({...i,size:'1x1'})).join('')}</div>
   <div class="section-label">网站图标与卡片</div>
   ${settingRange('gridSize','图标大小',48,120)}
-  ${settingSwitch('autoExtractIcons','自动补充高清图标','遇到小图或失败时，按需读取公开图标声明；不会弹出权限，也不会通过第三方代理发送收藏列表。')}
-  <p class="help-text">优先矢量和适合屏幕密度的原图，读取 ICO 内的高清帧；网站自身只提供小图时不会把放大冒充高清。编辑网站 → 智能提取可重新尝试，并查看实际像素尺寸。</p>
+  ${settingSwitch('autoExtractIcons','自动补充高清图标','图标模糊或加载失败时，尝试获取更清晰的版本。')}
   ${preferenceSelect('iconShape','图标形状',[['rounded','统一圆角正方形'],['original','保留原始轮廓']],'统一外框，不拉伸网站标志；圆角只作用于图标，不再挤压小组件。')}
   ${preferenceSelect('iconBackdrop','图标底色',[['adaptive','轻量自适应底色'],['none','透明 · 不额外添加底色']],'图片自身的白底保留，不自动去白或重绘品牌标志。')}
   ${settingRange('radius','图标圆角',0,48)}
@@ -730,7 +735,7 @@ function settingsDialog(tab) {
   ${settingRange('labelSize','名称字号',10,20)}
   ${settingColor('labelColor','名称颜色')}
   ${settingSwitch('showAddTile','在网格中显示添加按钮','也可以使用右上角 +，或在桌面空白处右键添加。')}
-  <p class="help-text">图标优先使用对应网站的 SVG 或清晰位图，失败时保留文字。右键网站 → 编辑 → 智能提取，可以重新读取该网站公开的图标声明。</p>`;
+  <p class="help-text">右键网站 → 编辑 → 获取图标，可重新选择图标。</p>`;
  else if(tab==='clock') content = `
   <div class="section-label">时间</div>
   ${settingSwitch('showClock','显示时间')}
@@ -762,12 +767,16 @@ function settingsDialog(tab) {
   <div class="section-label">字体</div>
   ${preferenceSelect('uiFont','界面字体',[['inter','Inter + 系统中文'],['system','系统字体']],'Inter 随扩展提供；中文使用设备上的系统字体。')}
   ${settingRange('uiScale','界面文字比例',85,120,'%')}
+  ${settingRange('dialogScale','选项窗口缩放',75,150,'%')}
+  <p class="help-text">设置、添加、壁纸与编辑窗口整体缩放，工具栏收藏窗口也会跟随。立即预览并保存。</p>
+  <button class="secondary-button" data-action="reset-dialog-scale">恢复窗口缩放为 100%</button>
   <div class="button-row"><button class="secondary-button" data-action="wallpaper">${icon('wallpaper')}壁纸与背景</button></div>`;
  else if(tab==='layout') content = `
   <div class="section-label">时间与搜索的滚动方式</div>
   <label class="setting-row"><span class="setting-copy"><strong>顶部区域</strong><small>随内容上滑消失，或固定在独立区域；固定时图标不会从下方穿过。</small></span><select data-header-mode aria-label="顶部区域滚动方式"><option value="scroll" ${!s.pinClock&&!s.pinSearch?'selected':''}>随内容滚动</option><option value="fixed" ${s.pinClock&&s.pinSearch?'selected':''}>固定时间和搜索</option>${s.pinClock!==s.pinSearch?'<option value="mixed" selected>分别设置</option>':''}</select></label>
   <div class="section-label">桌面布局</div>
   ${settingSwitch('minimal','极简模式','只显示时间、搜索与壁纸；按 Esc 可恢复桌面。')}
+  ${settingSwitch('showWallpaperCredit','显示壁纸作者','图片来源和许可仍可在壁纸预览中查看。')}
   ${settingSwitch('quote','显示页底短句','固定在视口底部，不随组件数量移动。')}
   ${settingSwitch('hideScrollbar','隐藏内容区滚动条','只隐藏轨道，滚轮、触屏、Page Down 和空格仍可滚动。')}
   ${settingSwitch('hideEditorScrollbar','隐藏网站编辑窗口滚动条','同时用于添加网站表单；仅隐藏轨道，内容仍可滚动，与桌面滚动条独立。')}
@@ -804,7 +813,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">恢复初始桌面</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v0.3.3 · GPLv3 · 无需账号</span></div>
+  <div class="about-block"><span class="brand-mark">q</span><h3>栖页 <span style="font-weight:350">Qiye</span></h3><p>让每一次打开，都有一处喜欢的风景。</p><span class="version-badge">v${APP_VERSION} · GPLv3 · 无需账号</span></div>
   <div class="about-features"><div>${icon('grid')}自在的桌面</div><div>${icon('globe')}轻巧的入口</div><div>${icon('heart')}本地的陪伴</div></div>
   <p class="about-note">栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。</p>
   <p class="about-note">图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。</p>
@@ -813,7 +822,7 @@ function settingsDialog(tab) {
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${icon('github')}源代码</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">字体与许可</a></div>`;
  const current = tabs.find(item=>item.id===tab);
  return dialogCloseButton() + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类"><h2 class="workspace-title" id="workspace-title">设置</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · 0.3.3</small></nav>
+ <div class="settings-layout"><nav class="settings-nav" aria-label="设置分类"><h2 class="workspace-title" id="workspace-title">设置</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>栖页 Qiye · ${APP_VERSION}</small></nav>
  <section class="settings-content" aria-label="${current.name}设置"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
@@ -836,17 +845,18 @@ function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render()
 
 function widgetConfigDialog(item) {
  if(!item) return dialogHeader('组件不存在')+'<div class="dialog-body">请关闭后重试。</div>';
- const type = item.widget, c=item.config || {};
+ const type = item.widget, c=item.config, definition=getWidgetDefinition(type);
  let content = field('title','卡片名称',item.title,{required:true,maxlength:30});
  if(type==='weather') content += `<div class="two-columns">${selectField('cityPreset','选择城市','',[{value:'',label:'选择常用城市'},{value:'香港|22.32|114.17',label:'香港'},{value:'北京|39.9|116.4',label:'北京'},{value:'上海|31.23|121.47',label:'上海'},{value:'深圳|22.54|114.06',label:'深圳'},{value:'广州|23.13|113.26',label:'广州'},{value:'成都|30.67|104.07',label:'成都'},{value:'台北|25.03|121.56',label:'台北'},{value:'新加坡|1.35|103.82',label:'新加坡'},{value:'东京|35.68|139.69',label:'东京'}])}${field('cityName','城市名称',state.settings.weatherCity.name,{required:true,maxlength:60})}</div><div class="two-columns">${field('latitude','纬度',state.settings.weatherCity.latitude,{type:'number',min:-90,max:90,required:true})}${field('longitude','经度',state.settings.weatherCity.longitude,{type:'number',min:-180,max:180,required:true})}</div><label class="setting-row"><span class="setting-copy"><strong>启用天气服务</strong><small>将城市坐标发送至 Open-Meteo。每 30 分钟更新，离线时显示缓存或错误提示。</small></span><input class="switch" name="weatherEnabled" type="checkbox" ${state.settings.weatherEnabled?'checked':''}></label>`;
- else if(type==='countdown') content += field('eventTitle','纪念日 / 倒数日名称',c.title || state.countdown.title,{required:true,maxlength:40})+field('date','目标日期',c.date || state.countdown.date,{type:'date',required:true});
- else if(type==='focus') content += field('duration','每次专注时长（分钟）',state.focus.duration,{type:'number',min:1,max:180,required:true,help:'保存时会停止当前计时，并开始一轮新的时长。'});
- else if(type==='workday') content += `<div class="two-columns">${field('endTime','下班时间',c.endTime || state.workday.endTime,{type:'time',required:true})}${field('payday','每月发薪日',c.payday || state.workday.payday,{type:'number',min:1,max:31,required:true})}</div><div class="field"><span>工作日</span><div class="color-options">${['日','一','二','三','四','五','六'].map((d,i)=>`<label class="help-text"><input type="checkbox" name="workdays" value="${i}" ${(c.workdays || [1,2,3,4,5]).includes(i)?'checked':''}>周${d}</label>`).join('')}</div></div>`;
- else if(type==='clock') content += field('label','城市显示名称',c.label || '香港',{required:true,maxlength:30})+selectField('timeZone','时区',c.timeZone || 'Asia/Hong_Kong',[{value:'Asia/Hong_Kong',label:'香港 / 北京'},{value:'Asia/Tokyo',label:'东京'},{value:'Asia/Singapore',label:'新加坡'},{value:'Europe/London',label:'伦敦'},{value:'Europe/Paris',label:'巴黎'},{value:'America/New_York',label:'纽约'},{value:'America/Los_Angeles',label:'洛杉矶'},{value:'Australia/Sydney',label:'悉尼'},{value:'UTC',label:'UTC'}]);
+ else if(type==='countdown') content += field('eventTitle','纪念日 / 倒数日名称',c.title,{required:true,maxlength:40})+field('date','目标日期',c.date,{type:'date',required:true});
+ else if(type==='focus') content += field('duration','每次专注时长（分钟）',item.data.focus.duration,{type:'number',min:1,max:180,required:true,help:'保存时会停止当前计时，并开始一轮新的时长。'});
+ else if(type==='workday') content += `<div class="two-columns">${field('endTime','下班时间',c.endTime,{type:'time',required:true})}${field('payday','每月发薪日',c.payday,{type:'number',min:1,max:31,required:true})}</div><div class="field"><span>工作日</span><div class="color-options">${['日','一','二','三','四','五','六'].map((d,i)=>`<label class="help-text"><input type="checkbox" name="workdays" value="${i}" ${c.workdays.includes(i)?'checked':''}>周${d}</label>`).join('')}</div></div>`;
+ else if(type==='clock') content += field('label','城市显示名称',c.label,{required:true,maxlength:30})+selectField('timeZone','时区',c.timeZone,[{value:'Asia/Hong_Kong',label:'香港 / 北京'},{value:'Asia/Tokyo',label:'东京'},{value:'Asia/Singapore',label:'新加坡'},{value:'Europe/London',label:'伦敦'},{value:'Europe/Paris',label:'巴黎'},{value:'America/New_York',label:'纽约'},{value:'America/Los_Angeles',label:'洛杉矶'},{value:'Australia/Sydney',label:'悉尼'},{value:'UTC',label:'UTC'}]);
  else if(type==='quote') content += `<label class="field"><span>自定义短句（可留空）</span><textarea name="text" maxlength="300" placeholder="写下一句想对自己说的话">${esc(c.text || '')}</textarea></label>${field('author','署名',c.author || '',{maxlength:40})}`;
- else if(type==='notes') content += selectField('color','便签颜色',c.color || 'yellow',[{value:'yellow',label:'奶油黄'},{value:'pink',label:'浅樱粉'},{value:'mint',label:'薄荷绿'}]);
+ else if(type==='notes') content += selectField('color','便签颜色',c.color,[{value:'yellow',label:'奶油黄'},{value:'pink',label:'浅樱粉'},{value:'mint',label:'薄荷绿'}]);
+ else if(definition && !definition.builtin) content += renderExtensionSettings(item);
  else content += '<p class="help-text">直接在卡片中使用这个组件。右键卡片可以调整尺寸或位置。</p>';
- content += selectField('size','卡片尺寸',item.size || '2x2',[{value:'2x2',label:'2 × 2 · 标准'},{value:'4x2',label:'4 × 2 · 宽卡片'}]);
+ content += selectField('size','卡片尺寸',item.size || '2x2',(definition?.sizes || ['2x2','4x2']).map(value=>({value,label:value==='2x2'?'2 × 2 · 标准':'4 × 2 · 宽卡片'})));
  return dialogHeader(`设置${item.title}`,'修改后会保存到当前浏览器。') + `<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}" data-type="${esc(type)}">${content}${formActions()}</form></div>`;
 }
 function localSearchDialog() { return dialogHeader('搜索我的桌面','快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。')+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="搜索名称或网址…" aria-label="本地搜索关键词" autocomplete="off"><button class="secondary-button" data-action="query-local">${icon('search')}搜索</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">桌面收藏</button><button class="scope-button" data-scope="bookmarks">浏览器书签</button><button class="scope-button" data-scope="history">浏览历史</button></div><div id="local-results" class="local-results"></div></div>`; }
@@ -879,12 +889,14 @@ function moveDialog(id) {
 function importPreviewDialog(bookmarks) {
  return dialogHeader('导入浏览器书签',`找到 ${bookmarks.length} 个可导入网站。请选择需要的内容。`)+`<div class="dialog-body"><form id="bookmarks-form">${selectField('groupId','导入到分组',currentGroup().id,groupOptions())}<label class="help-text"><input type="checkbox" id="bookmark-select-all"> 全选 / 取消全选</label><div class="bookmark-list">${bookmarks.map((b,i)=>`<label class="bookmark-row"><input name="bookmark" type="checkbox" value="${i}"><span class="bookmark-copy">${esc(b.title || b.url)}<small>${esc(b.url)}</small></span></label>`).join('')}</div>${formActions('导入所选网站')}</form></div>`;
 }
-function restorePreviewDialog(restored) { return dialogHeader('恢复备份','请先确认备份内容。恢复后会替换当前桌面。')+`<div class="dialog-body"><div class="about-features"><div><strong>${restored.groups.length}</strong><p>个分组</p></div><div><strong>${restored.items.length}</strong><p>个桌面项目</p></div><div><strong>${restored.todos.length}</strong><p>条待办</p></div></div><p class="help-text">备份中的网址、便签、组件设置和壁纸将一并恢复。可以先导出当前桌面，保留一份副本。</p>${restored.settings.weatherEnabled?`<p class="help-text">此备份已开启天气。恢复后会将「${esc(restored.settings.weatherCity.name)}」的城市坐标发送至 Open-Meteo 获取预报。</p>`:''}<div class="button-row"><button class="secondary-button" data-action="export">先备份当前桌面</button><button class="primary-button" data-action="confirm-restore">确认恢复</button></div></div>`; }
+function restorePreviewDialog(restored) { return dialogHeader('恢复备份','请先确认备份内容。恢复后会替换当前桌面。')+`<div class="dialog-body"><div class="about-features"><div><strong>${restored.groups.length}</strong><p>个分组</p></div><div><strong>${restored.items.length}</strong><p>个桌面项目</p></div><div><strong>${widgetContentSummary(restored.items).todos}</strong><p>条待办</p></div></div><p class="help-text">备份中的网址、便签、组件设置和壁纸将一并恢复。可以先导出当前桌面，保留一份副本。</p>${restored.settings.weatherEnabled?`<p class="help-text">此备份已开启天气。恢复后会将「${esc(restored.settings.weatherCity.name)}」的城市坐标发送至 Open-Meteo 获取预报。</p>`:''}<div class="button-row"><button class="secondary-button" data-action="export">先备份当前桌面</button><button class="primary-button" data-action="confirm-restore">确认恢复</button></div></div>`; }
 function confirmDialog(data) { return dialogHeader(data.title)+`<div class="dialog-body"><p class="help-text">${esc(data.message)}</p><div class="button-row"><button class="secondary-button" data-close>取消</button><button class="danger-button" data-action="confirm-callback">${esc(data.label || '确认')}</button></div></div>`; }
 
 async function addWidget(type) {
  const w=widgetCatalog.find(x=>x.type===type); if(!w)return;
- const item={id:uid(),groupId:currentGroup().id,type:'widget',widget:type,title:w.title,size:w.size || '2x2',config:{}};
+ const selectedSize=$('[name=widgetSize]',dialog)?.value;
+ const data=newWidgetData(type);
+ const item={id:uid(),groupId:currentGroup().id,type:'widget',widget:type,title:w.title,size:w.sizes.includes(selectedSize)?selectedSize:w.size,config:newWidgetConfig(type),data};
  state.items.push(item);await commit();closeDialog();toast(`已添加${w.title}，右键可调整设置。`);
 }
 async function removeItem(id) {
@@ -922,14 +934,18 @@ function openContext(event,{itemId,groupId}={}) {
  const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
- if(item) html = `${contextButton('edit','编辑'+(item.type==='widget'?'组件':item.type==='folder'?'文件夹':'网站'),'edit')}${contextButton('move','移动到…','move')}${contextButton('duplicate','复制一份','copy')}<hr><div class="menu-label">卡片尺寸</div><div class="size-options">${(item.type==='widget'?['2x2','4x2']:['1x1','2x1','2x2','4x2']).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete','移除','trash','class="danger"')}`;
+ if(item) html = `${contextButton('edit','编辑'+(item.type==='widget'?'组件':item.type==='folder'?'文件夹':'网站'),'edit')}${contextButton('move','移动到…','move')}${contextButton('duplicate','复制一份','copy')}<hr><div class="menu-label">卡片尺寸</div><div class="size-options">${(item.type==='widget'?getWidgetDefinition(item.widget).sizes:['1x1','2x1','2x2','4x2']).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete','移除','trash','class="danger"')}`;
  else if(group)html=`${contextButton('edit-group','编辑分组','edit')}${state.groups.length>1?contextButton('delete-group','删除分组','trash','class="danger"'):''}`;
  else html=`${contextButton('add-link','添加网站','link')}${contextButton('add-widget','添加组件','grid')}${contextButton('add-folder','新建文件夹','folder')}<hr>${contextButton('edit-desktop',editing?'完成编辑':'编辑桌面','edit')}${contextButton('wallpaper','更换壁纸','wallpaper')}${contextButton('local-search','本地搜索','search')}<hr>${contextButton('export','立即备份','download')}${contextButton('settings','设置','settings')}`;
  menu.innerHTML=html;menu.hidden=false;
- const r=menu.getBoundingClientRect(),host=dialog.open?dialog.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};
+ const scale=dialog.open?(Number(getComputedStyle(dialog).zoom)||1):1;
+ const host=dialog.open?dialog.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};
+ menu.style.maxWidth=Math.max(1,(host.width-16)/scale)+'px';
+ menu.style.maxHeight=Math.max(1,(host.height-16)/scale)+'px';
+ const r=menu.getBoundingClientRect();
  menu.style.position=dialog.open?'absolute':'fixed';
- menu.style.left=Math.max(8,Math.min(event.clientX-host.left,host.width-r.width-8))+'px';
- menu.style.top=(Math.max(8,Math.min(event.clientY-host.top,host.height-r.height-8))+(dialog.open?dialog.scrollTop:0))+'px';
+ menu.style.left=Math.max(8,Math.min(event.clientX-host.left,host.width-r.width-8))/scale+'px';
+ menu.style.top=(Math.max(8,Math.min(event.clientY-host.top,host.height-r.height-8))/scale+(dialog.open?dialog.scrollTop:0))+'px';
 }
 function confirmDeleteGroup(id) {
  const group=state.groups.find(g=>g.id===id);if(!group || state.groups.length<2)return;
@@ -999,6 +1015,7 @@ document.addEventListener('click', async event=>{
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast('最近搜索已清除。');return;}
+ if(action==='reset-dialog-scale'){state.settings.dialogScale=100;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
  if(action==='reset-positions'){for(const key of ['clockOffsetX','clockOffsetY','searchOffsetX','searchOffsetY'])state.settings[key]=0;applySettings();await persist();openDialog('settings',{tab:'layout'});return;}
  if(action==='reset-preferences')return openDialog('confirm',{title:'恢复默认设置？',message:'显示、搜索、头像和壁纸偏好将恢复默认。网站、分组、笔记与待办会保留。',label:'重置设置',callback:async()=>{
   const previous=clone(state.settings);state.settings=clone(DEFAULT_STATE.settings);avatarRequestSequence++;
@@ -1067,14 +1084,15 @@ dialog.addEventListener('submit',async event=>{
    state.settings.customEngines.push({id:uid(),name:value('name'),letter:value('name').slice(0,1),color:'#83cbb2',url:template});await persist();renderEngine();openDialog('settings',{tab:'search'});toast('搜索引擎已添加。');
   }else if(form.id==='widget-form'){
    const item=state.items.find(i=>i.id===form.dataset.id),type=form.dataset.type;if(!item)throw new Error('组件已被移除，请重新添加。');
-   item.title=value('title');item.size=value('size');const c=item.config || (item.config={});
+   item.title=value('title');item.size=value('size');const c=item.config;
    if(type==='weather'){const latitude=Number(value('latitude')),longitude=Number(value('longitude'));if(!Number.isFinite(latitude)||latitude<-90||latitude>90||!Number.isFinite(longitude)||longitude<-180||longitude>180)throw new Error('请填写有效的经纬度。');state.settings.weatherCity={name:value('cityName'),latitude,longitude};state.settings.weatherEnabled=data.has('weatherEnabled');}
    if(type==='countdown'){c.title=value('eventTitle');c.date=value('date');}
-   if(type==='focus'){const duration=Number(value('duration'));if(!Number.isInteger(duration)||duration<1||duration>180)throw new Error('专注时长需为 1–180 分钟。');state.focus={duration,remaining:duration*60,endAt:null,running:false};}
+   if(type==='focus'){const duration=Number(value('duration'));if(!Number.isInteger(duration)||duration<1||duration>180)throw new Error('专注时长需为 1–180 分钟。');item.data.focus={duration,remaining:duration*60,endAt:null,running:false};}
    if(type==='workday'){c.endTime=value('endTime');c.payday=Number(value('payday'));c.workdays=data.getAll('workdays').map(Number);}
    if(type==='clock'){c.timeZone=value('timeZone');c.label=value('label');}
    if(type==='quote'){c.text=value('text');c.author=value('author');}
    if(type==='notes')c.color=value('color');
+   if(!getWidgetDefinition(type).builtin)item.config=readExtensionSettings(type,data,c);
    await commit();closeDialog();toast('组件设置已保存。');
   }else if(form.id==='move-form'){
    const folder=state.items.find(i=>i.id===value('folderId')&&i.type==='folder');await moveItem(form.dataset.id,folder?.groupId || value('groupId'),folder?.id || null);closeDialog();toast('已移动。');
@@ -1091,6 +1109,7 @@ dialog.addEventListener('submit',async event=>{
 document.addEventListener('input', event=>{
  const input=event.target;
  if(input.id==='search-input')suggestions();
+ if(input.id==='widget-query'){const query=input.value.trim().toLocaleLowerCase();let count=0;$$('[data-add-widget]',dialog).forEach(card=>{card.hidden=!card.textContent.toLocaleLowerCase().includes(query);if(!card.hidden)count++;});$('#widget-catalog-empty').hidden=count>0;}
  if(input.id==='local-query')renderLocalResults(input.value);
  if(input.dataset.settingColor){state.settings[input.dataset.settingColor]=input.value;const output=$('#color-value-'+input.dataset.settingColor);if(output)output.textContent=input.value;applySettings();}
  if(input.dataset.range){state.settings[input.dataset.range]=Number(input.value);$(`#output-${input.dataset.range}`).textContent=input.value+(input.dataset.unit || '');applySettings();}
@@ -1243,7 +1262,7 @@ async function init() {
  subscribeState(incoming=>{if(saving || !incoming || incoming.updatedAt===state.updatedAt)return;state=incoming;persistedState=clone(incoming);if(!dialog.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName || ''))renderDesktop();});
  new ResizeObserver(updateGrid).observe($('.desktop-wrap'));
  new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
- window.addEventListener('resize',updateHeaderPlacement,{passive:true});
+ window.addEventListener('resize',()=>{updateHeaderPlacement();applyDialogScale(dialog,state.settings.dialogScale);},{passive:true});
  document.fonts?.ready.then(updateHeaderPlacement);
  $('#content-scroll').addEventListener('scroll',hideSearchMenus,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);

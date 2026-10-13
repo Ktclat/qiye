@@ -1,92 +1,139 @@
-# 小组件开发指南
+# 小组件开发指南 · API v1
 
-栖页 v0.3.1。当前是**随扩展打包的内置组件机制**，不是下载 JavaScript 即运行的插件商店。暂不执行第三方远程脚本，也不提供动态安装任意组件的入口。贡献者通过源码与 Pull Request 集成组件；独立网站可以作为普通网址收纳。
+栖页 v0.4.0 提供随扩展打包的组件接口。新增组件只需导出定义并登记到 `src/widget-extensions.js`，目录、备份校验、配置表单和生命周期由宿主接入。模块随源码审阅和打包，不从网址下载执行脚本，也不是隔离沙箱或在线插件商店。
 
-## 分工与入口
+## 五分钟接入
 
-| 入口 | 职责 |
+仓库提供可运行示例 `src/widget-example.js`。将 `src/widget-extensions.js` 改为：
+
+```js
+import { counterWidget } from './widget-example.js';
+export const widgetExtensions = [counterWidget];
+```
+
+运行 `python scripts/build-preview.py`，重新加载扩展或网页。“添加 → 小组件”中会出现计数器。添加两张计数器，分别点击“加一”；右上角菜单可编辑名称、数值、尺寸。两张卡片分别保存，刷新、JSON 备份和 WebDAV 均保留。
+
+默认不启用示例，不增加用户桌面上的组件。开发自己的组件时把示例复制为 `src/widget-yourname.js`，采用唯一 `type` 并登记定义。新增 JS 模块使用 `import { name } from './module-name.js'`、具名函数/常量导出；预览构建器自动按依赖顺序打包，发现循环依赖或不支持的导入会报错。模块文件使用小写字母和连字符。样式加入 `src/widgets.css`，用专属类名或 `[data-widget="your-type"]` 限定范围。
+
+## 定义契约
+
+```js
+export const example = {
+  apiVersion: 1,
+  type: 'your-type',
+  title: '组件名称',
+  description: '在目录中可搜索的用途说明',
+  icon: 'note',
+  size: '2x2',
+  sizes: ['2x2', '4x2'],
+  fields: [
+    { key: 'text', label: '内容', type: 'text', default: '', maxLength: 500 },
+    { key: 'count', label: '数量', type: 'number', default: 0, min: 0, max: 9999, integer: true },
+    { key: 'enabled', label: '启用', type: 'checkbox', default: false },
+    { key: 'mode', label: '模式', type: 'select', default: 'simple',
+      options: [{ value: 'simple', label: '简洁' }, { value: 'full', label: '完整' }] },
+  ],
+  render({ item, config, escapeHtml }) {
+    return `<p>${escapeHtml(config.text)}</p>`;
+  },
+  mount(context) { /* 可选：监听和异步任务；同步返回清理函数 */ },
+  update(context) { /* 可选：同步更新实际发生变化的 DOM 字段 */ },
+};
+```
+
+| 字段 | 约束 |
 | --- | --- |
-| `src/widgets.js` 的 `widgetCatalog` | 标识、名称、说明、默认尺寸和图标 |
-| `renderWidget(item, state)` | 返回组件内部 HTML，不读取网络、不写入状态 |
-| `bindWidgets(container, context)` | 委托事件、保存、异步任务；返回清理函数 |
-| `refreshLiveWidgets(container, state)` | 更新有变化的显示字段，避免整个桌面重建 |
-| `src/core.js` 的 `WIDGETS` / `validateConfig` | 白名单与导入校验，保护备份、同步和持久状态 |
-| `src/app.js` 的 `widgetConfigDialog` / 表单处理 | 配置入口和保存 |
-| `src/widgets.css` | 组件样式与深浅色主题 |
-| `scripts/build-preview.py` | 新增模块时登记打包顺序 |
-| `src/drag.js` | 宿主负责所有桌面卡片的拖动，不要各组件自行注册拖拽 |
+| `apiVersion` | 当前仅接受整数 `1` |
+| `type` | 小写字母开头，后接小写字母、数字、连字符，最长 40 字符；不可重复或覆盖内置类型 |
+| `title` / `description` | 非空文本，最长 160 字符 |
+| `icon` | 已有 `src/icons.js` 名称；找不到时使用宿主回退图标 |
+| `size` / `sizes` | 默认尺寸必须在支持列表中；目前支持 `2x2`、`4x2` |
+| `fields` | 配置字段唯一、显式声明；每个字段必须提供合法 `default` |
+| `render` | 必需，同步返回 HTML 字符串；不发请求、不保存、不绑定事件 |
+| `mount` | 可选，同步返回清理函数或 `undefined`；异步任务可在函数内部启动 |
+| `update` | 可选，同步更新显示；宿主每秒在前台调度，保存配置后也调用 |
 
-## 数据契约
+`text` 可指定 `maxLength`（默认 1000、上限 100000）和 `required`；`number` 可指定 `min`、`max`、`integer`，默认范围 ±1000000；`select` 提供 1–40 个唯一字符串选项；`checkbox` 接受布尔值。`hidden: true` 的字段仍需校验及默认值，但不展示在配置表单中，适合只由组件按钮修改的值。
+
+未知配置字段、非法类型、范围、重复 ID 和不支持的 API 版本会报错。默认值仅在新建组件时由 `newWidgetConfig(type)` / registry 的 `newConfig(type)` 生成；校验器不会补齐导入配置中的缺失字段。当前扩展字段支持标量；复杂列表可先讨论明确的数据结构与容量限制，不无条件透传任意 JSON。
+
+## 运行时 context
+
+| 接口 | 行为 |
+| --- | --- |
+| `root` | 当前实例的 `.widget-inner` 根节点 |
+| `signal` | 卸载时中止的 `AbortSignal`；可用于事件监听和 `fetch` |
+| `getConfig()` | 当前实例配置的深拷贝；每次操作读取最新值 |
+| `await updateConfig(patch)` | 合并并校验当前实例配置，通过宿主保存队列写入；成功后更新显示；失败抛错；卸载/移除后返回 `false` |
+| `toast(text)` | 实例仍有效时显示简短反馈 |
+
+`render` 的 `item` 与 `config` 也是副本。宿主自动生成外层标识、标题和设置按钮。事件中使用 `event.stopPropagation()`，输入和按钮使用原生元素。不要使用 `widget-` 前缀的 `data-action`，该前缀由内置宿主事件保留。
+
+```js
+mount({ root, signal, getConfig, updateConfig, toast }) {
+  const button = root.querySelector('[data-increment]');
+  button.addEventListener('click', async event => {
+    event.stopPropagation();
+    button.disabled = true;
+    try { await updateConfig({ count: Math.min(9999, getConfig().count + 1) }); }
+    catch (error) { if (!error.notified) toast(error.message); }
+    finally { if (!signal.aborted) button.disabled = false; }
+  }, { signal });
+}
+```
+
+宿主负责拖动、分组、移动、删除/撤销、尺寸、主题和持久化。不要另外创建拖动手柄。切组、替换节点或重绑时中止 signal 并调用清理函数；异步返回后仍须检查 `signal.aborted`，避免更新卸载的 DOM。自行创建的定时器、观察器、订阅在清理函数中释放。纯排序通常复用节点，组件不得依赖重新 mount 来刷新数据。
+
+单个组件 render、mount、update 失败不会阻止其他卡片显示；update 失败后本次挂载停止刷新并提示一次。不要返回 Promise 作为 render、mount 或 update 的返回值。异步事件中的异常应由组件捕获；保存层已通知的错误带 `notified`，无需重复提示。
+
+## 当前存储结构
+
+新增第三方模块的数据保存在卡片 `config`，示意：
 
 ```js
 {
-  id: 'unique-stable-id',
-  groupId: 'home',
-  type: 'widget',
-  widget: 'your-widget',
-  title: '组件名称',
-  size: '2x2', // 或 4x2
-  config: { /* 仅包含已校验的 JSON 值 */ }
+  id: 'stable-id', groupId: 'home', type: 'widget', widget: 'counter',
+  title: '计数器', size: '2x2', config: { label: '今天的小进步', count: 3 }, data: {}
 }
 ```
 
-`id` 创建后稳定；不能把 DOM 节点、函数、计时器、AbortController 或凭据写入 config。新类型必须同时加入 `WIDGETS` 白名单，否则导入会拒绝。配置字段在 `validateConfig()` 中明确列出并逐项验证类型、长度、范围；未知字段不要无条件透传。缺省值与旧备份迁移保持兼容，继续通过 `validateImport()` / `exportState()` 统一处理。
+每张卡片必须包含 `config` 与 `data` 对象。便签的数据为 `{ notes: string }`，待办为 `{ todos: [...] }`，习惯为 `{ habits: [...] }`，专注为 `{ focus: { duration, remaining, endAt, running } }`；其他组件使用 `data: {}`。新增卡片通过 `newWidgetData(type)` 创建空内容/默认计时器；复制卡片深拷贝内容。倒数日、摘录、下班设置、世界时钟使用各自完整 config；天气共享城市设置。桌面根级不保存组件内容。
 
-便签、待办、习惯和专注当前是共享桌面数据；倒数日、工作日、世界时钟等通过各卡片 config 设置。不要假定所有组件各自独立；新组件需明确选择实例数据还是共享数据，不要无意修改其他同类卡片。
+项目尚未正式推出，不维护旧版本兼容或迁移。桌面仅使用 `schemaVersion: 2`，存储键为 `qiye.state.v2`；所有导入/导出与 WebDAV 通过同一校验边界。旧格式、缺失必需字段、未知字段、未安装的组件类型或不支持的尺寸均被明确拒绝，不静默转换或丢弃内容。变更模块字段时直接更新当前定义、默认值、测试与文档。
 
-## 最小渲染示例
+不要把 DOM、函数、定时器、凭据或缓存写入 config/data。整份备份仍有 6 MiB 限制；内置单实例限制为便签 100000 字符、待办 500 项、习惯 100 项、每个习惯 3660 天、专注 1–180 分钟。
 
-下面是可放入 `widgets.js` 的函数示例；把 `greeting` 同步加入目录、renderers 和 core 校验后才可创建该类型。
+## 网络、样式与测试
 
-```js
-function renderGreeting(item) {
-  const text = escapeHtml(item.config?.text ?? '今天也留一点空白。');
-  return `<div class="greeting-content">
-    <p>${text}</p>
-    <button type="button" data-action="greeting-next"
-      aria-label="切换短句">换一句</button>
-  </div>`;
-}
+组件是受信任源码，与扩展具有相同执行环境。接口避免要求调用者接触整份桌面状态，但不是权限隔离机制。模块顶层必须无 DOM、网络和存储副作用，因为 core 同时用于 service worker 和工具栏弹窗。
+
+默认离线可用；网络功能需明确启用，站点权限需用户操作申请，提供超时、取消、缓存、请求去重和错误状态。远端内容仅当数据，不执行远程脚本；文字经过 `escapeHtml` / `textContent`，URL 单独按协议和来源校验。`escapeHtml` 不是 URL 校验器。保留扩展 CSP，不添加 `eval` 或内联事件。
+
+支持主题变量 `--fg`、`--muted`、`--panel`、`--accent`，使用 `.widget-inner` 范围和内部滚动；不要撑破网格。卡片独立圆角不跟随网站图标圆角，最小网格与 `2x2` / `4x2` 均需验证。减少动态效果时停用非必要动画。
+
+```sh
+npm test
+python scripts/build-preview.py
+python tests/browser-e2e.py --output test-results
+python tests/widgets-e2e.py --output test-results/widgets
 ```
 
-外层 `.widget-inner` / `data-widget` / `data-widget-id` 由 `renderWidget` 统一生成。用户文字一律 `escapeHtml` 或 `textContent`；URL 经过对应白名单校验再进入属性。不要内联 `onclick`，不使用 `eval`、`new Function` 或远程脚本。
+测试覆盖重复注册、缺失/非法 config、旧格式拒绝、实例隔离、保存失败、卸载后回包、重绑不重复监听、刷新持久化。新模块还应验收深浅主题、两种尺寸、拖动、复制、删除/撤销、JSON/WebDAV 往返。现有完整示例及自动化测试见 `src/widget-example.js`、`tests/widget-api.test.mjs`、`tests/widgets-e2e.py`。
 
-新增事件放在 `bindWidgets()` 的委托处理器中，先由 `data-widget-id` 查找仍存在的当前 item。调用 `context.getState()` 获取最新状态，调用 `await context.save()` 持久化，必要时再 `context.rerender()`，错误用 `context.toast()` 呈现。不得使用过期闭包中的整个状态覆盖新修改，也不要在渲染函数中调用保存。
+## 代码分工
 
-## 生命周期与异步数据
-
-组件离开当前分组或桌面重绘时，宿主会执行清理函数。所有监听、计时器、订阅与请求都必须有归属，并在清理时移除或取消。共享一个宿主委托监听比每张卡片单独监听更可控。
-
-网络请求在用户明确启用后启动，提供超时、AbortController、缓存 TTL、重试和错误状态；同一请求去重。回包后检查组件仍挂载、请求序列仍有效、用户配置未改变，再更新 DOM。不要让旧请求覆盖用户刚换的壁纸或刚选的城市。请求不夹带 WebDAV 密码、私有网址、便签或搜索历史。远端响应只当数据，不执行 HTML/JS。
-
-壁纸可参考 `src/wallpaper-library.js` 的取消与分页实现，以及 `src/wallpapers.js` 的标准化层；图标可参考 `src/favicon-view.js` 的有限并发和实际尺寸校验。扩展权限只能由明确用户操作按需申请，不能因悬停卡片自动请求新的站点授权。
-
-## 交互、视觉和性能
-
-宿主直接拖动卡片：非交互表面拖拽，输入框/按钮保留本来行为；键盘聚焦卡片后 Alt + 方向键排序。不要在卡片底部另加拖动按钮，也不要使用全卡遮罩挡住组件内按钮。输入区可显式标记 `data-no-drag`。
-
-支持 2×2、4×2 和小屏缩列，长标题省略，内容不足时给出有用的空状态。使用主题变量 `--fg`、`--muted`、`--panel`、`--panel-2`、`--accent`；彩色卡片需同步提供深色颜色，不给每张卡叠加昂贵的 backdrop-filter。默认最多使用已有宿主表面的毛玻璃。动画仅 transform / opacity，响应 `reducedEffects` 与系统减少动态效果。
-
-后台标签页暂停不必要的刷新；已有宿主每秒调度，新增计时组件不应再创建重复的全局 interval。文本未变不写 DOM；图片懒加载；限制响应体、列表长度和图片尺寸。测试加载失败、空数据、慢网和切组后回包。
-
-## 提交与测试
-
-1. 增加校验、渲染、目录项、配置表单与主题样式；更新相关文档。
-2. 在 `tests/*.test.mjs` 添加旧备份迁移、合法/非法输入、HTML 转义、网络授权和卸载清理测试。
-3. 运行 `npm test` 与 `python3 scripts/build-preview.py`，并按 [QA](QA.md) 运行浏览器回归。
-4. 测试至少两张同类组件、两种主题、两种尺寸、移动分组、拖动、删除/撤销、JSON/WebDAV 往返以及请求超时。
-5. PR 写清作者、许可证、素材来源、必要权限、网络目的地和实际验收范围。不要提交私人备份或凭据。
+| 模块 | 职责 |
+| --- | --- |
+| `widget-registry.js` | 内置目录、自定义定义注册、配置校验与 API 版本 |
+| `widget-extensions.js` | 产品级扩展模块入口，所有运行上下文一致 |
+| `widget-settings.js` | 声明式配置表单的生成与读取 |
+| `widget-runtime.js` | mount/update/cleanup、signal 与安全保存 |
+| `widget-data.js` | 内置实例数据、内容摘要、数据限额 |
+| `widgets.js` | 内置组件渲染和交互 |
+| `core.js` / `validation.js` | 桌面存储边界与共用基础校验 |
 
 ## 许可证与独立组件
 
 栖页整体采用 **GPL-3.0-only**。合并并随程序发布的组件应具备 GPLv3 兼容的授权，并保留原作者版权/署名；整个组合程序按 GPLv3 分发。作者仍拥有自己的版权，可在兼容条件下另行许可自己的代码。
 
 **不设“所有第三方作品都必须开源”的额外平台规则。** 独立外部网站、远端服务或与栖页未形成同一程序的作品，使用其自身许可。是否形成组合程序取决于实际集成关系，不能仅因叫作“插件”就规避或扩大 GPL。未来若提供隔离式插件接口，应先单独设计安全和授权边界，不预先宣称当前存在该接口。参考 [GNU GPL FAQ](https://www.gnu.org/licenses/gpl-faq.en.html#GPLPlugins) 与 [LICENSE](../LICENSE)。
-
-## 规则网格与组件形状（v0.3.1）
-
-桌面一个网格单位是 `gridSize + labelSpace`，labelSpace 至少 24px，会随名称字号增加。`2x2` 占两个单位与一个间距，宽高相同；`4x2` 为横向矩形。组件填满所占网格，不像网站图标那样保留底部标签区。
-
-组件使用独立的 20px 圆角（小屏 16px），不会受网站图标圆角 0–48px 调节影响。`.widget-inner` 是组件内容边界；在最小图标尺寸 48px、默认 74px、最大 120px 均测试布局。标题、正文、数字应考虑容器宽度，不再硬编码成只适合某一个尺寸。长内容应截断或在组件内部滚动，不能撑破网格。
-
-网站的“叠放创建文件夹”不作用于组件。组件仍通过非交互区域实时拖拽重排，内部输入/按钮正常工作。本版仅修正现有组件尺寸、边界、留白和主题衔接，并未宣称完成每个组件的独立产品改版。

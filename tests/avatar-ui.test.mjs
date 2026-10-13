@@ -1,3 +1,4 @@
+import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -239,7 +240,7 @@ test('replaced desktop state invalidates old decoding even when the avatar value
     const h = harness({ initialAvatar: avatar });
     const pending = h.app.uploadAvatar({ name: 'old-desktop.webp' }, h.editor.panel);
     const incoming = copy(h.app.state);
-    incoming.notes = 'A newly restored desktop'; incoming.updatedAt = 500;
+    widgetData(incoming).notes = 'A newly restored desktop'; incoming.updatedAt = 500;
     h.app.replaceState(incoming);
     h.decodes[0].resolve(WEBP);
     await pending;
@@ -253,11 +254,11 @@ test('current unrelated edits survive a valid avatar upload without retaining ch
   const h = harness();
   const pending = h.app.uploadAvatar({ name: 'current.png' }, h.editor.panel);
   h.app.state.settings.sidebarWidth = 90;
-  h.app.state.notes = 'A note edited while the local image decoded';
+  widgetData(h.app.state).notes = 'A note edited while the local image decoded';
   h.decodes[0].resolve(PNG);
   await pending;
   assert.equal(h.writes[0].state.settings.sidebarWidth, 90);
-  assert.equal(h.writes[0].state.notes, h.app.state.notes);
+  assert.equal(widgetData(h.writes[0].state).notes, widgetData(h.app.state).notes);
   assert.equal(h.writes[0].state.settings.avatar, PNG);
 
   const next = h.app.uploadAvatar({ name: 'superseded.png' }, h.editor.panel);

@@ -30,7 +30,7 @@ export function createWallpaperLibrary({getState,wallpapers,renderCustom,renderP
   finally{if(sequence===token){state.loading=false;refresh();}}
  }
  function photoDetails(photo){
-  return `<div class="preview-credit"><span>${esc(photo.author)}</span><a href="${esc(photo.sourceUrl)}" target="_blank" rel="noopener noreferrer">图片来源 ↗</a><a href="${esc(photo.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(photo.license)}</a></div>`;
+  return `<div class="preview-credit">${photo.author ? `<span>${esc(photo.author)}</span>` : ''}<a href="${esc(photo.sourceUrl)}" target="_blank" rel="noopener noreferrer">图片来源 ↗</a><a href="${esc(photo.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(photo.license)}</a></div>`;
  }
  function previewMarkup(){
   const view=state.preview,photo=view.photo;
@@ -45,7 +45,7 @@ export function createWallpaperLibrary({getState,wallpapers,renderCustom,renderP
   else if(state.tab==='custom')content=renderCustom();
   else if(state.tab==='parameters')content=renderParameters();
   else{
-   content=`<div class="gallery-intro"><h3>${esc(tab.name)}</h3><p>${esc(tab.intro)}</p><small>图片权利归原作者，来源与许可见预览详情。</small></div>`;
+   content=`<div class="gallery-intro"><h3>${esc(tab.name)}</h3><p>${esc(tab.intro)}</p></div>`;
    if(!settings.wallpaperApiEnabled)content+=`<div class="wallpaper-permission"><strong>连接 ${esc(tab.name)}</strong><p>启用后直接加载该图库和图片域名，不发送桌面内容或同步凭据。</p><button class="primary-button" data-gallery-enable>启用并加载图片</button></div>`;
    else content+=`<div class="wallpaper-status ${!state.loading&&!state.applying&&!state.error&&state.photos.length?'is-quiet':''}" role="status">${state.applying?'正在加载高清壁纸…':state.loading?'正在加载图片清单…':esc(state.error)||(!state.photos.length?'这一页暂无可用图片。':'')}</div>${state.error?'<button class="secondary-button" data-gallery-retry>重新加载</button>':''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card ${settings.remoteWallpaper?.provider===p.provider&&settings.remoteWallpaper?.id===p.id?'selected':''}"><div class="wallpaper-photo-visual"><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"><div class="wallpaper-photo-actions"><button data-gallery-preview="${i}" aria-label="预览壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}>预览</button><button data-gallery-apply="${i}" aria-label="选用壁纸：${esc(p.title)}" ${state.loading||state.applying?'disabled':''}>选用</button></div></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>上一页</button><span>第 ${state.page} 页</span><button class="secondary-button" data-gallery-page="1" ${state.page>=(tab.snapshot?catalogWallpaperPages(state.tab):50)||state.loading||state.applying?'disabled':''}>下一页</button></div>`;
   }

@@ -15,13 +15,13 @@ test('chosen native image is retained exactly by storage, export, restore and du
   const copy=validateImport(exportState(data));assert.equal(copy.items.find(i=>i.id===link.id).iconUrl,url);assert.equal(copy.items.at(-1).iconUrl,url);
  }
 });
-test('legacy backups need no explicit image and invalid selection rejects the whole import',()=>{
+test('automatic icons need no explicit image and invalid selection rejects the whole import',()=>{
  const data=structuredClone(DEFAULT_STATE);assert.equal(validateImport(data).items.find(i=>i.type==='link').iconUrl,undefined);
  data.items.find(i=>i.type==='link').iconUrl='javascript:alert(1)';assert.throws(()=>validateImport(data));
 });
 test('sidebar accent defaults to neutral and only explicit valid choices are restored',()=>{
  const data=structuredClone(DEFAULT_STATE);delete data.settings.sidebarUseAccent;
- assert.equal(validateImport(data).settings.sidebarUseAccent,false);
+ assert.throws(()=>validateImport(data));
  data.settings.sidebarUseAccent=true;assert.equal(validateImport(exportState(data)).settings.sidebarUseAccent,true);
  data.settings.sidebarUseAccent='true';assert.throws(()=>validateImport(data));
 });

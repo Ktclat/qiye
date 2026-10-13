@@ -13,11 +13,18 @@
 ```sh
 npm test
 python3 scripts/build-preview.py
+python3 -m unittest discover -s tests -p release_test.py
 ```
 
 Windows 如未提供 `python3` 命令，可使用 `py -3 scripts/build-preview.py`。`Qiye-preview.html` 是提交到仓库的生成文件；请修改 `index.html`、样式及 `src/` 模块，再运行生成脚本，不要只修改生成结果。
 
-GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码。运行 `python3 scripts/build-pages.py /path/to/qiye-demo`，将文件生成到 `gh-pages` 的独立 checkout 或 worktree，再提交并推送该分支。仅推送 `main` 不会更新演示页面。保留相对资源路径和 `.nojekyll`，详见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码。运行 `python3 scripts/build-pages.py /path/to/qiye-demo`，将文件生成到 `gh-pages` 的独立 checkout 或 worktree，再提交并推送该分支。每次交付功能或修复时，必须同步更新并验证网页端，不能只更新本地扩展或下载包。仅推送 `main` 不会更新演示页面。保留相对资源路径和 `.nojekyll`，详见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+
+## 开发阶段约定
+
+项目尚未正式推出，**不需要兼容旧版本**。允许直接调整数据结构、组件接口与功能，不保留旧字段、迁移器、兼容别名或按版本回退的分支。默认值仅用于创建新数据；导入与持久化必须验证完整的当前格式，不能通过自动补字段掩盖缺失数据。
+
+当前桌面格式为 `schemaVersion: 2`，存储键为 `qiye.state.v2`。结构发生破坏性变化时同步更新版本标识、创建逻辑、校验、测试夹具和文档；不实现历史格式读取。多标签页修订冲突、存储失败保留和 WebDAV 条件写入仍是当前功能的正确性要求。
 
 ## 修改与验证
 
@@ -37,7 +44,7 @@ GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码
 
 ## 产品方向
 
-当前版本坚持免栖页账号、本地保存、自有 WebDAV 同步和按需启用的公开壁纸 API。暂不增加高级工具或新的实时数据组件。涉及产品范围、存储格式、权限或新增第三方服务的变化，建议先在 Issue 说明使用场景和兼容方式。
+当前版本坚持免栖页账号、本地保存、自有 WebDAV 同步和按需启用的公开壁纸 API。暂不增加高级工具或新的实时数据组件。涉及产品范围、存储格式、权限或新增第三方服务的变化，建议先在 Issue 说明使用场景和结构设计。
 
 
 ## 组件与授权
@@ -47,3 +54,7 @@ GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码
 项目代码以 GPL-3.0-only 分发，见 [LICENSE](LICENSE)。向本仓库提交用于合入发布的代码，即应提供项目可按 GPLv3 使用和发布的权利；请只提交自己有权授权的内容，并保留原作者/兼容许可证说明，不要求版权转让。不要把不兼容的代码或未许可的图标、壁纸提交进来。
 
 对独立外部组件/网站/服务，不设置额外“全部开源”的平台要求。直接组合进本程序的模块仍受 GPLv3 的组合分发条件约束；具体界限见组件指南。不提交用户名、密码、完整私有桌面备份或服务密钥。
+
+## 版本与发布
+
+新组件使用 [组件 API v1](docs/WIDGETS.md)。发布时同步修改 manifest.json 与 package.json，运行预览构建更新生成的版本模块和 HTML，再提交完整源码。推送新版本到 main 或匹配标签即可触发测试和 Release，详见 [RELEASES.md](docs/RELEASES.md)。

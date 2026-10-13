@@ -24,3 +24,7 @@ Thumbs.db
 
 # Browser regression output (CI artifacts, not personal browsing state)
 /test-results/
+
+/output/
+/dist/
+/.test-tools/

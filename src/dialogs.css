@@ -166,3 +166,27 @@ html.hide-editor-scrollbar .app-dialog.site-editor-dialog,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-width:none;-ms-overflow-style:none;scrollbar-gutter:auto}
 html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}
+
+/* Viewport limits are in unzoomed CSS pixels so even 150% retains reachable controls. */
+#dialog{zoom:var(--dialog-scale,1);width:min(700px,var(--dialog-width,calc(100vw - 24px)));max-width:var(--dialog-width);max-height:var(--dialog-height);}
+#dialog.workspace-dialog{width:min(1040px,var(--dialog-width));height:min(780px,var(--dialog-height));max-height:var(--dialog-height)}
+#dialog.workspace-dialog.wallpaper-dialog{width:min(1220px,var(--dialog-width));height:min(810px,var(--dialog-height))}
+#dialog.site-editor-dialog{width:min(840px,var(--dialog-width))}
+#dialog.compact-dialog .settings-layout,#dialog.compact-dialog .add-layout,#dialog.compact-dialog .wallpaper-browser{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+#dialog.compact-dialog .settings-nav,#dialog.compact-dialog .add-nav,#dialog.compact-dialog .wallpaper-nav{display:flex;flex-direction:row;align-items:center;gap:6px;overflow:auto;padding:10px 40px 10px 10px;max-height:100px;border-bottom:1px solid var(--panel-border)}
+#dialog.compact-dialog .settings-nav>small,#dialog.compact-dialog .add-nav>p,#dialog.compact-dialog .workspace-title{display:none}
+#dialog.compact-dialog .settings-nav-button,#dialog.compact-dialog .add-nav button,#dialog.compact-dialog .wallpaper-nav button{flex:0 0 auto;width:auto;white-space:nowrap;padding:9px}
+#dialog.compact-dialog .settings-content,#dialog.compact-dialog .add-content,#dialog.compact-dialog .wallpaper-content{min-width:0;padding:22px 14px}
+#dialog.compact-dialog .catalog,#dialog.compact-dialog .wallpaper-grid,#dialog.compact-dialog .two-columns{grid-template-columns:minmax(0,1fr)}
+#dialog.compact-dialog .setting-row{flex-wrap:wrap;gap:10px}
+#dialog.compact-dialog .setting-copy{min-width:0}
+#dialog.compact-dialog .setting-row select{width:100%;max-width:100%;flex-basis:100%}
+#dialog.compact-dialog .workspace-close{right:8px;top:10px;background:var(--workspace-pane)}
+#dialog.compact-dialog .settings-nav,#dialog.compact-dialog .add-nav,#dialog.compact-dialog .wallpaper-nav{margin-right:42px;padding-right:10px}
+.widget-catalog-tools{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-bottom:16px}
+.widget-catalog-tools .field{flex:1;min-width:130px;margin:0}
+.widget-catalog-tools input,.widget-catalog-tools select{width:100%}
+.widget-catalog-empty{color:var(--muted);text-align:center;padding:30px 0}
+.catalog-card[hidden]{display:none}
+.extension-widget-content{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:0;overflow:auto}
+.extension-widget-content strong{font-size:36px}
