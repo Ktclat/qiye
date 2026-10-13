@@ -1,6 +1,6 @@
 # 小组件开发指南 · API v1
 
-栖页 v0.4.0 提供随扩展打包的组件接口。新增组件只需导出定义并登记到 `src/widget-extensions.js`，目录、备份校验、配置表单和生命周期由宿主接入。模块随源码审阅和打包，不从网址下载执行脚本，也不是隔离沙箱或在线插件商店。
+栖页 v0.5.0 提供随扩展打包的组件接口。新增组件只需导出定义并登记到 `src/widget-extensions.js`，目录、备份校验、配置表单和生命周期由宿主接入。模块随源码审阅和打包，不从网址下载执行脚本，也不是隔离沙箱或在线插件商店。
 
 ## 五分钟接入
 
@@ -13,7 +13,7 @@ export const widgetExtensions = [counterWidget];
 
 运行 `python scripts/build-preview.py`，重新加载扩展或网页。“添加 → 小组件”中会出现计数器。添加两张计数器，分别点击“加一”；右上角菜单可编辑名称、数值、尺寸。两张卡片分别保存，刷新、JSON 备份和 WebDAV 均保留。
 
-默认不启用示例，不增加用户桌面上的组件。开发自己的组件时把示例复制为 `src/widget-yourname.js`，采用唯一 `type` 并登记定义。新增 JS 模块使用 `import { name } from './module-name.js'`、具名函数/常量导出；预览构建器自动按依赖顺序打包，发现循环依赖或不支持的导入会报错。模块文件使用小写字母和连字符。样式加入 `src/widgets.css`，用专属类名或 `[data-widget="your-type"]` 限定范围。
+默认不启用示例，不增加用户桌面上的组件。开发自己的组件时把示例复制为 `src/widget-yourname.js`，采用唯一 `type` 并登记定义。新增 JS 模块使用 `import { name } from './module-name.js'`、具名函数/常量导出；预览构建器自动按依赖顺序打包，发现循环依赖或不支持的导入会报错。模块文件使用小写字母、数字和连字符。样式加入 `src/widgets.css`，用专属类名或 `[data-widget="your-type"]` 限定范围。
 
 ## 定义契约
 
@@ -33,7 +33,7 @@ export const example = {
     { key: 'mode', label: '模式', type: 'select', default: 'simple',
       options: [{ value: 'simple', label: '简洁' }, { value: 'full', label: '完整' }] },
   ],
-  render({ item, config, escapeHtml }) {
+  render({ item, config, escapeHtml, t, locale }) {
     return `<p>${escapeHtml(config.text)}</p>`;
   },
   mount(context) { /* 可选：监听和异步任务；同步返回清理函数 */ },
@@ -62,6 +62,9 @@ export const example = {
 | 接口 | 行为 |
 | --- | --- |
 | `root` | 当前实例的 `.widget-inner` 根节点 |
+| `t(message, values)` | 当前语言的界面翻译与占位符替换，见 [I18N.md](I18N.md) |
+| `locale` | 此次挂载的 `zh-CN` / `en`；语言改变后宿主重新渲染 / 挂载 |
+| `formatDate(value, options)` / `formatNumber(value, options)` | 当前语言的 Intl 格式化 |
 | `signal` | 卸载时中止的 `AbortSignal`；可用于事件监听和 `fetch` |
 | `getConfig()` | 当前实例配置的深拷贝；每次操作读取最新值 |
 | `await updateConfig(patch)` | 合并并校验当前实例配置，通过宿主保存队列写入；成功后更新显示；失败抛错；卸载/移除后返回 `false` |
@@ -97,11 +100,11 @@ mount({ root, signal, getConfig, updateConfig, toast }) {
 }
 ```
 
-每张卡片必须包含 `config` 与 `data` 对象。便签的数据为 `{ notes: string }`，待办为 `{ todos: [...] }`，习惯为 `{ habits: [...] }`，专注为 `{ focus: { duration, remaining, endAt, running } }`；其他组件使用 `data: {}`。新增卡片通过 `newWidgetData(type)` 创建空内容/默认计时器；复制卡片深拷贝内容。倒数日、摘录、下班设置、世界时钟使用各自完整 config；天气共享城市设置。桌面根级不保存组件内容。
+每张卡片必须包含 `config` 与 `data` 对象。日历为 `{ events: [{ id, date, title }] }`，备忘录为 `{ entries: [{ id, title, text, pinned, createdAt, updatedAt }] }`。便签的数据为 `{ notes: string }`，待办为 `{ todos: [...] }`，习惯为 `{ habits: [...] }`，专注为 `{ focus: { duration, remaining, endAt, running } }`；其他组件使用 `data: {}`。新增卡片通过 `newWidgetData(type)` 创建空内容/默认计时器；复制卡片深拷贝内容。倒数日、摘录、下班设置、世界时钟使用各自完整 config；天气使用独立的 `{ city: { name, latitude, longitude }, enabled, unit }`，`unit` 为 `celsius` / `fahrenheit`；日历 config 为 `{ weekStart: 0 | 1, showLunar: boolean, holidays: "none" | "CN" }`。桌面根级不保存组件内容。
 
-项目尚未正式推出，不维护旧版本兼容或迁移。桌面仅使用 `schemaVersion: 2`，存储键为 `qiye.state.v2`；所有导入/导出与 WebDAV 通过同一校验边界。旧格式、缺失必需字段、未知字段、未安装的组件类型或不支持的尺寸均被明确拒绝，不静默转换或丢弃内容。变更模块字段时直接更新当前定义、默认值、测试与文档。
+项目尚未正式推出，不维护旧版本兼容或迁移。桌面仅使用 `schemaVersion: 3`，存储键为 `qiye.state.v3`；所有导入/导出与 WebDAV 通过同一校验边界。旧格式、缺失必需字段、未知字段、未安装的组件类型或不支持的尺寸均被明确拒绝，不静默转换或丢弃内容。变更模块字段时直接更新当前定义、默认值、测试与文档。
 
-不要把 DOM、函数、定时器、凭据或缓存写入 config/data。整份备份仍有 6 MiB 限制；内置单实例限制为便签 100000 字符、待办 500 项、习惯 100 项、每个习惯 3660 天、专注 1–180 分钟。
+不要把 DOM、函数、定时器、凭据或缓存写入 config/data。整份备份仍有 6 MiB 限制；内置单实例限制为日历 500 条日程（标题 160 字符）；备忘录 200 条（每条标题 120 字符、正文 100000 字符）；便签 100000 字符、待办 500 项、习惯 100 项、每个习惯 3660 天、专注 1–180 分钟。
 
 ## 网络、样式与测试
 
@@ -116,6 +119,8 @@ npm test
 python scripts/build-preview.py
 python tests/browser-e2e.py --output test-results
 python tests/widgets-e2e.py --output test-results/widgets
+python tests/daily-widgets-e2e.py
+python tests/daily-widgets-e2e.py --preview
 ```
 
 测试覆盖重复注册、缺失/非法 config、旧格式拒绝、实例隔离、保存失败、卸载后回包、重绑不重复监听、刷新持久化。新模块还应验收深浅主题、两种尺寸、拖动、复制、删除/撤销、JSON/WebDAV 往返。现有完整示例及自动化测试见 `src/widget-example.js`、`tests/widget-api.test.mjs`、`tests/widgets-e2e.py`。
@@ -129,8 +134,28 @@ python tests/widgets-e2e.py --output test-results/widgets
 | `widget-settings.js` | 声明式配置表单的生成与读取 |
 | `widget-runtime.js` | mount/update/cleanup、signal 与安全保存 |
 | `widget-data.js` | 内置实例数据、内容摘要、数据限额 |
-| `widgets.js` | 内置组件渲染和交互 |
+| `widgets.js` | 内置卡片渲染和交互 |
+| `calendar.js` / `memos.js` / `weather.js` | 不依赖 DOM 的日期 / 调休、备忘录集合、网络服务与缓存 |
+| `widget-detail-views.js` / `widget-details.css` | 详情 HTML、转义与自适应样式 |
+| `widget-details.js` / `widget-drafts.js` | 详情生命周期、事件、独立草稿、串行保存与重试 |
+| `i18n.js` / `messages-en.js` | 共享翻译目录、Intl 格式化与新默认内容翻译 |
 | `core.js` / `validation.js` | 桌面存储边界与共用基础校验 |
+
+## 日常组件功能与数据来源
+
+| 组件 | 操作 | 数据与边界 |
+| --- | --- | --- |
+| 日历 | 月份选择 / 前后月 / 今天、点击日期、农历、周起始日、日程增删、年内天数 / ISO 周数、日期差与工作日 | 1900–2200 年公历，使用本地民用日期计算，避免 DST 改变天数；农历由浏览器 Intl 提供；中国法定节假日 / 调休仅覆盖 2026 年 |
+| 备忘录 | 多条、标题 / 正文、全文搜索、置顶、按最近修改或标题排序、TXT 导出、删除撤销 | 纯文本；350ms 自动保存，关闭窗口立即提交；保存时不替换较新的草稿；失败可重试 / 导出，关闭后重新打开仍保留当前页面内的草稿 |
+| 天气 | 搜索城市 / 常用城市 / 手工坐标、独立 °C / °F、当前天气、体感、湿度、风速、24 小时 / 7 天、降水、日出 / 日落、UV、US AQI / PM2.5 | Open-Meteo 预报、Geocoding 与 Air Quality / CAMS；预报时间用城市时区；未知观测显示 —；默认禁用，不读取精确定位 |
+
+日历调休依据 [国务院办公厅 2026 年节假日安排（政府转载）](https://www.beijing.gov.cn/zhengce/zhengcefagui/202511/t20251104_4258873.html)。工作日计算包含开始与结束日期；选择“仅周末”按周一至周五，选择中国大陆时叠加官方调休，超出已核实年份明确报错。每年更新日期表与回归用例，不猜测下一年的法定安排。
+
+天气请求文档：[Forecast](https://open-meteo.com/en/docs)、[Geocoding](https://open-meteo.com/en/docs/geocoding-api)、[Air Quality](https://open-meteo.com/en/docs/air-quality-api)。10 秒超时，同坐标合并请求，30 分钟有效期，普通失败 1 分钟后再试，主动刷新可立即重试。内存最多 32 个城市，本机缓存最近 8 个城市，最多保留 7 天旧预报并标明缓存 / 错误；空气质量失败不会丢掉有效预报。城市搜索 8 秒超时，后一次请求取消前一次，关闭设置会取消请求，Enter 搜索不误提交表单。缓存不进入 JSON 备份或 WebDAV。
+
+未保存草稿是当前页面内的临时记录，刷新 / 关闭浏览器会失去草稿；出现保存失败时先重试或导出。导出的 `Qiye-unsaved-widget.json` 是组件草稿文件，不是可直接导入的完整桌面备份；单条备忘录也可使用 TXT 导出。其他标签页修改同一组件后，旧草稿不能覆盖新内容；导出后重新加载最新桌面。
+
+对照来源是 [iTab 公开界面](https://go.itab.link/) 与 [官方更新记录](https://www.itab.link/changelog.html)。本版补齐上述可核实的日常操作，独立实现，不读取 iTab 私有接口。不包含循环日程、系统通知、富文本 / 图片附件、全国全部节日 / 节气、全球法定假日或 iTab 云端账号同步；不能把已列功能理解为整个 iTab 的完整复刻。
 
 ## 许可证与独立组件
 

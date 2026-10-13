@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 /** Local avatar decoding and storage boundary. No network requests are used. */
 export const MAX_AVATAR_BYTES = 256 * 1024;
 export const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
@@ -7,11 +8,11 @@ export const AVATAR_SIZE = 256;
 const AVATAR_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 const MAX_AVATAR_PIXELS = 40 * 1024 * 1024;
 
-function avatarError(message = '头像仅支持有效的 PNG、JPEG 或 WebP 图片') { throw new Error(message); }
+function avatarError(message = t("头像仅支持有效的 PNG、JPEG 或 WebP 图片")) { throw new Error(message); }
 function avatarTag(bytes, offset) { return String.fromCharCode(...bytes.subarray(offset, offset + 4)); }
 function avatarDimensions(width, height) {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) avatarError();
-  if (width > 16384 || height > 16384 || width * height > MAX_AVATAR_PIXELS) avatarError('头像图片分辨率过大，请先缩小图片');
+  if (width > 16384 || height > 16384 || width * height > MAX_AVATAR_PIXELS) avatarError(t("头像图片分辨率过大，请先缩小图片"));
   return { width, height };
 }
 
@@ -33,7 +34,7 @@ function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
         if (offset !== 8 || size !== 13) avatarError();
         dimensions = avatarDimensions(view.getUint32(offset + 8), view.getUint32(offset + 12));
       }
-      if (type === 'acTL' && !allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
+      if (type === 'acTL' && !allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
       if (type === 'IDAT' && size > 0) imageData = true;
       offset += size + 12;
       if (type === 'IEND') {
@@ -76,13 +77,13 @@ function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
       if (size > bytes.length - data) avatarError();
       if (type === 'VP8X') {
         if (size < 10) avatarError();
-        if ((bytes[data] & 0x02) && !allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
+        if ((bytes[data] & 0x02) && !allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
         const width = 1 + bytes[data + 4] + (bytes[data + 5] << 8) + (bytes[data + 6] << 16);
         const height = 1 + bytes[data + 7] + (bytes[data + 8] << 8) + (bytes[data + 9] << 16);
         dimensions = avatarDimensions(width, height);
       }
       if (type === 'ANIM' || type === 'ANMF') {
-        if (!allowAnimation) avatarError('头像必须是静态图片，请通过上传重新生成头像');
+        if (!allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
         if (type === 'ANMF') hasFrame = true;
       }
       if (type === 'VP8L') {
@@ -106,16 +107,16 @@ function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
 
 /** A strict, bounded data URL boundary shared by imports, storage and uploads. */
 export function validateAvatarDataUrl(value) {
-  if (typeof value !== 'string' || !value.startsWith('data:')) avatarError('头像仅支持本地 PNG、JPEG 或 WebP 的 data URL');
+  if (typeof value !== 'string' || !value.startsWith('data:')) avatarError(t("头像仅支持本地 PNG、JPEG 或 WebP 的 data URL"));
   // Reject large strings before allocating decoded bytes.
-  if (value.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) avatarError('头像不能超过 256 KiB');
+  if (value.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) avatarError(t("头像不能超过 256 KiB"));
   const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
-  if (!match || match[2].length % 4 !== 0) avatarError('头像仅支持 PNG、JPEG 或 WebP 的 base64 数据');
+  if (!match || match[2].length % 4 !== 0) avatarError(t("头像仅支持 PNG、JPEG 或 WebP 的 base64 数据"));
   const size = match[2].length / 4 * 3 - (match[2].endsWith('==') ? 2 : match[2].endsWith('=') ? 1 : 0);
-  if (size > MAX_AVATAR_BYTES) avatarError('头像不能超过 256 KiB');
+  if (size > MAX_AVATAR_BYTES) avatarError(t("头像不能超过 256 KiB"));
   let binary;
-  try { binary = atob(match[2]); } catch { avatarError('头像的 base64 数据无效'); }
-  if (btoa(binary) !== match[2]) avatarError('头像的 base64 数据无效');
+  try { binary = atob(match[2]); } catch { avatarError(t("头像的 base64 数据无效")); }
+  if (btoa(binary) !== match[2]) avatarError(t("头像的 base64 数据无效"));
   const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
   inspectAvatarBytes(bytes, match[1]);
   return value;
@@ -126,14 +127,14 @@ async function decodeLocalAvatar(file) {
     const image = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
     return { image, width: image.width, height: image.height, release: () => image.close() };
   }
-  if (!globalThis.Image || !globalThis.URL?.createObjectURL) avatarError('当前浏览器无法读取本地图片');
+  if (!globalThis.Image || !globalThis.URL?.createObjectURL) avatarError(t("当前浏览器无法读取本地图片"));
   const objectUrl = globalThis.URL.createObjectURL(file);
   const image = new globalThis.Image();
   try {
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('头像读取超时，请选择另一张图片')), 15000);
+      const timeout = setTimeout(() => reject(new Error(t("头像读取超时，请选择另一张图片"))), 15000);
       image.onload = () => { clearTimeout(timeout); resolve(); };
-      image.onerror = () => { clearTimeout(timeout); reject(new Error('头像图片无法解码，请选择另一张图片')); };
+      image.onerror = () => { clearTimeout(timeout); reject(new Error(t("头像图片无法解码，请选择另一张图片"))); };
       image.src = objectUrl;
     });
     return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => { image.src = ''; } };
@@ -144,7 +145,7 @@ async function decodeLocalAvatar(file) {
 }
 
 function createAvatarCanvas(size) {
-  if (!globalThis.document?.createElement) avatarError('当前浏览器无法处理本地图片');
+  if (!globalThis.document?.createElement) avatarError(t("当前浏览器无法处理本地图片"));
   const canvas = globalThis.document.createElement('canvas');
   canvas.width = canvas.height = size;
   return canvas;
@@ -155,20 +156,20 @@ function createAvatarCanvas(size) {
  * be supplied by non-browser callers; output still passes the storage boundary.
  */
 export async function normalizeAvatarFile(file, { decodeImage = decodeLocalAvatar, createCanvas = createAvatarCanvas } = {}) {
-  if (!(file instanceof Blob) || !AVATAR_TYPES.has(file.type)) avatarError('请选择 PNG、JPEG 或 WebP 图片作为头像');
-  if (!file.size) avatarError('头像文件为空');
-  if (file.size > MAX_AVATAR_FILE_BYTES) avatarError('上传的头像文件不能超过 4 MiB');
+  if (!(file instanceof Blob) || !AVATAR_TYPES.has(file.type)) avatarError(t("请选择 PNG、JPEG 或 WebP 图片作为头像"));
+  if (!file.size) avatarError(t("头像文件为空"));
+  if (file.size > MAX_AVATAR_FILE_BYTES) avatarError(t("上传的头像文件不能超过 4 MiB"));
   const bytes = new Uint8Array(await file.arrayBuffer());
   inspectAvatarBytes(bytes, file.type, true);
   let decoded;
   try {
     try { decoded = await decodeImage(file); }
-    catch { avatarError('头像图片无法解码，请选择另一张图片'); }
-    if (!decoded?.image) avatarError('头像图片无法解码，请选择另一张图片');
+    catch { avatarError(t("头像图片无法解码，请选择另一张图片")); }
+    if (!decoded?.image) avatarError(t("头像图片无法解码，请选择另一张图片"));
     const { width, height } = avatarDimensions(decoded.width, decoded.height);
     const canvas = createCanvas(AVATAR_SIZE);
     const context = canvas?.getContext?.('2d', { alpha: true });
-    if (!context || typeof canvas.toDataURL !== 'function') avatarError('当前浏览器无法处理本地图片');
+    if (!context || typeof canvas.toDataURL !== 'function') avatarError(t("当前浏览器无法处理本地图片"));
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
     const side = Math.min(width, height);

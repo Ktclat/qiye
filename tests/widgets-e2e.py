@@ -17,6 +17,7 @@ parser.add_argument('--output', default='test-results/widgets')
 args = parser.parse_args()
 OUT = Path(args.output); OUT.mkdir(parents=True, exist_ok=True)
 base_state = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', "import {DEFAULT_STATE} from './src/core.js';console.log(JSON.stringify(DEFAULT_STATE))"], cwd=ROOT))
+base_state['settings']['language'] = 'zh-CN'
 checks = []
 
 
@@ -46,12 +47,12 @@ with sync_playwright() as p:
         if extension:
             page.route('**/widget-extensions.js', lambda route: route.fulfill(content_type='text/javascript', body="import { counterWidget } from './widget-example.js'; export const widgetExtensions = [counterWidget];"))
         payload = json.dumps(state or base_state, ensure_ascii=False)
-        page.add_init_script('if(!localStorage.getItem("qiye.state.v2"))localStorage.setItem("qiye.state.v2",' + json.dumps(payload) + ')')
+        page.add_init_script('if(!localStorage.getItem("qiye.state.v3"))localStorage.setItem("qiye.state.v3",' + json.dumps(payload) + ')')
         page.goto(base, wait_until='domcontentloaded')
         page.locator('[data-item]').first.wait_for()
         return context, page
 
-    def saved(page): return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v2"))')
+    def saved(page): return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v3"))')
 
     def add(page, widget):
         page.locator('.top-tools [data-action=add]').click()
@@ -65,7 +66,7 @@ with sync_playwright() as p:
         for scale in [75, 100, 150]:
             page.locator('#range-dialogScale').fill(str(scale))
             page.locator('#range-dialogScale').dispatch_event('change')
-            page.wait_for_function('(s)=>JSON.parse(localStorage.getItem("qiye.state.v2")).settings.dialogScale===s', arg=scale)
+            page.wait_for_function('(s)=>JSON.parse(localStorage.getItem("qiye.state.v3")).settings.dialogScale===s', arg=scale)
             rect = page.locator('#dialog').bounding_box()
             check(f'{scale}% settings remains inside viewport', rect['x'] >= -1 and rect['y'] >= -1 and rect['x'] + rect['width'] <= 1441 and rect['y'] + rect['height'] <= 951)
             check(f'{scale}% actually scales controls', abs(float(page.locator('#dialog').evaluate('n=>getComputedStyle(n).zoom')) - scale / 100) < .001)
@@ -77,7 +78,7 @@ with sync_playwright() as p:
         context.close()
 
         for theme in ['dark', 'light']:
-            state = copy.deepcopy(base_state); state['settings'].update({'dialogScale': 150, 'theme': theme})
+            state = copy.deepcopy(base_state); state['settings']['language']='zh-CN';state['settings'].update({'dialogScale': 150, 'theme': theme})
             context, page = setup(state, width=360, height=640)
             page.locator('#brand-button').click(); page.locator('[data-settings-tab=appearance]').click()
             check(f'{theme} narrow 150% settings can scroll', page.locator('.settings-content').evaluate('n=>n.scrollHeight>n.clientHeight && n.scrollWidth<=n.clientWidth+1'))
@@ -100,7 +101,7 @@ with sync_playwright() as p:
         context, page = setup(state)
         original = page.locator('[data-item=notes-2] textarea').input_value()
         page.locator('[data-item=notes-1] textarea').fill('first note only')
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v2")).items.find(i=>i.id==="notes-1").data?.notes==="first note only"')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.id==="notes-1").data?.notes==="first note only"')
         check('editing one note leaves sibling unchanged', page.locator('[data-item=notes-2] textarea').input_value() == original)
         for widget in ['todo', 'habit']:
             second_before = page.locator(f'[data-item={widget}-2] li').all_text_contents()
@@ -108,7 +109,7 @@ with sync_playwright() as p:
             page.locator(f'[data-item={widget}-1] input[name=text]').press('Enter')
             check(f'{widget} new entry is isolated', page.locator(f'[data-item={widget}-2] li').all_text_contents() == second_before)
         page.locator('[data-item=focus-1] [data-action=widget-focus-toggle]').click()
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v2")).items.find(i=>i.id==="focus-1").data?.focus.running')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.id==="focus-1").data?.focus.running')
         check('focus timers run independently', page.locator('[data-item=focus-2] [data-live=focus-button]').inner_text() == '开始')
         page.reload(); page.locator('[data-item=notes-1] textarea').wait_for()
         check('independent notes survive reload', page.locator('[data-item=notes-1] textarea').input_value() == 'first note only' and page.locator('[data-item=notes-2] textarea').input_value() == original)
@@ -127,7 +128,7 @@ with sync_playwright() as p:
         context, page = setup(extension=True)
         add(page, 'counter')
         page.locator('[data-counter-add]').click()
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v2")).items.find(i=>i.widget==="counter").config.count===1')
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v3")).items.find(i=>i.widget==="counter").config.count===1')
         page.locator('[data-widget=counter] [data-action=widget-config]').click()
         page.locator('[name=config-label]').fill('My counter'); page.locator('[name=config-count]').fill('5')
         page.locator('#widget-form button[type=submit]').click(); page.locator('#dialog').wait_for(state='hidden')

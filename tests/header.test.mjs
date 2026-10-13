@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import { normalizeIconSelection } from '../src/icon-selection.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,7 +31,7 @@ const helpers = ['engineSiteUrl', 'engineGlyph'].map(extractFunction).join('\n\n
 
 function harness({ actualGlyph = false, ...extra } = {}) {
   const glyphCalls = [];
-  const context = vm.createContext({
+  const context = vm.createContext({t, getLocale,
     normalizeIconSelection,
     safeUrl, URL, icon, iconNames,
     siteGlyph: item => {

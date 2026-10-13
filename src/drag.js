@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
 const CLICK_GUARD_MS = 550;
@@ -159,7 +160,7 @@ export function createDesktopDragController({
  function showMerge(target,ready){
   target.classList.add(ready?'folder-ready':'folder-pending');
   if(!mergeHint&&doc.createElement){mergeHint=doc.createElement('div');mergeHint.className='folder-drop-hint';mergeHint.setAttribute('role','status');doc.body.append(mergeHint);}
-  if(mergeHint){const rect=target.getBoundingClientRect();mergeHint.textContent=ready?'松手创建文件夹':'停留片刻，创建文件夹';mergeHint.style.left=(rect.left+rect.width/2)+'px';mergeHint.style.top=Math.min(win.innerHeight-40,rect.bottom+10)+'px';}
+  if(mergeHint){const rect=target.getBoundingClientRect();mergeHint.textContent=ready?t("松手创建文件夹"):t("停留片刻，创建文件夹");mergeHint.style.left=(rect.left+rect.width/2)+'px';mergeHint.style.top=Math.min(win.innerHeight-40,rect.bottom+10)+'px';}
  }
  const cancel=()=>clean({waitForRelease:true});
  function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}

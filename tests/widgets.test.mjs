@@ -1,11 +1,13 @@
+import { chineseLunarDate, localDateKey } from '../src/calendar.js';
+import { parseWeatherResponse } from '../src/weather.js';
 import { DEFAULT_STATE } from '../src/core.js';
 import { newWidgetConfig } from '../src/widget-registry.js';
 import { newWidgetData } from '../src/widget-data.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  calculateExpression, chineseLunarDate, daysUntil, escapeHtml, focusRemaining,
-  habitStreak, localDateKey, parseWeatherResponse, renderWidget, widgetCatalog,
+  calculateExpression, daysUntil, escapeHtml, focusRemaining,
+  habitStreak, renderWidget, widgetCatalog,
   workdayStatus,
 } from '../src/widgets.js';
 
@@ -80,12 +82,12 @@ test('habit streak allows today to remain unchecked and stops at the first misse
 
 test('weather data keeps missing optional measurements unknown and rejects absent current observations', () => {
   const parsed = parseWeatherResponse({ current: { temperature_2m: 27.4, weather_code: 2, is_day: 0, time: '2026-10-11T22:00' } }, 12345);
-  assert.deepEqual(parsed, { fetchedAt: 12345, temperature: 27.4, feelsLike: null, humidity: null, code: 2, isDay: false, max: null, min: null, observedAt: '2026-10-11T22:00' });
+  assert.deepEqual(parsed, { fetchedAt: 12345, temperature: 27.4, feelsLike: null, humidity: null, code: 2, isDay: false, max: null, min: null, observedAt: '2026-10-11T22:00', wind:null, timezone:'', daily:[], hourly:[], air:null });
   for (const raw of [null, {}, { current: {} }, { current: { temperature_2m: '27', weather_code: 2 } }, { current: { temperature_2m: null, weather_code: 2 } }, { current: { temperature_2m: 20, weather_code: NaN } }]) assert.throws(() => parseWeatherResponse(raw), /数据不完整/);
 });
 
-test('all thirteen widgets render offline without requesting external services', () => {
-  assert.equal(widgetCatalog.length, 13);
+test('all fourteen widgets render offline without requesting external services', () => {
+  assert.equal(widgetCatalog.length, 14);
   const originalFetch = globalThis.fetch;
   let requested = false;
   globalThis.fetch = () => { requested = true; throw new Error('unexpected network request'); };
@@ -97,7 +99,7 @@ test('all thirteen widgets render offline without requesting external services',
       assert.ok(!html.includes('undefined'), entry.type);
     }
     assert.equal(requested, false);
-    const weather = renderWidget({ id: 'weather', widget: 'weather', config: {} }, baseState);
+    const weather = renderWidget({ id: 'weather', widget: 'weather', config: newWidgetConfig('weather') }, baseState);
     assert.match(weather, /启用天气/);
     assert.doesNotMatch(weather, /\d+<sup>°/);
     const wallpaper = renderWidget({ id: 'wallpaper', widget: 'wallpaper', config: {} }, baseState);

@@ -59,7 +59,9 @@ def publish(assets):
 
 下载 `qiye-{version}-chrome-edge.zip`，解压后在 Chrome / Edge 的扩展管理页开启开发者模式，选择“加载已解压的扩展程序”。选择包含 manifest.json 的目录。
 
-`preview.html` 可直接打开体验网页功能。`source.zip` 包含本版本对应源码、许可证、文档与构建脚本。校验文件为 `SHA256SUMS.txt`。项目尚未正式推出，不兼容旧数据格式；当前仅接受 schema 2。在线网页与扩展共用生产模块：[打开网页端](https://ktclat.github.io/qiye/)。
+`preview.html` 可直接打开体验网页功能。`source.zip` 包含本版本对应源码、许可证、文档与构建脚本。校验文件为 `SHA256SUMS.txt`。项目尚未正式推出，仅接受当前版本的数据格式，不提供旧数据迁移。在线网页与扩展共用生产模块：[打开网页端](https://ktclat.github.io/qiye/)。
+
+English: extract the Chrome/Edge ZIP, enable Developer mode at your browser's extensions page, and choose “Load unpacked”. Select the folder containing manifest.json. Language follows your browser; change it in Settings → Opening behavior → Language. See [English documentation](https://github.com/Ktclat/qiye/blob/main/README.en.md).
 ''', encoding='utf-8')
         subprocess.run(['gh', 'release', 'create', tag, '--repo', repository, '--target', sha, '--title', f'栖页 Qiye {version}', '--notes-file', str(notes), '--generate-notes', '--draft'], check=True, cwd=ROOT)
     subprocess.run(['gh', 'release', 'upload', tag, *map(str, files), '--repo', repository, '--clobber'], check=True, cwd=ROOT)

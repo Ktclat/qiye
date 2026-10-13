@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 import { validateAvatarDataUrl } from './avatar.js';
 
 /** Persist an explicitly chosen native asset, never a proxy URL or executable
@@ -23,7 +24,7 @@ export function normalizeIconSelection(value) {
 }
 
 export function iconSelectionLabel(url, width=0, height=0) {
- if (url?.startsWith('data:')) return '本机上传';
- try { if (/\.svg$/i.test(new URL(url).pathname)) return 'SVG · 矢量'; } catch { /* Invalid URLs are not displayed. */ }
- return width > 0 && height > 0 ? `${width} × ${height}` : '等待图片';
+ if (url?.startsWith('data:')) return t("本机上传");
+ try { if (/\.svg$/i.test(new URL(url).pathname)) return t("SVG · 矢量"); } catch { /* Invalid URLs are not displayed. */ }
+ return width > 0 && height > 0 ? `${width} × ${height}` : t("等待图片");
 }

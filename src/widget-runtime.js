@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t, getLocale, formatDate, formatNumber } from './i18n.js';
 import { getWidgetDefinition, validateWidgetConfig } from './widget-registry.js';
 
 export function mountWidgetExtensions(container, host, registry = { get: getWidgetDefinition, validateConfig: validateWidgetConfig }) {
@@ -9,9 +10,9 @@ export function mountWidgetExtensions(container, host, registry = { get: getWidg
     const controller = new AbortController();
     const getItem = () => host.getState().items.find(item => item.id === root.dataset.widgetId && item.widget === definition.type);
     const active = () => !controller.signal.aborted && root.isConnected && !!getItem();
-    const report = error => { if (!error?.notified) host.toast?.(`${definition.title}：${error?.message || '组件运行失败'}`); };
+    const report = error => { if (!error?.notified) host.toast?.(`${definition.title}：${error?.message || t("组件运行失败")}`); };
     const api = Object.freeze({
-      root,
+      root, t, locale: getLocale(), formatDate, formatNumber,
       signal: controller.signal,
       getConfig: () => structuredClone(getItem()?.config || {}),
       async updateConfig(patch) {
@@ -38,7 +39,7 @@ export function mountWidgetExtensions(container, host, registry = { get: getWidg
           const result = definition.update?.(api);
           if (result && typeof result.then === 'function') {
             Promise.resolve(result).catch(() => {});
-            throw new Error('update 必须同步返回；异步任务请在 mount 内启动');
+            throw new Error(t("update 必须同步返回；异步任务请在 mount 内启动"));
           }
         }
         catch (error) { instance.failed = true; report(error); }
@@ -51,7 +52,7 @@ export function mountWidgetExtensions(container, host, registry = { get: getWidg
     try {
       const dispose = definition.mount?.(api);
       if (dispose && typeof dispose.then === 'function') Promise.resolve(dispose).catch(() => {});
-      if (dispose !== undefined && typeof dispose !== 'function') throw new Error('mount 必须同步返回清理函数或 undefined');
+      if (dispose !== undefined && typeof dispose !== 'function') throw new Error(t("mount 必须同步返回清理函数或 undefined"));
       instance.dispose = dispose;
     } catch (error) { instance.failed = true; controller.abort(); report(error); }
     instances.push(instance);

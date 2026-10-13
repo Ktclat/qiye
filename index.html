@@ -15,72 +15,73 @@
   <link rel="stylesheet" href="src/refinements.css">
   <link rel="stylesheet" href="src/desktop.css">
   <link rel="stylesheet" href="src/dialogs.css">
+  <link rel="stylesheet" href="src/widget-details.css">
 </head>
 <body>
   <div id="wallpaper" class="wallpaper" aria-hidden="true"></div>
   <video id="wallpaper-video" class="wallpaper-video" muted loop playsinline aria-hidden="true"></video>
   <div class="wallpaper-shade" aria-hidden="true"></div>
-  <aside class="sidebar" aria-label="桌面分组">
-    <button class="brand" id="brand-button" title="打开设置 · 可自定义头像" aria-label="打开设置"><span class="brand-mark">q</span></button>
+  <aside class="sidebar" aria-label="桌面分组" data-i18n-aria-label="桌面分组">
+    <button class="brand" id="brand-button" title="打开设置 · 可自定义头像" data-i18n-title="打开设置 · 可自定义头像" aria-label="打开设置" data-i18n-aria-label="打开设置"><span class="brand-mark">q</span></button>
     <nav id="groups" class="groups"></nav>
-    <button class="side-button add-group" data-action="add-group" title="添加分组" aria-label="添加分组"></button>
+    <button class="side-button add-group" data-action="add-group" title="添加分组" data-i18n-title="添加分组" aria-label="添加分组" data-i18n-aria-label="添加分组"></button>
     <div class="sidebar-bottom">
-      <button class="side-button" data-action="local-search" title="本地搜索 · Ctrl / ⌘ K" aria-label="本地搜索"></button>
-      <button class="side-button" data-action="icon-settings" title="图标外观与提取" aria-label="图标外观与提取"></button>
-      <button class="side-button" data-action="settings" title="设置" aria-label="设置"></button>
+      <button class="side-button" data-action="local-search" title="本地搜索 · Ctrl / ⌘ K" data-i18n-title="本地搜索 · Ctrl / ⌘ K" aria-label="本地搜索" data-i18n-aria-label="本地搜索"></button>
+      <button class="side-button" data-action="icon-settings" title="图标外观与提取" data-i18n-title="图标外观与提取" aria-label="图标外观与提取" data-i18n-aria-label="图标外观与提取"></button>
+      <button class="side-button" data-action="settings" title="设置" data-i18n-title="设置" aria-label="设置" data-i18n-aria-label="设置"></button>
     </div>
   </aside>
-  <button id="navigation-reveal" class="navigation-reveal" aria-label="展开分组导航" title="展开分组导航" aria-expanded="false" hidden></button>
-  <div class="top-tools" aria-label="桌面工具">
+  <button id="navigation-reveal" class="navigation-reveal" aria-label="展开分组导航" data-i18n-aria-label="展开分组导航" title="展开分组导航" data-i18n-title="展开分组导航" aria-expanded="false" hidden></button>
+  <div class="top-tools" aria-label="桌面工具" data-i18n-aria-label="桌面工具">
     <div class="toolbar-actions">
-    <button class="tool-button" data-action="wallpaper" title="更换壁纸" aria-label="更换壁纸"></button>
-    <button class="tool-button" data-action="edit" id="edit-button" title="编辑桌面" aria-label="编辑桌面" aria-pressed="false"></button>
-    <button class="tool-button add-main" data-action="add" title="添加网站或组件" aria-label="添加网站或组件"></button>
+    <button class="tool-button" data-action="wallpaper" title="更换壁纸" data-i18n-title="更换壁纸" aria-label="更换壁纸" data-i18n-aria-label="更换壁纸"></button>
+    <button class="tool-button" data-action="edit" id="edit-button" title="编辑桌面" data-i18n-title="编辑桌面" aria-label="编辑桌面" data-i18n-aria-label="编辑桌面" aria-pressed="false"></button>
+    <button class="tool-button add-main" data-action="add" title="添加网站或组件" data-i18n-title="添加网站或组件" aria-label="添加网站或组件" data-i18n-aria-label="添加网站或组件"></button>
       <div class="shortcuts-control">
-        <button class="tool-button" id="shortcuts-button" aria-label="快捷键说明" aria-describedby="shortcuts-tooltip" aria-expanded="false"></button>
+        <button class="tool-button" id="shortcuts-button" aria-label="快捷键说明" data-i18n-aria-label="快捷键说明" aria-describedby="shortcuts-tooltip" aria-expanded="false"></button>
         <div id="shortcuts-tooltip" class="shortcuts-tooltip" role="tooltip">
-          <strong>快捷键</strong>
-          <span>聚焦搜索<kbd>/</kbd></span>
-          <span>切换搜索引擎<kbd>Tab / Shift Tab</kbd></span>
-          <span>搜索桌面收藏<kbd>Ctrl / ⌘ K 或 F</kbd></span>
-          <span>编辑桌面<kbd>E</kbd></span>
-          <span>退出 / 取消拖动<kbd>Esc</kbd></span><span>卡片键盘排序<kbd>Alt + 方向键</kbd></span>
-          <small>安装扩展后可用 Alt + C 打开本地搜索。Tab 切换仅在搜索框内生效。</small>
+          <strong><span data-i18n="快捷键">快捷键</span></strong>
+          <span><span data-i18n="聚焦搜索">聚焦搜索</span><kbd>/</kbd></span>
+          <span><span data-i18n="切换搜索引擎">切换搜索引擎</span><kbd>Tab / Shift Tab</kbd></span>
+          <span><span data-i18n="搜索桌面收藏">搜索桌面收藏</span><kbd><span data-i18n="Ctrl / ⌘ K 或 F">Ctrl / ⌘ K 或 F</span></kbd></span>
+          <span><span data-i18n="编辑桌面">编辑桌面</span><kbd>E</kbd></span>
+          <span><span data-i18n="退出 / 取消拖动">退出 / 取消拖动</span><kbd>Esc</kbd></span><span><span data-i18n="卡片键盘排序">卡片键盘排序</span><kbd><span data-i18n="Alt + 方向键">Alt + 方向键</span></kbd></span>
+          <small><span data-i18n="安装扩展后可用 Alt + C 打开本地搜索。Tab 切换仅在搜索框内生效。">安装扩展后可用 Alt + C 打开本地搜索。Tab 切换仅在搜索框内生效。</span></small>
         </div>
       </div>
     </div>
-    <button class="tool-button toolbar-mode" id="toolbar-visibility" title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
+    <button class="tool-button toolbar-mode" id="toolbar-visibility" title="切换工具按钮显示方式" data-i18n-title="切换工具按钮显示方式" aria-label="自动隐藏工具按钮" data-i18n-aria-label="自动隐藏工具按钮" aria-pressed="false"></button>
   </div>
   <main id="main">
-    <div id="header-dock" class="header-region" aria-label="固定时间与搜索"></div>
-    <div id="content-scroll" class="content-scroll" tabindex="-1" aria-label="桌面滚动区">
+    <div id="header-dock" class="header-region" aria-label="固定时间与搜索" data-i18n-aria-label="固定时间与搜索"></div>
+    <div id="content-scroll" class="content-scroll" tabindex="-1" aria-label="桌面滚动区" data-i18n-aria-label="桌面滚动区">
     <div id="flow-header" class="header-region">
     <header id="clock-block" class="clock-block">
-      <button id="clock" class="clock" title="点击切换极简模式" aria-label="切换极简模式"><span id="clock-time">00:00</span><span id="clock-seconds"></span><span id="clock-period"></span></button>
+      <button id="clock" class="clock" title="点击切换极简模式" data-i18n-title="点击切换极简模式" aria-label="切换极简模式" data-i18n-aria-label="切换极简模式"><span id="clock-time">00:00</span><span id="clock-seconds"></span><span id="clock-period"></span></button>
       <div id="date" class="date"></div>
     </header>
       <div class="search-wrapper">
         <form id="search-form" class="search-form" role="search">
-          <button type="button" id="engine-button" class="engine-button" aria-label="切换搜索引擎" aria-expanded="false"></button>
-          <input type="search" id="search-input" name="q" placeholder="输入搜索内容，或输入网址" aria-label="搜索内容或网址" autocomplete="off" spellcheck="false">
-          <kbd class="search-shortcut">Tab 切换</kbd>
-          <button type="submit" id="search-submit" class="search-submit" aria-label="搜索"></button>
+          <button type="button" id="engine-button" class="engine-button" aria-label="切换搜索引擎" data-i18n-aria-label="切换搜索引擎" aria-expanded="false"></button>
+          <input type="search" id="search-input" name="q" placeholder="输入搜索内容，或输入网址" data-i18n-placeholder="输入搜索内容，或输入网址" aria-label="搜索内容或网址" data-i18n-aria-label="搜索内容或网址" autocomplete="off" spellcheck="false">
+          <kbd class="search-shortcut"><span data-i18n="Tab 切换">Tab 切换</span></kbd>
+          <button type="submit" id="search-submit" class="search-submit" aria-label="搜索" data-i18n-aria-label="搜索"></button>
         </form>
         <div id="engine-menu" class="engine-menu" hidden></div>
         <div id="search-suggestions" class="search-suggestions" hidden></div>
       </div>
     </div>
-    <section class="desktop-wrap" aria-label="个人桌面">
-      <div class="desktop-heading" hidden><span id="edit-hint" hidden>拖动可排序 · 拖到文件夹或分组收纳 · Esc 取消拖动</span><button id="done-editing" class="pill-button" hidden>完成编辑</button></div>
+    <section class="desktop-wrap" aria-label="个人桌面" data-i18n-aria-label="个人桌面">
+      <div class="desktop-heading" hidden><span id="edit-hint" hidden><span data-i18n="拖动可排序 · 拖到文件夹或分组收纳 · Esc 取消拖动">拖动可排序 · 拖到文件夹或分组收纳 · Esc 取消拖动</span></span><button id="done-editing" class="pill-button" hidden><span data-i18n="完成编辑">完成编辑</span></button></div>
       <div id="desktop" class="desktop"></div>
     </section>
     </div>
-    <footer id="daily-quote" class="daily-quote"><span>把日子过成自己喜欢的样子。</span></footer>
+    <footer id="daily-quote" class="daily-quote"><span><span data-i18n="把日子过成自己喜欢的样子。">把日子过成自己喜欢的样子。</span></span></footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
   <div id="context-menu" class="context-menu" role="menu" hidden></div>
   <dialog id="dialog" class="app-dialog"><div id="dialog-content"></div></dialog>
-  <div id="toast" class="toast" role="status" aria-live="polite" hidden><span></span><button hidden>撤销</button></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden><span></span><button hidden><span data-i18n="撤销">撤销</span></button></div>
   <input id="backup-file" type="file" accept="application/json,.json" hidden>
   <input id="wallpaper-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm" hidden>
   <script type="module" src="src/app.js"></script>

@@ -1,59 +1,96 @@
 #!/usr/bin/env python3
-"""Verify a published Qiye deployment with actual network assets (no mocks).
+"""Verify deployed assets and current UI using a disposable browser, without API mocks.
 Run after publishing: python scripts/verify-live.py --expected /path/qiye-pages.
-A fresh, disposable browser profile is used; no personal desktop or credentials.
 """
+import argparse
+import hashlib
+import json
+import os
 from pathlib import Path
-import argparse,hashlib,json,urllib.request
-from playwright.sync_api import sync_playwright,TimeoutError as BrowserTimeout
-parser=argparse.ArgumentParser();parser.add_argument('--url',default='https://ktclat.github.io/qiye/');parser.add_argument('--expected',type=Path,required=True);parser.add_argument('--output',type=Path,default=Path('test-results/live'));a=parser.parse_args();a.output.mkdir(parents=True,exist_ok=True)
-report={'url':a.url,'api_mocks':False,'assets':{},'checks':[]}
-for path in ['index.html','icons/icon32.png','LICENSE']:
- req=urllib.request.Request(a.url+('' if path=='index.html' else path),headers={'Cache-Control':'no-cache'})
- with urllib.request.urlopen(req,timeout=30) as r:
-  raw=r.read();record={'status':r.status,'url':r.url,'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)}
- assert record['status']==200 and raw==(a.expected/path).read_bytes(),record
- report['assets'][path]=record
-with sync_playwright() as p:
- browser=p.chromium.launch();page=browser.new_page(viewport={'width':1440,'height':1000});page.set_default_timeout(10000);errors=[]
- page.on('pageerror',lambda e:errors.append(str(e)))
- def wait_theme(theme):
-  page.locator(f'button[data-theme="{theme}"]').click();page.wait_for_function('theme=>document.documentElement.dataset.theme===theme && JSON.parse(localStorage.getItem("qiye.state.v1")).settings.theme===theme',arg=theme)
- def close():page.locator('#dialog [data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
- def settle_images(selector):
-  try:page.wait_for_function('(sel)=>Array.from(document.querySelectorAll(sel)).every(i=>i.complete)',arg=selector,timeout=12000)
-  except BrowserTimeout:pass
- try:
-  assert page.goto(a.url,wait_until='domcontentloaded',timeout=45000).status==200
-  page.locator('#desktop .tile').first.wait_for();page.locator('#brand-button').click()
-  assert '0.3.2' in page.locator('.settings-nav').inner_text()
-  assert page.locator('#dialog .dialog-head').count()==0
-  page.locator('[data-settings-tab=appearance]').click();wait_theme('light');page.screenshot(path=str(a.output/'live-settings-light.png'));close()
-  report['checks'].append('Published v0.3.2; compact workspace and light theme')
-  page.locator('#brand-button').click();page.locator('[data-settings-tab=appearance]').click();wait_theme('dark');close()
-  settle_images('#desktop img');page.screenshot(path=str(a.output/'live-dark.png'))
-  page.locator('[data-group=design]').click();page.locator('#desktop [data-item=design-figma]').wait_for()
-  page.locator('#desktop [data-item=design-figma]').click(button='right');page.locator('#context-menu [data-context=edit]').click();page.locator('[data-action=extract-favicon]').click()
-  page.wait_for_function('!document.querySelector("[data-action=extract-favicon]").disabled',timeout=15000)
-  settle_images('[data-icon-results] img')
-  report['native_candidates']=page.locator('[data-icon-results] button').evaluate_all('(ns)=>ns.map(n=>({source:n.title,ready:n.dataset.iconReady,dimensions:n.querySelector("small").textContent}))')
-  page.screenshot(path=str(a.output/'live-native-editor.png'))
-  ready=page.locator('button[data-icon-ready=true]')
-  if ready.count():
-   ready.first.click();chosen=page.locator('[name=iconUrl]').input_value();page.locator('#link-form button[type=submit]').click();page.locator('#dialog').wait_for(state='hidden');page.reload(wait_until='domcontentloaded');page.locator('#desktop .tile').first.wait_for()
-   assert page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v1")).items.find(i=>i.id==="design-figma").iconUrl')==chosen
-   report['checks'].append('Actual native candidate selection persisted after reload')
-  else:report['native_limitation']='No source image loaded in this network run';close()
-  page.locator('.top-tools').hover();page.locator('.top-tools [data-action=wallpaper]').click();assert page.locator('#dialog .dialog-head').count()==0
-  page.locator('[data-gallery-tab=deepin]').click();enable=page.locator('[data-gallery-enable]')
-  if enable.count():enable.click()
-  page.locator('.wallpaper-photo-card').first.wait_for();settle_images('.wallpaper-photo-visual img')
-  report['wallpaper_loaded']=page.locator('.wallpaper-photo-visual img').evaluate_all('(ns)=>({total:ns.length,loaded:ns.filter(n=>n.complete&&n.naturalWidth>0).length})')
-  page.locator('.wallpaper-photo-card').first.hover();page.screenshot(path=str(a.output/'live-wallpaper-library.png'))
-  page.locator('[data-gallery-preview]').first.click();assert page.locator('.wallpaper-preview').is_visible();assert page.locator('dialog[open]').count()==1
-  page.keyboard.press('Escape');page.locator('.wallpaper-grid').wait_for();report['checks'].append('Live wallpaper library; preview and apply separate; Escape returns to gallery')
-  assert not errors,errors
-  report['page_errors']=errors;report['result']='passed'
- finally:
-  (a.output/'public-verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2));browser.close()
-print(json.dumps(report,ensure_ascii=False,indent=2))
+import subprocess
+import urllib.request
+from playwright.sync_api import sync_playwright
+
+ROOT = Path(__file__).resolve().parents[1]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--url', default='https://ktclat.github.io/qiye/')
+parser.add_argument('--expected', type=Path, required=True)
+parser.add_argument('--output', type=Path, default=ROOT / 'test-results/live')
+args = parser.parse_args()
+args.output.mkdir(parents=True, exist_ok=True)
+version = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))['version']
+key = subprocess.check_output(['node', '--input-type=module', '-e', "import {STORAGE_KEY} from './src/core.js';console.log(STORAGE_KEY)"], cwd=ROOT, text=True).strip()
+report = {'url':args.url, 'version':version, 'api_mocks':False, 'assets':{}, 'checks':[]}
+
+
+def check(name, condition):
+    assert condition, name
+    report['checks'].append(name)
+
+
+def save_report():
+    (args.output / 'public-verification.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
+try:
+    for path in ['index.html', 'icons/icon32.png', 'LICENSE']:
+        request = urllib.request.Request(args.url + ('' if path == 'index.html' else path), headers={'Cache-Control':'no-cache'})
+        with urllib.request.urlopen(request, timeout=30) as response:
+            raw = response.read()
+            report['assets'][path] = {'status':response.status, 'url':response.url, 'sha256':hashlib.sha256(raw).hexdigest(), 'bytes':len(raw)}
+        expected = (args.expected / path).read_bytes()
+        if path.endswith('.html'):
+            expected = expected.replace(b'\r\n', b'\n')
+        check(f'Deployed {path} equals the current build', raw == expected)
+
+    with sync_playwright() as playwright:
+        executable = os.environ.get('CHROMIUM_PATH')
+        browser = playwright.chromium.launch(**({'executable_path':executable} if executable else {}))
+        context = browser.new_context(viewport={'width':1440, 'height':1000}, locale='en-US')
+        page = context.new_page()
+        page.set_default_timeout(15000)
+        errors = []
+        page.on('pageerror', lambda error:errors.append(str(error)))
+
+        def close():
+            page.locator('#dialog [data-close]').first.click()
+            page.locator('#dialog').wait_for(state='hidden')
+
+        try:
+            check('Public page responds successfully', page.goto(args.url, wait_until='domcontentloaded', timeout=45000).status == 200)
+            page.locator('[data-widget=memo]').wait_for()
+            check('Fresh English browser has localized defaults', page.locator('html').get_attribute('lang') == 'en' and page.locator('[data-group=home]').inner_text() == 'Home')
+            page.screenshot(path=str(args.output / 'live-en-desktop.png'), animations='disabled')
+            page.locator('#brand-button').click()
+            check('Settings show the manifest version', version in page.locator('.settings-nav').inner_text())
+            page.locator('[data-preference=language]').select_option('zh-CN')
+            page.wait_for_function('document.querySelector("#workspace-title")?.textContent === "设置"')
+            page.locator('[data-settings-tab=appearance]').click()
+            page.locator('#range-dialogScale').fill('125')
+            page.locator('#range-dialogScale').dispatch_event('change')
+            page.wait_for_function('(key)=>JSON.parse(localStorage.getItem(key)).settings.dialogScale===125', arg=key)
+            page.screenshot(path=str(args.output / 'live-zh-settings.png'), animations='disabled')
+            close()
+            page.locator('[data-action=widget-calendar-detail]').click()
+            check('Published calendar has selectable dates and event editor', page.locator('#widget-detail-body .calendar-cell').count() == 42 and page.locator('#calendar-event-form').count() == 1)
+            close()
+            page.locator('[data-widget=memo] [data-action=widget-memo-new]').first.click()
+            page.locator('#memo-title').fill('Live verification')
+            page.locator('#memo-text').fill('Temporary browser profile only')
+            close()
+            page.wait_for_function('(key)=>JSON.parse(localStorage.getItem(key)).items.some(i=>i.widget==="memo" && i.data.entries.some(e=>e.title==="Live verification"))', arg=key)
+            page.reload(wait_until='domcontentloaded')
+            page.locator('[data-widget=memo]').wait_for()
+            check('Language, scaling and memo survive reload', page.locator('html').get_attribute('lang') == 'zh-CN' and 'Live verification' in page.locator('[data-widget=memo]').inner_text() and page.evaluate('(key)=>JSON.parse(localStorage.getItem(key)).settings.dialogScale', key) == 125)
+            page.locator('[data-widget=weather] [data-action=widget-config]').click()
+            check('Published weather has city search and independent temperature units', page.locator('#city-query').count() == 1 and page.locator('[name=unit] option').count() == 2)
+            close()
+            check('No uncaught JavaScript exceptions', not errors)
+            report['page_errors'] = errors
+            report['result'] = 'passed'
+        finally:
+            context.close()
+            browser.close()
+finally:
+    save_report()
+print(json.dumps(report, ensure_ascii=False, indent=2))

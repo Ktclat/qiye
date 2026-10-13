@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "栖页 Qiye · 让新标签页住进日常"
+  },
+  "shortName": {
+    "message": "栖页 Qiye"
+  },
+  "extDescription": {
+    "message": "可自由编排的新标签页，包含分组、网站快捷方式、文件夹、壁纸、天气、日历、备忘录和专注计时。个人数据保存在本机。"
+  },
+  "savePage": {
+    "message": "添加当前页面到栖页"
+  },
+  "localSearch": {
+    "message": "在栖页新标签页中打开本地搜索"
+  }
+}

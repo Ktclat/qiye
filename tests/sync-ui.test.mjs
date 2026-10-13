@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,7 +33,7 @@ async function harness({ baseline = false, automatic = false, applyFailure = fal
   await client.saveConfig({...config,autoSync:automatic});
   if(baseline)await client.synchronize(local,{manual:true});
   requests.length=0;
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext({t, getLocale,
     Promise,Intl,console,
     Date:class extends Date {static now(){return clock;}},
     document:{hidden:false,querySelector:selector=>selector==='#webdav-form'?form:elements[selector]||null,querySelectorAll:()=>[]},

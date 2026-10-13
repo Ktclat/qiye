@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 import { widgetContentSummary } from './widget-data.js';
 import { validateImport, exportState, MAX_BACKUP_BYTES, loadState } from './core.js';
 
@@ -25,31 +26,31 @@ export class WebDAVError extends Error {
 function fail(code, message) { throw new WebDAVError(code, message); }
 
 export function validateWebDAVConfig(input, { requireEndpoint = false } = {}) {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) fail('INVALID_CONFIG', 'WebDAV 配置格式不正确。');
+  if (!input || typeof input !== 'object' || Array.isArray(input)) fail('INVALID_CONFIG', t("WebDAV 配置格式不正确。"));
   const fields = Object.keys(DEFAULT_WEBDAV_CONFIG);
   if (fields.some(key => !Object.hasOwn(input, key)) || Object.keys(input).some(key => !fields.includes(key))) {
-    fail('INVALID_CONFIG', 'WebDAV 配置字段不完整或不受支持。');
+    fail('INVALID_CONFIG', t("WebDAV 配置字段不完整或不受支持。"));
   }
   const config = { ...input };
-  if (typeof config.enabled !== 'boolean' || typeof config.autoSync !== 'boolean') fail('INVALID_CONFIG', '同步开关格式不正确。');
+  if (typeof config.enabled !== 'boolean' || typeof config.autoSync !== 'boolean') fail('INVALID_CONFIG', t("同步开关格式不正确。"));
   for (const key of ['endpoint', 'path', 'username', 'password']) {
     if (typeof config[key] !== 'string' || config[key].length > (key === 'endpoint' ? 4096 : 1024) || /[\u0000-\u001f\u007f]/.test(config[key])) {
-      fail('INVALID_CONFIG', 'WebDAV 配置包含无效字符或过长的内容。');
+      fail('INVALID_CONFIG', t("WebDAV 配置包含无效字符或过长的内容。"));
     }
   }
   config.endpoint = config.endpoint.trim();
   config.path = config.path.trim() || 'qiye.json';
-  if (config.username.includes(':')) fail('INVALID_CONFIG', 'WebDAV 用户名不能包含冒号。');
-  if (!config.username && config.password) fail('INVALID_CONFIG', '填写密码时也需要填写 WebDAV 用户名。');
+  if (config.username.includes(':')) fail('INVALID_CONFIG', t("WebDAV 用户名不能包含冒号。"));
+  if (!config.username && config.password) fail('INVALID_CONFIG', t("填写密码时也需要填写 WebDAV 用户名。"));
   if (!config.endpoint) {
-    if (requireEndpoint || config.enabled) fail('NOT_CONFIGURED', '请先填写 WebDAV 目录地址。');
+    if (requireEndpoint || config.enabled) fail('NOT_CONFIGURED', t("请先填写 WebDAV 目录地址。"));
   } else {
-    if (!/^https?:\/\//i.test(config.endpoint) || /[\s\\]/u.test(config.endpoint)) fail('UNSAFE_URL', '目录地址须为完整的 HTTPS 地址。');
+    if (!/^https?:\/\//i.test(config.endpoint) || /[\s\\]/u.test(config.endpoint)) fail('UNSAFE_URL', t("目录地址须为完整的 HTTPS 地址。"));
     let endpoint;
-    try { endpoint = new URL(config.endpoint); } catch { fail('UNSAFE_URL', 'WebDAV 目录地址无效。'); }
-    if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) fail('UNSAFE_URL', '目录地址不能包含账号、密码、查询参数或片段；请将凭据填入独立字段。');
+    try { endpoint = new URL(config.endpoint); } catch { fail('UNSAFE_URL', t("WebDAV 目录地址无效。")); }
+    if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) fail('UNSAFE_URL', t("目录地址不能包含账号、密码、查询参数或片段；请将凭据填入独立字段。"));
     if (endpoint.protocol !== 'https:' && !(endpoint.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(endpoint.hostname))) {
-      fail('UNSAFE_URL', 'WebDAV 使用 HTTPS；只有本机 localhost 或 127.0.0.1 的服务可使用 HTTP。');
+      fail('UNSAFE_URL', t("WebDAV 使用 HTTPS；只有本机 localhost 或 127.0.0.1 的服务可使用 HTTP。"));
     }
     // Reject traversal before URL normalization can silently remove dot segments.
     const rawPath = config.endpoint.replace(/^https?:\/\/[^/]+/i, '');
@@ -57,9 +58,9 @@ export function validateWebDAVConfig(input, { requireEndpoint = false } = {}) {
     endpoint.pathname = endpoint.pathname.endsWith('/') ? endpoint.pathname : `${endpoint.pathname}/`;
     config.endpoint = endpoint.href;
   }
-  if (config.path.startsWith('/') || config.path.endsWith('/') || /[?#\\]/.test(config.path)) fail('UNSAFE_PATH', '同步文件请填写相对于目录的文件名，例如 qiye.json。');
+  if (config.path.startsWith('/') || config.path.endsWith('/') || /[?#\\]/.test(config.path)) fail('UNSAFE_PATH', t("同步文件请填写相对于目录的文件名，例如 qiye.json。"));
   const segments = checkPathSegments(config.path, false);
-  if (!segments.length || !segments.at(-1).toLowerCase().endsWith('.json')) fail('UNSAFE_PATH', '同步文件名须以 .json 结尾。');
+  if (!segments.length || !segments.at(-1).toLowerCase().endsWith('.json')) fail('UNSAFE_PATH', t("同步文件名须以 .json 结尾。"));
   config.path = segments.map(segment => encodeURIComponent(segment)).join('/');
   return config;
 }
@@ -72,9 +73,9 @@ function checkPathSegments(value, allowOuterSlashes) {
   }
   return pieces.map(piece => {
     let decoded;
-    try { decoded = decodeURIComponent(piece); } catch { fail('UNSAFE_PATH', 'WebDAV 路径包含无效的 URL 编码。'); }
+    try { decoded = decodeURIComponent(piece); } catch { fail('UNSAFE_PATH', t("WebDAV 路径包含无效的 URL 编码。")); }
     if (!decoded || decoded === '.' || decoded === '..' || /[\u0000-\u001f\u007f/\\?#]/.test(decoded) || /%[0-9a-f]{2}/i.test(decoded)) {
-      fail('UNSAFE_PATH', 'WebDAV 路径不能包含空目录、跳转目录或编码后的路径分隔符。');
+      fail('UNSAFE_PATH', t("WebDAV 路径不能包含空目录、跳转目录或编码后的路径分隔符。"));
     }
     return decoded;
   });
@@ -93,11 +94,11 @@ function chromeAPI(owner, method, ...args) {
   return new Promise((resolve, reject) => {
     try {
       const result = owner[method](...args, value => {
-        if (globalThis.chrome?.runtime?.lastError) reject(new WebDAVError('BROWSER_API', '浏览器未能完成 WebDAV 权限或存储操作。'));
+        if (globalThis.chrome?.runtime?.lastError) reject(new WebDAVError('BROWSER_API', t("浏览器未能完成 WebDAV 权限或存储操作。")));
         else resolve(value);
       });
       if (result && typeof result.then === 'function') result.then(resolve, reject);
-    } catch { reject(new WebDAVError('BROWSER_API', '浏览器未能完成 WebDAV 权限或存储操作。')); }
+    } catch { reject(new WebDAVError('BROWSER_API', t("浏览器未能完成 WebDAV 权限或存储操作。"))); }
   });
 }
 
@@ -106,7 +107,7 @@ export function requestWebDAVPermission(config) {
   const origin = webDAVOriginPattern(config);
   if (!globalThis.chrome?.permissions?.request) return Promise.resolve(true); // Browser preview uses the server's own CORS policy.
   return chromeAPI(globalThis.chrome.permissions, 'request', { origins: [origin] }).then(granted => {
-    if (!granted) fail('PERMISSION_DENIED', '未获得该 WebDAV 网站的访问权限，现有数据没有改变。');
+    if (!granted) fail('PERMISSION_DENIED', t("未获得该 WebDAV 网站的访问权限，现有数据没有改变。"));
     return true;
   });
 }
@@ -114,7 +115,7 @@ export function requestWebDAVPermission(config) {
 async function checkPermission(config) {
   if (!globalThis.chrome?.permissions?.contains) return;
   const granted = await chromeAPI(globalThis.chrome.permissions, 'contains', { origins: [webDAVOriginPattern(config)] });
-  if (!granted) fail('PERMISSION_REQUIRED', '请在 WebDAV 设置中点击连接或同步，授予所填网站的访问权限。');
+  if (!granted) fail('PERMISSION_REQUIRED', t("请在 WebDAV 设置中点击连接或同步，授予所填网站的访问权限。"));
 }
 
 const browserStore = {
@@ -123,13 +124,13 @@ const browserStore = {
       const values = await chromeAPI(globalThis.chrome.storage.local, 'get', WEBDAV_LOCAL_KEY);
       return values?.[WEBDAV_LOCAL_KEY] ?? null;
     }
-    if (!globalThis.localStorage) fail('STORAGE_UNAVAILABLE', '此环境无法保存 WebDAV 本机配置。');
+    if (!globalThis.localStorage) fail('STORAGE_UNAVAILABLE', t("此环境无法保存 WebDAV 本机配置。"));
     const raw = globalThis.localStorage.getItem(WEBDAV_LOCAL_KEY);
-    try { return raw === null ? null : JSON.parse(raw); } catch { fail('INVALID_LOCAL_CONFIG', 'WebDAV 本机配置损坏；请清除同步配置后重新填写。'); }
+    try { return raw === null ? null : JSON.parse(raw); } catch { fail('INVALID_LOCAL_CONFIG', t("WebDAV 本机配置损坏；请清除同步配置后重新填写。")); }
   },
   async set(value) {
     if (globalThis.chrome?.storage?.local) return chromeAPI(globalThis.chrome.storage.local, 'set', { [WEBDAV_LOCAL_KEY]: value });
-    if (!globalThis.localStorage) fail('STORAGE_UNAVAILABLE', '此环境无法保存 WebDAV 本机配置。');
+    if (!globalThis.localStorage) fail('STORAGE_UNAVAILABLE', t("此环境无法保存 WebDAV 本机配置。"));
     globalThis.localStorage.setItem(WEBDAV_LOCAL_KEY, JSON.stringify(value));
   },
   async remove() {
@@ -140,14 +141,14 @@ const browserStore = {
 
 function randomID() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
-  fail('CRYPTO_UNAVAILABLE', '此环境不支持安全同步标识；请在 HTTPS 页面或扩展中打开栖页。');
+  fail('CRYPTO_UNAVAILABLE', t("此环境不支持安全同步标识；请在 HTTPS 页面或扩展中打开栖页。"));
 }
 
 /** Ignore the local storage revision, which legitimately differs on each device. */
 export async function webDAVStateFingerprint(state) {
   const checked = validateImport(state);
   checked.updatedAt = 0;
-  if (!globalThis.crypto?.subtle) fail('CRYPTO_UNAVAILABLE', '此环境不支持安全同步校验；请在 HTTPS 页面或扩展中打开栖页。');
+  if (!globalThis.crypto?.subtle) fail('CRYPTO_UNAVAILABLE', t("此环境不支持安全同步校验；请在 HTTPS 页面或扩展中打开栖页。"));
   const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(checked)));
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
@@ -176,26 +177,26 @@ function authHeader(config) {
 
 function httpError(status) {
   const messages = {
-    401: 'WebDAV 验证失败，请检查用户名和密码或应用专用密码。',
-    403: 'WebDAV 拒绝访问，请检查目录与读写权限。',
-    405: '该地址不支持所需的 WebDAV 读写方法，请填写实际的 WebDAV 目录。',
-    409: '同步文件的父目录不存在或不接受此文件；请先在 WebDAV 服务中创建目录。',
-    413: 'WebDAV 服务拒绝了过大的备份文件。',
-    423: 'WebDAV 文件被锁定，请稍后重试。',
-    507: 'WebDAV 存储空间不足。'
+    401: t("WebDAV 验证失败，请检查用户名和密码或应用专用密码。"),
+    403: t("WebDAV 拒绝访问，请检查目录与读写权限。"),
+    405: t("该地址不支持所需的 WebDAV 读写方法，请填写实际的 WebDAV 目录。"),
+    409: t("同步文件的父目录不存在或不接受此文件；请先在 WebDAV 服务中创建目录。"),
+    413: t("WebDAV 服务拒绝了过大的备份文件。"),
+    423: t("WebDAV 文件被锁定，请稍后重试。"),
+    507: t("WebDAV 存储空间不足。")
   };
-  return new WebDAVError(`HTTP_${status}`, messages[status] || `WebDAV 返回 HTTP ${status}，本次操作尚未完成。`);
+  return new WebDAVError(`HTTP_${status}`, messages[status] || `${t("WebDAV 返回 HTTP {v0}，本次操作尚未完成。", {v0: status})}`);
 }
 
 async function limitedText(response) {
   const length = Number(response.headers.get('Content-Length'));
   if (Number.isFinite(length) && length > MAX_BACKUP_BYTES) {
     try { await response.body?.cancel(); } catch { /* Already closed. */ }
-    fail('REMOTE_TOO_LARGE', '远程备份超过 6 MiB，已停止读取。');
+    fail('REMOTE_TOO_LARGE', t("远程备份超过 6 MiB，已停止读取。"));
   }
   if (!response.body?.getReader) {
     const text = await response.text();
-    if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) fail('REMOTE_TOO_LARGE', '远程备份超过 6 MiB，已停止读取。');
+    if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) fail('REMOTE_TOO_LARGE', t("远程备份超过 6 MiB，已停止读取。"));
     return text;
   }
   const reader = response.body.getReader();
@@ -206,7 +207,7 @@ async function limitedText(response) {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > MAX_BACKUP_BYTES) { await reader.cancel(); fail('REMOTE_TOO_LARGE', '远程备份超过 6 MiB，已停止读取。'); }
+      if (size > MAX_BACKUP_BYTES) { await reader.cancel(); fail('REMOTE_TOO_LARGE', t("远程备份超过 6 MiB，已停止读取。")); }
       text += decoder.decode(value, { stream: true });
     }
     return text + decoder.decode();
@@ -233,7 +234,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
   async function readRecord() {
     const raw = await store.get();
     if (!raw) return null;
-    if (raw.version !== 1 || typeof raw.revision !== 'string') fail('INVALID_LOCAL_CONFIG', 'WebDAV 本机配置格式不正确；请清除同步配置后重新填写。');
+    if (raw.version !== 1 || typeof raw.revision !== 'string') fail('INVALID_LOCAL_CONFIG', t("WebDAV 本机配置格式不正确；请清除同步配置后重新填写。"));
     return { ...raw, config: validateWebDAVConfig(raw.config) };
   }
 
@@ -290,7 +291,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
       // reject redirected/mismatched responses from adapters or browser anomalies.
       if (response.redirected || response.type === 'opaqueredirect' || (response.url && response.url !== target) || (response.status >= 300 && response.status < 400)) {
         try { await response.body?.cancel(); } catch { /* Nothing to consume. */ }
-        fail('REDIRECT_REJECTED', 'WebDAV 地址发生了重定向。请直接填写最终目录地址；凭据不会转发到新地址。');
+        fail('REDIRECT_REJECTED', t("WebDAV 地址发生了重定向。请直接填写最终目录地址；凭据不会转发到新地址。"));
       }
       const result = { status: response.status, etag: strongETag(response.headers.get('ETag')), text: null };
       if (method === 'GET' && response.status === 200) result.text = await limitedText(response);
@@ -299,12 +300,12 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
     } catch (error) {
       if (error instanceof WebDAVError) throw error;
       if (controller.signal.aborted) fail('TIMEOUT', method === 'PUT'
-        ? 'WebDAV 上传超时，远程写入结果尚未确认；请重新同步以核对，本机数据已保留。'
-        : 'WebDAV 请求超时，请检查服务地址和网络连接。');
-      if (error instanceof TypeError && /encoded data/i.test(error.message)) fail('INVALID_REMOTE', '远程文件不是有效的 UTF-8 JSON 备份。');
+        ? t("WebDAV 上传超时，远程写入结果尚未确认；请重新同步以核对，本机数据已保留。")
+        : t("WebDAV 请求超时，请检查服务地址和网络连接。"));
+      if (error instanceof TypeError && /encoded data/i.test(error.message)) fail('INVALID_REMOTE', t("远程文件不是有效的 UTF-8 JSON 备份。"));
       fail('NETWORK_ERROR', method === 'PUT'
-        ? 'WebDAV 上传未能完成确认。请检查网络、证书、重定向和 CORS；网页预览还需服务端允许跨域。远程写入结果未知，请重新同步核对。'
-        : '无法连接 WebDAV。请检查网络、证书和最终目录地址；网页预览还需要服务端允许 CORS，并暴露 ETag 响应头。');
+        ? t("WebDAV 上传未能完成确认。请检查网络、证书、重定向和 CORS；网页预览还需服务端允许跨域。远程写入结果未知，请重新同步核对。")
+        : t("无法连接 WebDAV。请检查网络、证书和最终目录地址；网页预览还需要服务端允许 CORS，并暴露 ETag 响应头。"));
     } finally { clearTimeout(timer); }
   }
 
@@ -313,7 +314,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
     if (response.status === 404) return { exists: false, state: null, fingerprint: null, etag: null };
     if (response.status !== 200) throw httpError(response.status);
     let state;
-    try { state = validateImport(response.text); } catch { fail('INVALID_REMOTE', '远程文件不是当前格式的栖页备份，或内容未通过校验；两端数据均未替换。'); }
+    try { state = validateImport(response.text); } catch { fail('INVALID_REMOTE', t("远程文件不是当前格式的栖页备份，或内容未通过校验；两端数据均未替换。")); }
     return { exists: true, state, fingerprint: await webDAVStateFingerprint(state), etag: response.etag };
   }
 
@@ -324,8 +325,8 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
       status: remote.exists ? 'readable' : 'empty', exists: remote.exists,
       hasStrongETag: Boolean(remote.etag), remote: summary(remote.state),
       message: remote.exists
-        ? (remote.etag ? '远程备份可读取，并提供强 ETag。写入权限将在实际同步时验证。' : '远程备份可读取，但缺少可用的强 ETag；可以下载，暂不能安全覆盖上传。网页预览需暴露 ETag 响应头。')
-        : '服务器返回 404，尚未找到同步文件。请确认目录已存在；首次手动同步会尝试创建文件。此测试未验证写入权限，也未创建文件。'
+        ? (remote.etag ? t("远程备份可读取，并提供强 ETag。写入权限将在实际同步时验证。") : t("远程备份可读取，但缺少可用的强 ETag；可以下载，暂不能安全覆盖上传。网页预览需暴露 ETag 响应头。"))
+        : t("服务器返回 404，尚未找到同步文件。请确认目录已存在；首次手动同步会尝试创建文件。此测试未验证写入权限，也未创建文件。")
     };
   }
 
@@ -334,7 +335,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
   }
 
   function localChanged(localFingerprint) {
-    return { status: 'local-changed', localFingerprint, message: '同步期间本机内容发生了变化，已停止应用过期快照。请保存后重新同步。' };
+    return { status: 'local-changed', localFingerprint, message: t("同步期间本机内容发生了变化，已停止应用过期快照。请保存后重新同步。") };
   }
 
   function rememberReview(record, local, localFingerprint, remote, reason) {
@@ -344,13 +345,13 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
     reviews.set(token, { at: now(), revision: record.revision, localFingerprint,
       remoteFingerprint: remote.fingerprint, etag: remote.etag, exists: remote.exists });
     const messages = {
-      'first-sync': '这是本机首次连接该备份，两端内容不同。请先比较并选择保留哪一端。',
-      'both-changed': '本机和远程都在上次同步后发生了变化，请比较后选择，当前没有覆盖任何一端。',
-      'remote-changed': '远程内容与本机不同，请确认要上传本机版本还是下载远程版本。',
-      'remote-deleted': '上次同步的远程文件已不存在。请确认后再用本机内容重新创建。',
-      'review-stale': '刚才比较的版本已经变化，请重新比较后选择。',
-      'write-conflict': '上传前远程版本已被其他设备更新，条件写入已停止，请重新比较。',
-      'after-write-changed': '上传后读回的远程版本与提交内容不同，可能已被其他设备更新。同步结果尚未确认，请比较。'
+      'first-sync': t("这是本机首次连接该备份，两端内容不同。请先比较并选择保留哪一端。"),
+      'both-changed': t("本机和远程都在上次同步后发生了变化，请比较后选择，当前没有覆盖任何一端。"),
+      'remote-changed': t("远程内容与本机不同，请确认要上传本机版本还是下载远程版本。"),
+      'remote-deleted': t("上次同步的远程文件已不存在。请确认后再用本机内容重新创建。"),
+      'review-stale': t("刚才比较的版本已经变化，请重新比较后选择。"),
+      'write-conflict': t("上传前远程版本已被其他设备更新，条件写入已停止，请重新比较。"),
+      'after-write-changed': t("上传后读回的远程版本与提交内容不同，可能已被其他设备更新。同步结果尚未确认，请比较。")
     };
     return { status: 'conflict', reason, message: messages[reason] || messages['both-changed'], review: token,
       local: summary(local), remote: summary(remote.state), remoteState: remote.state ? copy(remote.state) : null, localFingerprint };
@@ -377,12 +378,12 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
       remoteFingerprint: remote.fingerprint, etag: remote.etag, exists: remote.exists });
     if (downloads.size > 20) downloads.delete(downloads.keys().next().value);
     if (reviews.size > 20) reviews.delete(reviews.keys().next().value);
-    return { status: 'download-ready', message: '远程备份已读取并校验，请确认后应用到本机。',
+    return { status: 'download-ready', message: t("远程备份已读取并校验，请确认后应用到本机。"),
       state: copy(remote.state), review: token, localFingerprint, remoteFingerprint: remote.fingerprint, remote: summary(remote.state) };
   }
 
   async function writeRemote(record, local, localFingerprint, remote) {
-    if (remote.exists && !remote.etag) fail('NO_STRONG_ETAG', '服务端没有提供可用的强 ETag，无法安全覆盖远程文件。请启用 ETag；网页预览需通过 CORS 暴露 ETag 响应头。你仍可下载远程备份。');
+    if (remote.exists && !remote.etag) fail('NO_STRONG_ETAG', t("服务端没有提供可用的强 ETag，无法安全覆盖远程文件。请启用 ETag；网页预览需通过 CORS 暴露 ETag 响应头。你仍可下载远程备份。"));
     if (!await matchesLocal(localFingerprint)) return localChanged(localFingerprint);
     const body = exportState(local);
     const response = await request(record.config, 'PUT', { body, etag: remote.etag, create: !remote.exists });
@@ -393,31 +394,31 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
     if (![200, 201, 204].includes(response.status)) throw httpError(response.status);
     let verified;
     try { verified = await readRemote(record.config); } catch {
-      fail('WRITE_UNVERIFIED', '服务器已接受上传，但读回验证未完成。远程写入可能已成功；本机数据已保留，请重新同步核对。');
+      fail('WRITE_UNVERIFIED', t("服务器已接受上传，但读回验证未完成。远程写入可能已成功；本机数据已保留，请重新同步核对。"));
     }
     if (!verified.exists || verified.fingerprint !== localFingerprint) {
       return recordResult(record, rememberReview(record, local, localFingerprint, verified, 'after-write-changed'));
     }
     await baseline(record, localFingerprint, verified, 'uploaded');
-    return { status: 'uploaded', localFingerprint, message: '本机版本已上传，并已读回验证。', hasStrongETag: Boolean(verified.etag) };
+    return { status: 'uploaded', localFingerprint, message: t("本机版本已上传，并已读回验证。"), hasStrongETag: Boolean(verified.etag) };
   }
 
   async function synchronize(input, { mode = 'sync', manual = false, review = null, expectedConfig = undefined } = {}) {
     const local = validateImport(input);
     const localFingerprint = await webDAVStateFingerprint(local);
     const expected = expectedConfig === undefined ? null : validateWebDAVConfig(expectedConfig);
-    if (!['sync', 'upload', 'download'].includes(mode)) fail('INVALID_MODE', '不支持的同步操作。');
+    if (!['sync', 'upload', 'download'].includes(mode)) fail('INVALID_MODE', t("不支持的同步操作。"));
     return serial(async () => {
       const record = await readRecord();
       // Compare inside the same lock as network synchronization. A different tab
       // may replace the endpoint after the UI checks it but before this lock.
       // The old UI's permission prompt must never authorize a different target.
       if (expected && (!record || Object.keys(DEFAULT_WEBDAV_CONFIG).some(key => record.config[key] !== expected[key]))) {
-        return { status: 'config-changed', localFingerprint, message: 'WebDAV 连接在另一标签已更改，请重新确认。' };
+        return { status: 'config-changed', localFingerprint, message: t("WebDAV 连接在另一标签已更改，请重新确认。") };
       }
-      if (!record?.config?.enabled) return { status: 'disabled', localFingerprint, message: 'WebDAV 同步未启用。' };
+      if (!record?.config?.enabled) return { status: 'disabled', localFingerprint, message: t("WebDAV 同步未启用。") };
       if (!manual && (!record.config.autoSync || !record.baseline)) return {
-        status: 'needs-initial-sync', localFingerprint, message: '请先完成一次手动同步，再开启自动同步。'
+        status: 'needs-initial-sync', localFingerprint, message: t("请先完成一次手动同步，再开启自动同步。")
       };
       try {
         if (!await matchesLocal(localFingerprint)) return localChanged(localFingerprint);
@@ -429,15 +430,15 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
           || existingReview.etag !== remote.etag || existingReview.exists !== remote.exists)) {
           return recordResult(record, rememberReview(record, local, localFingerprint, remote, 'review-stale'));
         }
-        if (review && !manual) fail('REVIEW_REQUIRED', '确认冲突需要手动操作。');
+        if (review && !manual) fail('REVIEW_REQUIRED', t("确认冲突需要手动操作。"));
         if (remote.exists && remote.fingerprint === localFingerprint) {
           await baseline(record, localFingerprint, remote, 'unchanged');
-          return { status: 'unchanged', localFingerprint, message: '本机与远程内容一致。', hasStrongETag: Boolean(remote.etag) };
+          return { status: 'unchanged', localFingerprint, message: t("本机与远程内容一致。"), hasStrongETag: Boolean(remote.etag) };
         }
         if (!remote.exists) {
-          if (mode === 'download') return { status: 'missing', localFingerprint, message: '远程尚无备份可下载，本机数据未改变。' };
+          if (mode === 'download') return { status: 'missing', localFingerprint, message: t("远程尚无备份可下载，本机数据未改变。") };
           if (record.baseline && !existingReview) return recordResult(record, rememberReview(record, local, localFingerprint, remote, 'remote-deleted'));
-          if (!manual) return { status: 'needs-initial-sync', localFingerprint, message: '远程文件尚未创建，请手动同步确认创建。' };
+          if (!manual) return { status: 'needs-initial-sync', localFingerprint, message: t("远程文件尚未创建，请手动同步确认创建。") };
           return await writeRemote(record, local, localFingerprint, remote);
         }
         if (existingReview) {
@@ -461,7 +462,7 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
         return await writeRemote(record, local, localFingerprint, remote);
       } catch (error) {
         // Store only controlled error text; never server bodies, URLs, or credentials.
-        const safeError = error instanceof WebDAVError ? error : new WebDAVError('SYNC_FAILED', '同步未完成，请检查本机存储与服务连接；现有数据已保留。');
+        const safeError = error instanceof WebDAVError ? error : new WebDAVError('SYNC_FAILED', t("同步未完成，请检查本机存储与服务连接；现有数据已保留。"));
         try { await store.set({ ...record, lastError: safeError.message, lastErrorAt: now(), lastAction: 'error' }); } catch { /* Preserve the actionable original error. */ }
         throw safeError;
       }
@@ -473,15 +474,15 @@ export function createWebDAVSync({ fetchImpl = (...args) => fetch(...args), stor
       const pending = result?.status === 'download-ready' && downloads.get(result.review);
       const record = await readRecord();
       if (!pending || !record || pending.revision !== record.revision || now() - pending.at > REVIEW_LIFETIME_MS) {
-        fail('DOWNLOAD_EXPIRED', '下载确认已过期或同步配置已变更。本机已保存的内容保留，请重新同步核对。');
+        fail('DOWNLOAD_EXPIRED', t("下载确认已过期或同步配置已变更。本机已保存的内容保留，请重新同步核对。"));
       }
       const fingerprint = await webDAVStateFingerprint(savedState);
-      if (fingerprint !== pending.remote.fingerprint) fail('DOWNLOAD_NOT_APPLIED', '本机内容与下载版本不一致，尚未记录为同步完成。');
-      if (!await matchesLocal(fingerprint)) fail('LOCAL_CHANGED', '下载后本机内容又有变化，尚未记录为同步完成；请重新同步。');
+      if (fingerprint !== pending.remote.fingerprint) fail('DOWNLOAD_NOT_APPLIED', t("本机内容与下载版本不一致，尚未记录为同步完成。"));
+      if (!await matchesLocal(fingerprint)) fail('LOCAL_CHANGED', t("下载后本机内容又有变化，尚未记录为同步完成；请重新同步。"));
       await baseline(record, fingerprint, pending.remote, 'downloaded');
       downloads.delete(result.review);
       reviews.delete(result.review);
-      return { status: 'downloaded', localFingerprint: fingerprint, message: '远程版本已保存到本机，同步基准已更新。' };
+      return { status: 'downloaded', localFingerprint: fingerprint, message: t("远程版本已保存到本机，同步基准已更新。") };
     });
   }
 

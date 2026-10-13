@@ -88,7 +88,7 @@ function extensionFixture(initial) {
 test('default state is valid, rich, immutable, and exports a lossless backup', () => {
   const checked = validateImport(DEFAULT_STATE);
   assert.equal(checked.settings.gridSize, 74);
-  assert.equal(checked.settings.weatherEnabled, false);
+  assert.equal(checked.items.find(i=>i.widget==='weather').config.enabled, false);
   assert.equal(checked.settings.pinClock, false);
   assert.equal(checked.settings.pinSearch, false);
   assert.equal(checked.settings.clockSize, 70);
@@ -464,9 +464,9 @@ test('date, timer, location, and widget configuration values are validated', () 
   widgetData(state, 'focus').focus.running = true;
   assert.throws(() => validateImport(state), /结束时间/);
   widgetData(state, 'focus').focus.running = false;
-  state.settings.weatherCity.latitude = 91;
+  state.items.find(i=>i.widget==='weather').config.city.latitude = 91;
   assert.throws(() => validateImport(state), /latitude/);
-  state.settings.weatherCity.latitude = 22;
+  state.items.find(i=>i.widget==='weather').config.city.latitude = 22;
   state.items.find(item => item.widget === 'clock').config.timeZone = 'Definitely/Not_A_Timezone';
   assert.throws(() => validateImport(state), /有效时区/);
 });

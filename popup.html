@@ -11,20 +11,20 @@
   <body>
     <header class="popup-header">
       <img class="popup-logo" src="icons/icon48.png" alt="" width="36" height="36">
-      <div><strong>栖页 <span>Qiye</span></strong><p>给常用的网页，一个位置。</p></div>
+      <div><strong><span data-i18n="栖页 Qiye">栖页 Qiye</span></strong><p><span data-i18n="给常用的网页，一个位置。">给常用的网页，一个位置。</span></p></div>
     </header>
     <main>
-      <h1>收好这一页</h1>
-      <p id="page-url" class="page-url">正在读取当前网页…</p>
+      <h1><span data-i18n="收好这一页">收好这一页</span></h1>
+      <p id="page-url" class="page-url"><span data-i18n="正在读取当前网页…">正在读取当前网页…</span></p>
       <form id="save-form">
-        <label for="page-title">名称</label>
+        <label for="page-title"><span data-i18n="名称">名称</span></label>
         <input id="page-title" name="title" type="text" maxlength="120" autocomplete="off" required disabled>
-        <label for="group-select">放到分组</label>
+        <label for="group-select"><span data-i18n="放到分组">放到分组</span></label>
         <select id="group-select" name="group" disabled></select>
-        <button id="save-button" class="primary-button" type="submit" disabled>添加到栖页 <span aria-hidden="true">↗</span></button>
+        <button id="save-button" class="primary-button" type="submit" disabled><span data-i18n="添加到栖页">添加到栖页 </span><span aria-hidden="true">↗</span></button>
       </form>
       <p id="status" class="status" role="status" aria-live="polite"></p>
     </main>
-    <footer><button type="button" id="open-qiye">打开我的栖页 <span aria-hidden="true">→</span></button><span class="local-label">本机保存</span></footer>
+    <footer><button type="button" id="open-qiye"><span data-i18n="打开我的栖页">打开我的栖页 </span><span aria-hidden="true">→</span></button><span class="local-label"><span data-i18n="本机保存">本机保存</span></span></footer>
   </body>
 </html>

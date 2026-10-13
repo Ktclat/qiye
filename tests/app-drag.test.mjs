@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -28,7 +29,7 @@ function fresh() {
 }
 function harness({initial=fresh(),waitForStorage}={}) {
  const snapshots=[],events=[],messages=[];
- const context=vm.createContext({
+ const context=vm.createContext({t, getLocale,
   state:initial,reorderById,
   async persist(){
    snapshots.push(copy(validateImport(context.state)));events.push('persist');

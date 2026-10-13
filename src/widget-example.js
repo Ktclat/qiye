@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 // Opt in through widget-extensions.js; not installed on users' desktops by default.
 export const counterWidget = {
   apiVersion: 1,
@@ -8,7 +9,7 @@ export const counterWidget = {
     { key: 'count', label: '当前数值', type: 'number', default: 0, min: 0, max: 9999, integer: true },
   ],
   render({ config, escapeHtml }) {
-    return `<div class="extension-widget-content"><p data-counter-label>${escapeHtml(config.label)}</p><strong data-counter-value>${config.count}</strong><button type="button" class="secondary-button" data-counter-add>加一</button></div>`;
+    return `<div class="extension-widget-content"><p data-counter-label>${escapeHtml(config.label)}</p><strong data-counter-value>${config.count}</strong><button type="button" class="secondary-button" data-counter-add>${t("加一")}</button></div>`;
   },
   mount({ root, signal, getConfig, updateConfig, toast }) {
     root.querySelector('[data-counter-add]').addEventListener('click', async event => {

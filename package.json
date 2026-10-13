@@ -1,6 +1,6 @@
 {
   "name": "qiye-extension",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "栖页 Qiye — account-free new tab with WebDAV sync",
@@ -13,7 +13,7 @@
     "url": "https://github.com/Ktclat/qiye/issues"
   },
   "scripts": {
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --import ./tests/setup-locale.mjs --test tests/*.test.mjs"
   },
   "license": "GPL-3.0-only"
 }

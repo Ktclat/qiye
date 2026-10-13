@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t, localizeSeed } from './i18n.js';
 import { keys, string, number, bool, enumeration, array, unique, date, time, invalid } from './validation.js';
 import { widgetExtensions } from './widget-extensions.js';
 
@@ -6,6 +7,7 @@ const builtins = [
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
   { type: 'calendar', title: '日历', description: '公历月份与中国农历', size: '2x2', icon: 'calendar' },
+  { type: 'memo', title: '备忘录', description: '多条笔记、搜索、置顶与自动保存', size: '2x2', icon: 'note' },
   { type: 'notes', title: '便签', description: '随手记录，自动保存到本机', size: '2x2', icon: 'note' },
   { type: 'todo', title: '待办清单', description: '添加、勾选和删除日常任务', size: '2x2', icon: 'check' },
   { type: 'countdown', title: '倒数日', description: '记住值得期待的日子', size: '2x2', icon: 'flag' },
@@ -21,6 +23,8 @@ const builtins = [
 export const WIDGET_API_VERSION = 1;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  calendar: { weekStart: 1, showLunar: true, holidays: 'CN' },
+  weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius' },
   countdown: { title: '新年，新的期待', date: '2027-01-01' },
   workday: { endTime: '18:00', payday: 10, workdays: [1, 2, 3, 4, 5] },
   clock: { timeZone: 'Asia/Hong_Kong', label: '香港' },
@@ -39,18 +43,18 @@ export function createWidgetRegistry(extensions = []) {
   const definitions = new Map(builtins.map(entry => [entry.type, Object.freeze({ ...entry, builtin: true, sizes: Object.freeze(['2x2', '4x2']) })]));
   for (const source of extensions) {
     const entry = { ...source };
-    if (!/^[a-z][a-z0-9-]{0,39}$/.test(entry.type) || ['constructor', 'prototype'].includes(entry.type)) throw new Error('组件 type 必须是小写字母、数字或连字符');
-    if (definitions.has(entry.type)) throw new Error(`组件重复注册：${entry.type}`);
-    if (entry.apiVersion !== WIDGET_API_VERSION) throw new Error(`组件 ${entry.type} 的 API 版本不受支持`);
+    if (!/^[a-z][a-z0-9-]{0,39}$/.test(entry.type) || ['constructor', 'prototype'].includes(entry.type)) throw new Error(t("组件 type 必须是小写字母、数字或连字符"));
+    if (definitions.has(entry.type)) throw new Error(`${t("组件重复注册：{v0}", {v0: entry.type})}`);
+    if (entry.apiVersion !== WIDGET_API_VERSION) throw new Error(`${t("组件 {v0} 的 API 版本不受支持", {v0: entry.type})}`);
     for (const key of ['title', 'description']) string(entry[key], `widget.${key}`, 160);
-    if (typeof entry.render !== 'function') throw new Error(`组件 ${entry.type} 缺少 render`);
-    for (const hook of ['mount', 'update']) if (entry[hook] !== undefined && typeof entry[hook] !== 'function') throw new Error(`组件 ${entry.type} 的 ${hook} 必须是函数`);
+    if (typeof entry.render !== 'function') throw new Error(`${t("组件 {v0} 缺少 render", {v0: entry.type})}`);
+    for (const hook of ['mount', 'update']) if (entry[hook] !== undefined && typeof entry[hook] !== 'function') throw new Error(`${t("组件 {v0} 的 {v1} 必须是函数", {v0: entry.type, v1: hook})}`);
     entry.sizes = Object.freeze([...(entry.sizes || ['2x2', '4x2'])]);
-    if (!entry.sizes.length || entry.sizes.some(size => !['2x2', '4x2'].includes(size))) throw new Error('组件尺寸只支持 2x2 / 4x2');
+    if (!entry.sizes.length || entry.sizes.some(size => !['2x2', '4x2'].includes(size))) throw new Error(t("组件尺寸只支持 2x2 / 4x2"));
     entry.size ||= entry.sizes[0];
-    if (!entry.sizes.includes(entry.size)) throw new Error('组件默认尺寸不在 sizes 中');
+    if (!entry.sizes.includes(entry.size)) throw new Error(t("组件默认尺寸不在 sizes 中"));
     entry.fields = Object.freeze((entry.fields || []).map(field => {
-      if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(field.key) || ['constructor', 'prototype', '__proto__'].includes(field.key)) throw new Error('组件配置字段无效');
+      if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(field.key) || ['constructor', 'prototype', '__proto__'].includes(field.key)) throw new Error(t("组件配置字段无效"));
       enumeration(field.type, fieldTypes, `${entry.type}.${field.key}.type`);
       string(field.label, `${entry.type}.${field.key}.label`, 80);
       const copy = { ...field };
@@ -76,12 +80,12 @@ export function createWidgetRegistry(extensions = []) {
     list: () => list,
     newConfig(type) {
       const definition = definitions.get(type);
-      if (!definition) invalid('widget', `未知组件 ${type}`);
-      return structuredClone(definition.builtin ? builtinConfig[type] || {} : Object.fromEntries(definition.fields.map(field => [field.key, field.default])));
+      if (!definition) invalid('widget', `${t("未知组件 {v0}", {v0: type})}`);
+      return localizeSeed(definition.builtin ? builtinConfig[type] || {} : Object.fromEntries(definition.fields.map(field => [field.key, field.default])));
     },
     validateConfig(type, raw, path = 'config') {
       const definition = definitions.get(type);
-      if (!definition) invalid(path, `未知组件 ${type}`);
+      if (!definition) invalid(path, `${t("未知组件 {v0}", {v0: type})}`);
       if (definition.builtin) return validateBuiltinConfig(type, raw, path);
       keys(raw, definition.fields.map(field => field.key), path);
       return Object.fromEntries(definition.fields.map(field => [field.key, fieldValue(field, raw[field.key], `${path}.${field.key}`)]));
@@ -98,6 +102,17 @@ export function validateWidgetConfig(type, raw, path) { return registry.validate
 function validateBuiltinConfig(widgetType, raw, path) {
   const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
   const out = {};
+  if (widgetType === 'calendar') {
+    out.weekStart = enumeration(v.weekStart, [0,1], `${path}.weekStart`);
+    out.showLunar = bool(v.showLunar, `${path}.showLunar`);
+    out.holidays = enumeration(v.holidays, ['none','CN'], `${path}.holidays`);
+  }
+  if (widgetType === 'weather') {
+    keys(v.city, ['name','latitude','longitude'], `${path}.city`);
+    out.city = {name:string(v.city.name, `${path}.city.name`, 60), latitude:number(v.city.latitude, `${path}.city.latitude`, -90,90), longitude:number(v.city.longitude, `${path}.city.longitude`, -180,180)};
+    out.enabled = bool(v.enabled, `${path}.enabled`);
+    out.unit = enumeration(v.unit, ['celsius','fahrenheit'], `${path}.unit`);
+  }
   if (widgetType === 'countdown') {
     out.title = string(v.title, `${path}.title`, 120);
     out.date = date(v.date, `${path}.date`);
@@ -110,7 +125,7 @@ function validateBuiltinConfig(widgetType, raw, path) {
   }
   if (widgetType === 'clock') {
     out.timeZone = string(v.timeZone, `${path}.timeZone`, 80);
-    try { new Intl.DateTimeFormat('en', { timeZone: out.timeZone }).format(); } catch { invalid(`${path}.timeZone`, '不是有效时区'); }
+    try { new Intl.DateTimeFormat('en', { timeZone: out.timeZone }).format(); } catch { invalid(`${path}.timeZone`, t("不是有效时区")); }
     out.label = string(v.label, `${path}.label`, 60);
   }
   if (widgetType === 'quote') {

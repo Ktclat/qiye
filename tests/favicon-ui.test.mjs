@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import { normalizeIconSelection } from '../src/icon-selection.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,7 +34,7 @@ function deferred() {
 }
 function harness(extra={}) {
  const dialog={open:true};
- const context=vm.createContext({
+ const context=vm.createContext({t, getLocale,
   normalizeIconSelection,
   safeUrl,icon,iconNames,URL,Promise,Date,dialog,bindFaviconImages,state:{settings:{gridSize:74}},
   $:(selector,root)=>root.querySelector(selector),

@@ -9,8 +9,8 @@ import { dialogMetrics } from '../src/dialog-scale.js';
 
 test('packaged extension registration supplies defaults without changing builtins', () => {
   const registry = createWidgetRegistry([counterWidget]);
-  assert.equal(listWidgetDefinitions().length, 13);
-  assert.equal(registry.list().length, 14);
+  assert.equal(listWidgetDefinitions().length, 14);
+  assert.equal(registry.list().length, 15);
   assert.deepEqual(registry.newConfig('counter'), { label: '今天的小进步', count: 0 });
   assert.ok(Object.isFrozen(registry.get('counter').fields[0]));
   assert.deepEqual(registry.get('counter').sizes, ['2x2', '4x2']);

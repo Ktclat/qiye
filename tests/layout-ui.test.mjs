@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -19,7 +20,7 @@ function harness(settings={}){
  const state={settings:{pinClock:false,pinSearch:false,clockOffsetX:0,searchOffsetX:0,...settings}};
  const root=node(),window={innerWidth:1000};
  const $=(s,parent)=>{const all={'#header-dock':dock,'#flow-header':flow,'#main':flow,'#clock':text,'#clock-block':clock,'.search-wrapper':search};const n=all[s];return parent&&n.parentElement!==parent?null:n;};
- const context=vm.createContext({$,state,window,document:{body:root},getComputedStyle:n=>({fontSize:n.style.fontSize||'70px',paddingLeft:n.padding+'px',paddingRight:n.padding+'px'})});
+ const context=vm.createContext({t, getLocale,$,state,window,document:{body:root},getComputedStyle:n=>({fontSize:n.style.fontSize||'70px',paddingLeft:n.padding+'px',paddingRight:n.padding+'px'})});
  new vm.Script(['positionHeaderRegions','updatePinnedHeader','updateHeaderPlacement'].map(extract).join('\n')+'\nglobalThis.api={positionHeaderRegions,updateHeaderPlacement,updatePinnedHeader};').runInContext(context);
  return {api:context.api,flow,dock,clock,search,text,state,root,window};
 }

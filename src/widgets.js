@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
 
 import { normalizeWallpaperPhoto } from './wallpapers.js';
@@ -6,11 +7,11 @@ import { listWidgetDefinitions, getWidgetDefinition } from './widget-registry.js
 import { mountWidgetExtensions } from './widget-runtime.js';
 
 const DAY = 86_400_000;
-const WEATHER_TTL = 30 * 60_000;
-const WEATHER_CACHE_KEY = 'qiye.weather.cache.v1';
+import { WEATHER_TTL, weatherState, requestWeather, cityKey, temperature, weatherDescription, weatherArt } from './weather.js';
+import { localDateKey, dayStamp, chineseLunarDate } from './calendar.js';
+import { formatDate, getLocale } from './i18n.js';
+import { memoCard, calendarGrid } from './widget-detail-views.js';
 const bindings = new WeakMap();
-const weatherRequests = new Map();
-const weatherStates = new Map();
 const quotes = [
   '把今天过得慢一点，认真看一朵云，认真完成一件小事。',
   '让注意力回到手边，下一步就会慢慢清楚。',
@@ -61,7 +62,7 @@ function icon(name, className = '') {
   return `<svg class="widget-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.sparkles}</svg>`;
 }
 
-function configButton(label = '设置组件') {
+function configButton(label = t("设置组件")) {
   return `<button type="button" class="widget-icon-button widget-config" data-action="widget-config" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${icon('more')}</button>`;
 }
 
@@ -71,14 +72,6 @@ function header(label, iconName, action = configButton()) {
 
 function uid() {
   return globalThis.crypto?.randomUUID?.() || `w-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-export function localDateKey(date = new Date()) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-function dayStamp(date) {
-  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function validDateParts(value) {
@@ -100,43 +93,17 @@ export function daysUntil(value, now = new Date()) {
   return Math.round((date.getTime() - dayStamp(now)) / DAY);
 }
 
-const chineseDays = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
-let lunarFormatter;
-try { lunarFormatter = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { month: 'long', day: 'numeric' }); } catch { /* Hide unavailable calendar data. */ }
-
-export function chineseLunarDate(date = new Date()) {
-  if (!lunarFormatter) return '';
-  try {
-    const parts = lunarFormatter.formatToParts(date);
-    const month = parts.find((part) => part.type === 'month')?.value || '';
-    const day = Number(parts.find((part) => part.type === 'day')?.value);
-    return `${month}${chineseDays[day - 1] || ''}`;
-  } catch { return ''; }
-}
-
-function renderCalendar(monthDate = new Date(), today = new Date()) {
-  const year = monthDate.getFullYear();
-  const month = monthDate.getMonth();
-  const first = new Date(year, month, 1);
-  const leading = (first.getDay() + 6) % 7;
-  const days = new Date(year, month + 1, 0).getDate();
-  const count = Math.ceil((leading + days) / 7) * 7;
-  let cells = '';
-  for (let index = 0; index < count; index += 1) {
-    const date = new Date(year, month, index - leading + 1);
-    const isToday = localDateKey(date) === localDateKey(today);
-    cells += `<span class="w-calendar-day${date.getMonth() !== month ? ' is-outside' : ''}${index % 7 >= 5 ? ' is-weekend' : ''}${isToday ? ' is-today' : ''}"${isToday ? ' aria-current="date"' : ''} title="${escapeHtml(localDateKey(date))} ${escapeHtml(chineseLunarDate(date))}">${date.getDate()}</span>`;
-  }
-  return `<div class="w-calendar-top"><span><strong>${month + 1}<small>月</small></strong><em>${year}</em></span><div><button type="button" class="widget-icon-button" data-action="widget-calendar-prev" aria-label="上个月">${icon('chevronLeft')}</button><button type="button" class="widget-icon-button w-calendar-today-button" data-action="widget-calendar-today" aria-label="回到本月" title="回到本月">今</button><button type="button" class="widget-icon-button" data-action="widget-calendar-next" aria-label="下个月">${icon('chevronRight')}</button></div></div><div class="w-calendar-weekdays">${['一', '二', '三', '四', '五', '六', '日'].map((value) => `<span>${value}</span>`).join('')}</div><div class="w-calendar-grid" style="--calendar-rows:${count / 7}">${cells}</div><div class="w-calendar-lunar">${escapeHtml(chineseLunarDate(today) ? `农历 ${chineseLunarDate(today)}` : '每一天，都值得期待')}</div>`;
+function renderCalendar(monthDate, today, item) {
+  return `<div class="w-calendar-top"><span>${escapeHtml(formatDate(monthDate,{year:'numeric',month:'long'}))}</span><div><button type="button" class="widget-icon-button" data-action="widget-calendar-prev" aria-label="${t("上个月")}">${icon('chevronLeft')}</button><button type="button" class="widget-icon-button" data-action="widget-calendar-today" aria-label="${t("回到本月")}">${t("今")}</button><button type="button" class="widget-icon-button" data-action="widget-calendar-next" aria-label="${t("下个月")}">${icon('chevronRight')}</button></div></div>${calendarGrid(monthDate,item.config,{compact:true,events:item.data.events})}<button type="button" class="w-calendar-lunar" data-action="widget-calendar-detail">${t("{v0}详情 ↗", {v0: item.config.showLunar?escapeHtml(chineseLunarDate(today))+' · ':''})}</button>`;
 }
 
 function renderNotes(data) {
-  return `${header('随手记', 'note')}<textarea class="w-notes-input" data-widget-input="notes" aria-label="便签内容" placeholder="写下一点灵感，\n或今天想做的小事…" maxlength="100000" spellcheck="false">${escapeHtml(data.notes)}</textarea><div class="w-notes-footer"><span data-live="notes-status">已保存在本机</span><span class="w-notes-fold" aria-hidden="true"></span></div>`;
+  return `${header(t("随手记"), 'note')}<textarea class="w-notes-input" data-widget-input="notes" aria-label="${t("便签内容")}" placeholder="${t("写下一点灵感，\n或今天想做的小事…")}" maxlength="100000" spellcheck="false">${escapeHtml(data.notes)}</textarea><div class="w-notes-footer"><span data-live="notes-status">${t("已保存在本机")}</span><span class="w-notes-fold" aria-hidden="true"></span></div>`;
 }
 
 function todoList(state) {
   const todos = state.todos;
-  return todos.length ? todos.map((todo) => `<li class="w-todo-row${todo.done ? ' is-done' : ''}"><label><input type="checkbox" data-action="widget-todo-toggle" data-todo-id="${escapeHtml(todo.id)}"${todo.done ? ' checked' : ''} aria-label="${escapeHtml(`${todo.done ? '取消完成' : '完成'}：${todo.text}`)}"><span title="${escapeHtml(todo.text)}">${escapeHtml(todo.text)}</span></label><button type="button" class="widget-icon-button w-row-delete" data-action="widget-todo-delete" data-todo-id="${escapeHtml(todo.id)}" aria-label="${escapeHtml(`删除：${todo.text}`)}">${icon('close')}</button></li>`).join('') : '<li class="w-empty-list">给今天安排一件小事</li>';
+  return todos.length ? todos.map((todo) => `<li class="w-todo-row${todo.done ? ' is-done' : ''}"><label><input type="checkbox" data-action="widget-todo-toggle" data-todo-id="${escapeHtml(todo.id)}"${todo.done ? ' checked' : ''} aria-label="${escapeHtml(`${todo.done ? t("取消完成") : t("完成")}：${todo.text}`)}"><span title="${escapeHtml(todo.text)}">${escapeHtml(todo.text)}</span></label><button type="button" class="widget-icon-button w-row-delete" data-action="widget-todo-delete" data-todo-id="${escapeHtml(todo.id)}" aria-label="${escapeHtml(`${t("删除：{v0}", {v0: todo.text})}`)}">${icon('close')}</button></li>`).join('') : `<li class="w-empty-list">${t("给今天安排一件小事")}</li>`;
 }
 
 function todoSummary(state) {
@@ -145,18 +112,18 @@ function todoSummary(state) {
 }
 
 function renderTodo(state) {
-  return `${header('今日待办', 'check', '<span class="w-todo-summary" data-live="todo-summary">' + todoSummary(state) + '</span>')}<ul class="w-todo-list" data-live="todo-list">${todoList(state)}</ul><form class="w-inline-form" data-widget-form="todo"><input type="text" name="text" autocomplete="off" maxlength="240" placeholder="添加一项待办" aria-label="新待办"><button type="submit" class="widget-icon-button" aria-label="添加待办">${icon('plus')}</button></form>`;
+  return `${header(t("今日待办"), 'check', '<span class="w-todo-summary" data-live="todo-summary">' + todoSummary(state) + '</span>')}<ul class="w-todo-list" data-live="todo-list">${todoList(state)}</ul><form class="w-inline-form" data-widget-form="todo"><input type="text" name="text" autocomplete="off" maxlength="240" placeholder="${t("添加一项待办")}" aria-label="${t("新待办")}"><button type="submit" class="widget-icon-button" aria-label="${t("添加待办")}">${icon('plus')}</button></form>`;
 }
 
 function countdownView(item, now = new Date()) {
   const config = item.config;
   const days = daysUntil(config.date, now);
-  return { title: config.title, number: days === null ? '—' : Math.abs(days).toString(), caption: days === null ? '设置一个期待的日子' : days < 0 ? '已经过去' : days === 0 ? '就是今天' : '还有', unit: days === 0 ? '♥' : '天', date: validDateParts(config.date) ? config.date.replaceAll('-', '.') : '点击右上角设置' };
+  return { title: config.title, number: days === null ? '—' : Math.abs(days).toString(), caption: days === null ? t("设置一个期待的日子") : days < 0 ? t("已经过去") : days === 0 ? t("就是今天") : t("还有"), unit: days === 0 ? '♥' : t("天"), date: validDateParts(config.date) ? config.date.replaceAll('-', '.') : t("点击右上角设置") };
 }
 
 function renderCountdown(item) {
   const view = countdownView(item);
-  return `${header('倒数日', 'flag')}<div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div><span class="w-countdown-orbit" aria-hidden="true"></span>`;
+  return `${header(t("倒数日"), 'flag')}<div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div><span class="w-countdown-orbit" aria-hidden="true"></span>`;
 }
 
 export function focusRemaining(focus, now = Date.now()) {
@@ -172,7 +139,7 @@ function renderFocus(state) {
   const focus = state.focus;
   const remaining = focusRemaining(focus);
   const progress = Math.max(0, Math.min(1, remaining / (focus.duration * 60)));
-  return `${header('专注时刻', 'timer')}<div class="w-focus-ring" data-live="focus-ring" style="--focus-progress:${progress}"><div><strong data-live="focus-time">${timerText(remaining)}</strong><span data-live="focus-label">${focus.running ? '专心做好一件事' : remaining === 0 ? '这一轮，完成了' : `${focus.duration} 分钟，留给自己`}</span></div></div><div class="w-focus-controls"><button type="button" class="w-focus-start" data-action="widget-focus-toggle"><span data-live="focus-button-icon">${icon(focus.running ? 'pause' : 'play')}</span><span data-live="focus-button">${focus.running ? '暂停' : remaining === 0 ? '再来一轮' : remaining < focus.duration * 60 ? '继续' : '开始'}</span></button><button type="button" class="widget-icon-button" data-action="widget-focus-reset" title="重置计时" aria-label="重置计时">${icon('reset')}</button></div>`;
+  return `${header(t("专注时刻"), 'timer')}<div class="w-focus-ring" data-live="focus-ring" style="--focus-progress:${progress}"><div><strong data-live="focus-time">${timerText(remaining)}</strong><span data-live="focus-label">${focus.running ? t("专心做好一件事") : remaining === 0 ? t("这一轮，完成了") : `${t("{v0} 分钟，留给自己", {v0: focus.duration})}`}</span></div></div><div class="w-focus-controls"><button type="button" class="w-focus-start" data-action="widget-focus-toggle"><span data-live="focus-button-icon">${icon(focus.running ? 'pause' : 'play')}</span><span data-live="focus-button">${focus.running ? t("暂停") : remaining === 0 ? t("再来一轮") : remaining < focus.duration * 60 ? t("继续") : t("开始")}</span></button><button type="button" class="widget-icon-button" data-action="widget-focus-reset" title="${t("重置计时")}" aria-label="${t("重置计时")}">${icon('reset')}</button></div>`;
 }
 
 export function workdayStatus(config, now = new Date()) {
@@ -184,22 +151,22 @@ export function workdayStatus(config, now = new Date()) {
   const payday = Math.max(1, Math.min(31, Math.trunc(Number(config.payday) || 10)));
   let payDate = new Date(now.getFullYear(), now.getMonth(), Math.min(payday, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()));
   if (dayStamp(payDate) < dayStamp(now)) payDate = new Date(now.getFullYear(), now.getMonth() + 1, Math.min(payday, new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate()));
-  return { remaining, isWorkday, text: !isWorkday ? '休息日' : remaining === 0 ? '已下班' : `${String(Math.floor(remaining / 3600)).padStart(2, '0')}:${String(Math.floor((remaining % 3600) / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`, caption: !isWorkday ? '今天，把时间留给生活' : remaining === 0 ? '今天辛苦了，好好休息' : '距离下班还有', paydays: Math.round((dayStamp(payDate) - dayStamp(now)) / DAY) };
+  return { remaining, isWorkday, text: !isWorkday ? t("休息日") : remaining === 0 ? t("已下班") : `${String(Math.floor(remaining / 3600)).padStart(2, '0')}:${String(Math.floor((remaining % 3600) / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`, caption: !isWorkday ? t("今天，把时间留给生活") : remaining === 0 ? t("今天辛苦了，好好休息") : t("距离下班还有"), paydays: Math.round((dayStamp(payDate) - dayStamp(now)) / DAY) };
 }
 
 function renderWorkday(item) {
   const config = item.config;
   const status = workdayStatus(config);
-  return `${header('下班倒计时', 'briefcase')}<div class="w-workday-caption" data-live="workday-caption">${status.caption}</div><strong class="w-workday-time" data-live="workday-time">${status.text}</strong><div class="w-workday-finish">每天 ${escapeHtml(config.endTime)} 准时收工</div><div class="w-workday-pay"><span>距发薪日</span><strong data-live="workday-pay">${status.paydays === 0 ? '就是今天' : `${status.paydays} 天`}</strong></div>`;
+  return `${header(t("下班倒计时"), 'briefcase')}<div class="w-workday-caption" data-live="workday-caption">${status.caption}</div><strong class="w-workday-time" data-live="workday-time">${status.text}</strong><div class="w-workday-finish">${t("每天 {v0} 准时收工", {v0: escapeHtml(config.endTime)})}</div><div class="w-workday-pay"><span>${t("距发薪日")}</span><strong data-live="workday-pay">${status.paydays === 0 ? t("就是今天") : `${t("{v0} 天", {v0: status.paydays})}`}</strong></div>`;
 }
 
 function getQuote(item, now = new Date()) {
-  return item.config.text ? { text: item.config.text, author: item.config.author || '我的摘录' } : { text: quotes[((Math.floor(dayStamp(now) / DAY) + item.config.quoteIndex) % quotes.length + quotes.length) % quotes.length], author: '栖页随笔' };
+  return item.config.text ? { text: item.config.text, author: item.config.author || t("我的摘录") } : { text: t(quotes[((Math.floor(dayStamp(now) / DAY) + item.config.quoteIndex) % quotes.length + quotes.length) % quotes.length]), author: t("栖页随笔") };
 }
 
 function renderQuote(item) {
   const quote = getQuote(item);
-  return `${header('给今天的一句话', 'quote', `<div class="widget-heading-actions">${item.config.text ? '' : `<button type="button" class="widget-icon-button" data-action="widget-quote-next" title="换一句" aria-label="换一句">${icon('reset')}</button>`}${configButton()}</div>`)}<blockquote class="w-quote-text" data-live="quote-text" title="${escapeHtml(quote.text)}">${escapeHtml(quote.text)}</blockquote><div class="w-quote-author" data-live="quote-author">— ${escapeHtml(quote.author)}</div><span class="w-quote-decoration" aria-hidden="true">“</span>`;
+  return `${header(t("给今天的一句话"), 'quote', `<div class="widget-heading-actions">${item.config.text ? '' : `<button type="button" class="widget-icon-button" data-action="widget-quote-next" title="${t("换一句")}" aria-label="${t("换一句")}">${icon('reset')}</button>`}${configButton()}</div>`)}<blockquote class="w-quote-text" data-live="quote-text" title="${escapeHtml(quote.text)}">${escapeHtml(quote.text)}</blockquote><div class="w-quote-author" data-live="quote-author">— ${escapeHtml(quote.author)}</div><span class="w-quote-decoration" aria-hidden="true">“</span>`;
 }
 
 const hotlinks = [
@@ -212,28 +179,28 @@ const hotlinks = [
 ];
 
 function renderHotlinks(state) {
-  return `${header('热门 · 快捷入口', 'trending', '<span class="w-hotlinks-tag">直达平台</span>')}<div class="w-hotlinks-grid">${hotlinks.map((link) => `<a href="${link.url}"${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer" class="w-hotlink"><span class="w-hotlink-logo" style="--platform-color:${link.color}">${link.letter}</span><span>${link.name}</span>${icon('arrow')}</a>`).join('')}</div><div class="w-hotlinks-footer">打开平台，查看实时榜单</div>`;
+  return `${header(t("热门 · 快捷入口"), 'trending', `<span class="w-hotlinks-tag">${t("直达平台")}</span>`)}<div class="w-hotlinks-grid">${hotlinks.map((link) => `<a href="${link.url}"${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer" class="w-hotlink"><span class="w-hotlink-logo" style="--platform-color:${link.color}">${link.letter}</span><span>${t(link.name)}</span>${icon('arrow')}</a>`).join('')}</div><div class="w-hotlinks-footer">${t("打开平台，查看实时榜单")}</div>`;
 }
 
 /** A deliberately small arithmetic parser: no eval, Function, or executable input. */
 export function calculateExpression(source) {
   const text = String(source).replace(/[×x]/g, '*').replace(/[÷]/g, '/').replace(/[−]/g, '-').replace(/\s+/g, '');
-  if (!text || text.length > 256 || /[^\d.+\-*/()%]/.test(text)) throw new Error('请输入有效算式');
+  if (!text || text.length > 256 || /[^\d.+\-*/()%]/.test(text)) throw new Error(t("请输入有效算式"));
   let position = 0;
   let depth = 0;
   function number() {
     const match = /^(?:\d+(?:\.\d*)?|\.\d+)/.exec(text.slice(position));
-    if (!match) throw new Error('算式还没有写完整');
+    if (!match) throw new Error(t("算式还没有写完整"));
     position += match[0].length;
     return Number(match[0]);
   }
   function primary() {
-    if (++depth > 48) throw new Error('括号层数过多');
+    if (++depth > 48) throw new Error(t("括号层数过多"));
     let value;
     if (text[position] === '(') {
       position += 1;
       value = expression();
-      if (text[position] !== ')') throw new Error('请检查括号');
+      if (text[position] !== ')') throw new Error(t("请检查括号"));
       position += 1;
     } else value = number();
     depth -= 1;
@@ -250,7 +217,7 @@ export function calculateExpression(source) {
     while (text[position] === '*' || text[position] === '/') {
       const operator = text[position++];
       const right = unary();
-      if (operator === '/' && right === 0) throw new Error('不能除以 0');
+      if (operator === '/' && right === 0) throw new Error(t("不能除以 0"));
       value = operator === '*' ? value * right : value / right;
     }
     return value;
@@ -265,14 +232,14 @@ export function calculateExpression(source) {
     return value;
   }
   const value = expression();
-  if (position !== text.length) throw new Error('请检查算式');
-  if (!Number.isFinite(value)) throw new Error('结果超出计算范围');
+  if (position !== text.length) throw new Error(t("请检查算式"));
+  if (!Number.isFinite(value)) throw new Error(t("结果超出计算范围"));
   return Number(value.toPrecision(12));
 }
 
 function renderCalculator() {
   const keys = ['C', '(', ')', '÷', '7', '8', '9', '×', '4', '5', '6', '−', '1', '2', '3', '+', '0', '.', '⌫', '='];
-  return `<div class="w-calculator-screen"><input class="w-calculator-input" data-widget-input="calculator" inputmode="decimal" maxlength="256" autocomplete="off" aria-label="计算算式" placeholder="0"><span class="w-calculator-error" data-live="calculator-error" role="status"></span></div><div class="w-calculator-keys">${keys.map((key) => `<button type="button" data-action="widget-calc" data-value="${key}" class="w-calculator-key${key === '=' ? ' is-equal' : ['÷', '×', '−', '+', 'C'].includes(key) ? ' is-operator' : ''}" aria-label="${({ C: '清空', '⌫': '删除一位', '=': '计算结果', '÷': '除以', '×': '乘以', '−': '减去', '+': '加上' })[key] || key}">${key}</button>`).join('')}</div>`;
+  return `<div class="w-calculator-screen"><input class="w-calculator-input" data-widget-input="calculator" inputmode="decimal" maxlength="256" autocomplete="off" aria-label="${t("计算算式")}" placeholder="0"><span class="w-calculator-error" data-live="calculator-error" role="status"></span></div><div class="w-calculator-keys">${keys.map((key) => `<button type="button" data-action="widget-calc" data-value="${key}" class="w-calculator-key${key === '=' ? ' is-equal' : ['÷', '×', '−', '+', 'C'].includes(key) ? ' is-operator' : ''}" aria-label="${({ C: t("清空"), '⌫': t("删除一位"), '=': t("计算结果"), '÷': t("除以"), '×': t("乘以"), '−': t("减去"), '+': t("加上") })[key] || key}">${key}</button>`).join('')}</div>`;
 }
 
 export function habitStreak(dates, now = new Date()) {
@@ -289,12 +256,12 @@ function habitList(state, now = new Date()) {
   return habits.length ? habits.map((habit) => {
     const done = Array.isArray(habit.dates) && habit.dates.includes(localDateKey(now));
     const streak = habitStreak(habit.dates, now);
-    return `<li class="w-habit-row"><button type="button" class="w-habit-check${done ? ' is-done' : ''}" data-action="widget-habit-toggle" data-habit-id="${escapeHtml(habit.id)}" aria-pressed="${done}" aria-label="${escapeHtml(`${done ? '取消今日打卡' : '今日打卡'}：${habit.name}`)}">${icon('check')}</button><span class="w-habit-name" title="${escapeHtml(habit.name)}">${escapeHtml(habit.name)}<small>${streak ? `连续 ${streak} 天` : '从今天开始'}</small></span><button type="button" class="widget-icon-button w-row-delete" data-action="widget-habit-delete" data-habit-id="${escapeHtml(habit.id)}" aria-label="${escapeHtml(`删除习惯：${habit.name}`)}">${icon('close')}</button></li>`;
-  }).join('') : '<li class="w-empty-list">让一个好习惯，从今天开始</li>';
+    return `<li class="w-habit-row"><button type="button" class="w-habit-check${done ? ' is-done' : ''}" data-action="widget-habit-toggle" data-habit-id="${escapeHtml(habit.id)}" aria-pressed="${done}" aria-label="${escapeHtml(`${done ? t("取消今日打卡") : t("今日打卡")}：${habit.name}`)}">${icon('check')}</button><span class="w-habit-name" title="${escapeHtml(habit.name)}">${escapeHtml(habit.name)}<small>${streak ? `${t("连续 {v0} 天", {v0: streak})}` : t("从今天开始")}</small></span><button type="button" class="widget-icon-button w-row-delete" data-action="widget-habit-delete" data-habit-id="${escapeHtml(habit.id)}" aria-label="${escapeHtml(`${t("删除习惯：{v0}", {v0: habit.name})}`)}">${icon('close')}</button></li>`;
+  }).join('') : `<li class="w-empty-list">${t("让一个好习惯，从今天开始")}</li>`;
 }
 
 function renderHabit(state) {
-  return `${header('习惯打卡', 'sparkles', '<span class="w-habit-today">TODAY</span>')}<ul class="w-habit-list" data-live="habit-list">${habitList(state)}</ul><form class="w-inline-form" data-widget-form="habit"><input type="text" name="text" maxlength="60" autocomplete="off" placeholder="添加一个好习惯" aria-label="新习惯"><button type="submit" class="widget-icon-button" aria-label="添加习惯">${icon('plus')}</button></form>`;
+  return `${header(t("习惯打卡"), 'sparkles', '<span class="w-habit-today">TODAY</span>')}<ul class="w-habit-list" data-live="habit-list">${habitList(state)}</ul><form class="w-inline-form" data-widget-form="habit"><input type="text" name="text" maxlength="60" autocomplete="off" placeholder="${t("添加一个好习惯")}" aria-label="${t("新习惯")}"><button type="submit" class="widget-icon-button" aria-label="${t("添加习惯")}">${icon('plus')}</button></form>`;
 }
 
 function timeInZone(zone, now, seconds = false) {
@@ -302,107 +269,49 @@ function timeInZone(zone, now, seconds = false) {
 }
 
 function zoneDate(zone, now) {
-  try { return new Intl.DateTimeFormat('zh-CN', { timeZone: zone, month: 'long', day: 'numeric', weekday: 'short' }).format(now); } catch { return '请设置有效时区'; }
+  try { return new Intl.DateTimeFormat(getLocale(), { timeZone: zone, month: 'long', day: 'numeric', weekday: 'short' }).format(now); } catch { return t("请设置有效时区"); }
 }
 
 function renderClock(item, now = new Date()) {
   const zone = item.config.timeZone;
   const label = item.config.label;
-  return `${header(label || '世界时钟', 'globe')}<strong class="w-clock-time" data-live="world-time">${timeInZone(zone, now, true)}</strong><div class="w-clock-date" data-live="world-date">${escapeHtml(zoneDate(zone, now))}</div><div class="w-clock-world"><span>伦敦<strong data-live="world-london">${timeInZone('Europe/London', now)}</strong></span><span>纽约<strong data-live="world-newyork">${timeInZone('America/New_York', now)}</strong></span></div>`;
-}
-
-function weatherCity(state) {
-  const city = state.settings?.weatherCity || {};
-  return { name: String(city.name || '香港'), latitude: Number.isFinite(Number(city.latitude)) && Math.abs(Number(city.latitude)) <= 90 ? Number(city.latitude) : 22.32, longitude: Number.isFinite(Number(city.longitude)) && Math.abs(Number(city.longitude)) <= 180 ? Number(city.longitude) : 114.17 };
-}
-
-function cityKey(city) { return `${city.latitude.toFixed(4)},${city.longitude.toFixed(4)}`; }
-
-function weatherDescription(code) {
-  if (code === 0) return '晴';
-  if (code === 1) return '晴间多云';
-  if (code === 2) return '多云';
-  if (code === 3) return '阴';
-  if ([45, 48].includes(code)) return '雾';
-  if ([51, 53, 55, 56, 57].includes(code)) return '毛毛雨';
-  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return '雨';
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return '雪';
-  if ([95, 96, 99].includes(code)) return '雷雨';
-  return '天气数据';
-}
-
-function weatherArt(code = 2, isDay = true) {
-  const cloud = '<path d="M21 54c-9 0-15-6-15-13s6-13 13-13c3-11 12-17 22-15 10 2 16 9 16 18 9-1 17 4 17 12s-6 13-15 13H21Z" fill="rgba(255,255,255,.96)"/>';
-  const sun = '<circle cx="56" cy="23" r="15" fill="#ffd982"/><g stroke="#ffe6a9" stroke-width="2.5" stroke-linecap="round"><path d="M56 2v-2m0 44v3M35 23h-3m45 0h3M41 8l-2-2m34 34 2 2M41 38l-2 2M71 8l2-2"/></g>';
-  const moon = '<path d="M64 8a18 18 0 1 0 14 28A18 18 0 0 1 64 8Z" fill="#fff0bd"/>';
-  const precipitation = code >= 51 && code < 95;
-  const snow = [71, 73, 75, 77, 85, 86].includes(code);
-  return `<svg class="w-weather-art" viewBox="0 0 84 78" aria-hidden="true">${code <= 2 ? (isDay ? sun : moon) : ''}${code === 0 ? '' : cloud}${precipitation ? `<g stroke="${snow ? '#fff' : '#bfe9ff'}" stroke-width="3" stroke-linecap="round"><path d="m24 64-3 6m20-6-3 6m20-6-3 6"/>${snow ? '<path d="m19 65 7 4m10-4 7 4m10-4 7 4"/>' : ''}</g>` : ''}${code >= 95 ? '<path d="m44 58-9 12h7l-3 9 16-17h-9l4-4Z" fill="#ffda79"/>' : ''}</svg>`;
-}
-
-export function parseWeatherResponse(raw, now = Date.now()) {
-  const current = raw?.current;
-  if (!current || typeof current.temperature_2m !== 'number' || !Number.isFinite(current.temperature_2m) || typeof current.weather_code !== 'number' || !Number.isFinite(current.weather_code)) throw new Error('天气服务返回的数据不完整');
-  const number = (value) => typeof value === 'number' && Number.isFinite(value) ? value : null;
-  return { fetchedAt: now, temperature: current.temperature_2m, feelsLike: number(current.apparent_temperature), humidity: number(current.relative_humidity_2m), code: current.weather_code, isDay: current.is_day !== 0, max: number(raw.daily?.temperature_2m_max?.[0]), min: number(raw.daily?.temperature_2m_min?.[0]), observedAt: typeof current.time === 'string' ? current.time : '' };
-}
-
-function readWeatherCache(key) {
-  try {
-    const value = JSON.parse(globalThis.localStorage?.getItem(WEATHER_CACHE_KEY) || '{}')[key];
-    return value && Number.isFinite(value.temperature) && Number.isFinite(value.code) && Number.isFinite(value.fetchedAt) && value.fetchedAt <= Date.now() + 60_000 ? value : null;
-  } catch { return null; }
-}
-
-function writeWeatherCache(key, data) {
-  try {
-    let cache;
-    try { cache = JSON.parse(globalThis.localStorage?.getItem(WEATHER_CACHE_KEY) || '{}'); } catch { cache = {}; }
-    const entries = Object.entries(cache && typeof cache === 'object' ? cache : {}).filter(([other, value]) => other !== key && value && Number.isFinite(value.fetchedAt)).sort((a, b) => b[1].fetchedAt - a[1].fetchedAt).slice(0, 7);
-    globalThis.localStorage?.setItem(WEATHER_CACHE_KEY, JSON.stringify({ ...Object.fromEntries(entries), [key]: data }));
-  } catch { /* The weather still works when browser storage is unavailable. */ }
-}
-
-function weatherState(city) {
-  const key = cityKey(city);
-  if (!weatherStates.has(key)) weatherStates.set(key, { status: 'idle', data: readWeatherCache(key), error: '', lastAttempt: 0 });
-  return weatherStates.get(key);
+  return `${header(label || t("世界时钟"), 'globe')}<strong class="w-clock-time" data-live="world-time">${timeInZone(zone, now, true)}</strong><div class="w-clock-date" data-live="world-date">${escapeHtml(zoneDate(zone, now))}</div><div class="w-clock-world"><span>${t("伦敦")}<strong data-live="world-london">${timeInZone('Europe/London', now)}</strong></span><span>${t("纽约")}<strong data-live="world-newyork">${timeInZone('America/New_York', now)}</strong></span></div>`;
 }
 
 function renderWeather(item, state) {
-  const city = weatherCity(state);
-  const top = header(city.name, 'pin', configButton('设置天气城市'));
-  if (!state.settings?.weatherEnabled) return `${top}<div class="w-weather-off">${weatherArt(2)}<span>把天气带进新标签页</span><button type="button" class="w-weather-enable" data-action="widget-weather-enable">启用天气</button></div><div class="w-weather-source">发送城市坐标至 Open-Meteo</div>`;
+  const city = item.config.city;
+  const top = header(city.name, 'pin', configButton(t("设置天气城市")));
+  if (!item.config.enabled) return `${top}<div class="w-weather-off">${weatherArt(2)}<span>${t("把天气带进新标签页")}</span><button type="button" class="w-weather-enable" data-action="widget-weather-enable">${t("启用天气")}</button></div><div class="w-weather-source">${t("发送城市坐标至 Open-Meteo")}</div>`;
   const current = weatherState(city);
-  if (!current.data) return `${top}<div class="w-weather-unavailable">${icon('cloud')}<strong>${current.status === 'error' ? '暂时无法获取天气' : '正在获取天气'}</strong><span>${current.status === 'error' ? escapeHtml(current.error) : '等待 Open-Meteo 返回数据'}</span>${current.status === 'error' ? '<button type="button" class="w-weather-enable" data-action="widget-weather-retry">重新加载</button>' : '<span class="w-weather-loading" aria-label="正在加载"></span>'}</div><div class="w-weather-source">Open-Meteo</div>`;
+  if (!current.data) return `${top}<div class="w-weather-unavailable">${icon('cloud')}<strong>${current.status === 'error' ? t("暂时无法获取天气") : t("正在获取天气")}</strong><span>${current.status === 'error' ? escapeHtml(current.error) : t("等待 Open-Meteo 返回数据")}</span>${current.status === 'error' ? `<button type="button" class="w-weather-enable" data-action="widget-weather-retry">${t("重新加载")}</button>` : `<span class="w-weather-loading" aria-label="${t("正在加载")}"></span>`}</div><div class="w-weather-source">Open-Meteo</div>`;
   const weather = current.data;
-  const updated = new Date(weather.fetchedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const updated = new Date(weather.fetchedAt).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit', hour12: false });
   const stale = Date.now() - weather.fetchedAt >= WEATHER_TTL;
-  const detail = [weatherDescription(weather.code), weather.min !== null && weather.max !== null ? `${Math.round(weather.min)}° / ${Math.round(weather.max)}°` : ''].filter(Boolean).join(' · ');
-  return `${top}<div class="w-weather-current"><strong>${Math.round(weather.temperature)}<sup>°</sup></strong>${weatherArt(weather.code, weather.isDay)}</div><div class="w-weather-description">${escapeHtml(detail)}</div><div class="w-weather-details">${weather.feelsLike !== null ? `<span>体感 ${Math.round(weather.feelsLike)}°</span>` : ''}${weather.humidity !== null ? `<span>湿度 ${Math.round(weather.humidity)}%</span>` : ''}</div><button type="button" class="w-weather-update${current.status === 'error' ? ' is-error' : ''}" data-action="widget-weather-retry" title="${escapeHtml(current.status === 'error' ? current.error : '重新获取天气')}"${current.status === 'loading' ? ' disabled' : ''}>${current.status === 'loading' ? '正在更新…' : current.status === 'error' ? `缓存 ${updated} · 更新失败 ↻` : `${stale ? '缓存' : '更新'} ${updated} · Open-Meteo ↻`}</button>`;
+  const detail = [weatherDescription(weather.code), weather.min !== null && weather.max !== null ? `${temperature(weather.min,item.config.unit).replace("°", "")}° / ${temperature(weather.max,item.config.unit).replace("°", "")}°` : ''].filter(Boolean).join(' · ');
+  return `${top}<div class="w-weather-current"><strong>${temperature(weather.temperature,item.config.unit).replace("°", "")}<sup>°</sup></strong>${weatherArt(weather.code, weather.isDay)}</div><div class="w-weather-description">${escapeHtml(detail)}</div><div class="w-weather-details">${weather.feelsLike !== null ? `<span>${t("体感 {v0}°", {v0: temperature(weather.feelsLike,item.config.unit).replace("°", "")})}</span>` : ''}${weather.humidity !== null ? `<span>${t("湿度 {v0}%", {v0: Math.round(weather.humidity)})}</span>` : ''}</div><button type="button" class="w-weather-details-button" data-action="widget-weather-detail">${t("24 小时 · 7 天预报 ↗")}</button><button type="button" class="w-weather-update${current.status === 'error' ? ' is-error' : ''}" data-action="widget-weather-retry" title="${escapeHtml(current.status === 'error' ? current.error : t("重新获取天气"))}"${current.status === 'loading' ? ' disabled' : ''}>${current.status === 'loading' ? t("正在更新…") : current.status === 'error' ? `${t("缓存 {v0} · 更新失败 ↻", {v0: updated})}` : `${stale ? t("缓存") : t("更新")} ${updated} · Open-Meteo ↻`}</button>`;
 }
 
 function renderWallpaper(item, state) {
  const photo = state.settings.wallpaperApiEnabled && normalizeWallpaperPhoto(state.settings.remoteWallpaper);
- return `<div class="wallpaper-widget-art" aria-hidden="true"></div>${photo ? `<img class="wallpaper-widget-photo" src="${escapeHtml(photo.thumbnail)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">` : ''}<button class="wallpaper-launcher" data-action="wallpaper" aria-label="打开壁纸中心"><span class="wallpaper-eyebrow">WALLPAPERS</span><strong>换一片风景</strong><span>自定义 · 官方背景 · 摄影图库</span><span class="wallpaper-launch-arrow" aria-hidden="true">↗</span></button>`;
+ return `<div class="wallpaper-widget-art" aria-hidden="true"></div>${photo ? `<img class="wallpaper-widget-photo" src="${escapeHtml(photo.thumbnail)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">` : ''}<button class="wallpaper-launcher" data-action="wallpaper" aria-label="${t("打开壁纸中心")}"><span class="wallpaper-eyebrow">WALLPAPERS</span><strong>${t("换一片风景")}</strong><span>${t("自定义 · 官方背景 · 摄影图库")}</span><span class="wallpaper-launch-arrow" aria-hidden="true">↗</span></button>`;
 }
 
 export function renderWidget(item, state) {
   const definition = getWidgetDefinition(item.widget);
-  if (!definition) throw new Error(`未知组件：${item.widget}`);
+  if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   const type = item.widget;
   if (definition && !definition.builtin) {
     let content;
     try {
-      content = definition.render({ item: structuredClone(item), config: structuredClone(item.config), escapeHtml });
+      content = definition.render({ item: structuredClone(item), config: structuredClone(item.config), escapeHtml, t, locale:getLocale() });
       if (content && typeof content.then === 'function') Promise.resolve(content).catch(() => {});
-      if (typeof content !== 'string') throw new Error('render 必须同步返回 HTML 字符串');
+      if (typeof content !== 'string') throw new Error(t("render 必须同步返回 HTML 字符串"));
     }
-    catch { content = '<p class="w-empty-list">组件加载失败，请检查组件实现</p>'; }
+    catch { content = `<p class="w-empty-list">${t("组件加载失败，请检查组件实现")}</p>`; }
     return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}">${header(item.title)}${content}</div>`;
   }
   const now = new Date();
-  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
+  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   const color = type === 'notes' && ['yellow', 'pink', 'mint'].includes(item.config?.color) ? ` w-notes-${item.config.color}` : '';
   return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
 }
@@ -420,49 +329,19 @@ function updateWeatherCards(binding) {
   }
 }
 
-async function requestWeather(city, force = false) {
-  const key = cityKey(city);
-  const status = weatherState(city);
-  if (weatherRequests.has(key)) return weatherRequests.get(key);
-  if (!force && ((status.data && Date.now() - status.data.fetchedAt < WEATHER_TTL) || Date.now() - status.lastAttempt < 60_000)) return;
-  status.status = 'loading';
-  status.lastAttempt = Date.now();
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8_000);
-  const job = (async () => {
-    try {
-      const parameters = new URLSearchParams({ latitude: city.latitude.toString(), longitude: city.longitude.toString(), current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code', daily: 'temperature_2m_max,temperature_2m_min', timezone: 'auto', forecast_days: '1' });
-      const response = await fetch(`https://api.open-meteo.com/v1/forecast?${parameters}`, { signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
-      if (!response.ok) throw new Error(`天气服务暂不可用（${response.status}）`);
-      status.data = parseWeatherResponse(await response.json());
-      status.status = 'success';
-      status.error = '';
-      writeWeatherCache(key, status.data);
-    } catch (error) {
-      status.status = 'error';
-      status.error = error?.name === 'AbortError' ? '请求超时，请稍后重试' : error instanceof TypeError ? '网络连接失败，请稍后重试' : String(error?.message || '请求失败，请稍后重试');
-    } finally { clearTimeout(timeout); weatherRequests.delete(key); }
-  })();
-  weatherRequests.set(key, job);
-  return job;
-}
-
 function ensureWeather(binding, force = false) {
-  if (!binding.alive || !binding.context.getState().settings?.weatherEnabled || !binding.container.querySelector('[data-widget="weather"]')) return;
+  if (!binding.alive) return;
   const state = binding.context.getState();
-  const city = weatherCity(state);
-  const current = weatherState(city);
-  if (!force && current.status !== 'loading' && current.data && Date.now() - current.data.fetchedAt < WEATHER_TTL) return;
-  if (binding.weatherPending === cityKey(city)) return;
-  if (!force && current.status === 'error' && Date.now() - current.lastAttempt < 60_000) return;
-  binding.weatherPending = cityKey(city);
-  const request = requestWeather(city, force);
-  updateWeatherCards(binding);
-  Promise.resolve(request).then(() => {
-    if (!binding.alive) return;
-    binding.weatherPending = null;
-    updateWeatherCards(binding);
-  });
+  for (const root of widgetRoots(binding.container, 'weather')) {
+    const item = findItem(root, state);
+    if (!item?.config.enabled) continue;
+    const city = item.config.city, key = cityKey(city), current = weatherState(city);
+    if (binding.weatherPending.has(key)) continue;
+    if (!force && ((current.data && Date.now()-current.data.fetchedAt<WEATHER_TTL) || Date.now()-current.lastAttempt<60000)) continue;
+    binding.weatherPending.add(key);
+    const request=requestWeather(city,force); updateWeatherCards(binding);
+    request.finally(()=>{binding.weatherPending.delete(key);if(binding.alive)updateWeatherCards(binding);});
+  }
 }
 
 function updateTodoCards(binding) {
@@ -511,15 +390,15 @@ function calculatorAction(root, key) {
 
 export function bindWidgets(container, context) {
   bindings.get(container)?.cleanup();
-  const binding = { container, context, alive: true, noteTimer: null, notePending: false, weatherPending: null, focusFinishing: new Set(), cleanup: null };
+  const binding = { container, context, alive: true, noteTimer: null, notePending: false, weatherPending: new Set(), focusFinishing: new Set(), cleanup: null };
   const persist = async () => {
     try { await context.save(); return true; }
-    catch (error) { if (binding.alive && !error?.notified) context.toast?.(error?.message || '保存失败，请重试'); return false; }
+    catch (error) { if (binding.alive && !error?.notified) context.toast?.(error?.message || t("保存失败，请重试")); return false; }
   };
   binding.persist = persist;
 
   async function click(event) {
-    const target = event.target.closest?.('[data-action^="widget-"]');
+    const target = event.target.closest?.('[data-action^="widget-"],[data-calendar-date]');
     if (!target || !container.contains(target)) return;
     const root = target.closest('[data-widget]');
     if (!root) return;
@@ -527,21 +406,23 @@ export function bindWidgets(container, context) {
     const item = findItem(root, state);
     if (!item) return;
     const action = target.dataset.action;
+    if (target.dataset.calendarDate) { event.preventDefault(); event.stopPropagation(); context.openDialog('widget-detail',{item,date:target.dataset.calendarDate}); return; }
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
     const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
+    if (['widget-calendar-detail','widget-weather-detail','widget-memo-open','widget-memo-new'].includes(action)) { context.openDialog('widget-detail', { item, memoId: target.dataset.memoId, newMemo: action === 'widget-memo-new' }); return; }
     if (action.startsWith('widget-calendar-')) {
       const [year, month] = root.dataset.calendarMonth.split('-').map(Number);
       const date = action === 'widget-calendar-today' ? new Date() : new Date(year, month + (action === 'widget-calendar-next' ? 1 : -1), 1);
       root.dataset.calendarMonth = `${date.getFullYear()}-${date.getMonth()}`;
-      root.innerHTML = renderCalendar(date);
+      root.innerHTML = renderCalendar(date, new Date(), item);
       return;
     }
     if (action === 'widget-weather-enable') {
-      state.settings.weatherEnabled = true;
+      item.config.enabled = true;
       target.disabled = true;
-      if (!await persist()) { state.settings.weatherEnabled = false; if (binding.alive) updateWeatherCards(binding); return; }
+      if (!await persist()) { item.config.enabled = false; if (binding.alive) updateWeatherCards(binding); return; }
       if (binding.alive) ensureWeather(binding, true);
       return;
     }
@@ -603,13 +484,13 @@ export function bindWidgets(container, context) {
       const item = findItem(root, state);
       if (!item) return;
       item.data.notes = target.value.slice(0, 100_000);
-      setText(root, 'notes-status', '保存中…');
+      setText(root, 'notes-status', t("保存中…"));
       binding.notePending = true;
       clearTimeout(binding.noteTimer);
       binding.noteTimer = setTimeout(async () => {
         binding.notePending = false;
         const saved = await persist();
-        if (binding.alive) for (const root of widgetRoots(container, 'notes')) setText(root, 'notes-status', saved ? '已保存在本机' : '保存失败，请重试');
+        if (binding.alive) for (const root of widgetRoots(container, 'notes')) setText(root, 'notes-status', saved ? t("已保存在本机") : t("保存失败，请重试"));
       }, 400);
     }
     if (target.dataset.widgetInput === 'calculator') { target.dataset.result = ''; setText(target.closest('[data-widget]'), 'calculator-error', ''); }
@@ -628,11 +509,11 @@ export function bindWidgets(container, context) {
     if (!item || !['todo', 'habit'].includes(item.widget)) return;
     const data = item.data;
     if (form.dataset.widgetForm === 'todo') {
-      if (data.todos.length >= 500) { context.toast?.('待办最多支持 500 项，请先整理已有任务'); return; }
+      if (data.todos.length >= 500) { context.toast?.(t("待办最多支持 500 项，请先整理已有任务")); return; }
       data.todos.push({ id: uid(), text: value.slice(0, 240), done: false });
       updateTodoCards(binding);
     } else {
-      if (data.habits.length >= 100) { context.toast?.('习惯最多支持 100 项'); return; }
+      if (data.habits.length >= 100) { context.toast?.(t("习惯最多支持 100 项")); return; }
       data.habits.push({ id: uid(), name: value.slice(0, 60), dates: [] });
       updateHabitCards(binding);
     }
@@ -693,13 +574,13 @@ export function refreshLiveWidgets(container, state) {
     if (focus.running && remaining === 0 && binding?.alive && !binding.focusFinishing.has(item.id)) {
       binding.focusFinishing.add(item.id);
       item.data.focus = { duration: focus.duration, remaining: 0, endAt: null, running: false };
-      binding.context.toast?.(`${item.title}完成了，休息一下吧。`);
+      binding.context.toast?.(`${t("{v0}完成了，休息一下吧。", {v0: item.title})}`);
       Promise.resolve(binding.persist()).finally(() => { binding.focusFinishing.delete(item.id); });
     }
     const running = focus.running && remaining > 0;
     setText(root, 'focus-time', timerText(remaining));
-    setText(root, 'focus-label', running ? '专心做好一件事' : remaining === 0 ? '这一轮，完成了' : `${focus.duration} 分钟，留给自己`);
-    setText(root, 'focus-button', running ? '暂停' : remaining === 0 ? '再来一轮' : remaining < focus.duration * 60 ? '继续' : '开始');
+    setText(root, 'focus-label', running ? t("专心做好一件事") : remaining === 0 ? t("这一轮，完成了") : `${t("{v0} 分钟，留给自己", {v0: focus.duration})}`);
+    setText(root, 'focus-button', running ? t("暂停") : remaining === 0 ? t("再来一轮") : remaining < focus.duration * 60 ? t("继续") : t("开始"));
     const ring = root.querySelector('[data-live="focus-ring"]');
     ring?.style.setProperty('--focus-progress', String(Math.max(0, Math.min(1, remaining / (focus.duration * 60)))));
     const buttonIcon = root.querySelector('[data-live="focus-button-icon"]');
@@ -711,7 +592,7 @@ export function refreshLiveWidgets(container, state) {
     const status = workdayStatus(item.config, now);
     setText(root, 'workday-caption', status.caption);
     setText(root, 'workday-time', status.text);
-    setText(root, 'workday-pay', status.paydays === 0 ? '就是今天' : `${status.paydays} 天`);
+    setText(root, 'workday-pay', status.paydays === 0 ? t("就是今天") : `${t("{v0} 天", {v0: status.paydays})}`);
   }
   for (const root of widgetRoots(container, 'countdown')) {
     const item = findItem(root, state);
@@ -731,7 +612,7 @@ export function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'calendar')) {
     if (root.dataset.calendarToday !== localDateKey(now)) {
       const [year, month] = root.dataset.calendarMonth.split('-').map(Number);
-      root.innerHTML = renderCalendar(new Date(year, month, 1), now);
+      root.innerHTML = renderCalendar(new Date(year, month, 1), now, findItem(root, state));
       root.dataset.calendarToday = localDateKey(now);
     }
   }

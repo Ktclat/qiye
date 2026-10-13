@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 import { keys, string, array, id, bool, number, date, unique, invalid } from './validation.js';
+
+import { validateMemos } from './memos.js';
 
 const dataKeys = Object.freeze({ notes: 'notes', todo: 'todos', habit: 'habits', focus: 'focus' });
 const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, remaining: 1500, running: false, endAt: null } };
 
 export function newWidgetData(type) {
+  if (type === 'memo') return { entries: [] };
+  if (type === 'calendar') return { events: [] };
   const key = dataKeys[type];
   return key ? structuredClone({ [key]: defaults[key] }) : {};
 }
@@ -12,12 +17,24 @@ export function newWidgetData(type) {
 export function widgetContentSummary(items) {
   return items.reduce((summary, item) => {
     if (item.type === 'widget' && item.widget === 'todo') summary.todos += item.data.todos.length;
+    if (item.type === 'widget' && item.widget === 'memo') summary.notesLength += item.data.entries.reduce((sum, entry) => sum + entry.text.length, 0);
     if (item.type === 'widget' && item.widget === 'notes') summary.notesLength += item.data.notes.length;
     return summary;
   }, { todos: 0, notesLength: 0 });
 }
 
 export function validateWidgetData(type, raw, path) {
+  if (type === 'memo') return validateMemos(raw, path);
+  if (type === 'calendar') {
+    keys(raw, ['events'], path);
+    const events = array(raw.events, `${path}.events`, 500).map((entry, index) => {
+      const p = `${path}.events[${index}]`;
+      keys(entry, ['id','date','title'], p);
+      return {id:id(entry.id, `${p}.id`), date:date(entry.date, `${p}.date`), title:string(entry.title, `${p}.title`, 160)};
+    });
+    unique(events.map(entry=>entry.id), `${path}.events`);
+    return {events};
+  }
   const key = dataKeys[type];
   keys(raw, key ? [key] : [], path);
   if (!key) return {};
@@ -32,7 +49,7 @@ export function validateWidgetData(type, raw, path) {
       running: bool(value.running, `${at}.running`),
       endAt: value.endAt === null ? null : number(value.endAt, `${at}.endAt`, 0, 8640000000000000),
     };
-    if (focus.running && focus.endAt === null) invalid(at, '运行中的番茄钟必须包含结束时间');
+    if (focus.running && focus.endAt === null) invalid(at, t("运行中的番茄钟必须包含结束时间"));
     return { focus };
   }
   const entries = array(value, at, key === 'todos' ? 500 : 100).map((entry, index) => {

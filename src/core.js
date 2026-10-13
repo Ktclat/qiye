@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t, localizeSeed } from './i18n.js';
 import { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } from './validation.js';
 import { getWidgetDefinition, newWidgetConfig, validateWidgetConfig } from './widget-registry.js';
 import { newWidgetData, validateWidgetData } from './widget-data.js';
@@ -12,7 +13,7 @@ import { normalizeIconSelection } from './icon-selection.js';
  * URL fields, imported object shape, size limits and references are checked here.
  */
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const STORAGE_KEY = `qiye.state.v${SCHEMA_VERSION}`;
 export const MAX_BACKUP_BYTES = 6 * 1024 * 1024;
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -49,7 +50,7 @@ export const DEFAULT_STATE = deepFreeze({
   schemaVersion: SCHEMA_VERSION,
   updatedAt: 0,
   settings: {
-    theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
+    language: 'auto', theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
     gridSize: 74, gap: 18, radius: 19, showLabels: true, clockSize: 70,
@@ -64,8 +65,7 @@ export const DEFAULT_STATE = deepFreeze({
     iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
     desktopMaxWidth: 1350, themeColor: '#79d7b4',
     showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false,
-    searchEngine: 'bing', customEngines: [], weatherCity: { name: '香港', latitude: 22.32, longitude: 114.17 },
-    weatherEnabled: false, dailyWallpaper: false, quote: true,
+    searchEngine: 'bing', customEngines: [], dailyWallpaper: false, quote: true,
     wallpaperApiEnabled: false, remoteWallpaper: null
   },
   activeGroupId: 'home',
@@ -80,6 +80,7 @@ export const DEFAULT_STATE = deepFreeze({
   items: [
     widget('weather-home', 'weather', '天气'),
     widget('calendar-home', 'calendar', '日历'),
+    widget('memo-home', 'memo', '备忘录'),
     link('site-google', 'home', 'Google', 'https://www.google.com/', 'G', '#FFFFFF'),
     link('site-bilibili', 'home', '哔哩哔哩', 'https://www.bilibili.com/', '哔', '#F18CAD'),
     link('site-github', 'home', 'GitHub', 'https://github.com/', 'github', '#24292F'),
@@ -142,6 +143,8 @@ export const DEFAULT_STATE = deepFreeze({
   ]
 });
 
+export function createDefaultState() { return localizeSeed(DEFAULT_STATE); }
+
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
 
 export function uid() {
@@ -167,16 +170,16 @@ export function safeUrl(input) {
   } catch { return null; }
 }
 
-function url(value, path) { const result = safeUrl(value); if (!result) invalid(path, '只支持安全的 http / https 地址'); return result; }
+function url(value, path) { const result = safeUrl(value); if (!result) invalid(path, t("只支持安全的 http / https 地址")); return result; }
 
 function validateMedia(value, type) {
   if (value === null) return null;
-  if (typeof value !== 'string' || !value.startsWith('data:')) invalid('settings.customWallpaper', '本地媒体仅支持 data URL；在线壁纸请使用壁纸小组件');
+  if (typeof value !== 'string' || !value.startsWith('data:')) invalid('settings.customWallpaper', t("本地媒体仅支持 data URL；在线壁纸请使用壁纸小组件"));
   const match = /^data:(image\/(?:png|jpeg|webp|gif|avif)|video\/(?:mp4|webm));base64,([A-Za-z0-9+/]*={0,2})$/.exec(value);
-  if (!match || match[2].length % 4 !== 0 || match[2].length === 0) invalid('settings.customWallpaper', '仅支持 PNG、JPEG、WebP、GIF、AVIF、MP4 或 WebM 的 base64 数据');
-  if ((type === 'video') !== match[1].startsWith('video/')) invalid('settings.customWallpaperType', '与媒体数据类型不一致');
+  if (!match || match[2].length % 4 !== 0 || match[2].length === 0) invalid('settings.customWallpaper', t("仅支持 PNG、JPEG、WebP、GIF、AVIF、MP4 或 WebM 的 base64 数据"));
+  if ((type === 'video') !== match[1].startsWith('video/')) invalid('settings.customWallpaperType', t("与媒体数据类型不一致"));
   const decodedSize = (match[2].length / 4) * 3 - (match[2].endsWith('==') ? 2 : match[2].endsWith('=') ? 1 : 0);
-  if (decodedSize > MAX_MEDIA_BYTES) invalid('settings.customWallpaper', '媒体文件不能超过 4 MiB');
+  if (decodedSize > MAX_MEDIA_BYTES) invalid('settings.customWallpaper', t("媒体文件不能超过 4 MiB"));
   return value;
 }
 
@@ -188,19 +191,18 @@ function validateSettings(raw) {
     const path = `settings.customEngines[${i}]`;
     keys(engine, ['id', 'name', 'letter', 'color', 'url'], path);
     const engineId = id(engine.id, `${path}.id`);
-    if (ENGINES.some(e => e.id === engineId)) invalid(`${path}.id`, '不能覆盖内置搜索引擎');
+    if (ENGINES.some(e => e.id === engineId)) invalid(`${path}.id`, t("不能覆盖内置搜索引擎"));
     const template = string(engine.url, `${path}.url`, 4096);
-    if (!template.includes('{q}') || template.split('{q}').length > 3) invalid(`${path}.url`, '必须包含搜索词占位符 {q}');
+    if (!template.includes('{q}') || template.split('{q}').length > 3) invalid(`${path}.url`, t("必须包含搜索词占位符 {q}"));
     const checked = url(template.replaceAll('{q}', 'qiye-search-token'), `${path}.url`);
-    if (!checked.includes('qiye-search-token')) invalid(`${path}.url`, '搜索词占位符无效');
+    if (!checked.includes('qiye-search-token')) invalid(`${path}.url`, t("搜索词占位符无效"));
     const name = string(engine.name, `${path}.name`, 40);
     return { id: engineId, name, letter: string(engine.letter, `${path}.letter`, 4), color: color(engine.color, `${path}.color`), url: template };
   });
   unique(customEngines.map(e => e.id), 'settings.customEngines');
-  if (![...ENGINES, ...customEngines].some(e => e.id === v.searchEngine)) invalid('settings.searchEngine', '找不到对应搜索引擎');
-  keys(v.weatherCity, ['name', 'latitude', 'longitude'], 'settings.weatherCity');
+  if (![...ENGINES, ...customEngines].some(e => e.id === v.searchEngine)) invalid('settings.searchEngine', t("找不到对应搜索引擎"));
   const remoteWallpaper = v.remoteWallpaper === null ? null : normalizeWallpaperPhoto(v.remoteWallpaper);
-  if (v.remoteWallpaper !== null && !remoteWallpaper) invalid('settings.remoteWallpaper', '在线壁纸来源不受支持，请从壁纸小组件重新选择');
+  if (v.remoteWallpaper !== null && !remoteWallpaper) invalid('settings.remoteWallpaper', t("在线壁纸来源不受支持，请从壁纸小组件重新选择"));
   const customWallpaperType = enumeration(v.customWallpaperType, ['image', 'video'], 'settings.customWallpaperType');
   let avatar = null;
   if (v.avatar !== null) {
@@ -208,6 +210,7 @@ function validateSettings(raw) {
     catch (error) { invalid('settings.avatar', error.message); }
   }
   return {
+    language: enumeration(v.language, ['auto', 'zh-CN', 'en'], 'settings.language'),
     theme: enumeration(v.theme, ['dark', 'light', 'auto'], 'settings.theme'),
     wallpaper: enumeration(v.wallpaper, ['aurora', 'sunset', 'ocean', 'forest', 'lavender', 'midnight'], 'settings.wallpaper'),
     customWallpaper: validateMedia(v.customWallpaper, customWallpaperType), customWallpaperType,
@@ -264,8 +267,7 @@ function validateSettings(raw) {
     showSearch: bool(v.showSearch, 'settings.showSearch'),
     clockFollowTheme: bool(v.clockFollowTheme, 'settings.clockFollowTheme'),
     showAddTile: bool(v.showAddTile, 'settings.showAddTile'),
-    weatherCity: { name: string(v.weatherCity.name, 'settings.weatherCity.name', 60), latitude: number(v.weatherCity.latitude, 'settings.weatherCity.latitude', -90, 90), longitude: number(v.weatherCity.longitude, 'settings.weatherCity.longitude', -180, 180) },
-    weatherEnabled: bool(v.weatherEnabled, 'settings.weatherEnabled'), dailyWallpaper: bool(v.dailyWallpaper, 'settings.dailyWallpaper'), quote: bool(v.quote, 'settings.quote'),
+    dailyWallpaper: bool(v.dailyWallpaper, 'settings.dailyWallpaper'), quote: bool(v.quote, 'settings.quote'),
     wallpaperApiEnabled: bool(v.wallpaperApiEnabled, 'settings.wallpaperApiEnabled'),
     remoteWallpaper
   };
@@ -275,21 +277,21 @@ function validateSettings(raw) {
 export function validateImport(raw) {
   let data;
   if (typeof raw === 'string') {
-    if (raw.length > MAX_BACKUP_BYTES || byteLength(raw) > MAX_BACKUP_BYTES) invalid('备份', '文件不能超过 6 MiB');
-    try { data = JSON.parse(raw.replace(/^\uFEFF/, '')); } catch { invalid('备份', '不是有效 JSON 文件'); }
+    if (raw.length > MAX_BACKUP_BYTES || byteLength(raw) > MAX_BACKUP_BYTES) invalid(t("备份"), t("文件不能超过 6 MiB"));
+    try { data = JSON.parse(raw.replace(/^\uFEFF/, '')); } catch { invalid(t("备份"), t("不是有效 JSON 文件")); }
   } else {
     // Object callers include the live application. Serialization also rejects cycles.
     try {
       const serialized = JSON.stringify(raw);
-      if (serialized === undefined || serialized.length > MAX_BACKUP_BYTES || byteLength(serialized) > MAX_BACKUP_BYTES) invalid('备份', '内容为空或超过 6 MiB');
+      if (serialized === undefined || serialized.length > MAX_BACKUP_BYTES || byteLength(serialized) > MAX_BACKUP_BYTES) invalid(t("备份"), t("内容为空或超过 6 MiB"));
     } catch (error) {
-      if (error?.message?.startsWith('数据校验失败')) throw error;
-      invalid('备份', '不能包含循环引用或无法保存的数据');
+      if (error?.message?.startsWith(t("数据校验失败"))) throw error;
+      invalid(t("备份"), t("不能包含循环引用或无法保存的数据"));
     }
     data = raw;
   }
   plain(data, 'state');
-  if (data.schemaVersion !== SCHEMA_VERSION) invalid('schemaVersion', `仅支持当前数据格式（schemaVersion: ${SCHEMA_VERSION}）`);
+  if (data.schemaVersion !== SCHEMA_VERSION) invalid('schemaVersion', `${t("仅支持当前数据格式（schemaVersion: {v0}）", {v0: SCHEMA_VERSION})}`);
   keys(data, Object.keys(DEFAULT_STATE), 'state');
   const settings = validateSettings(plain(data.settings, 'settings'));
   const groups = array(data.groups, 'groups', LIMITS.groups, 1).map((group, i) => {
@@ -300,7 +302,7 @@ export function validateImport(raw) {
   unique(groups.map(g => g.id), 'groups');
   const groupIds = new Set(groups.map(g => g.id));
   const activeGroupId = id(data.activeGroupId, 'activeGroupId');
-  if (!groupIds.has(activeGroupId)) invalid('activeGroupId', '对应分组不存在');
+  if (!groupIds.has(activeGroupId)) invalid('activeGroupId', t("对应分组不存在"));
   const items = array(data.items, 'items', LIMITS.items).map((item, i) => {
     const path = `items[${i}]`;
     plain(item, path);
@@ -308,27 +310,27 @@ export function validateImport(raw) {
     const allowed = type === 'link' ? ['id', 'groupId', 'type', 'title', 'url', 'icon', 'iconMode', 'iconUrl', 'color', 'size', 'folderId'] : type === 'folder' ? ['id', 'groupId', 'type', 'title', 'icon', 'color', 'size'] : ['id', 'groupId', 'type', 'widget', 'title', 'size', 'config', 'data'];
     keys(item, allowed, path);
     const groupId = id(item.groupId, `${path}.groupId`);
-    if (!groupIds.has(groupId)) invalid(`${path}.groupId`, '对应分组不存在');
+    if (!groupIds.has(groupId)) invalid(`${path}.groupId`, t("对应分组不存在"));
     const base = { id: id(item.id, `${path}.id`), groupId, type, title: string(item.title, `${path}.title`, 120) };
     const size = item.size;
-    if (!SIZES.has(size)) invalid(`${path}.size`, '卡片尺寸不受支持');
+    if (!SIZES.has(size)) invalid(`${path}.size`, t("卡片尺寸不受支持"));
     if (type === 'widget') {
-      if (!getWidgetDefinition(item.widget)) invalid(`${path}.widget`, '组件类型不受支持');
-      if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, '组件不支持此尺寸');
+      if (!getWidgetDefinition(item.widget)) invalid(`${path}.widget`, t("组件类型不受支持"));
+      if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, t("组件不支持此尺寸"));
       return { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
     }
     const appearance = { icon: string(item.icon, `${path}.icon`, 80), color: color(item.color, `${path}.color`), size };
     if (type === 'folder') return { ...base, ...appearance };
     const iconMode = enumeration(item.iconMode, ['auto', 'text'], `${path}.iconMode`);
     const iconUrl = normalizeIconSelection(item.iconUrl);
-    if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, '需要安全的 HTTPS 图标地址或有效的本地静态图片');
+    if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, t("需要安全的 HTTPS 图标地址或有效的本地静态图片"));
     return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
   for (const item of items) if (item.folderId !== undefined && item.folderId !== null) {
     const folder = folderMap.get(item.folderId);
-    if (!folder || folder.groupId !== item.groupId) invalid(`items.${item.id}.folderId`, '文件夹不存在或不属于同一分组');
+    if (!folder || folder.groupId !== item.groupId) invalid(`items.${item.id}.folderId`, t("文件夹不存在或不属于同一分组"));
   }
   return {
     schemaVersion: SCHEMA_VERSION, updatedAt: number(data.updatedAt, 'updatedAt', 0, 8640000000000000),
@@ -339,7 +341,7 @@ export function validateImport(raw) {
 export function exportState(state) {
   const data = validateImport(state);
   const output = JSON.stringify(data, null, 2);
-  if (byteLength(output) > MAX_BACKUP_BYTES) throw new Error('导出的备份超过 6 MiB；请先移除自定义壁纸后再导出。');
+  if (byteLength(output) > MAX_BACKUP_BYTES) throw new Error(t("导出的备份超过 6 MiB；请先移除自定义壁纸后再导出。"));
   return output;
 }
 
@@ -350,7 +352,7 @@ function chromeCall(owner, method, ...args) {
     try {
       const result = owner[method](...args, value => {
         const lastError = globalThis.chrome?.runtime?.lastError;
-        if (lastError) reject(new Error(lastError.message || '浏览器扩展操作失败'));
+        if (lastError) reject(new Error(lastError.message || t("浏览器扩展操作失败")));
         else resolve(value);
       });
       if (result && typeof result.then === 'function') result.then(resolve, reject);
@@ -363,16 +365,16 @@ async function readStored() {
     const result = await chromeCall(globalThis.chrome.storage.local, 'get', STORAGE_KEY);
     return result?.[STORAGE_KEY];
   }
-  if (!globalThis.localStorage) throw new Error('此环境无法访问本地存储。请在扩展或浏览器页面中打开栖页。');
+  if (!globalThis.localStorage) throw new Error(t("此环境无法访问本地存储。请在扩展或浏览器页面中打开栖页。"));
   const raw = globalThis.localStorage.getItem(STORAGE_KEY);
   return raw === null ? undefined : raw;
 }
 
 export async function loadState() {
   let stored;
-  try { stored = await readStored(); } catch (error) { throw new Error(`无法读取栖页数据：${error.message}`); }
-  if (stored === undefined) return clone(DEFAULT_STATE);
-  try { return validateImport(stored); } catch (error) { throw new Error(`本地数据异常，原数据已保留。${error.message}`); }
+  try { stored = await readStored(); } catch (error) { throw new Error(`${t("无法读取栖页数据：{v0}", {v0: error.message})}`); }
+  if (stored === undefined) return createDefaultState();
+  try { return validateImport(stored); } catch (error) { throw new Error(`${t("本地数据异常，原数据已保留。{v0}", {v0: error.message})}`); }
 }
 
 const subscribers = new Set();
@@ -409,7 +411,7 @@ function attachStorageListener() {
 }
 
 export function subscribeState(callback) {
-  if (typeof callback !== 'function') throw new TypeError('订阅者必须是函数');
+  if (typeof callback !== 'function') throw new TypeError(t("订阅者必须是函数"));
   subscribers.add(callback);
   attachStorageListener();
   return () => {
@@ -430,15 +432,15 @@ function withWriteLock(operation) {
 
 async function persistValidated(state, previousRevision = state.updatedAt) {
   const updatedAt = Math.max(Date.now(), previousRevision + 1);
-  if (updatedAt > 8640000000000000) throw new Error('本地数据版本超出可保存范围，请导出备份后明确重置或恢复。');
+  if (updatedAt > 8640000000000000) throw new Error(t("本地数据版本超出可保存范围，请导出备份后明确重置或恢复。"));
   const next = { ...state, updatedAt };
   try {
     if (hasExtensionStorage()) await chromeCall(globalThis.chrome.storage.local, 'set', { [STORAGE_KEY]: next });
     else {
-      if (!globalThis.localStorage) throw new Error('本地存储不可用');
+      if (!globalThis.localStorage) throw new Error(t("本地存储不可用"));
       globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     }
-  } catch (error) { throw new Error(`保存失败，原数据未主动清除。可能空间不足或存储被禁用：${error.message}`); }
+  } catch (error) { throw new Error(`${t("保存失败，原数据未主动清除。可能空间不足或存储被禁用：{v0}", {v0: error.message})}`); }
   emitState(next);
   return clone(next);
 }
@@ -454,7 +456,7 @@ export async function saveState(state, options = {}) {
     if (options.replace !== true) {
       current = await loadState();
       if (current.updatedAt !== next.updatedAt) {
-        const error = new Error('另一个标签页已更新栖页，此次改动尚未保存。已保留最新数据，请在刷新后的内容上重试。');
+        const error = new Error(t("另一个标签页已更新栖页，此次改动尚未保存。已保留最新数据，请在刷新后的内容上重试。"));
         error.code = 'STATE_CONFLICT';
         error.currentState = clone(current);
         throw error;
@@ -471,13 +473,13 @@ export async function saveState(state, options = {}) {
 /** Transactional read/append used by the popup and context menu. */
 export async function appendLink(linkData, groupId) {
   const checkedUrl = safeUrl(linkData?.url);
-  if (!checkedUrl) throw new Error('只能添加 http 或 https 网页。浏览器内部页面无法收藏到栖页。');
+  if (!checkedUrl) throw new Error(t("只能添加 http 或 https 网页。浏览器内部页面无法收藏到栖页。"));
   const iconMode = enumeration(linkData.iconMode === undefined ? 'auto' : linkData.iconMode, ['auto', 'text'], 'link.iconMode');
   const title = typeof linkData.title === 'string' && linkData.title.trim() ? linkData.title.trim().slice(0, 120) : new URL(checkedUrl).hostname;
   return withWriteLock(async () => {
     const state = await loadState();
     const targetGroup = groupId || state.activeGroupId;
-    if (!state.groups.some(group => group.id === targetGroup)) throw new Error('目标分组已不存在，请重新选择。');
+    if (!state.groups.some(group => group.id === targetGroup)) throw new Error(t("目标分组已不存在，请重新选择。"));
     const existing = state.items.find(item => item.type === 'link' && item.groupId === targetGroup && item.url === checkedUrl && !item.folderId);
     if (existing) return { state, item: clone(existing), duplicate: true };
     const item = link(uid(), targetGroup, title, checkedUrl, title.slice(0, 1), '#6BA39A', null, iconMode);
@@ -488,17 +490,17 @@ export async function appendLink(linkData, groupId) {
 }
 
 async function requireOptionalPermission(permission) {
-  if (!globalThis.chrome?.permissions) throw new Error('此功能需要先在 Chrome 或 Edge 中安装栖页扩展。');
+  if (!globalThis.chrome?.permissions) throw new Error(t("此功能需要先在 Chrome 或 Edge 中安装栖页扩展。"));
   const descriptor = { permissions: [permission] };
   const granted = await chromeCall(globalThis.chrome.permissions, 'contains', descriptor);
   if (granted) return;
   const accepted = await chromeCall(globalThis.chrome.permissions, 'request', descriptor);
-  if (!accepted) throw new Error(`未授予${permission === 'bookmarks' ? '书签' : '浏览记录'}权限，现有数据未改变。`);
+  if (!accepted) throw new Error(`${t("未授予{v0}权限，现有数据未改变。", {v0: permission === 'bookmarks' ? t("书签") : t("浏览记录")})}`);
 }
 
 export async function requestBookmarks() {
   await requireOptionalPermission('bookmarks');
-  if (!globalThis.chrome?.bookmarks) throw new Error('当前浏览器未提供书签接口。');
+  if (!globalThis.chrome?.bookmarks) throw new Error(t("当前浏览器未提供书签接口。"));
   const tree = await chromeCall(globalThis.chrome.bookmarks, 'getTree');
   const out = [];
   const queue = [...(tree || [])];
@@ -516,10 +518,10 @@ export async function requestBookmarks() {
 }
 
 export async function searchHistory(query) {
-  const text = string(query, '搜索词', 200, true).trim();
+  const text = string(query, t("搜索词"), 200, true).trim();
   if (!text) return [];
   await requireOptionalPermission('history');
-  if (!globalThis.chrome?.history) throw new Error('当前浏览器未提供历史记录接口。');
+  if (!globalThis.chrome?.history) throw new Error(t("当前浏览器未提供历史记录接口。"));
   const results = await chromeCall(globalThis.chrome.history, 'search', { text, startTime: 0, maxResults: 50 });
   return (results || []).flatMap(entry => {
     const checkedUrl = safeUrl(entry.url);
@@ -528,9 +530,9 @@ export async function searchHistory(query) {
 }
 
 export async function addCurrentTab(options = {}) {
-  if (!globalThis.chrome?.tabs) throw new Error('请在安装后的栖页扩展弹窗中添加当前页面。');
+  if (!globalThis.chrome?.tabs) throw new Error(t("请在安装后的栖页扩展弹窗中添加当前页面。"));
   const tabs = await chromeCall(globalThis.chrome.tabs, 'query', { active: true, currentWindow: true });
   const tab = tabs?.[0];
-  if (!tab?.url) throw new Error('无法读取当前页面。请在普通网页上点击栖页扩展图标重试。');
+  if (!tab?.url) throw new Error(t("无法读取当前页面。请在普通网页上点击栖页扩展图标重试。"));
   return appendLink({ url: tab.url, title: options.title || tab.title }, options.groupId);
 }

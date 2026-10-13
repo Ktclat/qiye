@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -85,8 +86,8 @@ function harness({ initialAvatar = null, writer } = {}) {
         '#avatar-status': currentPanel.status, '#avatar-preview': currentPanel.preview })[selector] || null;
     }
   };
-  context = vm.createContext({
-    DEFAULT_STATE: initial, structuredClone, Promise, document, dialog, wallpaperLibrary: {close() {}},
+  context = vm.createContext({t, getLocale,
+    widgetDetails: {close() {}}, cleanupCitySearch() {}, bindCitySearch:()=>()=>{}, DEFAULT_STATE: initial, structuredClone, Promise, document, dialog, wallpaperLibrary: {close() {}},
     $: (selector, root = document) => root?.querySelector(selector),
     normalizeAvatarFile(file) {
       const request = deferred(); decodes.push({ file, ...request }); return request.promise;

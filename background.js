@@ -1,13 +1,15 @@
+import { t, setLocale } from './src/i18n.js';
 // SPDX-License-Identifier: GPL-3.0-only
-import { appendLink, safeUrl } from './src/core.js';
+import { appendLink, safeUrl, loadState, STORAGE_KEY } from './src/core.js';
 
 const ADD_MENU_ID = 'qiye-add-page';
 
 async function installMenu() {
+  try { setLocale((await loadState()).settings.language); } catch { setLocale('auto'); }
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create({
     id: ADD_MENU_ID,
-    title: '添加到栖页',
+    title: t("添加到栖页"),
     contexts: ['page', 'link'],
     documentUrlPatterns: ['http://*/*', 'https://*/*']
   });
@@ -29,13 +31,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     ? (info.selectionText?.trim() || new URL(checkedUrl).hostname)
     : (tab?.title || new URL(checkedUrl).hostname);
   appendLink({ url: checkedUrl, title }).then(result => {
-    chrome.action.setBadgeText({ text: result.duplicate ? '已存' : '✓' });
+    chrome.action.setBadgeText({ text: result.duplicate ? t("已存") : '✓' });
     chrome.action.setBadgeBackgroundColor({ color: '#538B79' });
     setTimeout(() => chrome.action.setBadgeText({ text: '' }), 3500);
   }).catch(() => {
     chrome.action.setBadgeText({ text: '!' });
     chrome.action.setBadgeBackgroundColor({ color: '#C96760' });
-    chrome.action.setTitle({ title: '添加失败，请打开栖页检查本地存储空间' });
+    chrome.action.setTitle({ title: t("添加失败，请打开栖页检查本地存储空间") });
   });
 });
 
@@ -44,3 +46,6 @@ chrome.commands.onCommand.addListener(command => {
     chrome.tabs.create({ url: chrome.runtime.getURL('index.html?search=local') });
   }
 });
+
+chrome.runtime.onStartup.addListener(()=>installMenu().catch(()=>{}));
+chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes[STORAGE_KEY]?.newValue?.settings.language!==changes[STORAGE_KEY]?.oldValue?.settings.language)installMenu().catch(()=>{});});

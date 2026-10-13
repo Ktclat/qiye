@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -37,9 +38,9 @@ const productionCode = [
   extractDeclaration('let state ='),
   extractDeclaration('let persistedState ='),
   extractDeclaration('let editing ='),
-  ...['currentGroup', 'persist', 'commit', 'moveItem', 'removeItem', 'confirmDeleteGroup', 'applySyncedDesktop', 'applyOnlineWallpaper'].map(extractFunction),
+  ...['currentGroup', 'persist', 'saveWidgetData', 'commit', 'moveItem', 'removeItem', 'confirmDeleteGroup', 'applySyncedDesktop', 'applyOnlineWallpaper'].map(extractFunction),
   `globalThis.appTest = {
-    persist, commit, moveItem, removeItem, confirmDeleteGroup, applySyncedDesktop, applyOnlineWallpaper,
+    persist, saveWidgetData, commit, moveItem, removeItem, confirmDeleteGroup, applySyncedDesktop, applyOnlineWallpaper,
     get state() { return state; },
     get persistedState() { return persistedState; },
     get saving() { return saving; }
@@ -55,7 +56,7 @@ function deferred() {
 function harness(writer, extra = {}) {
   const writes = [], toasts = [], dialogs = [];
   let storedRevision = 0;
-  const context = vm.createContext({
+  const context = vm.createContext({t, getLocale,
     DEFAULT_STATE: copy(DEFAULT_STATE),
     structuredClone,
     Promise,
@@ -279,4 +280,23 @@ test('undoing folder or group deletion preserves unrelated edits made afterward'
     else assert.ok(h.app.state.groups.some(group => group.id === groupId));
     assert.doesNotThrow(() => validateImport(h.app.state));
   }
+});
+
+
+test('widget drafts refuse to overwrite content that changed while the editor was open', async () => {
+  const h = harness(), item = h.app.state.items.find(item=>item.widget==='calendar');
+  const original = JSON.stringify(item.data);
+  const draft = {events:[{id:'draft-event',date:'2026-10-13',title:'My draft'}]};
+  item.data.events.push({id:'remote-event',date:'2026-10-13',title:'Other tab'});
+  await assert.rejects(h.app.saveWidgetData(item.id, draft, original), /其他位置修改/);
+  assert.equal(h.writes.length, 0);
+  assert.equal(item.data.events[0].title, 'Other tab');
+});
+
+test('widget draft save persists the complete current schema without altering sibling data', async () => {
+  const h = harness(), item = h.app.state.items.find(item=>item.widget==='calendar');
+  const before = JSON.stringify(h.app.state.items.find(item=>item.widget==='memo').data);
+  await h.app.saveWidgetData(item.id, {events:[{id:'event',date:'2026-10-13',title:'Saved'}]}, JSON.stringify(item.data));
+  assert.equal(h.writes[0].state.items.find(i=>i.id===item.id).data.events[0].title, 'Saved');
+  assert.equal(JSON.stringify(h.app.state.items.find(item=>item.widget==='memo').data), before);
 });

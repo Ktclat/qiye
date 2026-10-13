@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Qiye · Your everyday new tab"
+  },
+  "shortName": {
+    "message": "Qiye"
+  },
+  "extDescription": {
+    "message": "A customizable new tab with bookmarks, folders, wallpapers, calendars, notes, weather and focus timers. Your data stays local."
+  },
+  "savePage": {
+    "message": "Save this page to Qiye"
+  },
+  "localSearch": {
+    "message": "Open local search in Qiye"
+  }
+}

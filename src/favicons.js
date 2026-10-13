@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 import { SITE_ICON_CATALOG } from './site-icon-catalog.js';
 /* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
 
@@ -468,7 +469,7 @@ async function fetchMetadata(url, kind, signal) {
 
 function resultFor(pageUrl, source, errorCode = '', options) {
   const candidates = pageUrl ? getFaviconCandidates(pageUrl, options) : [];
-  return { url: candidates[0] || null, candidates, variants: pageUrl ? getFaviconVariants(pageUrl, options) : [], source, ...(errorCode ? { warning: WARNINGS[errorCode] || WARNINGS.network } : {}) };
+  return { url: candidates[0] || null, candidates, variants: pageUrl ? getFaviconVariants(pageUrl, options) : [], source, ...(errorCode ? { warning: t(WARNINGS[errorCode] || WARNINGS.network) } : {}) };
 }
 
 /** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
@@ -570,6 +571,6 @@ export function getFaviconVariants(siteUrl, options={}) {
   const detail=detailFor(entry,url), known=audited.some(v=>v.url===url);
   return {url,kind:detail.kind||'fallback',scalable:!!detail.scalable,
    width:detail.actualWidth||detail.width||0,height:detail.actualHeight||detail.height||0,
-   source:declared.includes(url)?'网站声明':known?'已核对站点资源':'常规路径'};
+   source:declared.includes(url)?t("网站声明"):known?t("已核对站点资源"):t("常规路径")};
  });
 }

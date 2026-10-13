@@ -16,21 +16,21 @@
 推荐流程（以下版本号仅为示例，下次发布应递增）：
 
 ```sh
-# 编辑 manifest.json 和 package.json，例如都设为 0.4.1
+# 编辑 manifest.json 和 package.json，例如都设为 0.5.1
 npm test
 python scripts/build-preview.py
 python scripts/package-release.py
 git add manifest.json package.json src/version.js Qiye-preview.html
 # 将本次其他源码、文档与测试改动一并提交
-git commit -m "Release 0.4.1"
+git commit -m "Release 0.5.1"
 git push origin main
 ```
 
 也可使用标签方式；先提交完整源码，再执行：
 
 ```sh
-git tag v0.4.1
-git push origin v0.4.1
+git tag v0.5.1
+git push origin v0.5.1
 ```
 
 不需要同时推送 main 和标签。两者重复触发时发布任务串行，已发布版本保持原附件。不要重复使用旧版本号；同名标签指向不同提交会失败。规则或组织策略限制自动创建标签/Release 时，需在仓库端调整相应策略；脚本不会绕过保护规则。
@@ -39,7 +39,7 @@ git push origin v0.4.1
 
 1. 检查 package/manifest 版本、Node 逻辑测试、Python 发布规则测试。
 2. 从相同生产模块构建预览和 Pages 产物。
-3. 安装 Playwright 测试浏览器；运行桌面套件（包含编辑器套件）及组件/缩放套件。
+3. 安装 Playwright 测试浏览器；运行桌面套件（包含编辑器套件）及组件/缩放套件，并分别测试生产模块和独立 HTML 的中英文日历、备忘录、天气与失败恢复。
 4. 生成分发包，确认已提交的预览与版本模块没有过期。
 5. 上传 `qiye-release` 构建产物；发布任务下载同一份产物。
 6. 仅发布任务获取 `contents: write`，使用仓库 `GITHUB_TOKEN` 创建草稿、上传全部附件，再转为正式 Release。
@@ -55,7 +55,7 @@ git push origin v0.4.1
 | `qiye-X.Y.Z-preview.html` | 可直接打开的独立网页预览 |
 | `qiye-X.Y.Z-SHA256SUMS.txt` | 上述三个文件的 SHA-256 校验值 |
 
-扩展 ZIP 解压后，在 `chrome://extensions/` 或 `edge://extensions/` 开启开发者模式，加载包含 manifest.json 的目录。浏览器不会因为下载 ZIP 自动安装；此流程不签发 CRX，不自动上传 Chrome/Edge 商店。保留安装路径并重新加载扩展。项目未正式推出，不保证旧数据或旧备份可用；当前仅使用 schema 2，开发阶段的数据结构变化不提供迁移。
+扩展 ZIP 解压后，在 `chrome://extensions/` 或 `edge://extensions/` 开启开发者模式，加载包含 manifest.json 的目录。浏览器不会因为下载 ZIP 自动安装；此流程不签发 CRX，不自动上传 Chrome/Edge 商店。保留安装路径并重新加载扩展。项目未正式推出，不保证旧数据或旧备份可用；当前仅使用 schema 3，开发阶段的数据结构变化不提供迁移。
 
 本地打包无需第三方 Python 库：`python scripts/package-release.py --output dist`。文件采用明确的路径/后缀清单，并使用固定 ZIP 时间戳，排除 `.git`、测试工具、本机备份、密钥和日志。不要在 `src`、`docs` 等发布源码目录放私人文件。
 

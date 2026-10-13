@@ -38,6 +38,9 @@ jobs:
         run: |
           python3 tests/browser-e2e.py --output test-results
           python3 tests/widgets-e2e.py --output test-results/widgets
+          python3 tests/daily-widgets-e2e.py
+          python3 tests/daily-widgets-e2e.py --preview
+          python3 tests/extension-e2e.py
       - name: Package extension, source and standalone preview
         run: |
           python3 scripts/package-release.py

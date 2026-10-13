@@ -1,3 +1,4 @@
+import { t, getLocale } from '../src/i18n.js';
 import { normalizeIconSelection } from '../src/icon-selection.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -5,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../src/favicon-view.js', import.meta.url), 'utf8');
-const executable = source.replace(/^import .*;\n/gm, '').replace(/^export /gm, '') + '\nglobalThis.bind = bindFaviconImages;';
+const executable = source.replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, '') + '\nglobalThis.bind = bindFaviconImages;';
 
 // Run the production renderer with observable browser image and timer boundaries.
 // Metadata ranking and persistence have their own integration tests.
@@ -45,7 +46,7 @@ function harness(overrides = {}) {
     const scalable = url?.endsWith('.svg');
     return { size, requiredSize, scalable, score: scalable ? 10000 : size, adequate: scalable || size >= requiredSize };
   };
-  const context = vm.createContext({
+  const context = vm.createContext({t, getLocale,
     normalizeIconSelection,
     Image: BrowserImage, document: {}, URL, Promise, Date, devicePixelRatio: 2,
     getComputedStyle: image => image.styleValues,
