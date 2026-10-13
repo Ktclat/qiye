@@ -1,6 +1,6 @@
 # v0.5.0 验证记录
 
-日期：2026-10-13。本轮在 Windows 使用 Microsoft Edge 155.0.4283.45，由 Playwright 1.56.0 驱动。网页使用真实 HTTP origin / localStorage；扩展检查使用临时浏览器配置和实际 `chrome.storage.local`，不读取用户浏览器数据。本地使用 Node.js 26.3.0、Python 3.14.6；CI 目标为 Node.js 22、Python 3.13。
+日期：2026-10-13 至 14 日。本轮在 Windows 使用 Microsoft Edge 155.0.4283.45，由 Playwright 1.56.0 驱动；另以其配套 Chromium 141.0.7390.37 复核解压扩展。网页使用真实 HTTP origin / localStorage；扩展检查使用临时浏览器配置和实际 `chrome.storage.local`，不读取用户浏览器数据。本地使用 Node.js 26.3.0、Python 3.14.6；CI 目标为 Node.js 22、Python 3.13。
 
 ## 通过的检查
 
@@ -40,7 +40,7 @@ python scripts/build-pages.py /path/to/qiye-pages
 python scripts/verify-live.py --expected /path/to/qiye-pages
 ```
 
-可用 `CHROMIUM_PATH` 指定 Chrome / Edge。CI 在 Linux 安装 Chromium 并执行同一套检查。浏览器截图 / JSON 报告位于 `test-results/`，由 CI 上传 artifact。`verify-live.py` 读取当前 manifest 版本和生产存储键，对公网 HTML、图标和许可证与构建文件逐字节比较，并用无 API 模拟的新浏览器验证语言、组件和持久化。
+可用 `CHROMIUM_PATH` 指定 Chrome / Edge。CI 在 Linux 安装 Chromium 并执行同一套检查；解压扩展使用完整 Chromium 通道。安装版检查等待窗口实际关闭和目标内容出现，失败时保留测试配置的截图 / 存储快照。浏览器截图 / JSON 报告位于 `test-results/`，由 CI 上传 artifact。`verify-live.py` 读取当前 manifest 版本和生产存储键，对公网 HTML、图标和许可证与构建文件逐字节比较，并用无 API 模拟的新浏览器验证语言、组件和持久化。
 
 ## 验收边界
 
