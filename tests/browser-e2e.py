@@ -207,7 +207,7 @@ with sync_playwright() as p:
   check('Escape cancels folder creation and restores order',lambda:eq([i['id'] for i in saved(page)['items']],original))
   check('cancelled folder highlight is fully removed',lambda:eq(page.locator('.folder-pending,.folder-ready,.folder-drop-hint').count(),0));ctx.close()
 
-  ctx,page,errors=setup({'iconOpacity':60,'radius':14,'labelSize':16})
+  ctx,page,errors=setup({'iconOpacity':60,'radius':14,'labelSize':16,'iconShape':'rounded'})
   check('selected sidebar group is a true square including icon and name',lambda:truth(abs(page.locator('.group-button.active').bounding_box()['width']-page.locator('.group-button.active').bounding_box()['height'])<1))
   check('website icon opacity and radius follow their controls',lambda:eq(page.locator('[data-item="site-google"] .tile-body').evaluate('n=>[getComputedStyle(n).opacity,getComputedStyle(n).borderRadius]'),['0.6','14px']))
   check('all website icon display frames use equal width and height',lambda:truth(page.locator('.tile-link .tile-body').evaluate_all('ns=>ns.every(n=>Math.abs(n.getBoundingClientRect().width-n.getBoundingClientRect().height)<1)')))

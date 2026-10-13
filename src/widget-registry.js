@@ -6,7 +6,7 @@ import { widgetExtensions } from './widget-extensions.js';
 const builtins = [
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
-  { type: 'calendar', title: '日历', description: '公历月份与中国农历', size: '2x2', icon: 'calendar' },
+  { type: 'calendar', title: '日历', description: '公历月份与中国农历', size: '4x2', icon: 'calendar' },
   { type: 'memo', title: '备忘录', description: '多条笔记、搜索、置顶与自动保存', size: '2x2', icon: 'note' },
   { type: 'notes', title: '便签', description: '随手记录，自动保存到本机', size: '2x2', icon: 'note' },
   { type: 'todo', title: '待办清单', description: '添加、勾选和删除日常任务', size: '2x2', icon: 'check' },
@@ -23,7 +23,7 @@ const builtins = [
 export const WIDGET_API_VERSION = 1;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
-  calendar: { weekStart: 1, showLunar: true, holidays: 'CN' },
+  calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
   weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius' },
   countdown: { title: '新年，新的期待', date: '2027-01-01' },
   workday: { endTime: '18:00', payday: 10, workdays: [1, 2, 3, 4, 5] },

@@ -614,6 +614,12 @@ function openDialog(kind,data={}) {
  if(kind!=='wallpaper')wallpaperLibrary.close();
  dialogKind = kind; dialogData = data;
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
+ const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
+ const dedicatedWidget = ['calendar','memo'].includes(detailWidget);
+ dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
+ dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
+ dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
+ dialog.classList.remove('widget-app-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  dialog.classList.toggle('add-dialog',kind==='add');
@@ -624,7 +630,7 @@ function openDialog(kind,data={}) {
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'link',data);
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
- else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div id="widget-detail-body" class="widget-detail-body">${widgetDetails.render(item,data)}</div>`; }
+ else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=(dedicatedWidget?'':dialogHeader(item.title))+`<div id="widget-detail-body" class="${dedicatedWidget?'widget-app-body':'widget-detail-body'}">${widgetDetails.render(item,data)}</div>`; }
  else if (kind === 'widget-config') html = widgetConfigDialog(state.items.find(i=>i.id===data.item?.id) || data.item);
  else if (kind === 'weather') { const item = state.items.find(i=>i.widget==='weather') || {id:uid(),widget:'weather',title:t('天气'),config:newWidgetConfig('weather')}; html = widgetConfigDialog(item); }
  else if (kind === 'settings') html = settingsDialog(data.tab || 'general');

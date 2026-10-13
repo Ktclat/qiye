@@ -1,4 +1,4 @@
-# 第三方字体与素材说明
+# 第三方代码、字体与素材说明
 
 ## Inter 可变字体
 
@@ -64,3 +64,14 @@ U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
 - 常用网站图标：`src/site-icon-catalog.js` 记录本次实际核验的首方图标地址与声明信息。源码包不复制商标图片；图标用于识别对应网站，权利归各原权利人。谷歌 128px 与 Figma SVG/192/256 来源另见审计工作流记录。
 
 不使用第三方图标代理，不抓取需登录的个人内容。核验事实和日期见 `docs/SOURCE-AUDIT.json`。
+
+## lunar-javascript 历法引擎
+
+- 上游：[6tail/lunar-javascript](https://github.com/6tail/lunar-javascript)，MIT License，Copyright (c) 2018 6tail。
+- 版本：1.7.7；固定提交 `4c45a59f79b856125516f31aefa8295035c16afd`，获取日期 2026-10-14。
+- 上游 `lunar.js` SHA-256：`9750324bfe1aa63c146f8c72b1143df924466c11c8a5277d7d9225c541a18aaa`。
+- 本地文件：`src/lunar-engine.js`。文件头包含完整 MIT 许可，单文件网页也保留此许可。仅将 UMD 外壳替换为命名 ES 模块导出；算法、数据表与上游注释保留。
+- 可复现更新：`python scripts/update-lunar-vendor.py`。脚本固定 URL 和哈希；上游不匹配时终止。常规构建、安装与运行不下载代码。
+- 封装：`src/calendar-almanac.js` 提供普通对象、语言缓存、英文名称补充，不向外暴露可变上游对象。上游未翻译的节日由 `src/messages-en.js` 补齐。
+
+用于公历转农历、节气、传统节日、生肖、星座及传统黄历资料。中国法定节假日仍使用项目单独核实的 2026 年政府安排，不用民俗节日推断放假。黄历资料属于传统文化内容。

@@ -61,7 +61,7 @@ export const DEFAULT_STATE = deepFreeze({
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
     searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
     showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
-    iconShape: 'rounded', iconBackdrop: 'adaptive', autoExtractIcons: true,
+    iconShape: 'original', iconBackdrop: 'none', autoExtractIcons: true,
     iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
     desktopMaxWidth: 1350, themeColor: '#79d7b4',
     showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false,
@@ -79,7 +79,7 @@ export const DEFAULT_STATE = deepFreeze({
   ],
   items: [
     widget('weather-home', 'weather', '天气'),
-    widget('calendar-home', 'calendar', '日历'),
+    widget('calendar-home', 'calendar', '日历', '4x2'),
     widget('memo-home', 'memo', '备忘录'),
     link('site-google', 'home', 'Google', 'https://www.google.com/', 'G', '#FFFFFF'),
     link('site-bilibili', 'home', '哔哩哔哩', 'https://www.bilibili.com/', '哔', '#F18CAD'),

@@ -4,12 +4,14 @@
 
 Qiye is an account-free, customizable new tab for Chrome and Edge. Organize websites, folders and everyday widgets, use your own wallpaper, and optionally sync through your own WebDAV server. Personal content stays in your browser unless you export it or enable synchronization.
 
-Version **0.5.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+Version **0.6.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+
+Website icons now default to their original outline with no added background. Choose rounded frames or an adaptive background explicitly in icon settings.
 
 ## Everyday widgets
 
-- **Calendar:** month navigation, today, optional Chinese lunar dates, Monday / Sunday week start, day-of-year and ISO week, per-date events, and a date / workday calculator. Official mainland China holidays and adjusted working days are provided for **2026 only**. Other regions can use weekdays without a statutory holiday calendar.
-- **Memos:** multiple entries with titles and plain text, full-text search, pinning, recent / title sorting, autosave, delete with undo and TXT export. A failed save keeps the draft in the current page; retry or export before reloading.
+- **Calendar:** a wide desktop card and a dedicated calendar app with separate calendar / tools tabs, year and month selectors, lunar almanac details, a yearly festival timeline, date addition / subtraction, today, optional Chinese lunar dates, Monday / Sunday week start, day-of-year and ISO week, per-date events, and a date / workday calculator. Workday intervals exclude the start date and include the end date. Calendar data is bundled offline using the pinned MIT-licensed lunar-javascript engine; traditional almanac entries are cultural reference data. Official mainland China holidays and adjusted working days are provided for **2026 only**. Other regions can use weekdays without a statutory holiday calendar.
+- **Memos:** a dedicated left-list / right-editor workspace with edit / creation timestamps, maximize and mobile list switching; multiple entries with titles and plain text, full-text search, pinning, recent / title sorting, autosave, delete with undo and TXT export. A failed save keeps the draft in the current page; retry or export before reloading.
 - **Weather:** independent city and °C / °F settings per card, worldwide city search, current observations, 24-hour and 7-day forecasts, precipitation probability, feels-like temperature, wind, humidity, UV, sunrise / sunset, US AQI and PM2.5. Enable network access for each weather card. Data comes from Open-Meteo / CAMS; missing measurements remain unknown, and failed requests keep cached forecasts.
 - **Other widgets:** quick sticky notes, to-dos, focus timer, countdown, workday countdown, habits, quotes, world clocks, calculator, wallpaper gallery and links to trending pages.
 
@@ -17,7 +19,7 @@ Windows can be scaled from 75% to 150% in **Settings → Theme & materials**. Li
 
 ## Install
 
-1. Download `qiye-0.5.0-chrome-edge.zip` from Releases and extract it.
+1. Download `qiye-0.6.0-chrome-edge.zip` from Releases and extract it.
 2. Open `chrome://extensions/` or `edge://extensions/`, enable Developer mode and choose **Load unpacked**.
 3. Select the folder containing `manifest.json`, then open a new tab.
 

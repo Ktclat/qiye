@@ -8,9 +8,10 @@ import { mountWidgetExtensions } from './widget-runtime.js';
 
 const DAY = 86_400_000;
 import { WEATHER_TTL, weatherState, requestWeather, cityKey, temperature, weatherDescription, weatherArt } from './weather.js';
-import { localDateKey, dayStamp, chineseLunarDate } from './calendar.js';
+import { localDateKey, dayStamp, chineseLunarDate, dateStats } from './calendar.js';
 import { formatDate, getLocale } from './i18n.js';
-import { memoCard, calendarGrid } from './widget-detail-views.js';
+import { memoCard } from './memo-view.js';
+import { calendarGrid } from './calendar-view.js';
 const bindings = new WeakMap();
 const quotes = [
   '把今天过得慢一点，认真看一朵云，认真完成一件小事。',
@@ -94,7 +95,8 @@ export function daysUntil(value, now = new Date()) {
 }
 
 function renderCalendar(monthDate, today, item) {
-  return `<div class="w-calendar-top"><span>${escapeHtml(formatDate(monthDate,{year:'numeric',month:'long'}))}</span><div><button type="button" class="widget-icon-button" data-action="widget-calendar-prev" aria-label="${t("上个月")}">${icon('chevronLeft')}</button><button type="button" class="widget-icon-button" data-action="widget-calendar-today" aria-label="${t("回到本月")}">${t("今")}</button><button type="button" class="widget-icon-button" data-action="widget-calendar-next" aria-label="${t("下个月")}">${icon('chevronRight')}</button></div></div>${calendarGrid(monthDate,item.config,{compact:true,events:item.data.events})}<button type="button" class="w-calendar-lunar" data-action="widget-calendar-detail">${t("{v0}详情 ↗", {v0: item.config.showLunar?escapeHtml(chineseLunarDate(today))+' · ':''})}</button>`;
+  const stats = dateStats(today);
+  return `<div class="w-calendar-summary"><div class="w-calendar-top"><button type="button" class="widget-icon-button" data-action="widget-calendar-prev" aria-label="${t('上个月')}">${icon('chevronLeft')}</button><span>${escapeHtml(formatDate(monthDate,{year:'numeric',month:'long'}))}</span><button type="button" class="widget-icon-button" data-action="widget-calendar-next" aria-label="${t('下个月')}">${icon('chevronRight')}</button></div><button type="button" class="w-calendar-open" data-action="widget-calendar-detail" aria-label="${t('打开日历')}"><strong>${today.getDate()}</strong><span>${t('第 {day} 天 · ISO 第 {week} 周',{day:stats.day,week:stats.week})}</span><small>${item.config.showLunar?escapeHtml(chineseLunarDate(today))+' · ':''}${escapeHtml(formatDate(today,{weekday:'short'}))}</small></button>${localDateKey(monthDate).slice(0,7) !== localDateKey(today).slice(0,7) ? `<button type="button" class="w-calendar-return" data-action="widget-calendar-today">${t('回到本月')}</button>` : ''}</div><div class="w-calendar-dates">${calendarGrid(monthDate,item.config,{compact:true,events:item.data.events})}</div>`;
 }
 
 function renderNotes(data) {

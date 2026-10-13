@@ -34,7 +34,7 @@ html[data-theme=dark] .widget-inner{
 html[data-theme=dark] .w-wallpaper{--w-bg:linear-gradient(135deg,#31483f,#263f39);--w-fg:#fff;--w-heading:#fff;--w-muted:#e8f2ec;--w-hover:#ffffff29;--w-accent:#d8e8db;--w-accent-ink:#264738;--w-accent-hover:#f0f7ef}
 html[data-theme=dark] .w-wallpaper-shade{background:linear-gradient(180deg,#081b20a3,transparent 40%,#061715c9)}
 html[data-theme=dark] .w-weather{--w-bg:linear-gradient(145deg,#273e63 0%,#2e3b60 50%,#383453 100%);--w-fg:#ecf2ff;--w-heading:#dce5fa;--w-muted:#b2c1df;--w-border:#b0c5ff38;--w-control:#a2bbec1c;--w-hover:#adc5f32d;--w-error:#ffdea1}
-html[data-theme=dark] .w-calendar{--w-bg:#292a36;--w-fg:#e0dfec;--w-muted:#a6a7bb;--w-accent:#eda0af;--w-accent-ink:#3d1d2a;--w-weekend:#d8a0b0;--w-decor:#eda0af26}
+html[data-theme=dark] .w-calendar{--w-bg:#232323;--w-fg:#eee;--w-muted:#aaa;--w-accent:#ff545f;--w-accent-ink:#fff;--w-weekend:#ff545f;--w-decor:#ff545f26}
 html[data-theme=dark] .w-notes,html[data-theme=dark] .w-notes-yellow{--w-bg:#39352a;--w-fg:#ecddb0;--w-muted:#c2b38c;--w-hover:#dcc9971f;--w-scrollbar:#dcc99752;--w-decor:#dcc99726}
 html[data-theme=dark] .w-notes-pink{--w-bg:#3d2b36;--w-fg:#eed1dc;--w-muted:#c6a4b5;--w-hover:#e0b2c91f;--w-scrollbar:#e0b2c952;--w-decor:#e0b2c926}
 html[data-theme=dark] .w-notes-mint{--w-bg:#2a3a31;--w-fg:#c9e4cb;--w-muted:#a3c2ab;--w-hover:#b1d9b91f;--w-scrollbar:#b1d9b952;--w-decor:#b1d9b926}
@@ -158,25 +158,7 @@ html[data-theme=dark] .w-clock{--w-bg:radial-gradient(ellipse at 90% 0,#45556e,t
 @keyframes w-spin{to{transform:rotate(360deg)}}
 
 /* The calendar keeps a real six-week month inside a compact tile. */
-.w-calendar{padding:10px 11px 8px}
-.w-calendar-top{display:flex;align-items:center;justify-content:space-between;flex:none;height:22px;margin-bottom:4px}
-.w-calendar-top>span{display:flex;align-items:baseline;gap:7px}
-.w-calendar-top strong{font-weight:700;font-size:20px;letter-spacing:-.7px;color:var(--w-accent)}
-.w-calendar-top strong small{font-weight:500;font-size:9px;margin-left:3px;letter-spacing:0}
-.w-calendar-top em{font-size:9px;font-style:normal;color:var(--w-muted);letter-spacing:.5px}
-.w-calendar-top>div{display:flex;align-items:center;gap:0;margin-right:-5px}
-.w-calendar-top .widget-icon-button{width:18px;height:21px;color:var(--w-muted)}
-.w-calendar-top .widget-icon-button .widget-icon{width:11px;height:11px}
-.w-calendar-top .w-calendar-today-button{font-size:9px}
-.w-calendar-weekdays,.w-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));text-align:center;gap:0}
-.w-calendar-weekdays{font-size:8px;flex:none;height:16px;color:var(--w-muted);align-items:center}
-.w-calendar-weekdays>span:nth-last-child(-n+2){color:var(--w-weekend)}
-.w-calendar-grid{flex:1;min-height:0;grid-template-rows:repeat(var(--calendar-rows,5),minmax(0,1fr));align-items:center;font-size:9px;line-height:1}
-.w-calendar-day{display:grid;place-items:center;width:17px;height:17px;justify-self:center;border-radius:6px;font-variant-numeric:tabular-nums}
-.w-calendar-day.is-weekend{color:var(--w-weekend)}
-.w-calendar-day.is-outside{opacity:.42}
-.w-calendar-day.is-today{background:var(--w-accent);color:var(--w-accent-ink);font-weight:650;box-shadow:0 3px 7px var(--w-decor)}
-.w-calendar-lunar{flex:none;text-align:center;color:var(--w-muted);font-size:8px;margin-top:5px;border-top:1px solid var(--w-border);padding-top:5px;line-height:1}
+
 
 /* Notes retain their native textarea and selection across every clock tick. */
 .w-notes .widget-heading{color:inherit;opacity:.78}
@@ -292,9 +274,6 @@ html[data-theme=dark] .w-clock{--w-bg:radial-gradient(ellipse at 90% 0,#45556e,t
   .w-quote-text{font-size:12px;line-height:1.8;-webkit-line-clamp:4}
 }
 @container (min-width:220px){
-  .w-calendar-top strong{font-size:21px}
-  .w-calendar-day{width:24px}
-  .w-calendar-lunar{font-size:9px}
   .w-weather-current{justify-content:center}
   .w-weather-current>.w-weather-art{right:18px}
   .w-weather-description,.w-weather-details{justify-content:center;text-align:center}

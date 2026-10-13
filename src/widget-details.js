@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { t } from './i18n.js';
-import { parseDate, localDateKey, daysBetween, countWorkdays } from './calendar.js';
+import { localDateKey, parseDate } from './calendar.js';
+import { newCalendarView, calendarAction, calendarChange, calendarKeydown } from './calendar-controls.js';
 import { newMemo, listMemos, MEMO_LIMIT } from './memos.js';
 import { searchCities, requestWeather } from './weather.js';
 import { createWidgetDraft } from './widget-drafts.js';
-import { calendarDetail, memoDetail, memoList, weatherDetail, escapeText } from './widget-detail-views.js';
+import { calendarDetail } from './calendar-view.js';
+import { memoDetail, memoList, memoTimestamp } from './memo-view.js';
+import { weatherDetail } from './widget-detail-views.js';
+import { escapeText } from './html.js';
 
 function download(content, name, type) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -41,7 +45,14 @@ export function createWidgetDetails(host) {
 
   function redraw(session) {
     if (!session.root?.isConnected) return;
+    const previous = session.root.querySelector('#memo-text');
+    const selection = previous && {id:previous.dataset.memoId, start:previous.selectionStart, end:previous.selectionEnd, scroll:previous.scrollTop};
     session.root.innerHTML = renderBody(session);
+    const editor = session.root.querySelector('#memo-text');
+    if (editor && selection?.id === editor.dataset.memoId) {
+      editor.setSelectionRange(selection.start, selection.end);
+      editor.scrollTop = selection.scroll;
+    }
     updateStatus(session);
   }
 
@@ -61,6 +72,7 @@ export function createWidgetDetails(host) {
     entries.push(entry);
     session.view.active = entry.id;
     session.view.query = '';
+    session.view.mobileList = false;
     session.draft.changed();
     redraw(session);
     session.root.querySelector('#memo-title')?.focus();
@@ -71,21 +83,12 @@ export function createWidgetDetails(host) {
     if (!target) return;
     event.preventDefault();
     const {view, draft} = session, data = draft.data, name = target.dataset.detailAction;
-    if (target.dataset.calendarDate) {
-      if (!parseDate(target.dataset.calendarDate)) return;
-      view.date = target.dataset.calendarDate;
-      view.month = view.date.slice(0, 7);
+    if (session.item.widget === 'calendar' && calendarAction(session, target, redraw)) return;
+    if (name === 'window-expand') {
+      view.expanded = !view.expanded;
+      session.root.closest('dialog').classList.toggle('widget-app-expanded', view.expanded);
       redraw(session);
-    } else if (name?.startsWith('month-')) {
-      const date = parseDate(view.month + '-01');
-      date.setMonth(date.getMonth() + (name === 'month-next' ? 1 : -1));
-      if (date.getFullYear() < 1900 || date.getFullYear() > 2200) return;
-      view.month = localDateKey(date).slice(0, 7);
-      redraw(session);
-    } else if (name === 'calendar-today') {
-      view.date = localDateKey();
-      view.month = view.date.slice(0, 7);
-      redraw(session);
+      session.root.querySelector('[data-detail-action=window-expand]').focus();
     } else if (name === 'event-delete') {
       data.events = data.events.filter(entry => entry.id !== target.dataset.id);
       draft.changed();
@@ -94,7 +97,13 @@ export function createWidgetDetails(host) {
       newEntry(session);
     } else if (name === 'memo-select') {
       view.active = target.dataset.id;
+      view.mobileList = false;
       redraw(session);
+      session.root.querySelector('#memo-title')?.focus();
+    } else if (name === 'memo-toggle-list') {
+      view.mobileList = !view.mobileList;
+      redraw(session);
+      session.root.querySelector(view.mobileList ? '#memo-query' : '#memo-title')?.focus();
     } else if (name === 'memo-undo' && view.deleted) {
       if (data.entries.length >= MEMO_LIMIT) return;
       data.entries.push(view.deleted);
@@ -120,6 +129,7 @@ export function createWidgetDetails(host) {
         entry.pinned = !entry.pinned;
         draft.changed();
         redraw(session);
+        session.root.querySelector('[data-detail-action=memo-pin]')?.focus();
       } else if (name === 'memo-export') {
         download(entry.title + '\n\n' + entry.text, (entry.title || 'Qiye-memo').slice(0, 80) + '.txt', 'text/plain;charset=utf-8');
       } else if (name === 'memo-delete') {
@@ -135,6 +145,10 @@ export function createWidgetDetails(host) {
 
   function input(session, event) {
     const {root, draft, view} = session, target = event.target;
+    if (session.item.widget === 'calendar') {
+      if (target.closest('[data-date-tool]')) calendarChange(session, target, redraw);
+      return;
+    }
     if (target.id === 'memo-query') view.query = target.value;
     else if (target.id === 'memo-title' || target.id === 'memo-text') {
       const entry = draft.data.entries.find(entry => entry.id === view.active);
@@ -143,19 +157,18 @@ export function createWidgetDetails(host) {
       entry.updatedAt = Date.now();
       draft.changed();
       root.querySelector('#memo-count').textContent = t('{count} 字符', {count:entry.text.length});
+      root.querySelector('#memo-updated').textContent = memoTimestamp(entry.updatedAt);
     } else return;
     root.querySelector('#memo-list').innerHTML = memoList(listMemos(draft.data.entries, view.query, view.sort), view.active);
   }
 
   function change(session, event) {
     const target = event.target;
-    if (target.id === 'calendar-month' && parseDate(target.value + '-01')) {
-      session.view.month = target.value;
-      redraw(session);
-    }
+    if (session.item.widget === 'calendar' && calendarChange(session, target, redraw)) return;
     if (target.id === 'memo-sort') {
       session.view.sort = target.value;
       redraw(session);
+      session.root.querySelector('#memo-sort').focus();
     }
   }
 
@@ -171,14 +184,6 @@ export function createWidgetDetails(host) {
       session.draft.changed();
       redraw(session);
       await flush(session);
-    }
-    if (form.id === 'date-tool-form') {
-      const output = session.root.querySelector('#date-tool-result');
-      try {
-        const start = parseDate(data.get('start')), end = parseDate(data.get('end'));
-        if (!start || !end) throw new Error(t('请选择有效日期'));
-        output.textContent = t('相差 {days} 天；包含首尾日期共 {workdays} 个工作日。', {days:daysBetween(start,end), workdays:countWorkdays(start,end,currentItem(session).config.holidays)});
-      } catch (error) { output.textContent = error.message; }
     }
   }
 
@@ -203,8 +208,8 @@ export function createWidgetDetails(host) {
     render(item, data = {}) {
       let session = drafts.get(item.id);
       if (!session) {
-        const today = data.date || localDateKey();
-        session = {item, view:{date:today, month:today.slice(0,7), query:'', sort:'updated', active:data.memoId || listMemos(item.data.entries || [])[0]?.id || ''}};
+        const today = parseDate(data.date) ? data.date : localDateKey();
+        session = {item, view:{...newCalendarView(today), query:'', sort:'updated', active:data.memoId || listMemos(item.data.entries || [])[0]?.id || ''}};
         session.draft = createWidgetDraft(item, host.saveData, () => {
           updateStatus(session);
           if (!session.draft.dirty) host.refreshCards();
@@ -222,9 +227,11 @@ export function createWidgetDetails(host) {
       element.addEventListener('click', event => { action(session,event).catch(error => host.toast(error.message)); }, options);
       element.addEventListener('input', event => input(session,event), options);
       element.addEventListener('change', event => change(session,event), options);
+      if (session.item.widget === 'calendar') element.addEventListener('keydown', event => calendarKeydown(session, event, redraw), options);
       element.addEventListener('submit', event => { submit(session,event).catch(error => host.toast(error.message)); }, options);
       globalThis.addEventListener('pagehide', () => { void flush(session); }, options);
       updateStatus(session);
+      element.closest('dialog').classList.toggle('widget-app-expanded', !!session.view.expanded);
       if (data.newMemo) newEntry(session);
       if (session.item.widget === 'weather' && currentItem(session).config.enabled) {
         const job = requestWeather(currentItem(session).config.city);

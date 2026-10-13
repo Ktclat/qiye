@@ -6,7 +6,8 @@ import { englishMessages } from '../src/messages-en.js';
 import { parseDate, localDateKey, daysBetween, dateStats, monthCells, countWorkdays, holidayFor } from '../src/calendar.js';
 import { newMemo, listMemos, validateMemos } from '../src/memos.js';
 import { parseWeatherResponse, requestWeather, weatherState, temperature, searchCities } from '../src/weather.js';
-import { memoCard, calendarDetail } from '../src/widget-detail-views.js';
+import { memoCard } from '../src/memo-view.js';
+import { calendarDetail } from '../src/calendar-view.js';
 
 test('locale resolution supports explicit preference, browser language and deterministic fallback',()=>{
   assert.equal(resolveLocale('auto',['zh-HK']),'zh-CN');
