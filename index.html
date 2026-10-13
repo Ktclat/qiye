@@ -945,20 +945,20 @@ html,body{height:100%;min-height:0;overflow:hidden}
 #main{display:flex;flex-direction:column;height:100dvh;min-height:0;padding:0;overflow:hidden}
 .content-scroll{flex:1;min-height:0;overflow:auto;overflow-x:hidden;overscroll-behavior:contain;padding:0 34px 104px;scrollbar-gutter:stable;outline:none;position:relative}
 .header-region{display:flex;flex-direction:column;align-items:center;flex:none;position:relative;isolation:isolate;min-width:0;gap:0}
-#flow-header{padding-top:max(60px,calc(6vh + var(--clock-offset-y) + var(--nav-header-space)));padding-bottom:24px}
-#header-dock{padding: max(60px,calc(6vh + clamp(-20px,var(--clock-offset-y),10vh) + var(--nav-header-space))) 40px 30px;z-index:12;max-height:none}
+#flow-header{padding-top:max(12px,calc(var(--header-top,6vh) + var(--clock-offset-y) + var(--nav-header-space)));padding-bottom:20px}
+#header-dock{padding: max(12px,calc(var(--header-top,6vh) + clamp(-20px,var(--clock-offset-y),10vh) + var(--nav-header-space))) 40px 30px;z-index:12;max-height:none}
 #flow-header[hidden],#header-dock[hidden]{display:none}
 #main .clock-block,#main .clock-block.is-stuck,#main .search-wrapper{position:relative;top:auto;flex:none;margin-left:auto;margin-right:auto}
-#main .clock-block,#main .clock-block.is-stuck{padding:0 12px 6px;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;transition:none;border-radius:0}
+#main .clock-block,#main .clock-block.is-stuck{padding:0 12px;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;transition:none;border-radius:0}
 #main .clock-block .clock{color:var(--clock-color);text-shadow:0 2px 22px #00152518}
 #main .clock-block .date{color:var(--clock-color);opacity:.88}
-.clock-theme-color #main .clock,.clock-theme-color #main .date{color:var(--fg)}
-#main .search-wrapper{margin-top:max(12px,calc(24px + var(--search-offset-y)));z-index:24}
+
+#main .search-wrapper{margin-top:max(12px,calc(3vh + var(--search-offset-y)));z-index:24}
 #main .header-region>.search-wrapper:first-child{margin-top:0}
-#header-dock>.search-wrapper{margin-top:max(12px,calc(24px + clamp(-12px,var(--search-offset-y),8vh)))}
+#header-dock>.search-wrapper{margin-top:max(12px,calc(3vh + clamp(-12px,var(--search-offset-y),8vh)))}
 #main .search-form{transition:background-color .15s,box-shadow .15s;border-width:1px}
 #main .search-wrapper.is-stuck .search-form{box-shadow:none}
-#main .desktop-wrap{margin:0 auto;max-width:var(--desktop-max-width);width:100%;padding-top:6px}
+#main .desktop-wrap{margin:0 auto;max-width:var(--desktop-max-width);width:100%;padding-top:0}
 #main.has-pinned-header .desktop-wrap{padding-top:0}
 .minimal #main{padding:0;margin:0}
 .minimal #flow-header,.minimal #header-dock{padding-top:max(70px,calc(24vh + var(--clock-offset-y)));max-height:none}
@@ -974,10 +974,10 @@ html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;widt
 .widget-inner{border-radius:inherit;padding:clamp(10px,7cqi,17px);font-size:clamp(11px,5.8cqi,13px)}
 .tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
 .widget-inner h3,.widget-inner strong{max-width:100%}
-.tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:calc(100% - var(--label-space,24px));aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
-.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)));height:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)))}
-.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)));height:calc(var(--cell-size)*2 + var(--gap) - max(26px,var(--label-space,24px)))}
-.tile-link>.tile-label,.tile-folder>.tile-label{height:var(--label-space,24px);padding-top:6px;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
+.tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:100%;aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
+.tile-link[data-size="2x2"] .tile-body,.tile-folder[data-size="2x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap));height:calc(var(--cell-size)*2 + var(--gap))}
+.tile-link[data-size="4x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap));height:calc(var(--cell-size)*2 + var(--gap))}
+.tile-link>.tile-label,.tile-folder>.tile-label{position:absolute;top:100%;left:0;height:var(--label-space,24px);padding-top:0;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
 .tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
 .tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
 .tile-link .site-visual,.tile-link .site-visual.is-loaded,.folder-site .site-visual,.preview-icon .site-visual{width:100%;height:100%;border-radius:inherit;overflow:hidden;background:transparent;aspect-ratio:1}
@@ -1034,7 +1034,7 @@ body.is-dragging .tile.folder-ready .tile-body{transform:scale(1.04)!important;o
 .folder-drop-hint{position:fixed;z-index:1002;pointer-events:none;transform:translate(-50%,0);padding:7px 11px;border-radius:9px;color:var(--fg);background:var(--panel);border:1px solid var(--panel-border);font-size:11px;box-shadow:0 5px 16px #0002}
 @media(max-width:650px){
  .content-scroll{padding-left:16px;padding-right:16px}
- #header-dock{padding-left:18px;padding-right:18px;padding-bottom:24px}
+ #header-dock{padding-left:18px;padding-right:18px;padding-bottom:20px}
  #flow-header{padding-top:max(74px,calc(8vh + var(--clock-offset-y) + var(--nav-header-space)))}
  .app-dialog.add-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}
  .add-dialog #dialog-content{height:calc(100dvh - 24px)}
@@ -1062,6 +1062,10 @@ html[data-navigation=sidebar] .group-button{gap:2px;padding:2px}
 
 .icon-settings-preview .tile{pointer-events:none}
 
+#main .clock { line-height:1.0832; }
+#main .date { font-size:14px; line-height:26px; margin-top:-3px; }
+@media(max-height:800px) { :root { --header-top:3vh; } }
+
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only
@@ -1082,7 +1086,7 @@ html[data-theme=light] .toast{background:rgb(249 251 254 / .96);border-color:#cf
 html[data-theme=light] .toast button{color:#236eab}
 /* Active group is neutral by default; geometry stays square at any rail width. */
 html[data-navigation=sidebar] .group-button.active,html[data-navigation=top] .group-button.active{background:var(--nav-selection);box-shadow:inset 0 0 0 1px var(--nav-selection-border);color:var(--fg)}
-html[data-sidebar-accent=theme] .group-button.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}
+html[data-accent=custom] .group-button.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}
 /* Focusing search does not add a second pane, ring, blur layer or dark border. */
 #main .search-form,#main .search-form:focus-within,#main .search-wrapper.is-stuck .search-form{box-shadow:none!important;outline:none;border-color:var(--panel-border);background-color:rgb(var(--surface-rgb) / var(--search-opacity));transition:none}
 #main .search-wrapper{filter:none}
@@ -1233,8 +1237,8 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-wi
 html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}
 
-/* Viewport limits are in unzoomed CSS pixels so even 150% retains reachable controls. */
-#dialog{zoom:var(--dialog-scale,1);width:min(700px,var(--dialog-width,calc(100vw - 24px)));max-width:var(--dialog-width);max-height:var(--dialog-height);}
+/* Window content reflows inside viewport limits. */
+#dialog{width:min(700px,var(--dialog-width,calc(100vw - 24px)));max-width:var(--dialog-width);max-height:var(--dialog-height);}
 #dialog.workspace-dialog{width:min(1040px,var(--dialog-width));height:min(780px,var(--dialog-height));max-height:var(--dialog-height)}
 #dialog.workspace-dialog.wallpaper-dialog{width:min(1220px,var(--dialog-width));height:min(810px,var(--dialog-height))}
 #dialog.site-editor-dialog{width:min(840px,var(--dialog-width))}
@@ -1510,17 +1514,17 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
-#dialog { width:min(var(--form-width,700px),var(--dialog-width)); }
+#dialog { width:min(var(--form-width,640px),var(--dialog-width)); container-type:inline-size; container-name:window; }
 #dialog.workspace-dialog,#dialog.widget-app-dialog {
-  width:min(var(--window-width,1060px),var(--dialog-width));
-  height:min(var(--window-height,690px),var(--dialog-height));
+  width:min(var(--window-width,980px),var(--dialog-width));
+  height:min(var(--window-height,640px),var(--dialog-height));
 }
-#dialog.settings-dialog { width:min(var(--settings-width,920px),var(--dialog-width)); }
+#dialog.settings-dialog { width:min(var(--settings-width,880px),var(--dialog-width)); }
 #dialog.settings-drawer {
   position:fixed; inset:0 0 0 auto; margin:0;
-  width:min(var(--drawer-width,580px),calc(var(--dialog-width) + 24px / var(--dialog-scale)));
-  height:calc(var(--dialog-height) + 24px / var(--dialog-scale));
-  max-height:calc(var(--dialog-height) + 24px / var(--dialog-scale));
+  width:var(--drawer-width,480px);
+  height:100dvh;
+  max-height:100dvh;
   border-radius:22px 0 0 22px; border-right:0;
   animation:settings-enter .26s cubic-bezier(.2,.75,.2,1);
 }
@@ -1528,7 +1532,7 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
 #dialog.settings-drawer .settings-nav { padding:24px 8px; }
 #dialog.settings-drawer .settings-nav-button { gap:8px; padding:11px 8px; font-size:12px; }
 #dialog.settings-drawer .settings-nav-button.active { position:relative; border-color:transparent; background:var(--nav-selection); }
-#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:11px; bottom:11px; width:3px; background:#299bff; border-radius:4px; }
+#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:11px; bottom:11px; width:3px; background:var(--accent); border-radius:4px; }
 #dialog.settings-drawer .settings-content { padding:52px 22px 28px; }
 #dialog.settings-drawer .workspace-title { font-size:25px; }
 #dialog.settings-drawer .two-columns { grid-template-columns:1fr; }
@@ -1544,7 +1548,7 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
 .context-menu hr { margin:4px 6px; border:0; border-top:1px solid #ffffff13; }
 .context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; }
 .context-menu .size-options button { padding:6px 2px; font-size:11px; }
-.context-menu .size-options .selected { color:#49a8ff; background:#299bff25; }
+.context-menu .size-options .selected { color:var(--accent); background:var(--accent-soft); }
 html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 16px 48px #0002; }
 html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 .widget-viewer { padding:20px; }
@@ -1553,89 +1557,260 @@ html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 @keyframes settings-enter { from { transform:translateX(30px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 body.reduce-effects #dialog.settings-drawer { animation:none; }
 @media(prefers-reduced-motion:reduce) { #dialog.settings-drawer { animation:none; } }
-@media(max-width:700px) {
-  #dialog.settings-drawer .settings-layout { grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); }
+@container window (max-width:620px) {
+  .settings-layout,#dialog.settings-drawer .settings-layout { grid-template-columns:110px minmax(0,1fr); grid-template-rows:1fr; }
+  .settings-nav { display:flex; flex-direction:column; overflow-y:auto; padding:22px 6px; }
+  .settings-content,#dialog.settings-drawer .settings-content { padding:50px 14px 22px; }
+  .settings-nav-button { padding:10px 5px; gap:5px; font-size:11px; }
+  .settings-nav-button .icon { display:none; }
+  .two-columns { grid-template-columns:1fr; }
 }
-@media(max-width:520px) {
-  #dialog.settings-drawer .settings-layout { grid-template-columns:100px minmax(0,1fr); }
-  #dialog.settings-drawer .settings-nav-button { gap:4px; padding:10px 5px; }
-  #dialog.settings-drawer .settings-nav-button .icon { display:none; }
-  #dialog.settings-drawer .settings-content { padding:50px 12px 20px; }
+@container window (max-width:760px) {
+  .calendar-detail { grid-template-columns:1fr; padding:10px; }
+  .calendar-month-panel { padding:12px; min-height:380px; }
+  .calendar-day-panel { min-height:250px; }
+  .calendar-app-header h2 { font-size:18px; gap:8px; }
+  .calendar-app-icon { width:32px; height:32px; border-radius:10px; }
 }
 
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
-#dialog.add-dialog { width:min(calc(var(--window-width) + 100px),var(--dialog-width)); background:rgb(var(--surface-rgb) / .87); backdrop-filter:blur(30px); border-radius:26px; }
-.add-dialog .add-layout { grid-template-columns:190px minmax(0,1fr); }
-.add-dialog .add-nav { background:transparent; border:0; padding:34px 14px 20px; }
-.add-dialog .add-nav button { position:relative; padding:12px 16px; font-size:15px; }
-.add-dialog .add-nav button[aria-selected=true] { background:#ffffff10; color:var(--fg); }
-.add-dialog .add-nav button[aria-selected=true]:before { content:''; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:4px; background:#299bff; }
-.add-dialog .add-content { padding:22px 18px 30px; }
-.catalog-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding-right:64px; }
-.catalog-toolbar input,.catalog-toolbar select { border:0; border-radius:18px; background:var(--control-surface); color:var(--fg); padding:7px 12px; font-size:12px; min-width:0; height:33px; }
-.catalog-toolbar input { flex:1; width:240px; min-width:120px; }
+#dialog.add-dialog { width:var(--catalog-width); background:rgb(var(--surface-rgb) / .94); backdrop-filter:blur(30px); border-radius:24px; }
+.add-dialog .add-layout { grid-template-columns:165px minmax(0,1fr); }
+.add-dialog .add-nav { background:transparent; border:0; padding:32px 12px 20px; }
+.add-dialog .add-nav button { position:relative; padding:12px; font-size:14px; }
+.add-dialog .add-nav button[aria-selected=true] { background:var(--control-surface); color:var(--fg); }
+.add-dialog .add-nav button[aria-selected=true]:before { content:''; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:4px; background:var(--accent); }
+.add-dialog .add-content { padding:20px 18px 26px; container:catalog / inline-size; }
+.catalog-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding-right:68px; }
+.catalog-toolbar input,.catalog-toolbar select { border:1px solid transparent; border-radius:18px; background:var(--control-surface); color:var(--fg); padding:7px 12px; font-size:12px; min-width:0; height:33px; }
+.catalog-toolbar input { flex:1; width:220px; min-width:100px; }
 .catalog-toolbar label { display:flex; gap:6px; align-items:center; font-size:12px; }
 .catalog-toolbar label select { max-width:120px; }
 .catalog-categories { display:flex; flex-wrap:wrap; gap:9px; margin:12px 0 0; }
 .catalog-categories button { padding:4px 12px; background:var(--control-surface); color:var(--fg); border:0; border-radius:18px; font-size:12px; }
-.catalog-categories [aria-pressed=true],.catalog-add { background:#2196ff; color:white; }
+.catalog-categories [aria-pressed=true],.catalog-add { background:var(--accent); color:var(--accent-ink); }
 .catalog-section-title { font-size:17px; margin:16px 0 12px; font-weight:600; }
-.catalog-showcases { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
-.catalog-showcase { border-radius:17px; background:rgb(143 151 174 / .18); padding:20px 15px 14px; overflow:hidden; min-width:0; text-align:center; }
+.catalog-showcases { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.catalog-showcase { border-radius:16px; background:var(--catalog-card); border:1px solid var(--panel-border); padding:16px 12px 12px; overflow:hidden; min-width:0; text-align:center; container:showcase / inline-size; }
 .catalog-showcase[hidden] { display:none; }
-.catalog-showcase h3 { margin:0 0 4px; font-size:17px; font-weight:500; }
+.catalog-showcase h3 { margin:0 0 4px; font-size:16px; font-weight:500; }
 .catalog-showcase>p { margin:0; color:var(--muted); line-height:1.5; font-size:12px; height:36px; overflow:hidden; }
-.catalog-stage { height:228px; display:flex; justify-content:center; align-items:center; overflow:hidden; pointer-events:none; }
-.catalog-preview { container-type:inline-size; width:var(--preview-width); max-width:100%; height:192px; flex:none; text-align:left; }
-.catalog-preview .widget-inner { border-radius:20px; width:100%; height:100%; padding:12px; font-size:12px; }
+.catalog-carousel { position:relative; height:192px; display:flex; align-items:center; justify-content:center; }
+.catalog-stage { width:100%; height:100%; display:flex; justify-content:center; align-items:center; pointer-events:none; }
+.catalog-preview { container-type:inline-size; width:var(--preview-width); height:var(--preview-height); flex:none; text-align:left; border-radius:18px; }
+/* Only the illustration shrinks inside a narrow card, preserving its aspect ratio. */
+.catalog-preview { transform:scale(min(1,calc((100cqw - 24px) / var(--preview-width)))); }
+.catalog-arrow { position:absolute; z-index:1; left:-5px; width:26px; height:32px; border:0; border-radius:16px; background:var(--catalog-arrow); color:var(--fg); font-size:23px; line-height:1; }
+.catalog-arrow:last-child { left:auto; right:-5px; }
+.catalog-arrow:hover { background:var(--control-surface); }
+.catalog-size-dots { display:flex; justify-content:center; align-items:center; height:24px; gap:1px; margin:0 0 4px; }
+.catalog-size-dots button { display:grid; place-items:center; width:25px; height:24px; border:0; background:none; padding:0; border-radius:12px; }
+.catalog-size-dots span { width:7px; height:7px; border-radius:50%; background:var(--muted); opacity:.4; transition:width .15s,height .15s,opacity .15s; }
+.catalog-size-dots [aria-pressed=true] span { width:11px; height:11px; opacity:1; background:var(--accent); }
 .catalog-showcase footer { display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:12px; }
-.catalog-add { border:0; border-radius:18px; padding:5px 14px; font-size:13px; cursor:pointer; }
-.catalog-add:hover { background:#42a7ff; }
-.catalog-add:disabled { opacity:.4; cursor:not-allowed; }
-.catalog-showcase footer>span { font-size:10px; text-align:left; max-width:75%; }
+.catalog-add { border:0; border-radius:18px; padding:6px 15px; font-size:12px; cursor:pointer; }
+.catalog-add:hover { filter:brightness(1.1); }
 .catalog-sites { grid-template-columns:repeat(3,minmax(0,1fr)); }
-.catalog-site-art { display:grid; place-items:center; width:64px; height:64px; margin:0 auto 18px; }
-.catalog-site-art .site-visual,.catalog-site-art .site-favicon { width:64px; height:64px; object-fit:contain; background:transparent; }
+.catalog-site-art { display:grid; place-items:center; width:60px; height:60px; margin:0 auto 18px; }
+.catalog-site-art .site-visual,.catalog-site-art .site-favicon { width:60px; height:60px; object-fit:contain; background:transparent; }
 .catalog-site>.catalog-add { margin-top:15px; }
-#dialog.compact-dialog.add-dialog .add-layout { grid-template-columns:1fr; }
-#dialog.compact-dialog.add-dialog .add-nav { padding:12px 72px 12px 10px; }
-#dialog.compact-dialog .catalog-showcases { grid-template-columns:1fr; }
-#dialog.compact-dialog .catalog-toolbar { padding-right:0; }
-#dialog.compact-dialog .catalog-sites { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@container catalog (max-width:620px) { .catalog-showcases { grid-template-columns:1fr; } .catalog-sites { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@container window (max-width:620px) { .add-dialog .add-layout { grid-template-columns:1fr; } .add-dialog .add-nav { padding:12px 72px 12px 10px; } .catalog-toolbar { padding-right:0; } }
 body.reduce-effects #dialog.add-dialog { backdrop-filter:none; background:var(--workspace-pane); }
 
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
-.widget-heading .widget-title { display:flex; align-items:center; gap:6px; border:0; background:none; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
-.widget-heading .widget-title:hover { color:var(--accent); }
-.widget-inner.widget-compact { padding:0; background:rgb(var(--surface-rgb) / .88); color:var(--fg); }
-.widget-compact>button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; height:100%; padding:7px; border:0; background:none; color:inherit; cursor:pointer; border-radius:inherit; overflow:hidden; }
-.widget-compact>button:hover { background:#ffffff08; }
-.widget-compact .compact-symbol { display:grid; place-items:center; color:#4c9aff; }
-.widget-compact .compact-symbol .widget-icon { width:25px; height:25px; }
-.widget-compact .compact-value { font-size:clamp(14px,24cqi,28px); font-weight:600; line-height:1.1; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.widget-compact .compact-value:empty { display:none; }
+.widget-heading .widget-title { display:flex; align-items:center; gap:5px; border:0; background:none; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
+.widget-heading .widget-title:hover { color:var(--w-accent); }
+.widget-inner.widget-compact { display:flex; padding:0; color:var(--w-fg); background:var(--w-bg); border-radius:inherit; }
+.widget-compact .compact-open { display:flex; flex:1; min-height:0; flex-direction:column; align-items:center; justify-content:center; gap:3px; width:100%; padding:5px; border:0; background:none; color:inherit; cursor:pointer; border-radius:inherit; overflow:hidden; }
+.widget-compact .compact-open:hover { background:var(--w-hover); }
+.compact-symbol { display:grid; place-items:center; color:var(--w-accent); }
+.compact-symbol .widget-icon { width:25px; height:25px; }
+.compact-primary { display:flex; align-items:baseline; justify-content:center; gap:2px; max-width:100%; }
+.compact-value { font-size:clamp(17px,38cqi,26px); font-weight:550; line-height:1.08; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.compact-primary:has(.compact-value:empty) { display:none; }
 .widget-compact:has(.compact-value:not(:empty)) .compact-symbol { display:none; }
-.widget-compact .compact-caption { display:block; max-width:100%; font-size:11px; line-height:1.3; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; opacity:.72; }
-.compact-calendar .compact-value { color:#fff; background:#327cf5; border-radius:9px; padding:3px 10px; }
-.compact-notes { background:#f5e6ac!important; color:#4c452c!important; }
-.compact-notes .compact-value { font-size:12px; white-space:normal; max-height:34px; }
-.tile[data-size="1x2"] .widget-compact>button { gap:12px; }
-.tile[data-size="2x1"] .widget-compact>button { flex-direction:row; gap:12px; }
-.tile[data-size="2x1"] .compact-caption { max-width:50%; }
-.tile-widget[data-size="2x2"] .widget-inner:not(.widget-compact) { padding:12px; }
-.tile-widget[data-size="2x2"] .w-weather-current strong { font-size:40px; }
-.tile-widget[data-size="2x2"] .w-focus-ring { width:100px; height:100px; }
-.tile-widget[data-size="2x2"] .w-focus-ring strong { font-size:26px; }
-.tile-widget[data-size="2x2"] .w-workday-time { font-size:27px; }
-.tile-widget[data-size="2x2"] .w-clock-time { font-size:30px; }
-.tile-widget[data-size="2x2"] .w-countdown-number strong { font-size:46px; }
-.tile-widget[data-size="2x2"] .w-weather-details { display:none; }
-.tile-widget[data-size="2x2"] .w-weather-off { gap:4px; }
-.tile-widget[data-size="2x2"] .w-weather-off .weather-art { max-height:52px; }
+.compact-copy { display:flex; flex-direction:column; align-items:center; min-width:0; max-width:100%; gap:4px; }
+.compact-caption { max-width:100%; font-size:10px; line-height:1.3; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+.compact-detail,.compact-meta { color:var(--w-muted); font-size:10px; line-height:1.5; overflow:hidden; overflow-wrap:anywhere; max-width:100%; }
+.compact-meta:empty,.compact-detail:empty { display:none; }
+.compact-unit { font-size:9px; }
+.compact-calendar .compact-value { background:#327cf5; color:#fff; border-radius:6px; padding:2px 7px; font-size:23px; }
+.compact-clock[data-display-size="1x1"] .compact-value,.compact-focus[data-display-size="1x1"] .compact-value { font-size:16px; letter-spacing:-.7px; }
+.compact-workday[data-display-size="1x1"] .compact-value { font-size:11px; letter-spacing:-.3px; }
+.compact-text-card .compact-value { white-space:pre-wrap; overflow-wrap:anywhere; font-size:10px; line-height:1.5; text-align:left; font-weight:400; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
+.compact-text-card[data-display-size="1x1"] .compact-copy { display:none; }
+.compact-quote[data-display-size="1x1"] .compact-primary { display:none; }
+.compact-quote[data-display-size="1x1"] .compact-symbol { display:grid; }
+.compact-quote[data-display-size="1x1"] .compact-copy { display:flex; }
+.widget-compact[data-display-size="1x2"] .compact-open { justify-content:space-evenly; padding:9px 5px; gap:7px; }
+.widget-compact[data-display-size="1x2"] .compact-copy { gap:5px; }
+.widget-compact[data-display-size="1x2"] .compact-caption { white-space:normal; max-height:40px; }
+.widget-compact[data-display-size="1x2"] .compact-detail { max-height:43px; }
+.widget-compact[data-display-size="1x2"] .compact-meta { max-height:30px; font-size:9px; }
+.compact-text-card[data-display-size="1x2"] .compact-primary { flex:1; align-items:flex-start; }
+.compact-text-card[data-display-size="1x2"] .compact-value { -webkit-line-clamp:6; }
+.compact-clock[data-display-size="1x2"] .compact-value,.compact-focus[data-display-size="1x2"] .compact-value { font-size:16px; }
+.compact-workday[data-display-size="1x2"] .compact-value { font-size:11px; }
+.widget-compact[data-display-size="2x1"] .compact-open { flex-direction:row; justify-content:flex-start; padding:7px 10px; gap:10px; }
+.widget-compact[data-display-size="2x1"] .compact-primary { flex:none; max-width:58%; }
+.widget-compact[data-display-size="2x1"] .compact-value { font-size:22px; }
+.widget-compact[data-display-size="2x1"] .compact-copy { align-items:flex-start; }
+.widget-compact[data-display-size="2x1"] .compact-caption { font-size:11px; }
+.widget-compact[data-display-size="2x1"] .compact-detail { max-height:28px; font-size:9px; line-height:1.4; }
+.compact-workday[data-display-size="2x1"] .compact-value { font-size:17px; letter-spacing:-1px; }
+.compact-text-card[data-display-size="2x1"] .compact-open { flex-direction:row-reverse; }
+.compact-text-card[data-display-size="2x1"] .compact-primary { flex:1; max-width:none; }
+.compact-text-card[data-display-size="2x1"] .compact-value { font-size:11px; -webkit-line-clamp:2; }
+.compact-text-card[data-display-size="2x1"] .compact-copy { flex:none; max-width:35%; }
+.compact-text-card[data-display-size="2x1"] .compact-detail { display:none; }
+.widget-inner .compact-quick { flex:none; margin:0 5px 7px; height:23px; border-radius:8px; font-size:10px; background:var(--w-accent); color:var(--w-accent-ink); }
+.widget-inner[data-display-size="2x2"]:not(.widget-compact) { padding:10px; }
+.widget-inner[data-display-size="4x2"]:not(.widget-compact) { padding:12px 14px; }
+.widget-inner:not(.widget-compact) .widget-heading { font-size:11px; flex:none; min-height:18px; }
+.countdown-layout { flex:1; display:flex; align-items:center; min-height:0; gap:20px; }
+.countdown-overview { flex:1; min-width:0; }
+.countdown-date-sheet { display:none; }
+.w-countdown-title { font-size:12px; font-weight:500; margin:0; }
+.w-countdown-caption { font-size:10px; margin-top:2px; }
+.w-countdown-number { margin:4px 0; min-height:0; }
+.w-countdown-number strong { font-size:37px; letter-spacing:-1px; }
+.w-countdown-number span { font-size:11px; align-self:baseline; margin:0; }
+.w-countdown-date { font-size:10px; letter-spacing:.3px; }
+.w-countdown[data-display-size="4x2"] .countdown-date-sheet { display:flex; flex-direction:column; align-items:center; justify-content:center; width:82px; height:94px; flex:none; border:1px solid var(--w-border); border-radius:13px; background:var(--w-control); }
+.countdown-date-sheet span { font-size:12px; color:var(--w-muted); }
+.countdown-date-sheet strong { font-size:36px; font-weight:500; line-height:1.2; }
+.countdown-date-sheet small { font-size:10px; color:var(--w-muted); }
+.w-countdown[data-display-size="4x2"] .w-countdown-title { text-align:left; font-size:15px; }
+.w-countdown[data-display-size="4x2"] .w-countdown-caption,.w-countdown[data-display-size="4x2"] .w-countdown-date { text-align:left; }
+.w-countdown[data-display-size="4x2"] .w-countdown-number { justify-content:flex-start; }
+.w-countdown[data-display-size="4x2"] .w-countdown-number strong { font-size:37px; }
+.w-focus[data-display-size="2x2"] .w-focus-ring { width:100%; margin:0; min-height:65px; }
+.w-focus[data-display-size="2x2"] .w-focus-ring strong { font-size:23px; }
+.w-focus[data-display-size="2x2"] .w-focus-ring span { display:none; }
+.w-focus[data-display-size="4x2"] { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto 1fr; gap:5px 15px; }
+.w-focus[data-display-size="4x2"] .widget-heading { grid-column:1/-1; }
+.w-focus[data-display-size="4x2"] .w-focus-ring { min-height:90px; margin:0; }
+.w-focus[data-display-size="4x2"] .w-focus-controls { align-self:center; flex-direction:column; height:auto; }
+.w-focus[data-display-size="4x2"] .w-focus-ring span { font-size:9px; max-width:120px; }
+.w-focus[data-display-size="4x2"] .w-focus-ring:before { height:100px; width:100px; }
+.w-workday[data-display-size="2x2"] .w-workday-time { font-size:23px; }
+.w-workday[data-display-size="4x2"] { display:grid; grid-template-columns:1.2fr 1fr; grid-template-rows:auto auto auto auto; column-gap:15px; }
+.w-workday[data-display-size="4x2"] .widget-heading { grid-column:1/-1; }
+.w-workday[data-display-size="4x2"] .w-workday-caption { grid-column:1; }
+.w-workday[data-display-size="4x2"] .w-workday-time { grid-column:1; font-size:25px; }
+.w-workday[data-display-size="4x2"] .w-workday-finish { grid-column:1; font-size:10px; }
+.w-workday[data-display-size="4x2"] .w-workday-pay { grid-column:2; grid-row:2/5; border-top:0; border-left:1px solid var(--w-border); flex-direction:column; justify-content:center; margin:0; padding:10px; gap:10px; font-size:11px; }
+.w-workday[data-display-size="4x2"] .w-workday-pay strong { font-size:20px; }
+.w-clock[data-display-size="2x2"] .w-clock-time { font-size:25px; }
+.w-clock[data-display-size="2x2"] .w-clock-world { gap:4px; }
+.w-clock[data-display-size="2x2"] .w-clock-world>span { flex-direction:column; gap:3px; }
+.w-clock[data-display-size="4x2"] { display:grid; grid-template-columns:1.3fr 1fr; gap:6px 18px; }
+.w-clock[data-display-size="4x2"] .widget-heading { grid-column:1/-1; }
+.w-clock[data-display-size="4x2"] .w-clock-time { grid-column:1; align-self:end; }
+.w-clock[data-display-size="4x2"] .w-clock-date { grid-column:1; font-size:10px; }
+.w-clock[data-display-size="4x2"] .w-clock-world { grid-column:2; grid-row:2/4; border-top:0; border-left:1px solid var(--w-border); padding:5px 0 5px 15px; flex-direction:column; justify-content:center; gap:14px; }
+.w-clock[data-display-size="4x2"] .w-clock-world>span { flex-direction:column; font-size:11px; }
+.w-clock[data-display-size="4x2"] .w-clock-world strong { font-size:15px; }
+.w-weather[data-display-size="2x2"] .w-weather-current { margin-top:2px; }
+.w-weather[data-display-size="2x2"] .w-weather-current strong { font-size:34px; }
+.w-weather[data-display-size="2x2"] .w-weather-current .weather-art { width:42px; height:42px; }
+.w-weather[data-display-size="2x2"] .w-weather-details,.w-weather[data-display-size="2x2"] .w-weather-source { display:none; }
+.w-weather[data-display-size="2x2"] .w-weather-off { gap:4px; }
+.w-weather[data-display-size="2x2"] .w-weather-off .weather-art { width:46px; height:46px; }
+.w-weather[data-display-size="4x2"]:has(.w-weather-current) { display:grid; grid-template-columns:1fr 1.15fr; column-gap:14px; align-content:space-between; }
+.w-weather[data-display-size="4x2"] .widget-heading { grid-column:1/-1; }
+.w-weather[data-display-size="4x2"] .w-weather-current { grid-column:1; grid-row:2/6; flex-direction:column-reverse; justify-content:center; margin:0; }
+.w-weather[data-display-size="4x2"] .w-weather-current strong { font-size:36px; }
+.w-weather[data-display-size="4x2"] .w-weather-description,.w-weather[data-display-size="4x2"] .w-weather-details,.w-weather[data-display-size="4x2"] .w-weather-details-button,.w-weather[data-display-size="4x2"] .w-weather-update { grid-column:2; text-align:left; }
+.w-weather[data-display-size="4x2"] .w-weather-description { font-size:12px; }
+.w-weather[data-display-size="4x2"] .w-weather-details { font-size:10px; flex-wrap:wrap; }
+.w-weather[data-display-size="4x2"] .w-weather-off { flex-direction:row; gap:14px; }
+.w-weather[data-display-size="4x2"] .w-weather-off>span { max-width:90px; font-size:12px; }
+.w-weather .w-weather-source { font-size:9px; }
+.w-notes[data-display-size="4x2"] .w-notes-input { columns:2; font-size:12px!important; line-height:1.6!important; }
+.w-notes-footer { font-size:8px; }
+.w-todo[data-display-size="4x2"] .w-todo-list,.w-habit[data-display-size="4x2"] .w-habit-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; align-content:start; }
+.w-todo[data-display-size="4x2"] .w-empty-list,.w-habit[data-display-size="4x2"] .w-empty-list { grid-column:1/-1; }
+.w-memo[data-display-size="4x2"] .memo-card-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 14px; }
+.w-quote[data-display-size="4x2"] .w-quote-text { font-size:15px; line-height:1.65; -webkit-line-clamp:3; }
+.w-hotlinks[data-display-size="4x2"] .w-hotlinks-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.w-hotlinks[data-display-size="2x2"] .w-hotlinks-footer { display:none; }
+.w-calculator[data-display-size="4x2"] { display:grid; grid-template-columns:1fr 1.4fr; gap:14px; }
+.w-calculator[data-display-size="4x2"] .w-calculator-screen { align-self:center; height:40px; }
+.w-calculator[data-display-size="4x2"] .w-calculator-keys { height:100%; }
+.w-calculator[data-display-size="2x2"] { gap:3px; }
+.w-calculator[data-display-size="2x2"] .w-calculator-keys { gap:3px; }
+.w-wallpaper[data-display-size="2x2"] .wallpaper-launcher strong { font-size:18px; }
+.w-wallpaper[data-display-size="2x2"] .wallpaper-launcher>span:not(.wallpaper-eyebrow):not(.wallpaper-launch-arrow) { display:none; }
+.w-wallpaper[data-display-size="4x2"] .wallpaper-launcher strong { font-size:23px; }
+.w-wallpaper[data-display-size="4x2"] .wallpaper-launcher>span { font-size:10px; }
+.widget-inner[data-display-size="1x1"] { border-radius:calc(var(--icon-radius,18px)); }
+.widget-viewer .widget-inner { --w-viewer:1; }
+
+
+.widget-heading .widget-title { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.widget-inner.w-calendar[data-display-size="2x2"] { padding:8px; grid-template-rows:22px minmax(0,1fr); }
+.w-calendar[data-display-size="2x2"] .calendar-week { font-size:10px; line-height:14px; height:14px; }
+.tile-widget[data-size="2x2"] .w-calendar .calendar-number { width:14px; height:14px; font-size:10px; }
+.widget-inner.w-calendar[data-display-size="4x2"] { padding:10px; }
+.w-calendar[data-display-size="4x2"] .calendar-week { font-size:12px; line-height:16px; height:16px; }
+.w-calendar[data-display-size="4x2"] .calendar-number { width:17px; height:17px; font-size:12px; }
+.w-calendar .calendar-month-grid { min-height:0; grid-template-rows:repeat(6,minmax(0,1fr)); }
+
+.w-extension[data-display-size="1x1"] { padding:0; }
+.extension-counter-mini { width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:3px; color:var(--w-fg); background:var(--w-bg); border:0; padding:5px; border-radius:inherit; }
+.extension-counter-mini strong { font-size:23px; font-weight:500; }
+.extension-counter-mini span { font-size:9px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.compact-countdown[data-display-size="1x1"] .compact-primary,.compact-countdown[data-display-size="1x2"] .compact-primary { flex-direction:column; align-items:center; gap:1px; }
+.compact-countdown[data-display-size="1x1"] .compact-value,.compact-countdown[data-display-size="1x2"] .compact-value { font-size:clamp(11px,calc(76cqi / var(--value-digits)),26px); overflow:visible; text-overflow:clip; }
+.compact-countdown[data-display-size="1x1"] .compact-unit { font-size:8px; line-height:1; }
+.compact-countdown[data-display-size="1x1"] .compact-caption { font-size:9px; }
+.compact-focus[data-display-size="1x2"] .compact-value,.compact-clock[data-display-size="1x2"] .compact-value { font-size:clamp(12px,29cqi,16px); }
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+:root {
+  --accent-soft:color-mix(in srgb,var(--accent) 16%,transparent);
+  --accent-strong:color-mix(in srgb,var(--accent) 85%,#111);
+  --catalog-card:rgb(255 255 255 / .07);
+  --catalog-arrow:rgb(24 28 34 / .35);
+  --option-bg:#272b32;
+}
+html[data-theme=dark] { color-scheme:dark; }
+html[data-theme=light] {
+  color-scheme:light;
+  --catalog-card:rgb(255 255 255 / .76);
+  --catalog-arrow:rgb(255 255 255 / .5);
+  --option-bg:#f7f8fa;
+}
+select { color-scheme:inherit; accent-color:var(--accent); }
+select option,select optgroup { background:var(--option-bg); color:var(--fg); }
+select option:disabled { color:var(--muted); }
+input[type=checkbox],input[type=radio] { accent-color:var(--accent); }
+.primary-button,.switch input:checked+.slider { background:var(--accent); color:var(--accent-ink); }
+html[data-accent=custom] .widget-inner { --w-accent:var(--accent); --w-accent-ink:var(--accent-ink); --w-accent-hover:color-mix(in srgb,var(--accent) 85%,var(--w-fg)); }
+html[data-accent=custom] #dialog.widget-app-dialog { --app-blue:var(--accent); }
+html[data-accent=custom] .calendar-app-icon,
+html[data-accent=custom] .calendar-day.selected,
+html[data-accent=custom] .memo-new-button { background:var(--accent); color:var(--accent-ink); }
+html[data-accent=custom] .compact-calendar .compact-value { background:var(--accent); color:var(--accent-ink); }
+@media (forced-colors:active) {
+  select,select option { background:Canvas; color:CanvasText; }
+  .catalog-size-dots [aria-pressed=true] span { background:Highlight; }
+}
+
+html[data-theme=light] .sidebar { background:rgb(247 249 252 / max(.78,var(--sidebar-opacity))); }
+.top-tools .tool-button,.top-tools .tool-button.add-main { color:#fff; filter:drop-shadow(0 1px 3px #0009); }
+html[data-accent=custom] .calendar-cell.selected { background:var(--accent); color:var(--accent-ink); }
+html[data-accent=custom] .calendar-tool-nav button[aria-current=page] { color:var(--accent); }
+html[data-accent=custom] .calendar-tool-nav button[aria-current=page]::before { background:var(--accent); }
 
 </style>
 <!-- Bundled Inter font: copyright and full license
@@ -1807,6 +1982,17 @@ const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const englishMessages = {
+  "壁纸": "Wallpaper",
+  "全局使用主题色": "Use accent color everywhere",
+  "统一用于时间、导航、按钮和组件；关闭后使用默认配色。": "Apply to the clock, navigation, buttons and widgets. Turn off to use default colors.",
+  "调整窗口可用空间，内容自动重新排版，文字和控件保持清晰。": "Adjust available window space. Content reflows while text and controls keep their natural size.",
+  "上一个尺寸": "Previous size",
+  "下一个尺寸": "Next size",
+  "预览尺寸": "Preview size",
+  "点击编辑": "Click to edit",
+  "准备开始": "Ready to focus",
+  "点击打开": "Click to open",
+
   "壁纸来源不受支持，请重新选择。": "Unsupported wallpaper source. Please choose again.",
   "完整壁纸加载超时，原背景已保留。": "Wallpaper loading timed out. Your background was kept.",
   "完整壁纸暂时无法加载，请换一张或重试。": "The wallpaper could not load. Retry or choose another image.",
@@ -3136,7 +3322,19 @@ const REQUIRED_WIDGET_SIZES = Object.freeze(['1x1', '2x2']);
 const sizeLabel = size => size.replace('x', ' × ');
 const isCompactWidget = size => size === '1x1' || size === '1x2' || size === '2x1';
 
-return {TILE_SIZES, REQUIRED_WIDGET_SIZES, sizeLabel, isCompactWidget};
+// Labels occupy the gap below an icon, never part of a widget's square cell.
+function gridMetrics(settings, viewportWidth = 1350) {
+  const ratio = Math.min(1, Math.max(0.8, viewportWidth / 1350));
+  return { cell: settings.gridSize * ratio, gap: settings.gap * ratio };
+}
+
+function widgetDimensions(size, metrics) {
+  const [columns, rows] = size.split('x').map(Number);
+  return { width: columns * metrics.cell + (columns - 1) * metrics.gap,
+    height: rows * metrics.cell + (rows - 1) * metrics.gap };
+}
+
+return {TILE_SIZES, REQUIRED_WIDGET_SIZES, sizeLabel, isCompactWidget, gridMetrics, widgetDimensions};
 })();
 const __validation = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -3220,7 +3418,7 @@ const builtins = [
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
 ];
 
-const WIDGET_API_VERSION = 2;
+const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
@@ -3434,6 +3632,29 @@ function validateWidgetData(type, raw, path) {
 }
 
 return {newWidgetData, widgetContentSummary, validateWidgetData};
+})();
+const __widget_summary = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { escapeText: esc } = __html;
+const { t } = __i18n;
+
+// Compact cards have deliberately different information hierarchies from full cards.
+function renderWidgetSummary(item, model, symbol) {
+  const portrait = item.size === '1x2';
+  const wide = item.size === '2x1';
+  const textCard = ['notes', 'quote'].includes(item.widget);
+  const color = item.widget === 'notes' ? ` w-notes-${item.config.color}` : '';
+  const value = `<span class="compact-primary" style="--value-digits:${Math.max(2,model.value.length)}"><strong class="compact-value">${esc(model.value)}</strong>${model.unit ? `<small class="compact-unit">${esc(model.unit)}</small>` : ''}</span>`;
+  const info = `<span class="compact-copy"><span class="compact-caption">${esc(model.caption)}</span>${portrait || wide ? `<span class="compact-detail">${esc(model.detail)}</span>` : ''}</span>`;
+  const timer = item.widget === 'focus' && portrait ? `<button type="button" class="compact-quick" data-action="widget-focus-toggle"><span data-live="focus-button">${item.data.focus.running ? t('暂停') : t('开始')}</span></button>` : '';
+  return `<div class="widget-inner widget-compact w-${esc(item.widget)} compact-${esc(item.widget)}${color}${textCard ? ' compact-text-card' : ''}" data-widget="${esc(item.widget)}" data-widget-id="${esc(item.id)}" data-display-size="${item.size}" data-compact="true">
+    <button type="button" class="compact-open" data-action="widget-open" aria-label="${esc(item.title)}">
+      <span class="compact-symbol" aria-hidden="true">${symbol}</span>${value}${info}
+      ${portrait ? `<span class="compact-meta">${esc(model.meta)}</span>` : ''}
+    </button>${timer}</div>`;
+}
+
+return {renderWidgetSummary};
 })();
 const __wallpaper_catalog = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -13158,6 +13379,7 @@ return {calendarGrid, dateToolResults, calendarDetail};
 })();
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { renderWidgetSummary } = __widget_summary;
 const { isCompactWidget } = __widget_sizes;
 const { t } = __i18n;
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
@@ -13284,8 +13506,9 @@ function countdownView(item, now = new Date()) {
 }
 
 function renderCountdown(item) {
-  const view = countdownView(item);
-  return `${header(t("倒数日"), 'flag')}<div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div><span class="w-countdown-orbit" aria-hidden="true"></span>`;
+  const view = countdownView(item), parts = validDateParts(item.config.date);
+  const date = parts ? new Date(parts[0],parts[1]-1,parts[2]) : null;
+  return `${header(t('倒数日'), 'flag')}<div class="countdown-layout"><div class="countdown-date-sheet" aria-hidden="true"><span>${date ? escapeHtml(formatDate(date,{month:'short'})) : '—'}</span><strong>${date ? date.getDate() : '—'}</strong><small>${date ? escapeHtml(formatDate(date,{weekday:'long'})) : ''}</small></div><div class="countdown-overview"><div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div></div></div>`;
 }
 
 function focusRemaining(focus, now = Date.now()) {
@@ -13459,30 +13682,59 @@ function renderWallpaper(item, state) {
 }
 
 function compactModel(item) {
-  const type=item.widget, now=new Date(), data=item.data, config=item.config;
-  let value='', caption=item.title;
-  if(type==='calendar'){value=String(now.getDate());caption=formatDate(now,{month:'short',weekday:'short'});}
-  else if(type==='weather'){const current=weatherState(config.city);value=current.data?temperature(current.data.temperature,config.unit):'—';caption=config.city.name;}
-  else if(type==='todo')value=String(data.todos.filter(entry=>!entry.done).length);
-  else if(type==='memo')value=String(data.entries.length);
-  else if(type==='notes')value=data.notes.split('\n').find(Boolean)?.slice(0,14)||'';
-  else if(type==='focus')value=timerText(focusRemaining(data.focus));
-  else if(type==='countdown'){value=countdownView(item).number;caption=config.title;}
-  else if(type==='workday')value=workdayStatus(config).text;
-  else if(type==='clock'){value=timeInZone(config.timeZone,now);caption=config.label;}
-  else if(type==='habit')value=String(data.habits.filter(entry=>entry.dates.includes(localDateKey(now))).length)+'/'+data.habits.length;
-  return {value,caption};
+  const type = item.widget, now = new Date(), data = item.data, config = item.config;
+  let value = '', caption = item.title, detail = '', meta = '', unit = '';
+  if (type === 'calendar') {
+    value = String(now.getDate()); caption = formatDate(now, {weekday:'short'});
+    detail = formatDate(now, {month:'short'}); meta = config.showLunar ? chineseLunarDate(now) : String(now.getFullYear());
+  } else if (type === 'weather') {
+    const weather = config.enabled ? weatherState(config.city).data : null;
+    value = weather ? temperature(weather.temperature, config.unit) : '—'; caption = config.city.name;
+    detail = weather ? weatherDescription(weather.code) : t('启用天气');
+    meta = weather && weather.min !== null && weather.max !== null ? `${temperature(weather.min,config.unit)} / ${temperature(weather.max,config.unit)}` : '';
+  } else if (type === 'todo') {
+    const pending = data.todos.filter(entry => !entry.done);
+    value = String(pending.length); caption = t('待办清单'); detail = pending[0]?.text || t('给今天安排一件小事');
+    meta = todoSummary(data);
+  } else if (type === 'memo') {
+    value = String(data.entries.length); caption = t('备忘录');
+    const latest = [...data.entries].sort((a,b) => b.updatedAt-a.updatedAt)[0];
+    detail = latest?.title || t('记录一个想法'); meta = latest?.text.slice(0,50) || '';
+  } else if (type === 'notes') {
+    value = data.notes || t('记录一个想法'); caption = t('便签'); detail = t('点击编辑');
+  } else if (type === 'focus') {
+    value = timerText(focusRemaining(data.focus)); caption = t('专注计时');
+    detail = data.focus.running ? t('专心做好一件事') : t('准备开始'); meta = t('{v0} 分钟，留给自己', {v0:data.focus.duration});
+  } else if (type === 'countdown') {
+    const view = countdownView(item);
+    value = view.number; caption = config.title; detail = view.caption; meta = view.date; unit = view.unit;
+  } else if (type === 'workday') {
+    const view = workdayStatus(config);
+    value = view.text; caption = t('下班倒计时'); detail = view.caption;
+    meta = t('距发薪日') + ' ' + t('{v0} 天', {v0:view.paydays});
+  } else if (type === 'clock') {
+    value = timeInZone(config.timeZone,now); caption = config.label;
+    detail = zoneDate(config.timeZone,now); meta = config.timeZone;
+  } else if (type === 'habit') {
+    value = data.habits.filter(entry => entry.dates.includes(localDateKey(now))).length + '/' + data.habits.length;
+    caption = t('习惯打卡'); detail = data.habits[0]?.name || t('记录一个想法'); meta = formatDate(now,{month:'short',day:'numeric'});
+  } else if (type === 'quote') {
+    const quote = getQuote(item); value = quote.text; caption = quote.author; detail = t('每日一句');
+  } else if (type === 'wallpaper') { caption = t('壁纸'); detail = t('换一片风景'); meta = t('打开壁纸中心'); }
+  else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
+  else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
+  return {value, caption, detail, meta, unit};
 }
 function renderCompact(item) {
-  const view=compactModel(item), definition=getWidgetDefinition(item.widget);
-  return `<div class="widget-inner widget-compact compact-${escapeHtml(item.widget)}" data-widget="${escapeHtml(item.widget)}" data-widget-id="${escapeHtml(item.id)}" data-compact="true"><button type="button" data-action="widget-open" aria-label="${escapeHtml(item.title)}"><span class="compact-symbol" aria-hidden="true">${icon(definition.icon)}</span><strong class="compact-value">${escapeHtml(view.value)}</strong><span class="compact-caption">${escapeHtml(view.caption)}</span></button></div>`;
+  return renderWidgetSummary(item, compactModel(item), icon(getWidgetDefinition(item.widget).icon));
 }
 
 function renderWidget(item, state) {
   const definition = getWidgetDefinition(item.widget);
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
+  item = { ...item, size: item.size || definition.size };
   const type = item.widget;
-  if (isCompactWidget(item.size)) return renderCompact(item);
+  if (definition.builtin && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
     try {
@@ -13491,12 +13743,12 @@ function renderWidget(item, state) {
       if (typeof content !== 'string') throw new Error(t("render 必须同步返回 HTML 字符串"));
     }
     catch { content = `<p class="w-empty-list">${t("组件加载失败，请检查组件实现")}</p>`; }
-    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${header(item.title)}${content}</div>`;
+    return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${isCompactWidget(item.size) ? '' : header(item.title)}${content}</div>`;
   }
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   const color = type === 'notes' && ['yellow', 'pink', 'mint'].includes(item.config?.color) ? ` w-notes-${item.config.color}` : '';
-  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
+  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
 }
 
 function findItem(root, state) { return state.items?.find((item) => item.id === root?.dataset.widgetId); }
@@ -13758,7 +14010,7 @@ function refreshLiveWidgets(container, state) {
   for(const root of container.querySelectorAll('[data-compact]')) {
     const item=findItem(root,state);if(!item)continue;
     const view=compactModel(item);
-    for(const key of ['value','caption']) {const el=root.querySelector(`.compact-${key}`);if(el && el.textContent!==view[key])el.textContent=view[key];}
+    for(const key of ['value','caption','detail','meta','unit']) {const el=root.querySelector(`.compact-${key}`);if(el && el.textContent!==view[key])el.textContent=view[key];}
   }
   const now = new Date();
   const binding = bindings.get(container);
@@ -13836,49 +14088,97 @@ const __widget_catalog = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
 const { escapeText: esc } = __html;
-const { TILE_SIZES, sizeLabel } = __widget_sizes;
-const { listWidgetDefinitions, newWidgetConfig } = __widget_registry;
+const { sizeLabel, gridMetrics, widgetDimensions } = __widget_sizes;
+const { listWidgetDefinitions, getWidgetDefinition, newWidgetConfig } = __widget_registry;
 const { newWidgetData } = __widget_data;
 const { renderWidget } = __widgets;
 
-const categories = ['全部','日常','效率','工具'];
-const daily = new Set(['calendar','weather','memo','notes','quote','wallpaper','clock']);
-const productivity = new Set(['todo','focus','habit','countdown','workday']);
-const categoryOf = type => daily.has(type)?'日常':productivity.has(type)?'效率':'工具';
+const categories = ['全部', '日常', '效率', '工具'];
+const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock']);
+const productivity = new Set(['todo', 'focus', 'habit', 'countdown', 'workday']);
+const categoryOf = type => daily.has(type) ? '日常' : productivity.has(type) ? '效率' : '工具';
 
-function renderCatalog({state, groupId, sites = [], renderSite, siteMode = false}) {
-  const groups=state.groups.map(group=>`<option value="${esc(group.id)}"${group.id===groupId?' selected':''}>${esc(group.name)}</option>`).join('');
-  const toolbar=`<div class="catalog-toolbar"><input id="widget-query" type="search" placeholder="${t('输入并搜索')}" aria-label="${t('搜索名称或用途')}"><label>${t('添加到')}<select id="catalog-group" aria-label="${t('添加到')}">${groups}</select></label>${siteMode?'':`<select name="widgetSize" aria-label="${t('添加尺寸')}"><option value="default">${t('组件推荐')}</option>${TILE_SIZES.map(size=>`<option value="${size}">${sizeLabel(size)}</option>`).join('')}</select>`}</div>`;
-  const filters=siteMode?'':`<div class="catalog-categories" role="group" aria-label="${t('组件分类')}">${categories.map((category,index)=>`<button data-catalog-category="${category}" aria-pressed="${index===0}">${t(category)}</button>`).join('')}</div>`;
-  const cards=siteMode?sites.map(site=>`<article class="catalog-showcase catalog-site" data-catalog-card data-search="${esc((site.title+' '+site.url).toLocaleLowerCase())}"><div class="catalog-site-art">${renderSite(site)}</div><h3>${esc(site.title)}</h3><p>${esc(new URL(site.url).hostname)}</p><button class="catalog-add" data-add-site="${esc(site.id)}">${t('添加')}</button></article>`).join('')
-    :listWidgetDefinitions().map(definition=>{
-      const item={id:'catalog-'+definition.type,type:'widget',widget:definition.type,title:t(definition.title),size:definition.size,config:newWidgetConfig(definition.type),data:newWidgetData(definition.type)};
-      return `<article class="catalog-showcase" data-catalog-card data-sizes="${definition.sizes.join(',')}" data-category="${categoryOf(definition.type)}" data-search="${esc((t(definition.title)+' '+t(definition.description)).toLocaleLowerCase())}"><h3>${esc(t(definition.title))}</h3><p>${esc(t(definition.description))}</p><div class="catalog-stage" inert aria-hidden="true"><div class="catalog-preview tile-widget" data-size="${item.size}" style="--preview-width:${item.size==='4x2'?408:192}px">${renderWidget(item,{...state,settings:{...state.settings,wallpaperApiEnabled:false}})}</div></div><footer><span>${definition.sizes.map(sizeLabel).join(' · ')}</span><button class="catalog-add" data-add-widget="${esc(definition.type)}">${t('添加')}</button></footer></article>`;
-    }).join('');
-  return toolbar+filters+`<h3 class="catalog-section-title">${siteMode?t('网址导航'):t('发现小组件')}</h3><p id="widget-catalog-empty" role="status" hidden>${t('没有找到匹配的内容')}</p><div class="catalog-showcases${siteMode?' catalog-sites':''}">${cards}</div>`;
+function preview(definition, size, state) {
+  const item = { id: 'catalog-' + definition.type, type: 'widget', widget: definition.type,
+    title: t(definition.title), size, config: newWidgetConfig(definition.type), data: newWidgetData(definition.type) };
+  const dimensions = widgetDimensions(size, gridMetrics(state.settings, globalThis.innerWidth));
+  return `<div class="catalog-preview tile-widget" data-size="${size}" style="--preview-width:${dimensions.width}px;--preview-height:${dimensions.height}px">${renderWidget(item, { ...state, settings: { ...state.settings, wallpaperApiEnabled: false } })}</div>`;
+}
+
+function widgetCard(definition, state) {
+  const size = definition.size;
+  return `<article class="catalog-showcase" data-catalog-card data-catalog-widget="${esc(definition.type)}" data-preview-size="${size}" data-category="${categoryOf(definition.type)}" data-search="${esc((t(definition.title) + ' ' + t(definition.description)).toLocaleLowerCase())}">
+    <h3>${esc(t(definition.title))}</h3><p>${esc(t(definition.description))}</p>
+    <div class="catalog-carousel"><button class="catalog-arrow" data-catalog-step="-1" aria-label="${t('上一个尺寸')}">‹</button><div class="catalog-stage" inert aria-hidden="true">${preview(definition, size, state)}</div><button class="catalog-arrow" data-catalog-step="1" aria-label="${t('下一个尺寸')}">›</button></div>
+    <div class="catalog-size-dots" role="group" aria-label="${t('预览尺寸')}">${definition.sizes.map(value => `<button data-catalog-size="${value}" aria-pressed="${value === size}" aria-label="${sizeLabel(value)}" title="${sizeLabel(value)}"><span></span></button>`).join('')}</div>
+    <footer><span class="catalog-size-label" aria-live="polite">${sizeLabel(size)}</span><button class="catalog-add" data-add-widget="${esc(definition.type)}">${t('添加')}</button></footer></article>`;
+}
+
+function renderCatalog({ state, groupId, sites = [], renderSite, siteMode = false }) {
+  const groups = state.groups.map(group => `<option value="${esc(group.id)}"${group.id === groupId ? ' selected' : ''}>${esc(group.name)}</option>`).join('');
+  const toolbar = `<div class="catalog-toolbar"><input id="widget-query" type="search" placeholder="${t('输入并搜索')}" aria-label="${t('搜索名称或用途')}"><label>${t('添加到')}<select id="catalog-group" aria-label="${t('添加到')}">${groups}</select></label></div>`;
+  const filters = siteMode ? '' : `<div class="catalog-categories" role="group" aria-label="${t('组件分类')}">${categories.map((category, index) => `<button data-catalog-category="${category}" aria-pressed="${index === 0}">${t(category)}</button>`).join('')}</div>`;
+  const cards = siteMode ? sites.map(site => `<article class="catalog-showcase catalog-site" data-catalog-card data-search="${esc((site.title + ' ' + site.url).toLocaleLowerCase())}"><div class="catalog-site-art">${renderSite(site)}</div><h3>${esc(site.title)}</h3><p>${esc(new URL(site.url).hostname)}</p><button class="catalog-add" data-add-site="${esc(site.id)}">${t('添加')}</button></article>`).join('')
+    : listWidgetDefinitions().map(definition => widgetCard(definition, state)).join('');
+  return toolbar + filters + `<h3 class="catalog-section-title">${siteMode ? t('网址导航') : t('发现小组件')}</h3><p id="widget-catalog-empty" role="status" hidden>${t('没有找到匹配的内容')}</p><div class="catalog-showcases${siteMode ? ' catalog-sites' : ''}">${cards}</div>`;
 }
 
 function filterCatalog(root) {
-  const query=root.querySelector('#widget-query')?.value.trim().toLocaleLowerCase()||'';
-  const category=root.querySelector('[data-catalog-category][aria-pressed=true]')?.dataset.catalogCategory||'全部';
-  let count=0;
-  for(const card of root.querySelectorAll('[data-catalog-card]')) {
-    card.hidden=!(card.dataset.search.includes(query) && (category==='全部'||card.dataset.category===category));
-    if(!card.hidden)count++;
+  const query = root.querySelector('#widget-query')?.value.trim().toLocaleLowerCase() || '';
+  const category = root.querySelector('[data-catalog-category][aria-pressed=true]')?.dataset.catalogCategory || '全部';
+  let count = 0;
+  for (const card of root.querySelectorAll('[data-catalog-card]')) {
+    card.hidden = !(card.dataset.search.includes(query) && (category === '全部' || card.dataset.category === category));
+    if (!card.hidden) count++;
   }
-  const empty=root.querySelector('#widget-catalog-empty');if(empty)empty.hidden=count>0;
+  const empty = root.querySelector('#widget-catalog-empty');
+  if (empty) empty.hidden = count > 0;
 }
 
-function updateCatalogSize(root) {
-  const size=root.querySelector('[name=widgetSize]')?.value;
-  for(const card of root.querySelectorAll('[data-catalog-card][data-sizes]')) {
-    const button=card.querySelector('[data-add-widget]');
-    button.disabled=size!=='default' && !card.dataset.sizes.split(',').includes(size);
-    button.title=button.disabled?t('此组件不支持所选尺寸'):'';
-  }
+function changeCatalogSize(button, state) {
+  const card = button.closest('[data-catalog-widget]');
+  const definition = getWidgetDefinition(card?.dataset.catalogWidget);
+  if (!definition) return;
+  const sizes = definition.sizes, index = sizes.indexOf(card.dataset.previewSize);
+  const size = button.dataset.catalogSize || sizes[(index + Number(button.dataset.catalogStep) + sizes.length) % sizes.length];
+  if (!sizes.includes(size)) return;
+  card.dataset.previewSize = size;
+  card.querySelector('.catalog-stage').innerHTML = preview(definition, size, state);
+  card.querySelector('.catalog-size-label').textContent = sizeLabel(size);
+  for (const dot of card.querySelectorAll('[data-catalog-size]')) dot.setAttribute('aria-pressed', String(dot.dataset.catalogSize === size));
 }
 
-return {renderCatalog, filterCatalog, updateCatalogSize};
+return {renderCatalog, filterCatalog, changeCatalogSize};
+})();
+const __window_layout = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const WINDOW_SIZES = Object.freeze([75, 100, 125, 150]);
+
+// Percentages allocate space; text and controls keep their natural CSS size.
+function windowMetrics(percent, width, height) {
+  const ratio = Math.max(75, Math.min(150, Number(percent) || 100)) / 100;
+  const availableWidth = Math.max(1, width - 24);
+  const availableHeight = Math.max(1, height - 24);
+  return { width: availableWidth, height: availableHeight,
+    windowWidth: Math.min(980 * ratio, availableWidth),
+    windowHeight: Math.min(640 * ratio, availableHeight),
+    settingsWidth: Math.min(880 * ratio, availableWidth),
+    drawerWidth: Math.min(480 * ratio, width),
+    formWidth: Math.min(640 * ratio, availableWidth),
+    catalogWidth: Math.min(1060 * ratio, availableWidth) };
+}
+
+function applyWindowSize(dialog, percent, viewport = globalThis) {
+  const metrics = windowMetrics(percent, viewport.innerWidth, viewport.innerHeight);
+  for (const [key, value] of Object.entries(metrics)) {
+    const name = key.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
+    dialog.style.setProperty('--' + (['width', 'height'].includes(key) ? 'dialog-' : '') + name, `${value}px`);
+  }
+  dialog.classList.toggle('compact-dialog', metrics.width < 620);
+  return metrics;
+}
+
+return {WINDOW_SIZES, windowMetrics, applyWindowSize};
 })();
 const __avatar = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -14104,6 +14404,7 @@ return {normalizeIconSelection, iconSelectionLabel};
 })();
 const __core = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { WINDOW_SIZES } = __window_layout;
 const { TILE_SIZES } = __widget_sizes;
 const { t, localizeSeed } = __i18n;
 const { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } = __validation;
@@ -14119,7 +14420,7 @@ const { normalizeIconSelection } = __icon_selection;
  * URL fields, imported object shape, size limits and references are checked here.
  */
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const STORAGE_KEY = `qiye.state.v${SCHEMA_VERSION}`;
 const MAX_BACKUP_BYTES = 6 * 1024 * 1024;
 const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -14159,18 +14460,18 @@ const DEFAULT_STATE = deepFreeze({
     language: 'auto', theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
-    gridSize: 60, gap: 24, radius: 19, showLabels: true, clockSize: 70,
+    gridSize: 60, gap: 30, radius: 18, showLabels: true, clockSize: 70,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
-    sidebarVisibility: 'always', sidebarLabels: true, sidebarUseAccent: false, avatar: null,
+    sidebarVisibility: 'always', sidebarLabels: true, useThemeColor: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
-    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, dialogScale: 100, windowSize: 100, settingsPresentation: 'sidebar', showWallpaperCredit: true, clockWeight: 400,
+    reducedEffects: false, animateGroups: true, uiFont: 'inter', uiScale: 100, windowSize: 100, settingsPresentation: 'sidebar', showWallpaperCredit: true, clockWeight: 400,
     clockOffsetX: 0, clockOffsetY: 0, searchOffsetX: 0, searchOffsetY: 0,
     searchWidth: 600, searchHeight: 46, searchOpacity: 65, searchRadius: 23,
     showSearchHistory: false, showWeekday: true, showLunar: true, showWallpaperButton: true,
     iconShape: 'original', iconBackdrop: 'none', autoExtractIcons: true,
     iconOpacity: 100, labelSize: 12, labelColor: '#ffffff', clockColor: '#ffffff',
     desktopMaxWidth: 1350, themeColor: '#79d7b4',
-    showClock: true, showDate: true, showSearch: true, clockFollowTheme: false, showAddTile: false,
+    showClock: true, showDate: true, showSearch: true, showAddTile: false,
     searchEngine: 'bing', customEngines: [], dailyWallpaper: false, quote: true,
     wallpaperApiEnabled: false, remoteWallpaper: null
   },
@@ -14340,7 +14641,7 @@ function validateSettings(raw) {
     sidebarPosition: enumeration(v.sidebarPosition, ['left', 'right'], 'settings.sidebarPosition'),
     navigationMode: enumeration(v.navigationMode, ['sidebar', 'top'], 'settings.navigationMode'),
     sidebarVisibility: enumeration(v.sidebarVisibility, ['always', 'auto', 'hidden'], 'settings.sidebarVisibility'),
-    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), sidebarUseAccent: bool(v.sidebarUseAccent, 'settings.sidebarUseAccent'), avatar,
+    sidebarLabels: bool(v.sidebarLabels, 'settings.sidebarLabels'), useThemeColor: bool(v.useThemeColor, 'settings.useThemeColor'), avatar,
     toolbarVisibility: enumeration(v.toolbarVisibility, ['always', 'auto'], 'settings.toolbarVisibility'),
     surfaceStyle: enumeration(v.surfaceStyle, ['solid', 'glass', 'acrylic', 'mica'], 'settings.surfaceStyle'),
     surfaceOpacity: number(v.surfaceOpacity, 'settings.surfaceOpacity', 20, 100),
@@ -14349,8 +14650,7 @@ function validateSettings(raw) {
     animateGroups: bool(v.animateGroups, 'settings.animateGroups'),
     uiFont: enumeration(v.uiFont, ['inter', 'system'], 'settings.uiFont'),
     uiScale: number(v.uiScale, 'settings.uiScale', 85, 120),
-    dialogScale: number(v.dialogScale, 'settings.dialogScale', 75, 150),
-    windowSize: number(v.windowSize, 'settings.windowSize', 75, 125),
+    windowSize: enumeration(v.windowSize, WINDOW_SIZES, 'settings.windowSize'),
     settingsPresentation: enumeration(v.settingsPresentation, ['sidebar', 'window'], 'settings.settingsPresentation'),
     showWallpaperCredit: bool(v.showWallpaperCredit, 'settings.showWallpaperCredit'),
     clockWeight: number(v.clockWeight, 'settings.clockWeight', 200, 700),
@@ -14373,7 +14673,6 @@ function validateSettings(raw) {
     themeColor: opaqueColor(v.themeColor, 'settings.themeColor'),
     showClock: bool(v.showClock, 'settings.showClock'), showDate: bool(v.showDate, 'settings.showDate'),
     showSearch: bool(v.showSearch, 'settings.showSearch'),
-    clockFollowTheme: bool(v.clockFollowTheme, 'settings.clockFollowTheme'),
     showAddTile: bool(v.showAddTile, 'settings.showAddTile'),
     dailyWallpaper: bool(v.dailyWallpaper, 'settings.dailyWallpaper'), quote: bool(v.quote, 'settings.quote'),
     wallpaperApiEnabled: bool(v.wallpaperApiEnabled, 'settings.wallpaperApiEnabled'),
@@ -15108,31 +15407,22 @@ return {createWidgetDetails, bindCitySearch};
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.7.0";
+const APP_VERSION = "0.8.0";
 
 return {APP_VERSION};
 })();
-const __dialog_scale = (() => {
+const __theme = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
-function dialogMetrics(percent, width, height) {
-  const scale = Math.max(75, Math.min(150, Number(percent) || 100)) / 100;
-  return { scale, width: Math.max(1, width - 24) / scale, height: Math.max(1, height - 24) / scale };
+function themeTokens(settings, dark = false) {
+  const theme = settings.theme === 'auto' ? (dark ? 'dark' : 'light') : settings.theme;
+  const accent = settings.useThemeColor ? settings.themeColor : (theme === 'dark' ? '#5aabff' : '#0874d9');
+  const channels = accent.slice(1).match(/../g).map(hex => parseInt(hex, 16) / 255);
+  const luminance = channels.map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4)
+    .reduce((sum, c, i) => sum + c * [.2126, .7152, .0722][i], 0);
+  return { theme, accent, ink: luminance > .179 ? '#111820' : '#ffffff' };
 }
 
-function applyDialogScale(dialog, percent, viewport = globalThis, windowSize = 100) {
-  const metrics = dialogMetrics(percent, viewport.innerWidth, viewport.innerHeight);
-  dialog.style.setProperty('--dialog-scale', metrics.scale);
-  dialog.style.setProperty('--dialog-width', `${metrics.width}px`);
-  dialog.style.setProperty('--dialog-height', `${metrics.height}px`);
-  const size = Math.max(75, Math.min(125, Number(windowSize) || 100)) / 100;
-  for (const [name, value] of Object.entries({ 'window-width':1060, 'window-height':690, 'settings-width':920, 'drawer-width':580, 'form-width':700 })) {
-    dialog.style.setProperty(`--${name}`, `${value * size}px`);
-  }
-  dialog.classList.toggle('compact-dialog', metrics.width < 620);
-  return metrics;
-}
-
-return {dialogMetrics, applyDialogScale};
+return {themeTokens};
 })();
 const __widget_settings = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -17569,15 +17859,16 @@ function reconcileKeyedChildren(root, entries) {
 return {reconcileKeyedChildren};
 })();
 // SPDX-License-Identifier: GPL-3.0-only
-const { renderCatalog, filterCatalog, updateCatalogSize } = __widget_catalog;
-const { TILE_SIZES, sizeLabel } = __widget_sizes;
+const { renderCatalog, filterCatalog, changeCatalogSize } = __widget_catalog;
+const { TILE_SIZES, sizeLabel, gridMetrics } = __widget_sizes;
 const { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } = __core;
 const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } = __widgets;
 const { chineseLunarDate } = __calendar;
 const { createWidgetDetails, bindCitySearch } = __widget_details;
 const { t, setLocale, getLocale, formatDate, localizeDocument } = __i18n;
 const { APP_VERSION } = __version;
-const { applyDialogScale } = __dialog_scale;
+const { applyWindowSize, WINDOW_SIZES } = __window_layout;
+const { themeTokens } = __theme;
 const { getWidgetDefinition, newWidgetConfig } = __widget_registry;
 const { newWidgetData, widgetContentSummary } = __widget_data;
 const { renderExtensionSettings, readExtensionSettings } = __widget_settings;
@@ -17932,7 +18223,7 @@ function positionHeaderRegions() {
  document.body.classList.toggle('has-flow-header',!flow.hidden);
 }
 function updatePinnedHeader() {
- // Kept as a small compatibility hook; scrolling never mutates header styling.
+ // Scrolling never changes the appearance of either header region.
  $('#clock-block').classList.remove('is-stuck');
  $('.search-wrapper').classList.remove('is-stuck');
 }
@@ -17947,7 +18238,7 @@ function updateHeaderPlacement() {
   const left=box.left+parseFloat(css.paddingLeft||0),right=box.right-parseFloat(css.paddingRight||0);
   const property=`--${key}-shift`,previous=parseFloat(el.style.getPropertyValue(property))||0,rect=el.getBoundingClientRect();
   if(el.hidden||!rect.width){el.style.setProperty(property,'0px');continue;}
-  const desired=state.settings[key+'OffsetX']*window.innerWidth/100;
+  const desired=window.innerWidth/2-(rect.left-previous+rect.width/2)+state.settings[key+'OffsetX']*window.innerWidth/100;
   const offset=Math.max(left-(rect.left-previous),Math.min(right-(rect.right-previous),desired));
   el.style.setProperty(property,`${Math.round(offset*100)/100}px`);
  }
@@ -18009,8 +18300,9 @@ function updateToolbar() {
 function applySettings() {
  setLocale(state.settings.language);localizeDocument();document.title=t("栖页 · 新标签页");
  const s = state.settings;
- applyDialogScale(dialog, s.dialogScale, globalThis, s.windowSize);
- const theme = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : s.theme;
+ applyWindowSize(dialog, s.windowSize);
+ const { theme, accent, ink } = themeTokens(s, matchMedia('(prefers-color-scheme: dark)').matches);
+ const metrics = gridMetrics(s, window.innerWidth);
 
  const root = document.documentElement;
  root.dataset.theme = theme;
@@ -18018,14 +18310,14 @@ function applySettings() {
  root.dataset.navigation = s.navigationMode;
  root.dataset.sidebarPosition = s.sidebarPosition;
  root.dataset.sidebarVisibility = s.sidebarVisibility;
- root.dataset.sidebarAccent = s.sidebarUseAccent?'theme':'neutral';
+ root.dataset.accent = s.useThemeColor?'custom':'default';
  root.dataset.font = s.uiFont;
  root.dataset.iconShape=s.iconShape;
  root.dataset.iconDiscovery=s.autoExtractIcons?'auto':'manual';
  root.dataset.iconBackdrop=s.iconBackdrop;
  const properties = {
-  '--gap':s.gap+'px','--tile-size':s.gridSize+'px','--radius':s.radius+'px',
-  '--label-space':Math.max(24,Math.ceil(s.labelSize*1.3)+6)+'px','--cell-size':(s.gridSize+Math.max(24,Math.ceil(s.labelSize*1.3)+6))+'px','--icon-radius':Math.min(s.radius,s.gridSize/2)+'px',
+  '--gap':metrics.gap+'px','--tile-size':metrics.cell+'px','--radius':s.radius+'px',
+  '--label-space':Math.max(24,Math.ceil(s.labelSize*1.3)+6)+'px','--cell-size':metrics.cell+'px','--icon-radius':Math.min(s.radius,s.gridSize/2)+'px',
   '--clock-size':s.clockSize+'px','--clock-weight':s.clockWeight,
   '--clock-offset-y':s.clockOffsetY+'px','--search-offset-y':s.searchOffsetY+'px',
   '--search-width':s.searchWidth+'px','--search-height':s.searchHeight+'px','--search-radius':s.searchRadius+'px',
@@ -18033,7 +18325,7 @@ function applySettings() {
   '--surface-opacity':s.surfaceOpacity/100,'--surface-blur':s.surfaceBlur+'px','--ui-scale':s.uiScale/100,
   '--quote-safe-space':s.quote?'84px':'0px',
   '--icon-opacity':s.iconOpacity/100,'--label-size':s.labelSize+'px','--label-color':s.labelColor,
-  '--clock-color':s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':s.themeColor,
+  '--clock-color':s.useThemeColor?accent:s.clockColor,'--desktop-max-width':s.desktopMaxWidth+'px','--accent':accent,'--accent-ink':ink,
   '--wallpaper-blur':s.blur+'px','--wallpaper-dim':s.dim/100
  };
  for (const [key,value] of Object.entries(properties)) root.style.setProperty(key,String(value));
@@ -18043,7 +18335,6 @@ function applySettings() {
  document.body.classList.toggle('reduce-effects', !!s.reducedEffects);
  root.classList.toggle('hide-content-scrollbar', !!s.hideScrollbar);
  root.classList.toggle('hide-editor-scrollbar', !!s.hideEditorScrollbar);
- document.body.classList.toggle('clock-theme-color', !!s.clockFollowTheme);
  document.body.classList.toggle('pin-clock', s.pinClock && (s.showClock || s.showDate));
  document.body.classList.toggle('pin-search', s.pinSearch && s.showSearch);
  $('#clock-block').hidden = !s.showClock && !s.showDate;
@@ -18079,7 +18370,7 @@ function applySettings() {
 function updateGrid() {
  const wrap = $('.desktop-wrap');
  const width = wrap.getBoundingClientRect().width;
- currentGridColumns = Math.max(2,Math.min(16,Math.floor((width + state.settings.gap)/(state.settings.gridSize + Math.max(24,Math.ceil(state.settings.labelSize*1.3)+6) + state.settings.gap))));
+ currentGridColumns = Math.max(2,Math.min(16,Math.floor((width + gridMetrics(state.settings,window.innerWidth).gap)/(gridMetrics(state.settings,window.innerWidth).cell + gridMetrics(state.settings,window.innerWidth).gap))));
  document.documentElement.style.setProperty('--columns', currentGridColumns);
  $$('.tile[data-size]').forEach(el => { const [w,h] = el.dataset.size.split('x').map(Number); el.style.gridColumn = `span ${Math.min(w,currentGridColumns)}`; el.style.gridRow = `span ${h}`; });
 }
@@ -18295,7 +18586,7 @@ function settingSwitch(key,title,help='') { return `<label class="setting-row"><
 function settingRange(key,title,min,max,unit='px') { return `<div class="range-setting"><header><label for="range-${key}">${title}</label><output id="output-${key}">${state.settings[key]}${unit}</output></header><input id="range-${key}" type="range" min="${min}" max="${max}" value="${state.settings[key]}" data-range="${key}" data-unit="${unit}"></div>`; }
 
 function preferenceSelect(key,title,options,help='') {
- return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong>${help?`<small>${help}</small>`:''}</span><select class="preference-select" data-preference="${key}" aria-label="${title}">${options.map(([value,label])=>`<option value="${value}" ${state.settings[key]===value?'selected':''}>${label}</option>`).join('')}</select></label>`;
+ return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong>${help?`<small>${help}</small>`:''}</span><select class="preference-select" data-preference="${key}" aria-label="${title}">${options.map(([value,label])=>`<option value="${value}" ${String(state.settings[key])===String(value)?'selected':''}>${label}</option>`).join('')}</select></label>`;
 }
 function settingColor(key,title) {
  return `<label class="setting-row"><span class="setting-copy"><strong>${title}</strong></span><span class="setting-color-value"><code id="color-value-${key}">${esc(state.settings[key])}</code><input type="color" class="color-input" data-setting-color="${key}" value="${esc(state.settings[key])}" aria-label="${title}"></span></label>`;
@@ -18364,7 +18655,6 @@ function settingsDialog(tab) {
   ${settingSwitch('hour12',t("使用 12 小时制"))}
   ${settingRange('clockSize',t("时钟字号"),30,160)}
   ${settingRange('clockWeight',t("时钟字重"),200,700,'')}
-  ${settingSwitch('clockFollowTheme',t("时间颜色跟随主题"),t("关闭后使用下方的自定义颜色。"))}
   ${settingColor('clockColor',t("时间颜色"))}
   <div class="section-label">${t("日期")}</div>
   ${settingSwitch('showDate',t("显示月日"))}
@@ -18374,6 +18664,7 @@ function settingsDialog(tab) {
  else if(tab==='appearance') content = `
   <div class="section-label">${t("主题")}</div>
   <div class="theme-options">${[{id:'light',title:t("浅色"),icon:'sun'},{id:'dark',title:t("深色"),icon:'moon'},{id:'auto',title:t("跟随系统"),icon:'globe'}].map(t=>`<button class="theme-option ${s.theme===t.id?'selected':''}" data-theme="${t.id}" aria-pressed="${s.theme===t.id}">${icon(t.icon)}${t.title}</button>`).join('')}</div>
+  ${settingSwitch('useThemeColor',t("全局使用主题色"),t("统一用于时间、导航、按钮和组件；关闭后使用默认配色。"))}
   ${settingColor('themeColor',t("主题色"))}
   <div class="section-label">${t("界面材质")}</div>
   <div class="material-options">${[
@@ -18388,10 +18679,7 @@ function settingsDialog(tab) {
   ${preferenceSelect('uiFont',t("界面字体"),[['inter',t("Inter + 系统中文")],['system',t("系统字体")]],t("Inter 随扩展提供；中文使用设备上的系统字体。"))}
   ${settingRange('uiScale',t("界面文字比例"),85,120,'%')}
   ${preferenceSelect('settingsPresentation',t('设置打开方式'),[['sidebar',t('侧边面板')],['window',t('居中窗口')]],t('关闭设置后重新打开生效。'))}
-  ${settingRange('windowSize',t('窗口大小'),75,125,'%')}
-  ${settingRange('dialogScale',t("选项窗口缩放"),75,150,'%')}
-  <p class="help-text">${t("设置、添加、壁纸与编辑窗口整体缩放，工具栏收藏窗口也会跟随。立即预览并保存。")}</p>
-  <button class="secondary-button" data-action="reset-dialog-scale">${t("恢复窗口缩放为 100%")}</button>
+  ${preferenceSelect('windowSize',t('窗口大小'),WINDOW_SIZES.map(size=>[String(size),`${size}%`]),t('调整窗口可用空间，内容自动重新排版，文字和控件保持清晰。'))}
   <div class="button-row"><button class="secondary-button" data-action="wallpaper">${t("{v0}壁纸与背景", {v0: icon('wallpaper')})}</button></div>`;
  else if(tab==='layout') content = `
   <div class="section-label">${t("时间与搜索的滚动方式")}</div>
@@ -18422,7 +18710,6 @@ function settingsDialog(tab) {
   ${settingRange('sidebarWidth',t("侧边栏宽度"),40,120)}
   ${settingRange('sidebarOpacity',t("导航透明度"),0,100,'%')}
   ${settingSwitch('sidebarLabels',t("显示分组名称"))}
-  ${settingSwitch('sidebarUseAccent',t("选中分组使用主题色"),t("默认使用与导航材质协调的中性色，开启后使用全局主题色。"))}
   ${preferenceSelect('sidebarWheelMode',t("侧栏滚轮行为"),[['scroll',t("滚动分组列表")],['switch',t("切换当前分组")]],t("默认仅滚动导航列表以查看被遮挡的分组，不会切换桌面。编辑时始终滚动列表。"))}
   <p class="help-text">${t("分组支持右键重命名和编辑图标；编辑桌面时可拖动调整分组顺序。")}</p>`;
  else if(tab==='data') content = `
@@ -18517,7 +18804,7 @@ function confirmDialog(data) { return dialogHeader(data.title)+`<div class="dial
 
 async function addWidget(type) {
  const w=widgetCatalog.find(x=>x.type===type); if(!w)return;
- const selectedSize=$('[name=widgetSize]',dialog)?.value;
+ const selectedSize=$(`[data-catalog-widget="${type}"]`,dialog)?.dataset.previewSize;
  const data=newWidgetData(type);
  const groupId=$('#catalog-group',dialog)?.value||currentGroup().id;
  const item={id:uid(),groupId,type:'widget',widget:type,title:t(w.title),size:w.sizes.includes(selectedSize)?selectedSize:w.size,config:newWidgetConfig(type),data};
@@ -18607,6 +18894,7 @@ document.addEventListener('click', async event=>{
  if(target.dataset.deleteItem){await removeItem(target.dataset.deleteItem);return;}
  if(target.dataset.iconChoice)return chooseLinkIcon(target);
  if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab,groupId:$('#catalog-group')?.value||dialogData.groupId});
+ if(target.dataset.catalogSize || target.dataset.catalogStep){changeCatalogSize(target,state);return;}
  if(target.dataset.catalogCategory){$$('[data-catalog-category]',dialog).forEach(button=>button.setAttribute('aria-pressed',String(button===target)));filterCatalog(dialog);return;}
  if(target.dataset.addSite){const source=DEFAULT_STATE.items.find(item=>item.id===target.dataset.addSite);if(source){const groupId=$('#catalog-group').value;state.items.push({...clone(source),id:uid(),groupId,folderId:null});state.activeGroupId=groupId;await commit();closeDialog();}return;}
  if(target.dataset.action==='workspace-expand'){dialog.classList.toggle('workspace-expanded');return;}
@@ -18643,7 +18931,6 @@ document.addEventListener('click', async event=>{
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
- if(action==='reset-dialog-scale'){state.settings.dialogScale=100;applySettings();await persist();openDialog('settings',{tab:'appearance'});return;}
  if(action==='reset-positions'){for(const key of ['clockOffsetX','clockOffsetY','searchOffsetX','searchOffsetY'])state.settings[key]=0;applySettings();await persist();openDialog('settings',{tab:'layout'});return;}
  if(action==='reset-preferences')return openDialog('confirm',{title:t("恢复默认设置？"),message:t("显示、搜索、头像和壁纸偏好将恢复默认。网站、分组、笔记与待办会保留。"),label:t("重置设置"),callback:async()=>{
   const previous=clone(state.settings);state.settings=clone(DEFAULT_STATE.settings);avatarRequestSequence++;
@@ -18749,10 +19036,9 @@ document.addEventListener('input', event=>{
 document.addEventListener('change',async event=>{
  const input=event.target;
  try{
-  if(input.name==='widgetSize'){updateCatalogSize(dialog);return;}
   if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
-  if(input.dataset.preference){state.settings[input.dataset.preference]=input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
+  if(input.dataset.preference){state.settings[input.dataset.preference]=input.dataset.preference==='windowSize'?Number(input.value):input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
   if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
@@ -18895,7 +19181,7 @@ async function init() {
  subscribeState(incoming=>{if(saving || !incoming || incoming.updatedAt===state.updatedAt)return;state=incoming;persistedState=clone(incoming);if(!dialog.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName || ''))renderDesktop();});
  new ResizeObserver(updateGrid).observe($('.desktop-wrap'));
  new ResizeObserver(updateHeaderPlacement).observe($('#clock-block'));
- window.addEventListener('resize',()=>{updateHeaderPlacement();applyDialogScale(dialog,state.settings.dialogScale,globalThis,state.settings.windowSize);},{passive:true});
+ window.addEventListener('resize',()=>{updateHeaderPlacement();applyWindowSize(dialog,state.settings.windowSize);const metrics=gridMetrics(state.settings,window.innerWidth);for(const [key,value] of Object.entries({'--cell-size':metrics.cell,'--tile-size':metrics.cell,'--gap':metrics.gap}))document.documentElement.style.setProperty(key,`${value}px`);updateGrid();},{passive:true});
  document.fonts?.ready.then(updateHeaderPlacement);
  $('#content-scroll').addEventListener('scroll',hideSearchMenus,{passive:true});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applySettings);
