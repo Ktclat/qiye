@@ -650,7 +650,17 @@ function openDialog(kind,data={}) {
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
-function closeDialog() { widgetDetails.close(); cleanupCitySearch(); wallpaperLibrary.close(); avatarRequestSequence++; if(dialog.open) dialog.close(); dialogKind=''; dialogData={}; if(lastDialogFocus?.isConnected)lastDialogFocus.focus(); }
+async function closeDialog() {
+ const pending = widgetDetails.close();
+ if (pending) {
+  const closingData = dialogData;
+  await pending;
+  if (dialogData !== closingData) return;
+ }
+ cleanupCitySearch(); wallpaperLibrary.close(); avatarRequestSequence++;
+ if(dialog.open) dialog.close(); dialogKind=''; dialogData={};
+ if(lastDialogFocus?.isConnected)lastDialogFocus.focus();
+}
 function linkEditorForm(item){
  const value=item||{},color=value.color||COLORS[0],mode=value.iconMode||'auto';
  return `<form id="link-form" class="site-editor" data-id="${esc(value.id||'')}" data-original-url="${esc(value.url||'')}" data-original-mode="${esc(mode)}" data-original-icon="${esc(value.iconUrl||'')}" data-original-text="${esc(value.icon||'')}" data-original-title="${esc(value.title||'')}" data-icon-choice="${mode==='text'?'text':'current'}">
@@ -1206,6 +1216,7 @@ document.addEventListener('keydown',event=>{
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
 dialog.addEventListener('close',()=>{widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';});
+dialog.addEventListener('cancel',event=>{if(dialogKind==='widget-detail'){event.preventDefault();void closeDialog();}});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');
  if(dialog.open && dialogKind==='folder' && entry){openContext(event,{itemId:entry.dataset.folderItem});return;}

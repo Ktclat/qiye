@@ -17,7 +17,7 @@ function download(content, name, type) {
 
 export function createWidgetDetails(host) {
   const drafts = new Map();
-  let active = null;
+  let active = null, closing = null;
   const currentItem = session => host.getState().items.find(item => item.id === session.item.id);
   const exportDraft = session => download(JSON.stringify({widget:session.item.widget, data:session.draft.data}, null, 2), 'Qiye-unsaved-widget.json', 'application/json');
 
@@ -184,14 +184,18 @@ export function createWidgetDetails(host) {
 
   function close() {
     const session = active;
-    if (!session) return;
+    if (!session) return closing;
     active = null;
     session.controller?.abort();
+    if (session.root) session.root.inert = true;
     session.root = null;
-    flush(session).then(saved => {
+    const job = flush(session).then(saved => {
       if (saved && !session.root) drafts.delete(session.item.id);
       else if (!saved && !session.root) host.toast(t('内容尚未保存，重新打开组件可继续编辑。'), () => exportDraft(session), t('导出副本'));
-    });
+      return saved;
+    }).finally(() => { if (closing === job) closing = null; });
+    closing = job;
+    return job;
   }
 
   return {

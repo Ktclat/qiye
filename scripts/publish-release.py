@@ -17,12 +17,12 @@ def output(*args):
     return subprocess.check_output(args, cwd=ROOT, text=True).strip()
 
 
-def release_requested(ref, version, previous_version):
+def release_requested(ref, version, previous_version, published):
     if ref.startswith('refs/tags/'):
         if ref != f'refs/tags/v{version}':
             raise ValueError('Release tag must match manifest.json and package.json')
         return True
-    return ref == 'refs/heads/main' and previous_version != version
+    return ref == 'refs/heads/main' and (previous_version != version or not published)
 
 
 def publish(assets):
@@ -34,10 +34,14 @@ def publish(assets):
     if ref == 'refs/heads/main' and before and set(before) != {'0'}:
         # Failure to resolve the previous commit must fail closed, not publish.
         previous = json.loads(output('git', 'show', f'{before}:manifest.json'))['version']
-    if not release_requested(ref, version, previous):
-        print('Version unchanged; verification completed without a release.')
-        return
     tag = f'v{version}'
+    repository = os.environ['GITHUB_REPOSITORY']
+    # API/authentication failures are fatal; they never mean "release absent".
+    releases = output('gh', 'api', '--paginate', f'repos/{repository}/releases', '--jq', '.[] | select(.tag_name == "' + tag + '") | [.id, .draft] | @tsv')
+    published = bool(releases) and releases.splitlines()[0].split('\t')[1] == 'false'
+    if not release_requested(ref, version, previous, published):
+        print('Version unchanged and already published; verification completed.')
+        return
     sha = output('git', 'rev-parse', 'HEAD')
     existing_tag = subprocess.run(['git', 'rev-parse', '--verify', f'refs/tags/{tag}^{{commit}}'], cwd=ROOT, capture_output=True, text=True)
     if existing_tag.returncode == 0 and existing_tag.stdout.strip() != sha:
@@ -45,9 +49,6 @@ def publish(assets):
     files = [assets / f'qiye-{version}-{suffix}' for suffix in ['chrome-edge.zip', 'source.zip', 'preview.html', 'SHA256SUMS.txt']]
     if not all(path.is_file() for path in files):
         raise ValueError('Verified release assets are missing')
-    repository = os.environ['GITHUB_REPOSITORY']
-    # gh api --paginate makes authentication/network failures fatal, not "release absent".
-    releases = output('gh', 'api', '--paginate', f'repos/{repository}/releases', '--jq', '.[] | select(.tag_name == "' + tag + '") | [.id, .draft] | @tsv')
     if releases:
         _, draft = releases.splitlines()[0].split('\t')
         if draft != 'true':

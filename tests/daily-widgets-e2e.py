@@ -101,7 +101,12 @@ with sync_playwright() as p:
             page.locator('[data-detail-action=memo-delete]').click(); memo_count(1)
             page.locator('[data-detail-action=memo-undo]').click(); memo_count(2);page.wait_for_function('document.querySelector("#memo-title")?.value==="First memo"')
             check(f'{language} delete can be undone', page.locator('#memo-title').input_value()=='First memo')
-            page.locator('#memo-text').fill('Close flushes this draft'); close();page.reload();page.locator('[data-widget=memo]').wait_for()
+            page.evaluate('''() => { window.originalLockRequest = navigator.locks.request.bind(navigator.locks); navigator.locks.request = (...args) => new Promise(resolve => { window.resumeSave = () => resolve(window.originalLockRequest(...args)); }); }''')
+            page.locator('#memo-text').fill('Close flushes this draft'); page.locator('[data-close]').first.click()
+            page.wait_for_function('typeof window.resumeSave === "function"')
+            check(f'{language} closing waits for the storage write',page.locator('#dialog').is_visible())
+            page.evaluate('() => { navigator.locks.request = window.originalLockRequest; window.resumeSave(); }')
+            page.locator('#dialog').wait_for(state='hidden');page.reload();page.locator('[data-widget=memo]').wait_for()
             check(f'{language} closing flushes pending edits', any(e['text']=='Close flushes this draft' for e in next(i for i in saved()['items'] if i.get('widget')=='memo')['data']['entries']))
             check(f'{language} events survive reload', next(i for i in saved()['items'] if i.get('widget')=='calendar')['data']['events'][0]['title'].startswith('Review <script>'))
             page.locator('[data-widget=memo] [data-action=widget-memo-open]').last.click()
@@ -143,7 +148,7 @@ with sync_playwright() as p:
             for selector in ['[data-action=widget-calendar-detail]','[data-widget=memo] [data-action=widget-memo-open]','[data-action=widget-weather-detail]']:
                 page.locator(selector).last.click()
                 check(f'{language} 360px at 150% fits {selector}',page.locator('#dialog').evaluate('n=>n.scrollWidth<=n.clientWidth+1') and page.locator('#widget-detail-body').evaluate('n=>n.scrollWidth<=n.clientWidth+1'))
-                close()
+                page.keyboard.press('Escape');page.locator('#dialog').wait_for(state='hidden')
             check(f'{language} no uncaught JavaScript errors', not errors)
             context.close()
         # An untouched browser chooses English without rewriting imported content.

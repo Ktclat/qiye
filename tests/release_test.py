@@ -21,12 +21,13 @@ publish = load('publish-release')
 
 class ReleaseTests(unittest.TestCase):
     def test_trigger_policy(self):
-        self.assertTrue(publish.release_requested('refs/heads/main', '0.4.0', '0.3.3'))
-        self.assertFalse(publish.release_requested('refs/heads/main', '0.4.0', '0.4.0'))
-        self.assertFalse(publish.release_requested('refs/heads/feature', '0.4.0', None))
-        self.assertTrue(publish.release_requested('refs/tags/v0.4.0', '0.4.0', None))
+        self.assertTrue(publish.release_requested('refs/heads/main', '0.5.0', '0.4.0', False))
+        self.assertFalse(publish.release_requested('refs/heads/main', '0.5.0', '0.5.0', True))
+        self.assertTrue(publish.release_requested('refs/heads/main', '0.5.0', '0.5.0', False))
+        self.assertFalse(publish.release_requested('refs/heads/feature', '0.5.0', None, False))
+        self.assertTrue(publish.release_requested('refs/tags/v0.5.0', '0.5.0', None, False))
         with self.assertRaises(ValueError):
-            publish.release_requested('refs/tags/v0.3.3', '0.4.0', None)
+            publish.release_requested('refs/tags/v0.4.0', '0.5.0', None, False)
 
     def test_versions_must_match(self):
         with tempfile.TemporaryDirectory() as directory:

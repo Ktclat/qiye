@@ -7,7 +7,7 @@ version=json.loads((root/'manifest.json').read_text(encoding='utf-8'))['version'
 key=subprocess.check_output(['node','--input-type=module','-e',"import {STORAGE_KEY} from './src/core.js';console.log(STORAGE_KEY)"],cwd=root,text=True).strip()
 (root/'test-results').mkdir(exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='qiye-extension-') as profile, sync_playwright() as p:
-    context=p.chromium.launch_persistent_context(profile,**({'executable_path':os.environ['CHROMIUM_PATH']} if os.environ.get('CHROMIUM_PATH') else {}),headless=True,locale='en-US',args=[f'--disable-extensions-except={root}',f'--load-extension={root}'])
+    context=p.chromium.launch_persistent_context(profile,**({'executable_path':os.environ['CHROMIUM_PATH']} if os.environ.get('CHROMIUM_PATH') else {'channel':'chromium'}),headless=True,locale='en-US',args=[f'--disable-extensions-except={root}',f'--load-extension={root}'])
     try:
         worker=context.service_workers[0] if context.service_workers else context.wait_for_event('serviceworker',timeout=20000)
         extension_id=worker.url.split('/')[2]
