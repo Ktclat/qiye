@@ -98,7 +98,7 @@ WebDAV 使用 Basic 凭据与 HTTPS 传输，仅本机 `localhost` / `127.0.0.1`
 
 本地壁纸媒体上限 **4 MiB**，头像输入上限 **4 MiB**、保存图像上限 **256 KiB**，整个备份上限 **6 MiB**。导入只接受支持的本地媒体及经过固定提供方校验的在线壁纸，壁纸字段拒绝任意远程图片地址；网站图标保存经过校验的模式、文字回退和用户显式选择的 `iconUrl`（安全 HTTPS 图片地址或有界静态本机图片）。网页还受浏览器存储配额限制。
 
-运行与网络验收边界见 [QA.md](QA.md)。字体来源和完整许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。浏览器存储说明见 [Chrome Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage)，外部 API 与协议出处见 [README](../README.md#官方参考)。
+运行与网络验收边界见 [QA.md](QA.md)。字体来源和完整许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。浏览器存储说明见 [Chrome Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage)，外部 API 与协议出处见 [使用指南](GUIDE.md#官方参考)。
 
 
 ## v0.3.1 图库与界面补充

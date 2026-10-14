@@ -45,7 +45,7 @@ def build(output):
         runtime.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in suffixes)
     extension = output / f'qiye-{version}-chrome-edge.zip'
     archive(extension, runtime)
-    source = runtime + ['package.json', 'README.md', 'README.en.md', 'CONTRIBUTING.md', 'REQUIREMENTS.md', '.gitignore', '.gitattributes', '.nojekyll']
+    source = runtime + ['package.json', 'README.md', 'README.en.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'REQUIREMENTS.md', '.gitignore', '.gitattributes', '.nojekyll']
     for folder in ['scripts', 'tests', 'docs', '.github', 'community']:
         source.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs', '.js', '.html', '.svg', '.md', '.json', '.yml', '.yaml', '.png', '.jpg'})
     source_zip = output / f'qiye-{version}-source.zip'

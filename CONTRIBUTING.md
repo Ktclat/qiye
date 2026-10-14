@@ -24,7 +24,7 @@ GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码
 
 项目尚未正式推出，**不需要兼容旧版本**。允许直接调整数据结构、组件接口与功能，不保留旧字段、迁移器、兼容别名或按版本回退的分支。默认值仅用于创建新数据；导入与持久化必须验证完整的当前格式，不能通过自动补字段掩盖缺失数据。
 
-当前桌面格式为 `schemaVersion: 4`，存储键为 `qiye.state.v4`。结构发生破坏性变化时同步更新版本标识、创建逻辑、校验、测试夹具和文档；不实现历史格式读取。多标签页修订冲突、存储失败保留和 WebDAV 条件写入仍是当前功能的正确性要求。
+当前桌面格式为 `schemaVersion: 5`，存储键为 `qiye.state.v5`。结构发生破坏性变化时同步更新版本标识、创建逻辑、校验、测试夹具和文档；不实现历史格式读取。多标签页修订冲突、存储失败保留和 WebDAV 条件写入仍是当前功能的正确性要求。
 
 ## 修改与验证
 
@@ -57,4 +57,10 @@ GitHub Pages 使用本仓库 `gh-pages` 分支的根目录，`main` 保存源码
 
 ## 版本与发布
 
-新组件使用 [组件 API v2](docs/WIDGETS.md)。发布时同步修改 manifest.json 与 package.json，运行预览构建更新生成的版本模块和 HTML，再提交完整源码。推送新版本到 main 或匹配标签即可触发测试和 Release，详见 [RELEASES.md](docs/RELEASES.md)。
+随包原生组件使用 [组件 API v3](docs/wiki/Native-Widgets.md)，自托管网页使用 [社区协议 v1](docs/wiki/Community-Widgets.md)。发布时同步修改 manifest.json 与 package.json，运行预览构建更新生成的版本模块和 HTML，再提交完整源码。推送新版本到 main 或匹配标签即可触发测试和 Release，详见 [RELEASES.md](docs/RELEASES.md)。
+
+## 文档维护
+
+README.md 默认中文，README.en.md 提供对应英文概览，首页保持项目介绍、安装和导航。版本变化统一写入 [CHANGELOG.md](CHANGELOG.md)，发布操作维护在 [RELEASES.md](docs/RELEASES.md)，避免在首页重复累积版本章节。
+
+小组件技术文档以 `docs/wiki/` 为源，修改接口时同步中英文页面、示例与索引。运行 `python scripts/check-docs.py` 校验链接，运行 `python scripts/build-wiki.py` 生成 Wiki 内容；发布方式见 [WIKI.md](docs/WIKI.md)。纯文档调整无需重建未改变的应用预览。

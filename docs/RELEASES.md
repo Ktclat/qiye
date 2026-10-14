@@ -1,5 +1,9 @@
 # 自动发布与下载包
 
+[文档索引](README.md) · [更新日志](../CHANGELOG.md)
+
+本页维护发布流程；每个版本的变化集中记录在 `CHANGELOG.md`，不放入中英文 README。发布前更新日志，列明新增、修复与破坏性调整，并同步受影响的中英文技术文档。源码分发包包含更新日志和 Wiki 源文件，Release 正文链接对应标签下的更新日志。
+
 工作流：`.github/workflows/ci.yml`。它先验证当前提交，再将同一次构建的产物发布到 GitHub Releases。
 
 ## 触发方式

@@ -24,6 +24,10 @@ jobs:
           python-version: '3.13'
       - name: Logic and integration tests
         run: npm test
+      - name: Documentation links and bilingual wiki
+        run: |
+          python3 scripts/check-docs.py
+          python3 scripts/build-wiki.py
       - name: Validate release version and packaging rules
         run: |
           python3 scripts/package-release.py --check-version

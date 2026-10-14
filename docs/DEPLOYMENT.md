@@ -116,7 +116,7 @@ git -C ../qiye-demo push origin gh-pages
 
 GitHub Pages 的网页来源仍为 **`https://ktclat.github.io`**，来源中不包含 `/qiye/` 路径。调整同一域名下的项目路径不会产生新的 CORS 来源；同一来源下的网页也会共享该来源的浏览器存储，因此仅迁移同一来源内的路径时，不必把它当作域名迁移。
 
-服务端需允许此来源、`GET` / `PUT` / `OPTIONS` 方法和 `Authorization`、`Content-Type`、`If-Match`、`If-None-Match` 请求头，并通过 `Access-Control-Expose-Headers: ETag` 暴露版本信息。HTTPS 与强 ETag 条件写入要求继续适用，详见 [README 的同步说明](../README.md#webdav-同步)。
+服务端需允许此来源、`GET` / `PUT` / `OPTIONS` 方法和 `Authorization`、`Content-Type`、`If-Match`、`If-None-Match` 请求头，并通过 `Access-Control-Expose-Headers: ETag` 暴露版本信息。HTTPS 与强 ETag 条件写入要求继续适用，详见 [使用指南的同步说明](GUIDE.md#webdav-同步)。
 
 ## 上线验收
 

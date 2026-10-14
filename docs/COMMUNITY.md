@@ -1,5 +1,7 @@
 # 社区组件与桌面分享
 
+[文档索引](README.md) · [中文技术文档](wiki/Community-Widgets.md) · [English technical guide](wiki/Community-Widgets-en.md)
+
 当前提供两条独立入口：**添加 → 社区组件** 和 **添加 → 分享与导入**。扩展、独立 HTML 与 GitHub Pages 使用同一套实现。只支持本文的当前格式，不进行历史格式兼容或数据迁移。
 
 ## 使用社区组件
@@ -12,83 +14,15 @@
 
 打开社区页会向作者的预览图片地址发起请求。读取来源时不发送登录凭据或 Referer，不接受重定向；扩展按用户操作申请该来源域名权限。网页版需要服务器允许 CORS，例如 GitHub Pages 或可直接读取的 raw JSON。第三方网页仍可自主联网，因此其内容、联网行为和可用性由作者负责。没有账号上传服务、排名、自动审核或付费市场。
 
-## 作者接入
+## 作者开发文档
 
-复制仓库的 `community/examples/counter/index.html` 与 `community/sdk.js`，放到自己的静态网站。示例在隔离环境中实现计数、归零、读写自身数据和主题变化。
+清单、SDK 与隔离协议集中维护在双语 Wiki，避免多份契约相互过期：
 
-创建 `qiye-widget.json`：
+- [社区组件协议 v1（中文）](wiki/Community-Widgets.md) · [Community protocol v1 (English)](wiki/Community-Widgets-en.md)
+- [原生组件 API v3（中文）](wiki/Native-Widgets.md) · [Native widget API v3 (English)](wiki/Native-Widgets-en.md)
+- [测试与贡献（中文）](wiki/Widget-Testing.md) · [Testing and contributing (English)](wiki/Widget-Testing-en.md)
 
-```json
-{
-  "format": "qiye-widget",
-  "version": 1,
-  "id": "yourname.counter",
-  "name": "我的计数器 / My counter",
-  "description": "组件用途说明",
-  "author": "Your name",
-  "release": "1.0.0",
-  "entry": "https://yourname.github.io/widgets/counter/index.html",
-  "repository": "https://github.com/yourname/widgets",
-  "license": "MIT",
-  "sizes": ["1x1", "1x2", "2x1", "2x2", "4x2"],
-  "previews": [
-    {"size": "1x1", "url": "https://yourname.github.io/widgets/counter/1x1.png"},
-    {"size": "2x2", "url": "https://yourname.github.io/widgets/counter/2x2.png"}
-  ]
-}
-```
-
-- `id` 为小写 `作者.组件名`，允许数字和连字符，最长 80 字符。
-- `release` 为三段数字；`version: 1` 是清单及消息协议版本，与原生组件 API v3 分开。
-- 必须支持 1×1、2×2，可选 1×2、2×1、4×2；选择器只显示声明尺寸。每个尺寸最多一张预览；未提供时显示明确占位。
-- 所有入口、源码、图片、来源均需公开 HTTPS 域名地址，不接受账号密码、非标准端口或字面 IP。清单不能携带宿主 JS、CSS 或其他可执行字段。
-- 当前桌面卡片是静态入口，完整交互运行在详情 iframe 中。iframe 收到实际宽高，作者应响应可用空间，不能假设详情窗口等于卡片像素尺寸。
-- 网页需允许 iframe 嵌入：不能使用 `X-Frame-Options: DENY/SAMEORIGIN`，也不能用 `frame-ancestors` 阻止栖页。启用脚本模块、字体、接口时应正确配置 CORS；sandbox 的来源为 opaque origin，服务端可能收到 `Origin: null`。不要依赖父页面 DOM、同源 Cookie 或 iframe 内 localStorage。
-
-用户可直接订阅该清单。若提供多个组件，可发布索引：
-
-```js
-const source = {format: 'qiye-widget-source', version: 1, name: '我的组件', widgets: [manifest]};
-const json = JSON.stringify(source, null, 2); // manifest 是上面的完整清单对象
-```
-
-`widgets` 实际须为完整清单对象数组，最多 50 项；来源上限 512 KiB。宿主只读取声明数据，不执行从清单取得的 JavaScript。
-
-### 登记到公共目录
-
-1. 将完整清单加入 `community/widgets/作者.组件名.json`。
-2. 执行 `node scripts/build-community.mjs`，生成 `community/index.json`；`npm test` 校验格式。
-3. 向本仓库提交 PR，说明源码、许可、联网行为以及各尺寸预览。合并并部署 Pages 后，用户刷新公共来源即可发现组件。
-4. 之后版本更新同样修改清单并提交 PR。也可维护自己的来源，用户直接订阅，不依赖公共目录收录。
-
-公共目录只登记清单，不复制作者的项目，也不自动审查作者服务器未来返回的内容。建议 `entry` 和预览使用不可变的版本路径；即使清单版本不变，服务器仍可能改变网页，宿主无法保证远程内容不变。
-
-## 隔离接口 v1
-
-iframe 设置 `sandbox="allow-scripts"`，没有 `allow-same-origin`、父窗口导航、弹窗、表单或下载权限。浏览器支持时设置 `credentialless`，不发送 Referer，并拒绝摄像头、麦克风、定位及剪贴板权限。不要把它当作网络防火墙：网页可以向外部服务发请求。
-
-父页面在 iframe load 后向该窗口传递专属 `MessageChannel`，初始化消息为：
-
-```js
-{ type: 'qiye:init', version: 1, data: '{"count":0}',
-  environment: { locale: 'zh-CN', theme: 'dark', size: '2x2', width: 680, height: 520 } }
-```
-
-唯一传输端口在 `event.ports[0]`，组件校验 `event.source === parent`。握手回复 `{type:'ready', version:1}`；12 秒内无响应会卸载 iframe，显示错误与重试入口。
-
-推荐直接使用 SDK：
-
-```js
-import { connectWidget } from './sdk.js';
-const host = await connectWidget();
-const value = host.data ?? { count: 0 };
-await host.save({ count: value.count + 1 });
-host.onEnvironment(({ theme, width, height }) => { /* 重排与主题 */ });
-```
-
-保存消息为 `{type:'save',id:'唯一请求号',value:'JSON 字符串'}`；宿主返回 `{type:'saved',id,ok:true}` 或 `{type:'saved',id,error:'…'}`。每实例最多 64 KiB UTF-8 JSON、每 100ms 最多接受一次写入、不并发写入。成功确认后才更新 UI；SDK 的保存 Promise 会在失败时 reject。不要把密码或令牌放入组件数据。
-
-宿主仅提供本实例数据与显示环境，**不提供桌面网站列表、其他组件内容、WebDAV 凭据、任意宿主 fetch 或执行脚本接口**。数据随当前桌面备份和 WebDAV 同步；导出排布时清空。原生内置组件开发仍使用 [API v3](WIDGETS.md)，经源码审阅后随应用打包。
+社区作者可直接托管网页和清单，或向公共目录提交 PR；原生模块经审阅后随程序打包。两者接口独立。
 
 ## 桌面排布分享 v1
 
