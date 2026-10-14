@@ -153,7 +153,7 @@ with sync_playwright() as p:
             check(f'{language} retry saves recovered draft', any(e['text']=='Recover this failed draft' for e in next(i for i in saved()['items'] if i.get('widget')=='memo')['data']['entries']))
             close()
             page.locator('[data-action=widget-weather-detail]').click();page.locator('.daily-weather>div').first.wait_for()
-            check(f'{language} full forecast and AQI', page.locator('.hourly-weather>div').count()==24 and page.locator('.daily-weather>div').count()==7 and '32' in page.locator('.weather-metrics').inner_text())
+            check(f'{language} full forecast and AQI', page.locator('.hourly-weather>div').count()==24 and page.locator('.daily-weather>div').count()==7 and '32' in page.locator('.weather-air').inner_text())
             page.screenshot(path=str(OUT/f'weather-{language}.png'),animations='disabled')
             offline[0]=True;page.locator('[data-detail-action=weather-refresh]').click();page.wait_for_function('!document.querySelector("[data-detail-action=weather-refresh]").disabled')
             check(f'{language} network failure retains forecast', page.locator('.daily-weather>div').count()==7); offline[0]=False;close()
@@ -180,7 +180,7 @@ with sync_playwright() as p:
             page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).settings.windowSize===150');close()
             for selector in ['[data-action=widget-calendar-detail]','[data-widget=memo] [data-action=widget-memo-open]','[data-action=widget-weather-detail]']:
                 page.locator(selector).last.click()
-                check(f'{language} 360px at 150% fits {selector}',page.locator('#dialog').evaluate('n=>n.scrollWidth<=n.clientWidth+1') and page.locator('#widget-detail-body').evaluate('n=>n.scrollWidth<=n.clientWidth+1'))
+                check(f'{language} 360px at 150% fits {selector}',page.locator('#dialog').evaluate('n=>n.scrollWidth<=n.clientWidth+1') and page.locator('#widget-detail-body,#weather-workspace').evaluate('n=>n.scrollWidth<=n.clientWidth+1'))
                 page.keyboard.press('Escape');page.locator('#dialog').wait_for(state='hidden')
             check(f'{language} no uncaught JavaScript errors', not errors)
             context.close()

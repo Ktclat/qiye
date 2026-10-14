@@ -56,7 +56,7 @@ with sync_playwright() as p:
         page.wait_for_function('(before)=>JSON.parse(localStorage.getItem("qiye.state.v5")).items.map(i=>i.id).join()!==before',arg=original)
         check('wallpaper long-press drop persists new order',not page.locator('#dialog').is_visible())
         for kind in ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks','weather']:
-            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app').count()==1 and page.locator('.widget-viewer').count()==0)
+            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app').count()==1 and page.locator('.widget-viewer').count()==0)
             if kind=='countdown':
                 page.locator('[name=eventTitle]').fill('Launch day');page.locator('[name=date]').fill('2027-03-21');page.locator('[data-utility-form] [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="countdown").config.title==="Launch day"');check('countdown settings update date and detail',page.locator('.utility-countdown h3').inner_text()=='Launch day')
                 page.screenshot(path=str(OUT/'countdown-dark.png'),animations='disabled')
@@ -71,7 +71,7 @@ with sync_playwright() as p:
             elif kind=='calculator':
                 page.locator('#dialog [data-widget-input=calculator]').fill('(7+3)*4');page.locator('#dialog [data-widget-input=calculator]').press('Enter');check('calculator adds session history',page.locator('.calculator-history li').inner_text()=='(7+3)*4 = 40')
             elif kind=='weather':
-                page.locator('[name=cityName]').fill('Osaka');page.locator('#weather-settings details').evaluate('node=>node.open=true');page.locator('[name=latitude]').fill('34.69');page.locator('[name=longitude]').fill('135.5');page.locator('[name=unit]').select_option('fahrenheit');page.locator('#weather-settings [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="weather").config.city.name==="Osaka"');check('weather city and units save inside forecast workspace',next(i for i in saved()['items'] if i['widget']=='weather')['config']['unit']=='fahrenheit')
+                page.locator('[data-detail-action=weather-settings]').click();page.locator('[name=cityName]').fill('Osaka');page.locator('#weather-settings details').evaluate('node=>node.open=true');page.locator('[name=latitude]').fill('34.69');page.locator('[name=longitude]').fill('135.5');page.locator('[name=unit]').select_option('fahrenheit');page.locator('#weather-settings [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="weather").config.city.name==="Osaka"');check('weather city and units save inside forecast workspace',next(i for i in saved()['items'] if i['widget']=='weather')['config']['unit']=='fahrenheit')
             close()
         # Test both themes at narrow sizes using persisted preferences.
         for theme in ['dark','light']:

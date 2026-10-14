@@ -4,7 +4,9 @@
 
 Qiye is an account-free, customizable new tab for Chrome and Edge. Organize websites, folders and everyday widgets, use your own wallpaper, and optionally sync through your own WebDAV server. Personal content stays in your browser unless you export it or enable synchronization.
 
-Version **0.9.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+Version **0.9.1** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+
+Version 0.9.1 adds a dedicated weather canvas with hourly temperature / precipitation / wind curves, seven-day high and low curves, city search and a recent-city list. Up to 8 cities are remembered on this device, outside backups and WebDAV. Weather settings live in a drawer; light / dark themes, mobile layouts and °C / °F remain supported.
 
 Version 0.9.0 fixes wallpaper dragging and opens every wallpaper size directly in the wallpaper centre. Countdown, workday, focus, weather and utility widgets now have dedicated workspaces with relevant settings and controls.
 

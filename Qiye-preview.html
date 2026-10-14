@@ -1280,24 +1280,9 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scr
 .widget-detail-body button:focus-visible,.widget-detail-body input:focus-visible,.widget-detail-body textarea:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .widget-detail-body h3,.widget-detail-body h4 { margin:0 0 14px; }
 .widget-detail-body h4 { margin-top:22px; }
-.weather-detail-current { display:flex; justify-content:space-between; align-items:center; gap:20px; }
-.weather-detail-current strong { font-size:54px; font-weight:400; }.weather-detail-current .w-weather-art { width:110px; height:100px; }
-.weather-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:22px 0; }
-.weather-metrics>div { background:var(--field); border-radius:12px; padding:14px; }
-.weather-metrics span,.weather-metrics strong { display:block; }.weather-metrics span { font-size:12px; color:var(--muted); margin-bottom:8px; }
-.hourly-weather { display:flex; overflow-x:auto; gap:8px; padding-bottom:12px; }
-.hourly-weather>div { display:flex; align-items:center; flex-direction:column; min-width:65px; gap:6px; font-size:12px; }
-.hourly-weather .w-weather-art,.daily-weather .w-weather-art { width:36px; height:34px; }
-.hourly-weather small,.daily-weather small { color:var(--muted); }
-.daily-weather>div { display:grid; grid-template-columns:1.2fr 40px 1fr 1fr 45px; align-items:center; gap:10px; border-bottom:1px solid var(--panel-border); padding:6px 0; font-size:12px; }
 .w-weather-details-button { border:0; background:transparent; color:inherit; padding:4px 0; font-size:10px; text-align:left; cursor:pointer; }
 #city-results { display:grid; gap:6px; margin:10px 0; }
 #city-results button { text-align:left; cursor:pointer; }#city-results span { display:block; font-size:12px; color:var(--muted); margin-top:4px; }
-@container(max-width:620px) {
- .weather-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
- .weather-detail-current { flex-wrap:wrap; }.daily-weather>div { grid-template-columns:1fr 30px 1fr; }
- .daily-weather>div>span:nth-child(3) { display:none; }.daily-weather small { grid-column:3; }
-}
 
 </style>
   <style>
@@ -1392,9 +1377,7 @@ html[data-theme=light] #dialog.widget-app-dialog {
 .utility-world-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}.utility-world-list article{display:grid;gap:8px;background:var(--app-pane);border:1px solid var(--app-border);padding:14px;border-radius:14px}.utility-world-list article span,.utility-world-list small{font-size:11px;color:var(--app-muted);overflow-wrap:anywhere}.utility-world-list strong{font-size:25px}
 .utility-panel .w-quote-text{font-size:24px;line-height:1.8;-webkit-line-clamp:unset;overflow:visible}.utility-panel .w-quote-author{font-size:14px}.utility-panel .w-hotlinks-grid{gap:12px}.utility-panel .w-hotlink{font-size:14px;min-height:60px}
 [data-habit-week]>div{display:grid;grid-template-columns:minmax(70px,1fr) repeat(7,22px);gap:5px;align-items:center;margin:8px 0;font-size:12px}[data-habit-week]>div>span:first-child{overflow-wrap:anywhere}[data-habit-week]>div>span:not(:first-child){text-align:center;border-radius:5px;background:var(--app-field);color:var(--app-muted)}[data-habit-week] .done{background:var(--app-blue)!important;color:white!important}
-.utility-weather-main{background:var(--app-pane);border:1px solid var(--app-border);border-radius:18px;padding:24px;min-width:0}
-.utility-weather-main .weather-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.utility-weather-main .daily-weather>div{grid-template-columns:1fr 36px 1fr}.utility-weather-main .daily-weather>div>span:nth-child(3){display:none}
-@container(max-width:700px){.utility-layout{grid-template-columns:1fr;padding:12px}.utility-settings{padding:16px}.utility-app-header{padding:12px 16px}.utility-panel.widget-inner{padding:18px;min-height:260px}.utility-panel .w-focus-ring{width:210px}.utility-panel .w-focus-ring strong{font-size:44px}.utility-weather-main{padding:16px}.utility-weather-main .weather-detail-current{flex-wrap:wrap}}
+@container(max-width:700px){.utility-layout{grid-template-columns:1fr;padding:12px}.utility-settings{padding:16px}.utility-app-header{padding:12px 16px}.utility-panel.widget-inner{padding:18px;min-height:260px}.utility-panel .w-focus-ring{width:210px}.utility-panel .w-focus-ring strong{font-size:44px}}
 @media(prefers-reduced-motion:reduce){.utility-app *{scroll-behavior:auto}}
 
 </style>
@@ -1893,6 +1876,156 @@ html[data-theme=light] .sidebar { background:rgb(247 249 252 / max(.78,var(--sid
 html[data-accent=custom] .calendar-cell.selected { background:var(--accent); color:var(--accent-ink); }
 html[data-accent=custom] .calendar-tool-nav button[aria-current=page] { color:var(--accent); }
 html[data-accent=custom] .calendar-tool-nav button[aria-current=page]::before { background:var(--accent); }
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+#dialog.weather-app-dialog {
+  --weather-fg:#f7f8ff; --weather-muted:#c9d2e4; --weather-panel:#ffffff0e;
+  --weather-line:#ffffffc9; --weather-low:#c4d6f4; --weather-field:#ffffff1c;
+  --weather-selection:#ffffff24; --weather-drawer:#2c364d; --weather-border:#ffffff12;
+  --app-fg:var(--weather-fg); --app-muted:var(--weather-muted); --app-field:var(--weather-field);
+  --app-selection:var(--weather-selection); --app-blue:#afcbff;
+  color:var(--weather-fg); border-color:var(--weather-border);
+  background:radial-gradient(ellipse at top right,#506582 0,transparent 74%),linear-gradient(120deg,#26273d,#191a2d 65%);
+}
+html[data-theme=light] #dialog.weather-app-dialog {
+  --weather-fg:#1f3554; --weather-muted:#4d6584; --weather-panel:#ffffff70;
+  --weather-line:#3a5d8e; --weather-low:#6887ae; --weather-field:#ffffff9c;
+  --weather-selection:#fff; --weather-drawer:#e8f0fb; --weather-border:#244f7d18;
+  --app-fg:var(--weather-fg); --app-muted:var(--weather-muted); --app-field:var(--weather-field);
+  --app-selection:var(--weather-selection); --app-blue:#2169dd;
+  background:radial-gradient(ellipse at top right,#cfdef4 0,transparent 78%),linear-gradient(130deg,#e3ecfa,#f2f5fb);
+}
+.weather-app { height:100%; min-height:0; display:flex; flex-direction:column; position:relative; color:var(--weather-fg); }
+.weather-app [hidden] { display:none!important; }
+.weather-app .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.weather-window-bar { display:flex; align-items:center; justify-content:space-between; padding:8px 12px 0 28px; flex:none; }
+.weather-window-bar h2 { font-size:12px; font-weight:500; letter-spacing:.06em; color:var(--weather-muted); margin:0; }
+.weather-window-bar .widget-app-button { background:var(--weather-field); width:25px; height:25px; padding:4px; }
+.weather-toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:8px 28px 0; flex:none; position:relative; z-index:3; }
+#weather-location { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:13px; min-width:0; overflow-wrap:anywhere; }
+#weather-location strong { font-weight:500; } #weather-location small { color:var(--weather-muted); font-size:11px; }
+.weather-actions { display:flex; align-items:center; gap:6px; flex:none; }
+#weather-search { position:relative; width:200px; }
+.weather-search-field { display:flex; border-radius:10px; background:var(--weather-field); }
+.weather-search-field input { width:100%; padding:7px 10px; font-size:12px; background:transparent; }
+.weather-search-field button { background:transparent; padding:6px; flex:none; display:grid; place-items:center; }
+.weather-search-field .icon { width:17px; height:17px; }
+.weather-actions .widget-app-button { background:var(--weather-field); border-radius:10px; }
+#weather-search-results { position:absolute; top:calc(100% + 8px); right:0; width:300px; max-width:80vw; max-height:300px; overflow:auto; padding:8px; background:var(--weather-drawer); border:1px solid var(--weather-border); border-radius:14px; box-shadow:0 12px 40px #0004; font-size:12px; }
+#weather-search-results p { padding:4px 8px; margin:0 0 4px; color:var(--weather-muted); }
+#weather-search-results button { display:block; width:100%; text-align:left; margin:3px 0; background:transparent; }
+#weather-search-results span { display:block; color:var(--weather-muted); font-size:11px; margin-top:4px; }
+#weather-feedback { margin:8px 28px 0; padding:8px 12px; font-size:12px; background:var(--weather-field); border-radius:8px; flex:none; overflow-wrap:anywhere; }
+.weather-scroll { overflow:auto; flex:1; min-height:0; padding:12px 28px 20px; scrollbar-width:thin; scrollbar-color:var(--weather-field) transparent; }
+.weather-hero { padding:0 0 18px; }
+.weather-hero-current { display:flex; align-items:center; gap:26px; }
+.weather-temperature { font-size:88px; font-weight:300; line-height:1.3; letter-spacing:-5px; white-space:nowrap; }
+.weather-temperature small { font-size:15px; letter-spacing:0; margin-left:0; font-weight:400; color:var(--weather-muted); }
+.weather-condition { display:flex; flex-direction:column; gap:9px; font-size:13px; }
+.weather-condition>span,.weather-condition>span>span { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.weather-condition .icon { width:17px; height:17px; }
+.weather-condition .w-weather-art { width:30px; height:29px; }
+.weather-condition .weather-air { font-size:12px; }
+.weather-app .weather-refresh { margin-left:auto; background:transparent; display:grid; padding:8px; color:var(--weather-muted); }
+.weather-refresh .icon { width:18px; height:18px; }
+.weather-outlook { margin:10px 0 12px; font-size:13px; }
+.weather-outlook span { margin-left:20px; color:var(--weather-muted); }
+.weather-app .weather-metrics { display:flex; flex-wrap:wrap; gap:8px 20px; margin:0; font-size:12px; }
+.weather-app .weather-metrics>div { display:flex; align-items:center; gap:6px; background:none; padding:0; border-radius:0; }
+.weather-metrics dt { color:var(--weather-muted); }.weather-metrics dd { margin:0; }
+.weather-cache-message { font-size:11px; color:var(--weather-muted); margin:12px 0 0; }
+.weather-forecast-panel { background:var(--weather-panel); border:1px solid var(--weather-border); border-radius:17px; padding:14px 16px 6px; margin-bottom:18px; }
+.weather-forecast-panel>header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.weather-forecast-panel h3 { font-size:13px; font-weight:400; display:flex; align-items:center; gap:8px; color:var(--weather-muted); margin:0; }
+.weather-forecast-panel h3 .icon { width:16px; height:16px; }
+.weather-metric-switch { display:flex; padding:3px; border-radius:20px; background:var(--weather-field); }
+.weather-app .weather-metric-switch button { padding:3px 8px; border-radius:20px; background:transparent; color:var(--weather-muted); display:grid; place-items:center; }
+.weather-metric-switch .icon { width:17px; height:17px; }
+.weather-app .weather-metric-switch button[aria-pressed=true] { color:var(--weather-fg); background:var(--weather-selection); }
+.weather-chart-caption { font-size:10px; color:var(--weather-muted); margin:0 0 7px; }
+.weather-horizontal-scroll { overflow-x:auto; scrollbar-width:thin; scrollbar-color:var(--weather-field) transparent; outline-offset:2px; }
+.weather-hour-track { min-width:calc(var(--forecast-count) * 64px); }
+.weather-app .hourly-weather,.weather-app .daily-weather { display:grid; grid-template-columns:repeat(var(--forecast-count),minmax(0,1fr)); gap:0; padding:0; overflow:visible; position:relative; }
+.weather-app .hourly-weather>div { min-width:0; display:flex; flex-direction:column; align-items:center; gap:8px; font-size:11px; }
+.weather-app .hourly-weather .w-weather-art { width:30px; height:29px; }
+.weather-chart { height:100px; position:relative; margin-top:7px; }
+.weather-chart svg { display:block; position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.weather-chart path { stroke:var(--weather-line); fill:none; stroke-width:1.2; }
+.weather-chart .weather-line-low { stroke:var(--weather-low); }
+.weather-chart-point { position:absolute; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; height:7px; width:7px; }
+.weather-chart-point i { display:block; width:7px; height:7px; border-radius:50%; background:var(--weather-fg); }
+.weather-chart-point>span { position:absolute; bottom:13px; font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.weather-point-low i { background:var(--weather-low); }
+.weather-point-low>span { bottom:auto; top:13px; color:var(--weather-muted); }
+.weather-point-missing i { visibility:hidden; }
+.weather-art-missing { display:grid; width:30px; height:29px; place-items:center; color:var(--weather-muted); }
+.weather-week-panel { padding-bottom:12px; }
+.weather-chart-legend { display:flex; gap:13px; font-size:10px; }
+.weather-chart-legend>span:before { content:''; display:inline-block; width:12px; border-top:2px solid var(--weather-line); vertical-align:middle; margin-right:4px; }
+.weather-chart-legend>span:last-child { color:var(--weather-muted); }
+.weather-chart-legend>span:last-child:before { border-color:var(--weather-low); }
+.weather-week-track { min-width:740px; position:relative; margin-top:10px; }
+.weather-day-backgrounds { display:grid; position:absolute; inset:0; grid-template-columns:repeat(var(--forecast-count),minmax(0,1fr)); pointer-events:none; }
+.weather-day-backgrounds>div { border-radius:15px; border-left:1px solid var(--weather-border); }
+.weather-day-backgrounds>.is-today { background:var(--weather-field); border:0; }
+.weather-app .daily-weather>div { display:flex; flex-direction:column; align-items:center; gap:8px; border:0; padding:12px 6px 4px; font-size:12px; text-align:center; }
+.daily-weather time { display:flex; flex-direction:column; gap:2px; }.daily-weather time strong { font-weight:400; font-size:13px; }
+.weather-day-condition { display:flex; align-items:center; justify-content:center; gap:4px; min-height:30px; font-size:11px; }
+.weather-app .daily-weather .w-weather-art { width:27px; height:26px; flex:none; }
+.weather-week-track .weather-chart { height:160px; margin:4px 0; }
+.weather-week-track .weather-chart-point,.weather-week-track .weather-chart-point i { width:9px; height:9px; }
+.weather-day-metrics { position:relative; display:grid; grid-template-columns:repeat(var(--forecast-count),minmax(0,1fr)); padding:10px 0 14px; font-size:11px; }
+.weather-day-metrics>div { display:flex; flex-direction:column; gap:6px; align-items:center; }
+.weather-day-metrics span { display:flex; align-items:center; gap:4px; }
+.weather-day-metrics span:last-child { color:var(--weather-muted); font-size:10px; }.weather-day-metrics .icon { width:13px; height:13px; }
+.weather-attribution { display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px 16px; color:var(--weather-muted); font-size:10px; }
+.weather-attribution a { color:inherit; }
+.weather-empty { font-size:13px; padding:30px 0; text-align:center; color:var(--weather-muted); }
+.weather-empty-state { min-height:350px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; }
+.weather-empty-state>.icon { width:64px; height:64px; opacity:.75; }.weather-empty-state p,.weather-empty-state h3 { margin:0; }
+.weather-empty-state p { font-size:13px; color:var(--weather-muted); }
+.weather-panel-shade { position:absolute; inset:34px 0 0; background:#0003; z-index:4; }
+.weather-side-panel { position:absolute; inset:40px 10px 10px auto; width:min(330px,calc(100% - 20px)); z-index:5; background:var(--weather-drawer); border:1px solid var(--weather-border); box-shadow:0 15px 50px #0005; border-radius:17px; padding:18px; overflow:auto; scrollbar-width:thin; animation:weather-panel-enter .2s ease-out; }
+.weather-side-panel>header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }.weather-side-panel h3 { font-size:18px; margin:0; }
+.weather-panel-help { font-size:12px; color:var(--weather-muted); margin:0 0 14px; line-height:1.7; }
+.weather-city-card { position:relative; border-radius:14px; background:var(--weather-panel); margin-bottom:10px; border:1px solid transparent; }
+.weather-city-card.active { border-color:var(--app-blue); }
+.weather-app .weather-city-card>button:first-child { width:100%; display:flex; align-items:center; gap:6px; text-align:left; padding:16px 12px 30px; background:transparent; }
+.weather-city-card strong { font-size:14px; font-weight:500; overflow-wrap:anywhere; }.weather-city-card small { display:block; color:var(--weather-muted); font-size:11px; margin-top:5px; }
+.weather-city-card .w-weather-art,.weather-city-card .icon { width:35px; height:34px; margin-left:auto; flex:none; }.weather-city-card b { font-size:28px; font-weight:400; }
+.weather-city-current { position:absolute; bottom:9px; left:12px; font-size:10px; color:var(--weather-muted); }
+.weather-app .weather-city-remove { position:absolute; bottom:4px; right:5px; padding:4px; background:transparent; }.weather-city-remove .icon { width:14px; height:14px; }
+.weather-app .weather-add-city { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; font-size:13px; padding:11px; }.weather-add-city .icon { width:16px; height:16px; }
+#weather-settings { display:flex; flex-direction:column; gap:16px; font-size:13px; }
+#weather-settings label { display:flex; flex-direction:column; gap:6px; }#weather-settings label>span { color:var(--weather-muted); }
+#weather-settings input,#weather-settings select { width:100%; }#weather-settings select { color-scheme:dark; background:var(--weather-field); }#weather-settings select option { background:var(--weather-drawer); color:var(--weather-fg); }
+html[data-theme=light] #weather-settings select { color-scheme:light; }
+#weather-settings details label { margin-top:12px; }#weather-settings summary { cursor:pointer; color:var(--weather-muted); }
+#weather-settings .weather-enable { flex-direction:row; align-items:center; gap:8px; }#weather-settings [type=checkbox] { width:16px; height:16px; accent-color:var(--app-blue); }
+#weather-settings .weather-panel-help { margin:0; }.weather-settings-status { margin:0; font-size:12px; overflow-wrap:anywhere; }
+.weather-app .weather-primary { background:var(--app-blue); color:#15304d; padding:9px 18px; }
+html[data-theme=light] .weather-app .weather-primary { color:#fff; }
+html[data-accent=custom] .weather-app .weather-primary { color:var(--accent-ink); }
+html[data-theme=light] .weather-app .w-weather-art { filter:drop-shadow(0 1px 1px #47618090); }
+@container(max-width:680px) {
+  .weather-toolbar { align-items:flex-start; flex-direction:column; gap:10px; padding:8px 16px 0; }
+  .weather-actions { width:100%; } #weather-search { flex:1; width:auto; }#weather-search-results { left:0; right:auto; width:100%; }
+  .weather-scroll { padding:10px 16px 16px; }.weather-window-bar { padding-left:16px; }
+  .weather-temperature { font-size:70px; }.weather-hero-current { gap:15px; }.weather-condition { font-size:12px; }
+  .weather-forecast-panel { padding:12px 10px 6px; }.weather-week-panel { padding-bottom:10px; }
+  .weather-app .weather-metrics { gap:9px 16px; font-size:11px; }.weather-hero { padding-bottom:16px; }
+}
+@container(max-width:380px) {
+  .weather-temperature { font-size:60px; }.weather-hero-current { flex-wrap:wrap; gap:8px 16px; }
+  .weather-condition { flex:1; }.weather-app .weather-refresh { margin:0; }.weather-outlook { font-size:12px; }
+  .weather-outlook span { margin-left:8px; }.weather-forecast-panel h3 { font-size:12px; }
+  .weather-app .weather-metric-switch button { padding:3px 6px; }
+}
+@keyframes weather-panel-enter { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
+@media(prefers-reduced-motion:reduce) { .weather-side-panel { animation:none; } }
+body.reduce-effects .weather-side-panel { animation:none; }
 
 </style>
 <!-- Bundled Inter font: copyright and full license
@@ -3460,7 +3593,34 @@ const englishMessages = {
   "没有找到匹配的内容": "No matching content",
   "自定义图标": "Custom shortcut",
   "切换窗口大小": "Toggle window size",
-  "此组件不支持所选尺寸": "This widget does not support the selected size."
+  "此组件不支持所选尺寸": "This widget does not support the selected size.",
+  "输入城市、乡镇": "Enter a city or town",
+  "城市列表": "Cities",
+  "天气设置": "Weather settings",
+  "收起面板": "Close panel",
+  "切换城市查看天气，最多保留 8 个城市。": "Switch between up to 8 recently used cities.",
+  "添加城市": "Add a city",
+  "暂不可用": "Unavailable",
+  "未启用天气": "Weather is off",
+  "当前": "Current",
+  "移除城市 {name}": "Remove {name}",
+  "移除城市": "Remove city",
+  "降水概率": "Precipitation probability",
+  "温度": "Temperature",
+  "小时预报指标": "Hourly forecast metric",
+  "暂无小时预报": "Hourly forecast unavailable",
+  "暂无每日预报": "Daily forecast unavailable",
+  "最高": "High",
+  "最低": "Low",
+  "最高风速": "Maximum wind speed",
+  "今日温度": "Today’s range",
+  "气压": "Pressure",
+  "降水": "Precipitation",
+  "预报时间采用城市所在时区": "Forecast times use the city’s time zone",
+  "城市列表未能保存，当前城市设置已保存。": "Could not save the city list. Your current city was saved.",
+  "请输入至少两个字符": "Enter at least two characters",
+  "选择城市查看天气": "Select a city to view its weather",
+  "城市列表未能保存，请重试。": "Could not save the city list. Please try again."
 };
 
 return {englishMessages};
@@ -3959,6 +4119,10 @@ return {renderWidgetSummary};
 const __icons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
+ list:'<path d="M9 6h12M9 12h12M9 18h12M3 6h.01M3 12h.01M3 18h.01"/>',
+ droplet:'<path d="M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13Z"/>',
+ wind:'<path d="M3 8h12a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M5 16h4a3 3 0 1 1-3 3"/>',
+ leaf:'<path d="M20 3C10 2 4 6 4 12a7 7 0 0 0 7 7c7 0 9-8 9-16ZM4 21l10-11"/>',
  flag:'<path d="M5 21V3m0 1c5-4 9 4 14 0v10c-5 4-9-4-14 0"/>',
  timer:'<circle cx="12" cy="14" r="8"/><path d="M9 2h6m-3 0v4m6 1 2-2m-8 5v5l3 2"/>',
  calculator:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h1m6 0h1m-8 4h1m6 0h1m-8 4h1m6 0h1"/>',
@@ -4821,7 +4985,7 @@ const __weather = (() => {
 const { t, getLocale } = __i18n;
 
 const WEATHER_TTL = 30 * 60000;
-const CACHE_KEY = 'qiye.weather.forecasts.v1';
+const CACHE_KEY = 'qiye.weather.forecasts.v2';
 const states = new Map();
 const requests = new Map();
 const numeric = value => typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -4832,9 +4996,9 @@ function parseWeatherResponse(raw, now = Date.now()) {
   if (numeric(c?.temperature_2m) === null || numeric(c?.weather_code) === null) throw new Error(t('天气服务返回的数据不完整'));
   const timestamp = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) ? value : '';
   const observedAt = timestamp(c.time);
-  const daily = (Array.isArray(raw.daily?.time) ? raw.daily.time : []).slice(0,7).map((time, i) => ({time, code:numeric(raw.daily.weather_code?.[i]), min:numeric(raw.daily.temperature_2m_min?.[i]), max:numeric(raw.daily.temperature_2m_max?.[i]), rain:numeric(raw.daily.precipitation_probability_max?.[i]), sunrise:timestamp(raw.daily.sunrise?.[i]), sunset:timestamp(raw.daily.sunset?.[i]), uv:numeric(raw.daily.uv_index_max?.[i])})).filter(day=>typeof day.time==='string' && /^\d{4}-\d{2}-\d{2}$/.test(day.time));
-  const hourly = (Array.isArray(raw.hourly?.time) ? raw.hourly.time : []).map((time,i) => ({time:timestamp(time), temperature:numeric(raw.hourly.temperature_2m?.[i]), code:numeric(raw.hourly.weather_code?.[i]), isDay:raw.hourly.is_day?.[i] !== 0, rain:numeric(raw.hourly.precipitation_probability?.[i])})).filter(hour => hour.time && hour.time >= observedAt).slice(0,24);
-  return {fetchedAt:now, temperature:c.temperature_2m, feelsLike:numeric(c.apparent_temperature), humidity:numeric(c.relative_humidity_2m), wind:numeric(c.wind_speed_10m), code:c.weather_code, isDay:c.is_day !== 0, min:daily[0]?.min ?? null, max:daily[0]?.max ?? null, observedAt, timezone:typeof raw.timezone === 'string' ? raw.timezone : '', daily, hourly, air:null};
+  const daily = (Array.isArray(raw.daily?.time) ? raw.daily.time : []).slice(0,7).map((time, i) => ({time, code:numeric(raw.daily.weather_code?.[i]), min:numeric(raw.daily.temperature_2m_min?.[i]), max:numeric(raw.daily.temperature_2m_max?.[i]), rain:numeric(raw.daily.precipitation_probability_max?.[i]), sunrise:timestamp(raw.daily.sunrise?.[i]), sunset:timestamp(raw.daily.sunset?.[i]), uv:numeric(raw.daily.uv_index_max?.[i]), wind:numeric(raw.daily.wind_speed_10m_max?.[i])})).filter(day=>typeof day.time==='string' && /^\d{4}-\d{2}-\d{2}$/.test(day.time));
+  const hourly = (Array.isArray(raw.hourly?.time) ? raw.hourly.time : []).map((time,i) => ({time:timestamp(time), temperature:numeric(raw.hourly.temperature_2m?.[i]), code:numeric(raw.hourly.weather_code?.[i]), isDay:raw.hourly.is_day?.[i] !== 0, rain:numeric(raw.hourly.precipitation_probability?.[i]), wind:numeric(raw.hourly.wind_speed_10m?.[i])})).filter(hour => hour.time && hour.time >= observedAt.slice(0,13)).slice(0,24);
+  return {fetchedAt:now, temperature:c.temperature_2m, feelsLike:numeric(c.apparent_temperature), humidity:numeric(c.relative_humidity_2m), wind:numeric(c.wind_speed_10m), pressure:numeric(c.surface_pressure), precipitation:numeric(c.precipitation), code:c.weather_code, isDay:c.is_day !== 0, min:daily[0]?.min ?? null, max:daily[0]?.max ?? null, observedAt, timezone:typeof raw.timezone === 'string' ? raw.timezone : '', daily, hourly, air:null};
 }
 function readCache(key) {
   try {
@@ -4844,10 +5008,11 @@ function readCache(key) {
     const valid = value && numeric(value.temperature) !== null && numeric(value.code) !== null
       && numeric(value.fetchedAt) !== null && value.fetchedAt <= Date.now() && Date.now()-value.fetchedAt < 7*86400000
       && typeof value.timezone === 'string' && typeof value.isDay === 'boolean'
-      && numbers(value, ['feelsLike','humidity','wind','min','max'])
+      && typeof value.observedAt === 'string' && (!value.observedAt || time(value.observedAt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/))
+      && numbers(value, ['feelsLike','humidity','wind','min','max','pressure','precipitation'])
       && (value.air === null || numbers(value.air, ['aqi','pm25','pm10']))
-      && Array.isArray(value.daily) && value.daily.length <= 7 && value.daily.every(day => numbers(day,['code','min','max','rain','uv']) && time(day.time,/^\d{4}-\d{2}-\d{2}$/) && typeof day.sunrise === 'string' && typeof day.sunset === 'string')
-      && Array.isArray(value.hourly) && value.hourly.length <= 24 && value.hourly.every(hour => numbers(hour,['temperature','code','rain']) && typeof hour.isDay === 'boolean' && time(hour.time,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/));
+      && Array.isArray(value.daily) && value.daily.length <= 7 && value.daily.every(day => numbers(day,['code','min','max','rain','uv','wind']) && time(day.time,/^\d{4}-\d{2}-\d{2}$/) && typeof day.sunrise === 'string' && typeof day.sunset === 'string')
+      && Array.isArray(value.hourly) && value.hourly.length <= 24 && value.hourly.every(hour => numbers(hour,['temperature','code','rain','wind']) && typeof hour.isDay === 'boolean' && time(hour.time,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/));
     return valid ? value : null;
   } catch { return null; }
 }
@@ -4883,7 +5048,7 @@ function requestWeather(city, force = false) {
   if (!force && ((status.data && Date.now()-status.data.fetchedAt < WEATHER_TTL) || Date.now()-status.lastAttempt < 60000)) return Promise.resolve();
   status.status = 'loading'; status.lastAttempt = Date.now();
   const controller = new AbortController(), timer = setTimeout(()=>controller.abort(), 10000);
-  const params = new URLSearchParams({latitude:String(city.latitude), longitude:String(city.longitude), timezone:'auto', forecast_days:'7', current:'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m', daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max', hourly:'temperature_2m,weather_code,precipitation_probability,is_day'});
+  const params = new URLSearchParams({latitude:String(city.latitude), longitude:String(city.longitude), timezone:'auto', forecast_days:'7', current:'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,surface_pressure,precipitation', daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max,wind_speed_10m_max', hourly:'temperature_2m,weather_code,precipitation_probability,is_day,wind_speed_10m'});
   const airParams = new URLSearchParams({latitude:String(city.latitude), longitude:String(city.longitude), current:'us_aqi,pm2_5,pm10', timezone:'auto'});
   const job = (async()=>{
     try {
@@ -15461,6 +15626,588 @@ function createWidgetDraft(item, saveData, onChange = () => {}) {
 
 return {createWidgetDraft};
 })();
+const __widget_details = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { localDateKey, parseDate } = __calendar;
+const { newCalendarView, calendarAction, calendarChange, calendarKeydown } = __calendar_controls;
+const { newMemo, listMemos, MEMO_LIMIT } = __memos;
+const { createWidgetDraft } = __widget_drafts;
+const { calendarDetail } = __calendar_view;
+const { memoDetail, memoList, memoTimestamp } = __memo_view;
+const { escapeText } = __html;
+
+function download(content, name, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name.replace(/[\\/:*?"<>|]/g, '_');
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function createWidgetDetails(host) {
+  const drafts = new Map();
+  let active = null, closing = null;
+  const currentItem = session => host.getState().items.find(item => item.id === session.item.id);
+  const exportDraft = session => download(JSON.stringify({widget:session.item.widget, data:session.draft.data}, null, 2), 'Qiye-unsaved-widget.json', 'application/json');
+
+  function updateStatus(session) {
+    const {root, draft} = session;
+    if (!root?.isConnected) return;
+    root.querySelector('#memo-save-status')?.replaceChildren(t(draft.error ? '保存失败，请重试' : draft.dirty ? '保存中…' : '已保存在本机'));
+    const feedback = root.querySelector('.widget-save-feedback');
+    feedback.hidden = !draft.error;
+    if (draft.error) {
+      feedback.innerHTML = `<p>${t('保存失败。草稿仍保留在此窗口，可重试或导出。')}</p><small>${escapeText(draft.error.message)}</small><div class="detail-toolbar"><button type="button" data-detail-action="save-retry">${t('重试保存')}</button><button type="button" data-detail-action="draft-export">${t('导出未保存的数据')}</button></div>`;
+    }
+  }
+
+  function renderBody(session) {
+    const item = {...(currentItem(session) || session.item), data:session.draft.data};
+    const body = item.widget === 'calendar' ? calendarDetail(item, session.view)
+      : memoDetail(item, session.view);
+    return `<div class="widget-save-feedback" role="alert" hidden></div>${body}`;
+  }
+
+  function redraw(session) {
+    if (!session.root?.isConnected) return;
+    const previous = session.root.querySelector('#memo-text');
+    const selection = previous && {id:previous.dataset.memoId, start:previous.selectionStart, end:previous.selectionEnd, scroll:previous.scrollTop};
+    session.root.innerHTML = renderBody(session);
+    const editor = session.root.querySelector('#memo-text');
+    if (editor && selection?.id === editor.dataset.memoId) {
+      editor.setSelectionRange(selection.start, selection.end);
+      editor.scrollTop = selection.scroll;
+    }
+    updateStatus(session);
+  }
+
+  async function flush(session) {
+    const saved = await session.draft.flush();
+    if (saved) host.refreshCards();
+    return saved;
+  }
+
+  function newEntry(session) {
+    const entries = session.draft.data.entries;
+    if (entries.length >= MEMO_LIMIT) {
+      host.toast(t('备忘录最多支持 {count} 条', {count:MEMO_LIMIT}));
+      return;
+    }
+    const entry = newMemo(host.uid());
+    entries.push(entry);
+    session.view.active = entry.id;
+    session.view.query = '';
+    session.view.mobileList = false;
+    session.draft.changed();
+    redraw(session);
+    session.root.querySelector('#memo-title')?.focus();
+  }
+
+  async function action(session, event) {
+    const target = event.target.closest('[data-detail-action],[data-calendar-date]');
+    if (!target) return;
+    event.preventDefault();
+    const {view, draft} = session, data = draft.data, name = target.dataset.detailAction;
+    if (session.item.widget === 'calendar' && calendarAction(session, target, redraw)) return;
+    if (name === 'window-expand') {
+      view.expanded = !view.expanded;
+      session.root.closest('dialog').classList.toggle('widget-app-expanded', view.expanded);
+      redraw(session);
+      session.root.querySelector('[data-detail-action=window-expand]').focus();
+    } else if (name === 'event-delete') {
+      data.events = data.events.filter(entry => entry.id !== target.dataset.id);
+      draft.changed();
+      redraw(session);
+    } else if (name === 'memo-new') {
+      newEntry(session);
+    } else if (name === 'memo-select') {
+      view.active = target.dataset.id;
+      view.mobileList = false;
+      redraw(session);
+      session.root.querySelector('#memo-title')?.focus();
+    } else if (name === 'memo-toggle-list') {
+      view.mobileList = !view.mobileList;
+      redraw(session);
+      session.root.querySelector(view.mobileList ? '#memo-query' : '#memo-title')?.focus();
+    } else if (name === 'memo-undo' && view.deleted) {
+      if (data.entries.length >= MEMO_LIMIT) return;
+      data.entries.push(view.deleted);
+      view.active = view.deleted.id;
+      view.deleted = null;
+      draft.changed();
+      redraw(session);
+      await flush(session);
+    } else if (name === 'save-retry') {
+      await flush(session);
+    } else if (name === 'draft-export') {
+      exportDraft(session);
+    } else {
+      const entry = data.entries?.find(entry => entry.id === view.active);
+      if (!entry) return;
+      if (name === 'memo-pin') {
+        entry.pinned = !entry.pinned;
+        draft.changed();
+        redraw(session);
+        session.root.querySelector('[data-detail-action=memo-pin]')?.focus();
+      } else if (name === 'memo-export') {
+        download(entry.title + '\n\n' + entry.text, (entry.title || 'Qiye-memo').slice(0, 80) + '.txt', 'text/plain;charset=utf-8');
+      } else if (name === 'memo-delete') {
+        data.entries = data.entries.filter(memo => memo.id !== entry.id);
+        view.active = listMemos(data.entries)[0]?.id || '';
+        view.deleted = entry;
+        draft.changed();
+        redraw(session);
+        await flush(session);
+      }
+    }
+  }
+
+  function input(session, event) {
+    const {root, draft, view} = session, target = event.target;
+    if (session.item.widget === 'calendar') {
+      if (target.closest('[data-date-tool]')) calendarChange(session, target, redraw);
+      return;
+    }
+    if (target.id === 'memo-query') view.query = target.value;
+    else if (target.id === 'memo-title' || target.id === 'memo-text') {
+      const entry = draft.data.entries.find(entry => entry.id === view.active);
+      if (!entry) return;
+      entry[target.id === 'memo-title' ? 'title' : 'text'] = target.value;
+      entry.updatedAt = Date.now();
+      draft.changed();
+      root.querySelector('#memo-count').textContent = t('{count} 字符', {count:entry.text.length});
+      root.querySelector('#memo-updated').textContent = memoTimestamp(entry.updatedAt);
+    } else return;
+    root.querySelector('#memo-list').innerHTML = memoList(listMemos(draft.data.entries, view.query, view.sort), view.active);
+  }
+
+  function change(session, event) {
+    const target = event.target;
+    if (session.item.widget === 'calendar' && calendarChange(session, target, redraw)) return;
+    if (target.id === 'memo-sort') {
+      session.view.sort = target.value;
+      redraw(session);
+      session.root.querySelector('#memo-sort').focus();
+    }
+  }
+
+  async function submit(session, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.target, data = new FormData(form);
+    if (form.id === 'calendar-event-form') {
+      const title = String(data.get('title')).trim();
+      if (!title) return;
+      if (session.draft.data.events.length >= 500) { host.toast(t('日程最多支持 500 条')); return; }
+      session.draft.data.events.push({id:host.uid(), date:session.view.date, title});
+      session.draft.changed();
+      redraw(session);
+      await flush(session);
+    }
+  }
+
+  function close() {
+    const session = active;
+    if (!session) return closing;
+    active = null;
+    session.controller?.abort();
+    if (session.root) session.root.inert = true;
+    session.root = null;
+    const job = flush(session).then(saved => {
+      if (saved && !session.root) drafts.delete(session.item.id);
+      else if (!saved && !session.root) host.toast(t('内容尚未保存，重新打开组件可继续编辑。'), () => exportDraft(session), t('导出副本'));
+      return saved;
+    }).finally(() => { if (closing === job) closing = null; });
+    closing = job;
+    return job;
+  }
+
+  return {
+    close,
+    render(item, data = {}) {
+      let session = drafts.get(item.id);
+      if (!session) {
+        const today = parseDate(data.date) ? data.date : localDateKey();
+        session = {item, view:{...newCalendarView(today), query:'', sort:'updated', active:data.memoId || listMemos(item.data.entries || [])[0]?.id || ''}};
+        session.draft = createWidgetDraft(item, host.saveData, () => {
+          updateStatus(session);
+          if (!session.draft.dirty) host.refreshCards();
+        });
+        drafts.set(item.id, session);
+      }
+      active = session;
+      return renderBody(session);
+    },
+    mount(element, data = {}) {
+      const session = active;
+      session.root = element;
+      session.controller = new AbortController();
+      const options = {signal:session.controller.signal};
+      element.addEventListener('click', event => { action(session,event).catch(error => host.toast(error.message)); }, options);
+      element.addEventListener('input', event => input(session,event), options);
+      element.addEventListener('change', event => change(session,event), options);
+      if (session.item.widget === 'calendar') element.addEventListener('keydown', event => calendarKeydown(session, event, redraw), options);
+      element.addEventListener('submit', event => { submit(session,event).catch(error => host.toast(error.message)); }, options);
+      globalThis.addEventListener('pagehide', () => { void flush(session); }, options);
+      updateStatus(session);
+      element.closest('dialog').classList.toggle('widget-app-expanded', !!session.view.expanded);
+      if (data.newMemo) newEntry(session);
+    },
+  };
+}
+
+return {createWidgetDetails};
+})();
+const __city_search = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { searchCities } = __weather;
+const { escapeText } = __html;
+
+function bindCitySearch(form) {
+  if (!form?.querySelector('#city-query')) return () => {};
+  const events = new AbortController();
+  let search = null, results = [];
+  const options = {signal:events.signal};
+  form.querySelector('#city-query').addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      form.querySelector('[data-city-search]').click();
+    }
+  }, options);
+  form.addEventListener('click', async event => {
+    const button = event.target.closest('[data-city-search],[data-city-result]');
+    if (!button) return;
+    event.preventDefault();
+    const output = form.querySelector('#city-results');
+    if (button.hasAttribute('data-city-result')) {
+      const city = results[Number(button.dataset.cityResult)];
+      if (city) {
+        form.elements.cityName.value = city.name;
+        form.elements.latitude.value = city.latitude;
+        form.elements.longitude.value = city.longitude;
+        output.replaceChildren();
+      }
+      return;
+    }
+    search?.abort();
+    search = new AbortController();
+    const request = search, timer = setTimeout(() => request.abort(), 8000);
+    output.textContent = t('正在搜索…');
+    try {
+      const found = await searchCities(form.querySelector('#city-query').value, request.signal);
+      if (request !== search || !form.isConnected) return;
+      results = found;
+      output.innerHTML = results.map((city,index) => `<button type="button" data-city-result="${index}"><strong>${escapeText(city.name)}</strong><span>${escapeText(city.region)}</span></button>`).join('') || t('没有找到城市，请使用英文名称或填写坐标。');
+    } catch {
+      if (request === search && form.isConnected) output.textContent = t('城市搜索失败，请重试或填写坐标。');
+    } finally { clearTimeout(timer); }
+  }, options);
+  return () => { events.abort(); search?.abort(); };
+}
+
+return {bindCitySearch};
+})();
+const __weather_chart = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { escapeText } = __html;
+
+// All series share one scale. Missing samples break the line instead of becoming zero.
+function forecastPlot(series, count, bounds = {}) {
+  const values = series.flatMap(line => line.values).filter(Number.isFinite);
+  const min = bounds.min ?? (values.length ? Math.min(...values) : 0);
+  const max = bounds.max ?? (values.length ? Math.max(...values) : 1);
+  return series.map(line => {
+    let connected = false;
+    const points = line.values.map((value, index) => {
+      const x = (index + .5) / count * 100;
+      const y = !Number.isFinite(value) || max === min ? 50 : 78 - (value - min) / (max - min) * 56;
+      return {x, y, value};
+    });
+    const path = points.map(point => {
+      if (!Number.isFinite(point.value)) { connected = false; return ''; }
+      const command = connected ? 'L' : 'M'; connected = true;
+      return `${command}${point.x.toFixed(3)},${point.y.toFixed(3)}`;
+    }).join(' ');
+    return {...line, points, path};
+  });
+}
+
+function forecastChart(series, count, bounds) {
+  const lines = forecastPlot(series, count, bounds);
+  return `<div class="weather-chart" aria-hidden="true"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines.map(line => `<path class="${line.low ? 'weather-line-low' : ''}" d="${line.path}" vector-effect="non-scaling-stroke"/>`).join('')}</svg>${lines.map(line => line.points.map(point => `<span class="weather-chart-point ${line.low ? 'weather-point-low' : ''} ${Number.isFinite(point.value) ? '' : 'weather-point-missing'}" style="left:${point.x}%;top:${point.y}%"><i></i><span>${escapeText(line.format(point.value))}</span></span>`).join('')).join('')}</div>`;
+}
+
+return {forecastPlot, forecastChart};
+})();
+const __weather_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, formatDate } = __i18n;
+const { parseDate } = __calendar;
+const { escapeText } = __html;
+const { icon } = __icons;
+const { appButton, windowControls } = __widget_app_controls;
+const { weatherState, cityKey, weatherArt, weatherDescription, temperature, WEATHER_TTL } = __weather;
+const { forecastChart } = __weather_chart;
+
+const e = escapeText;
+const measurement = (value, suffix = '') => Number.isFinite(value) ? `${Math.round(value * 10) / 10}${suffix}` : '—';
+const art = (code, isDay = true) => Number.isFinite(code) ? weatherArt(code, isDay) : '<span class="weather-art-missing">—</span>';
+
+function weatherWorkspace(item) {
+  return `<div class="weather-app"><header class="weather-window-bar"><h2 id="dialog-title">${e(item.title)}</h2>${windowControls()}</header><div class="weather-toolbar"><div id="weather-location"></div><div class="weather-actions"><form id="weather-search" role="search"><div class="weather-search-field"><input id="weather-city-query" aria-label="${t('搜索全球城市')}" placeholder="${t('输入城市、乡镇')}" maxlength="100" autocomplete="off"><button type="submit" aria-label="${t('搜索城市')}" title="${t('搜索城市')}">${icon('search')}</button></div><div id="weather-search-results" hidden></div></form>${appButton('weather-cities',t('城市列表'),'list','aria-expanded="false" aria-controls="weather-city-panel"')}${appButton('weather-settings',t('天气设置'),'settings','aria-expanded="false" aria-controls="weather-settings-panel"')}</div></div><p id="weather-feedback" role="status" hidden></p><div class="weather-scroll"><section id="weather-forecast">${weatherDetail(item)}</section></div><div class="weather-panel-shade" data-weather-dismiss hidden></div><aside id="weather-city-panel" class="weather-side-panel" aria-label="${t('城市列表')}" hidden><header><h3>${t('城市列表')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header><p class="weather-panel-help">${t('切换城市查看天气，最多保留 8 个城市。')}</p><div id="weather-city-list"></div><button type="button" class="weather-add-city" data-detail-action="weather-add-city">${icon('plus')}${t('添加城市')}</button></aside><aside id="weather-settings-panel" class="weather-side-panel" aria-label="${t('天气设置')}" hidden><header><h3>${t('天气设置')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header>${weatherSettings(item)}</aside></div>`;
+}
+
+function weatherSettings(item) {
+  const c = item.config;
+  return `<form id="weather-settings"><label><span>${t('卡片名称')}</span><input name="title" value="${e(item.title)}" required maxlength="30"></label><label><span>${t('城市名称')}</span><input name="cityName" value="${e(c.city.name)}" required maxlength="60"></label><details><summary>${t('手动坐标')}</summary><label><span>${t('纬度')}</span><input name="latitude" type="number" step="any" min="-90" max="90" required value="${c.city.latitude}"></label><label><span>${t('经度')}</span><input name="longitude" type="number" step="any" min="-180" max="180" required value="${c.city.longitude}"></label></details><label><span>${t('温度单位')}</span><select name="unit"><option value="celsius" ${c.unit === 'celsius' ? 'selected' : ''}>${t('摄氏度 °C')}</option><option value="fahrenheit" ${c.unit === 'fahrenheit' ? 'selected' : ''}>${t('华氏度 °F')}</option></select></label><label class="weather-enable"><input type="checkbox" name="enabled" ${c.enabled ? 'checked' : ''}>${t('启用天气')}</label><p class="weather-panel-help">${t('发送城市坐标至 Open-Meteo')}</p><button type="submit" class="weather-primary">${t('保存设置')}</button><p class="weather-settings-status" role="status"></p></form>`;
+}
+
+function weatherLocation(item) {
+  const state = weatherState(item.config.city), data = state.data;
+  return `<strong>${e(item.config.city.name)}</strong>${item.config.enabled && data ? `<span>${weatherDescription(data.code)}</span><small>${t('更新')} ${e(data.observedAt.replace('T',' ').slice(5))}</small>` : ''}`;
+}
+
+function weatherCityCards(item, cities) {
+  return cities.map(city => {
+    const key = cityKey(city), active = key === cityKey(item.config.city), state = weatherState(city), data = item.config.enabled ? state.data : null;
+    return `<div class="weather-city-card ${active ? 'active' : ''}"><button type="button" data-weather-city="${key}" aria-pressed="${active}"><span><strong>${e(city.name)}</strong><small>${data ? weatherDescription(data.code) : t(item.config.enabled ? state.status === 'error' ? '暂不可用' : '正在获取天气' : '未启用天气')}${data && state.status === 'error' ? ` · ${t('缓存')}` : ''}</small></span>${data ? art(data.code,data.isDay) : icon('cloud')}<b>${data ? temperature(data.temperature,item.config.unit) : '—'}</b></button>${active ? `<span class="weather-city-current">${t('当前')}</span>` : `<button type="button" class="weather-city-remove" data-weather-remove="${key}" aria-label="${e(t('移除城市 {name}',{name:city.name}))}" title="${t('移除城市')}">${icon('close')}</button>`}</div>`;
+  }).join('');
+}
+
+function hourlyForecast(weather, unit, metric = 'temperature') {
+  const hours = weather.hourly, selected = ['temperature','rain','wind'].includes(metric) ? metric : 'temperature';
+  const label = selected === 'rain' ? t('降水概率') : selected === 'wind' ? t('风速') : t('温度');
+  const format = value => selected === 'temperature' ? temperature(value,unit) : measurement(value, selected === 'rain' ? '%' : '');
+  const bounds = selected === 'rain' ? {min:0,max:100} : selected === 'wind' ? {min:0,max:Math.max(10,...hours.map(h=>h.wind || 0))} : undefined;
+  return `<section class="weather-forecast-panel"><header><h3>${icon('clock')}${t('未来 24 小时')}</h3><div class="weather-metric-switch" role="group" aria-label="${t('小时预报指标')}">${[['temperature','温度','cloud'],['rain','降水概率','droplet'],['wind','风速','wind']].map(([key,title,glyph])=>`<button type="button" data-weather-metric="${key}" aria-pressed="${key === selected}" aria-label="${t(title)}" title="${t(title)}">${icon(glyph)}</button>`).join('')}</div></header><div class="weather-chart-caption">${label}${selected === 'wind' ? ' · km/h' : selected === 'temperature' ? (unit === 'fahrenheit' ? ' · °F' : ' · °C') : ' · %'}</div>${hours.length ? `<div class="weather-horizontal-scroll" tabindex="0" role="region" aria-label="${t('未来 24 小时')}"><div class="weather-hour-track" style="--forecast-count:${hours.length}"><div class="hourly-weather">${hours.map(hour=>`<div><time datetime="${e(hour.time)}">${e(hour.time.slice(11,16))}</time><span title="${weatherDescription(hour.code)}">${art(hour.code,hour.isDay)}</span><span class="sr-only">${weatherDescription(hour.code)} · ${label} ${format(hour[selected])}${selected === 'wind' ? ' km/h' : ''}</span></div>`).join('')}</div>${forecastChart([{values:hours.map(hour=>hour[selected]),format}],hours.length,bounds)}</div></div>` : `<p class="weather-empty">${t('暂无小时预报')}</p>`}</section>`;
+}
+
+function dailyForecast(weather, unit) {
+  const days = weather.daily, temp = value => temperature(value,unit), today = weather.observedAt.slice(0,10);
+  return `<section class="weather-forecast-panel weather-week-panel"><header><h3>${icon('calendar')}${t('未来 7 天')}</h3><div class="weather-chart-legend"><span>${t('最高')}</span><span>${t('最低')}</span></div></header>${days.length ? `<div class="weather-horizontal-scroll" tabindex="0" role="region" aria-label="${t('未来 7 天')}"><div class="weather-week-track" style="--forecast-count:${days.length}"><div class="weather-day-backgrounds" aria-hidden="true">${days.map(day=>`<div class="${day.time===today?'is-today':''}"></div>`).join('')}</div><div class="daily-weather">${days.map(day=>`<div ${day.time===today?'aria-current="date"':''}><time datetime="${e(day.time)}"><strong>${day.time===today?t('今天'):(parseDate(day.time)?formatDate(parseDate(day.time),{weekday:'short'}):e(day.time))}</strong><span>${e(day.time.slice(5))}</span></time><span class="weather-day-condition">${art(day.code)}<span>${weatherDescription(day.code)}</span></span><span class="sr-only">${t('最高')} ${temp(day.max)} · ${t('最低')} ${temp(day.min)}</span></div>`).join('')}</div>${forecastChart([{values:days.map(day=>day.max),format:temp},{values:days.map(day=>day.min),format:temp,low:true}],days.length)}<div class="weather-day-metrics">${days.map(day=>`<div><span title="${t('最高风速')}">${icon('wind')}${measurement(day.wind,' km/h')}</span><span title="${t('降水概率')}">${icon('droplet')}${measurement(day.rain,'%')}</span></div>`).join('')}</div></div></div>` : `<p class="weather-empty">${t('暂无每日预报')}</p>`}</section>`;
+}
+
+function weatherDetail(item, metric = 'temperature') {
+  const state = weatherState(item.config.city), weather = state.data, unit = item.config.unit;
+  if (!item.config.enabled) return `<div class="weather-empty-state">${icon('cloud')}<h3>${t('把天气带进新标签页')}</h3><p>${t('发送城市坐标至 Open-Meteo')}</p><button type="button" class="weather-primary" data-detail-action="weather-enable">${t('启用天气')}</button></div>`;
+  if (!weather) return `<div class="weather-empty-state">${icon('cloud')}<p role="status">${e(state.error || t('正在获取天气'))}</p><button type="button" data-detail-action="weather-refresh" ${state.status==='loading'?'disabled':''}>${t('重新加载')}</button></div>`;
+  const temp = value => temperature(value,unit), day = weather.daily[0];
+  const stale = Date.now()-weather.fetchedAt >= WEATHER_TTL || state.status === 'error';
+  return `<div class="weather-detail"><section class="weather-hero"><div class="weather-hero-current"><strong class="weather-temperature">${temp(weather.temperature)}<small>${unit==='fahrenheit'?'F':'C'}</small></strong><div class="weather-condition"><span class="weather-air">${icon('leaf')} AQI (US) ${measurement(weather.air?.aqi)}</span><span>${art(weather.code,weather.isDay)}${weatherDescription(weather.code)}<span>${icon('wind')}${measurement(weather.wind,' km/h')}</span></span></div><button type="button" class="weather-refresh" data-detail-action="weather-refresh" aria-label="${t('刷新')}" title="${t('刷新')}" ${state.status==='loading'?'disabled':''}>${icon('refresh')}</button></div><p class="weather-outlook">${t('今日温度')} ${temp(weather.min)} – ${temp(weather.max)}<span>${t('体感')} ${temp(weather.feelsLike)}</span></p><dl class="weather-metrics">${[[t('湿度'),measurement(weather.humidity,'%')],[t('气压'),measurement(weather.pressure,' hPa')],[t('降水'),measurement(weather.precipitation,' mm')],[t('日出'),day?.sunrise?.slice(11,16)||'—'],[t('日落'),day?.sunset?.slice(11,16)||'—'],[t('紫外线'),measurement(day?.uv)],['PM2.5',measurement(weather.air?.pm25,' μg/m³')]].map(([label,value])=>`<div><dt>${label}</dt><dd>${e(value)}</dd></div>`).join('')}</dl>${stale?`<p class="weather-cache-message" role="status">${e(state.error)} ${t('缓存')} · ${e(formatDate(new Date(weather.fetchedAt),{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</p>`:''}</section>${hourlyForecast(weather,unit,metric)}${dailyForecast(weather,unit)}<footer class="weather-attribution">${e(weather.timezone)} · ${t('预报时间采用城市所在时区')}<span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · <a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">CAMS</a></span></footer></div>`;
+}
+
+return {weatherWorkspace, weatherSettings, weatherLocation, weatherCityCards, hourlyForecast, weatherDetail};
+})();
+const __weather_cities = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { cityKey } = __weather;
+
+const KEY = 'qiye.weather.cities.v1';
+const CITY_LIMIT = 8;
+function validWeatherCity(city) {
+  return city && typeof city.name === 'string' && city.name.trim().length > 0 && city.name.length <= 60
+    && Number.isFinite(city.latitude) && Math.abs(city.latitude) <= 90
+    && Number.isFinite(city.longitude) && Math.abs(city.longitude) <= 180;
+}
+function weatherCityList(cities, current) {
+  const seen = new Set();
+  return [current, ...cities].filter(city => {
+    if (!validWeatherCity(city) || seen.has(cityKey(city))) return false;
+    seen.add(cityKey(city)); return true;
+  }).slice(0, CITY_LIMIT).map(({name, latitude, longitude}) => ({name, latitude, longitude}));
+}
+function readWeatherCities() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY) || '[]');
+    return Array.isArray(raw) ? weatherCityList(raw, null) : [];
+  } catch { return []; }
+}
+function saveWeatherCities(cities) {
+  localStorage.setItem(KEY, JSON.stringify(weatherCityList(cities, null)));
+}
+
+return {CITY_LIMIT, validWeatherCity, weatherCityList, readWeatherCities, saveWeatherCities};
+})();
+const __weather_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText } = __html;
+const { icon } = __icons;
+const { cityKey, requestWeather, searchCities } = __weather;
+const { readWeatherCities, saveWeatherCities, weatherCityList } = __weather_cities;
+const { weatherDetail, weatherLocation, weatherSettings, weatherCityCards } = __weather_view;
+
+function bindWeatherWorkspace(root, initial, host) {
+  const events = new AbortController(), options = {signal:events.signal};
+  const find = selector => root.querySelector(selector);
+  const current = () => host.getState().items.find(item => item.id === initial.id);
+  const alive = () => !events.signal.aborted && root.isConnected && current();
+  let baseline = JSON.stringify([initial.title,initial.config]), busy = false;
+  let cities = weatherCityList(readWeatherCities(),initial.config.city), metric = 'temperature';
+  let panel = '', expanded = false, search = null, results = [], returnFocus = null;
+
+  function feedback(message = '') {
+    if (!alive()) return;
+    find('#weather-feedback').textContent = message;
+    find('#weather-feedback').hidden = !message;
+  }
+  function renderCities() {
+    if (!alive()) return;
+    const focused = document.activeElement, city = focused?.dataset.weatherCity, remove = focused?.dataset.weatherRemove;
+    find('#weather-city-list').innerHTML = weatherCityCards(current(),cities);
+    if (city || remove) find(`[${city?'data-weather-city':'data-weather-remove'}="${city || remove}"]`)?.focus({preventScroll:true});
+  }
+  function renderForecast(reset = false) {
+    if (!alive()) return;
+    const scroll = find('.weather-horizontal-scroll')?.scrollLeft || 0;
+    find('#weather-forecast').innerHTML = weatherDetail(current(),metric);
+    find('#weather-location').innerHTML = weatherLocation(current());
+    if (!reset && find('.weather-horizontal-scroll')) find('.weather-horizontal-scroll').scrollLeft = scroll;
+    if (reset) find('.weather-scroll').scrollTop = 0;
+    renderCities();
+  }
+  async function loadForecast(force = false) {
+    if (!alive() || !current().config.enabled) return;
+    const job = requestWeather(current().config.city,force);
+    renderForecast();
+    await job;
+    renderForecast();
+    if (alive()) host.refreshCards();
+  }
+  function remember(city) {
+    cities = weatherCityList(cities,city);
+    try { saveWeatherCities(cities); }
+    catch { feedback(t('城市列表未能保存，当前城市设置已保存。')); }
+  }
+  function togglePanel(next, trigger) {
+    panel = next;
+    if (trigger) returnFocus = trigger;
+    find('#weather-city-panel').hidden = next !== 'cities';
+    find('#weather-settings-panel').hidden = next !== 'settings';
+    find('.weather-panel-shade').hidden = !next;
+    find('[data-detail-action=weather-cities]').setAttribute('aria-expanded',String(next==='cities'));
+    find('[data-detail-action=weather-settings]').setAttribute('aria-expanded',String(next==='settings'));
+    if (next) {
+      find('#weather-search-results').hidden = true;
+      find(`#weather-${next==='cities'?'city':'settings'}-panel [data-detail-action=weather-panel-close]`).focus();
+    } else returnFocus?.focus({preventScroll:true});
+    if (next === 'cities' && current().config.enabled) {
+      renderCities();
+      for (const city of cities) void requestWeather(city).then(renderCities);
+    }
+  }
+  async function save(changes) {
+    if (busy || !alive()) return false;
+    busy = true; feedback();
+    find('#weather-settings [type=submit]').disabled = true;
+    try {
+      const updated = await host.saveSettings(initial.id,changes,baseline);
+      baseline = JSON.stringify([updated.title,updated.config]);
+      if (!alive()) return false;
+      remember(updated.config.city);
+      find('#dialog-title').textContent = updated.title;
+      find('#weather-settings').outerHTML = weatherSettings(updated);
+      renderForecast(true);
+      togglePanel('');
+      void loadForecast();
+      return true;
+    } catch (error) {
+      feedback(error.message);
+      if (alive()) find('.weather-settings-status').textContent = error.message;
+      return false;
+    } finally {
+      busy = false;
+      if (alive()) find('#weather-settings [type=submit]').disabled = false;
+    }
+  }
+  async function selectCity(city) {
+    if (!city || busy) return;
+    const clean = {name:city.name,latitude:city.latitude,longitude:city.longitude};
+    if (await save({title:current().title,config:{...current().config,city:clean,enabled:true}})) {
+      find('#weather-search-results').hidden = true;
+      find('#weather-city-query').value = '';
+      find('[data-detail-action=weather-cities]').focus({preventScroll:true});
+    }
+  }
+  async function searchCity() {
+    const query = find('#weather-city-query').value.trim(), output = find('#weather-search-results');
+    search?.abort(); results = [];
+    output.hidden = false;
+    if (query.length < 2) { output.textContent = t('请输入至少两个字符'); return; }
+    const request = search = new AbortController(), timer = setTimeout(()=>request.abort(),8000);
+    output.textContent = t('正在搜索…');
+    try {
+      const found = await searchCities(query,request.signal);
+      if (request !== search || !alive()) return;
+      results = found;
+      output.innerHTML = `<p role="status">${t(found.length?'选择城市查看天气':'没有找到城市，请使用英文名称或填写坐标。')}</p>` + found.map((city,i)=>`<button type="button" data-weather-result="${i}"><strong>${escapeText(city.name)}</strong><span>${escapeText(city.region)}</span></button>`).join('');
+      output.querySelector('button')?.focus();
+    } catch {
+      if (request === search && alive()) output.textContent = t('城市搜索失败，请重试或填写坐标。');
+    } finally { clearTimeout(timer); }
+  }
+
+  root.addEventListener('click', event => {
+    const target = event.target.closest('button,[data-weather-dismiss]');
+    if (!target) return;
+    if (target.dataset.weatherMetric) {
+      metric = target.dataset.weatherMetric; renderForecast();
+      find(`[data-weather-metric="${metric}"]`)?.focus({preventScroll:true}); return;
+    }
+    if (target.dataset.weatherCity) { void selectCity(cities.find(city=>cityKey(city)===target.dataset.weatherCity)); return; }
+    if (target.dataset.weatherResult !== undefined) { void selectCity(results[Number(target.dataset.weatherResult)]); return; }
+    if (target.dataset.weatherRemove) {
+      const remaining = cities.filter(city=>cityKey(city)!==target.dataset.weatherRemove);
+      try { saveWeatherCities(remaining); cities=remaining; renderCities(); find('[data-detail-action=weather-add-city]').focus(); }
+      catch { feedback(t('城市列表未能保存，请重试。')); }
+      return;
+    }
+    if (target.hasAttribute('data-weather-dismiss')) { togglePanel(''); return; }
+    const action = target.dataset.detailAction;
+    if (action === 'weather-cities' || action === 'weather-settings') {
+      const next = action === 'weather-cities' ? 'cities' : 'settings';
+      togglePanel(panel===next?'':next,target);
+    } else if (action === 'weather-panel-close') togglePanel('');
+    else if (action === 'weather-add-city') { togglePanel(''); find('#weather-city-query').focus(); }
+    else if (action === 'weather-refresh') void loadForecast(true);
+    else if (action === 'weather-enable') void save({title:current().title,config:{...current().config,enabled:true}});
+    else if (action === 'window-expand') {
+      expanded = !expanded;
+      root.closest('dialog').classList.toggle('widget-app-expanded',expanded);
+      target.setAttribute('aria-pressed',String(expanded));
+      const label = t(expanded?'还原窗口':'最大化窗口');
+      target.setAttribute('aria-label',label); target.title = label;
+      target.innerHTML = icon(expanded?'minimize':'maximize');
+    }
+  },options);
+  root.addEventListener('submit', event => {
+    event.preventDefault(); event.stopPropagation();
+    if (event.target.id === 'weather-search') { void searchCity(); return; }
+    if (event.target.id !== 'weather-settings') return;
+    const data = new FormData(event.target);
+    void save({title:String(data.get('title')).trim(),config:{city:{name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))},unit:String(data.get('unit')),enabled:data.has('enabled')}});
+  },options);
+  root.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (panel) { event.preventDefault(); event.stopPropagation(); togglePanel(''); }
+    else if (!find('#weather-search-results').hidden) {
+      event.preventDefault(); event.stopPropagation(); search?.abort(); search=null;
+      find('#weather-search-results').hidden=true; find('#weather-city-query').focus();
+    }
+  },options);
+  root.addEventListener('pointerdown', event => {
+    if (!event.target.closest('#weather-search')) find('#weather-search-results').hidden = true;
+  },options);
+  renderForecast();
+  void loadForecast();
+  return () => { events.abort(); search?.abort(); };
+}
+
+return {bindWeatherWorkspace};
+})();
 const __widget_workspaces = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, formatDate } = __i18n;
@@ -15579,342 +16326,6 @@ function bindUtilityWorkspace(root,item,host) {
 }
 
 return {UTILITY_WIDGETS, workspaceHeader, utilitySettings, readUtilitySettings, utilityWorkspace, bindUtilityWorkspace};
-})();
-const __widget_detail_views = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t, formatDate } = __i18n;
-const { parseDate } = __calendar;
-const { escapeText } = __html;
-const { weatherState, weatherArt, weatherDescription, temperature, WEATHER_TTL } = __weather;
-const { workspaceHeader } = __widget_workspaces;
-const e = escapeText;
-function weatherWorkspace(item,view={}) {
-  const c=item.config;
-  return `<div class="utility-app">${workspaceHeader(item,view.expanded)}<div class="utility-layout"><main id="weather-forecast" class="utility-weather-main">${weatherDetail(item)}</section><form class="utility-settings" id="weather-settings"><h3>${t('城市与预报')}</h3><label class="utility-field"><span>${t('卡片名称')}</span><input name="title" value="${e(item.title)}" required maxlength="30"></label><div class="detail-toolbar"><input id="city-query" placeholder="${t('搜索全球城市')}" aria-label="${t('搜索全球城市')}"><button type="button" data-city-search>${t('搜索城市')}</button></div><div id="city-results" role="status"></div><label class="utility-field"><span>${t('城市名称')}</span><input name="cityName" value="${e(c.city.name)}" required maxlength="60"></label><details><summary>${t('手动坐标')}</summary><label class="utility-field"><span>${t('纬度')}</span><input name="latitude" type="number" step="any" min="-90" max="90" required value="${c.city.latitude}"></label><label class="utility-field"><span>${t('经度')}</span><input name="longitude" type="number" step="any" min="-180" max="180" required value="${c.city.longitude}"></label></details><label class="utility-field"><span>${t('温度单位')}</span><select name="unit"><option value="celsius" ${c.unit==='celsius'?'selected':''}>${t('摄氏度 °C')}</option><option value="fahrenheit" ${c.unit==='fahrenheit'?'selected':''}>${t('华氏度 °F')}</option></select></label><label><input type="checkbox" name="enabled" ${c.enabled?'checked':''}> ${t('启用天气')}</label><p class="utility-help">${t('发送城市坐标至 Open-Meteo')}</p><button type="submit" class="utility-primary">${t('保存设置')}</button><p class="utility-status" role="status"></p></form></div></div>`;
-}
-function forecastUpdatedAt(weather) {
-  const options = {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'};
-  try { return formatDate(new Date(weather.fetchedAt), {...options, timeZone:weather.timezone || undefined}); }
-  catch { return formatDate(new Date(weather.fetchedAt), options); }
-}
-function weatherDetail(item) {
-  const state = weatherState(item.config.city), weather = state.data, unit = item.config.unit;
-  const temp = value => temperature(value,unit);
-  if (!item.config.enabled) return `<p>${t('请先在组件设置中启用天气。')}</p>`;
-  if (!weather) return `<p role="status">${e(state.error || t('正在获取天气'))}</p><button type="button" data-detail-action="weather-refresh">${t('重新加载')}</button>`;
-  return `<div class="weather-detail"><div class="weather-detail-current"><div><h3>${e(item.config.city.name)}</h3><strong>${temp(weather.temperature)}${unit==='fahrenheit'?'F':'C'}</strong><p>${weatherDescription(weather.code)} · ${temp(weather.min)} / ${temp(weather.max)}</p></div>${weatherArt(weather.code,weather.isDay)}<button type="button" data-detail-action="weather-refresh" ${state.status==='loading'?'disabled':''}>${t('刷新')}</button></div><p role="status">${state.status==='error'?e(state.error)+' · ':''}${Date.now()-weather.fetchedAt>=WEATHER_TTL?t('缓存'):t('更新')} ${e(forecastUpdatedAt(weather))} · ${e(weather.timezone)}</p><div class="weather-metrics">${[[t('体感'),temp(weather.feelsLike)],[t('湿度'),weather.humidity===null?'—':weather.humidity+'%'],[t('风速'),weather.wind===null?'—':weather.wind+' km/h'],['AQI (US)',weather.air?.aqi ?? '—'],['PM2.5',weather.air?.pm25==null?'—':weather.air.pm25+' μg/m³'],[t('紫外线'),weather.daily[0]?.uv ?? '—'],[t('日出'),weather.daily[0]?.sunrise?.slice(11,16) || '—'],[t('日落'),weather.daily[0]?.sunset?.slice(11,16) || '—']].map(([label,value])=>`<div><span>${label}</span><strong>${e(value)}</strong></div>`).join('')}</div><h4>${t('未来 24 小时')}</h4><div class="hourly-weather">${weather.hourly.map(hour=>`<div><span>${e(hour.time.slice(11,16))}</span>${weatherArt(hour.code ?? 2,hour.isDay)}<strong>${temp(hour.temperature)}</strong><small>${hour.rain===null?'—':hour.rain+'%'}</small></div>`).join('')}</div><h4>${t('未来 7 天')}</h4><div class="daily-weather">${weather.daily.map(day=>`<div><span>${e(parseDate(day.time)?formatDate(parseDate(day.time),{weekday:'short',month:'short',day:'numeric'}):day.time)}</span>${weatherArt(day.code ?? 2)}<span>${weatherDescription(day.code)}</span><strong>${temp(day.min)} / ${temp(day.max)}</strong><small>${day.rain===null?'—':day.rain+'%'}</small></div>`).join('')}</div><p class="help-text">${t('降水概率以百分比显示；时间采用预报城市时区。空气质量不可用时显示 —。')} <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · <a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">CAMS</a></p></div>`;
-}
-
-return {weatherWorkspace, weatherDetail};
-})();
-const __widget_details = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-const { localDateKey, parseDate } = __calendar;
-const { newCalendarView, calendarAction, calendarChange, calendarKeydown } = __calendar_controls;
-const { newMemo, listMemos, MEMO_LIMIT } = __memos;
-const { searchCities, requestWeather } = __weather;
-const { createWidgetDraft } = __widget_drafts;
-const { calendarDetail } = __calendar_view;
-const { memoDetail, memoList, memoTimestamp } = __memo_view;
-const { weatherDetail, weatherWorkspace } = __widget_detail_views;
-const { escapeText } = __html;
-
-function download(content, name, type) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = name.replace(/[\\/:*?"<>|]/g, '_');
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function createWidgetDetails(host) {
-  const drafts = new Map();
-  let active = null, closing = null;
-  const currentItem = session => host.getState().items.find(item => item.id === session.item.id);
-  const exportDraft = session => download(JSON.stringify({widget:session.item.widget, data:session.draft.data}, null, 2), 'Qiye-unsaved-widget.json', 'application/json');
-
-  function updateStatus(session) {
-    const {root, draft} = session;
-    if (!root?.isConnected) return;
-    root.querySelector('#memo-save-status')?.replaceChildren(t(draft.error ? '保存失败，请重试' : draft.dirty ? '保存中…' : '已保存在本机'));
-    const feedback = root.querySelector('.widget-save-feedback');
-    feedback.hidden = !draft.error;
-    if (draft.error) {
-      feedback.innerHTML = `<p>${t('保存失败。草稿仍保留在此窗口，可重试或导出。')}</p><small>${escapeText(draft.error.message)}</small><div class="detail-toolbar"><button type="button" data-detail-action="save-retry">${t('重试保存')}</button><button type="button" data-detail-action="draft-export">${t('导出未保存的数据')}</button></div>`;
-    }
-  }
-
-  function renderBody(session) {
-    const item = {...(currentItem(session) || session.item), data:session.draft.data};
-    const body = item.widget === 'calendar' ? calendarDetail(item, session.view)
-      : item.widget === 'memo' ? memoDetail(item, session.view) : weatherWorkspace(item, session.view);
-    return `<div class="widget-save-feedback" role="alert" hidden></div>${body}`;
-  }
-
-  function redraw(session, settings = false) {
-    if (!session.root?.isConnected) return;
-    if(session.item.widget==='weather' && !settings && session.root.querySelector('#weather-forecast')){
-      session.root.querySelector('#weather-forecast').innerHTML=weatherDetail(currentItem(session));return;
-    }
-    session.cityCleanup?.();
-    const previous = session.root.querySelector('#memo-text');
-    const selection = previous && {id:previous.dataset.memoId, start:previous.selectionStart, end:previous.selectionEnd, scroll:previous.scrollTop};
-    session.root.innerHTML = renderBody(session);
-    if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(session.root.querySelector('#weather-settings'));
-    const editor = session.root.querySelector('#memo-text');
-    if (editor && selection?.id === editor.dataset.memoId) {
-      editor.setSelectionRange(selection.start, selection.end);
-      editor.scrollTop = selection.scroll;
-    }
-    updateStatus(session);
-  }
-
-  async function flush(session) {
-    const saved = await session.draft.flush();
-    if (saved) host.refreshCards();
-    return saved;
-  }
-
-  function newEntry(session) {
-    const entries = session.draft.data.entries;
-    if (entries.length >= MEMO_LIMIT) {
-      host.toast(t('备忘录最多支持 {count} 条', {count:MEMO_LIMIT}));
-      return;
-    }
-    const entry = newMemo(host.uid());
-    entries.push(entry);
-    session.view.active = entry.id;
-    session.view.query = '';
-    session.view.mobileList = false;
-    session.draft.changed();
-    redraw(session);
-    session.root.querySelector('#memo-title')?.focus();
-  }
-
-  async function action(session, event) {
-    const target = event.target.closest('[data-detail-action],[data-calendar-date]');
-    if (!target) return;
-    event.preventDefault();
-    const {view, draft} = session, data = draft.data, name = target.dataset.detailAction;
-    if (session.item.widget === 'calendar' && calendarAction(session, target, redraw)) return;
-    if (name === 'window-expand') {
-      view.expanded = !view.expanded;
-      session.root.closest('dialog').classList.toggle('widget-app-expanded', view.expanded);
-      if(session.item.widget!=='weather')redraw(session);
-      else target.setAttribute('aria-pressed',String(view.expanded));
-      session.root.querySelector('[data-detail-action=window-expand]').focus();
-    } else if (name === 'event-delete') {
-      data.events = data.events.filter(entry => entry.id !== target.dataset.id);
-      draft.changed();
-      redraw(session);
-    } else if (name === 'memo-new') {
-      newEntry(session);
-    } else if (name === 'memo-select') {
-      view.active = target.dataset.id;
-      view.mobileList = false;
-      redraw(session);
-      session.root.querySelector('#memo-title')?.focus();
-    } else if (name === 'memo-toggle-list') {
-      view.mobileList = !view.mobileList;
-      redraw(session);
-      session.root.querySelector(view.mobileList ? '#memo-query' : '#memo-title')?.focus();
-    } else if (name === 'memo-undo' && view.deleted) {
-      if (data.entries.length >= MEMO_LIMIT) return;
-      data.entries.push(view.deleted);
-      view.active = view.deleted.id;
-      view.deleted = null;
-      draft.changed();
-      redraw(session);
-      await flush(session);
-    } else if (name === 'save-retry') {
-      await flush(session);
-    } else if (name === 'draft-export') {
-      exportDraft(session);
-    } else if (name === 'weather-refresh') {
-      const job = requestWeather(currentItem(session).config.city, true);
-      redraw(session);
-      await job;
-      redraw(session);
-      host.refreshCards();
-    } else {
-      const entry = data.entries?.find(entry => entry.id === view.active);
-      if (!entry) return;
-      if (name === 'memo-pin') {
-        entry.pinned = !entry.pinned;
-        draft.changed();
-        redraw(session);
-        session.root.querySelector('[data-detail-action=memo-pin]')?.focus();
-      } else if (name === 'memo-export') {
-        download(entry.title + '\n\n' + entry.text, (entry.title || 'Qiye-memo').slice(0, 80) + '.txt', 'text/plain;charset=utf-8');
-      } else if (name === 'memo-delete') {
-        data.entries = data.entries.filter(memo => memo.id !== entry.id);
-        view.active = listMemos(data.entries)[0]?.id || '';
-        view.deleted = entry;
-        draft.changed();
-        redraw(session);
-        await flush(session);
-      }
-    }
-  }
-
-  function input(session, event) {
-    const {root, draft, view} = session, target = event.target;
-    if (session.item.widget === 'calendar') {
-      if (target.closest('[data-date-tool]')) calendarChange(session, target, redraw);
-      return;
-    }
-    if (target.id === 'memo-query') view.query = target.value;
-    else if (target.id === 'memo-title' || target.id === 'memo-text') {
-      const entry = draft.data.entries.find(entry => entry.id === view.active);
-      if (!entry) return;
-      entry[target.id === 'memo-title' ? 'title' : 'text'] = target.value;
-      entry.updatedAt = Date.now();
-      draft.changed();
-      root.querySelector('#memo-count').textContent = t('{count} 字符', {count:entry.text.length});
-      root.querySelector('#memo-updated').textContent = memoTimestamp(entry.updatedAt);
-    } else return;
-    root.querySelector('#memo-list').innerHTML = memoList(listMemos(draft.data.entries, view.query, view.sort), view.active);
-  }
-
-  function change(session, event) {
-    const target = event.target;
-    if (session.item.widget === 'calendar' && calendarChange(session, target, redraw)) return;
-    if (target.id === 'memo-sort') {
-      session.view.sort = target.value;
-      redraw(session);
-      session.root.querySelector('#memo-sort').focus();
-    }
-  }
-
-  async function submit(session, event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const form = event.target, data = new FormData(form);
-    if(form.id==='weather-settings'){
-      const button=form.querySelector('[type=submit]');button.disabled=true;
-      try{
-        const updated=await host.saveSettings(session.item.id,{title:String(data.get('title')).trim(),config:{city:{name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))},unit:String(data.get('unit')),enabled:data.has('enabled')}},session.settingsBaseline);
-        session.settingsBaseline=JSON.stringify([updated.title,updated.config]);
-        redraw(session,true);
-        if(updated.config.enabled){const job=requestWeather(updated.config.city);redraw(session);await job;redraw(session);}
-      }catch(error){if(form.isConnected)form.querySelector('.utility-status').textContent=error.message;}
-      finally{if(form.isConnected)button.disabled=false;}
-      return;
-    }
-    if (form.id === 'calendar-event-form') {
-      const title = String(data.get('title')).trim();
-      if (!title) return;
-      if (session.draft.data.events.length >= 500) { host.toast(t('日程最多支持 500 条')); return; }
-      session.draft.data.events.push({id:host.uid(), date:session.view.date, title});
-      session.draft.changed();
-      redraw(session);
-      await flush(session);
-    }
-  }
-
-  function close() {
-    const session = active;
-    if (!session) return closing;
-    active = null;
-    session.controller?.abort();
-    session.cityCleanup?.();
-    if (session.root) session.root.inert = true;
-    session.root = null;
-    const job = flush(session).then(saved => {
-      if (saved && !session.root) drafts.delete(session.item.id);
-      else if (!saved && !session.root) host.toast(t('内容尚未保存，重新打开组件可继续编辑。'), () => exportDraft(session), t('导出副本'));
-      return saved;
-    }).finally(() => { if (closing === job) closing = null; });
-    closing = job;
-    return job;
-  }
-
-  return {
-    close,
-    render(item, data = {}) {
-      let session = drafts.get(item.id);
-      if (!session) {
-        const today = parseDate(data.date) ? data.date : localDateKey();
-        session = {item, view:{...newCalendarView(today), query:'', sort:'updated', active:data.memoId || listMemos(item.data.entries || [])[0]?.id || ''}};
-        session.draft = createWidgetDraft(item, host.saveData, () => {
-          updateStatus(session);
-          if (!session.draft.dirty) host.refreshCards();
-        });
-        drafts.set(item.id, session);
-      }
-      active = session;
-      session.settingsBaseline=JSON.stringify([item.title,item.config]);
-      return renderBody(session);
-    },
-    mount(element, data = {}) {
-      const session = active;
-      session.root = element;
-      if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(element.querySelector('#weather-settings'));
-      session.controller = new AbortController();
-      const options = {signal:session.controller.signal};
-      element.addEventListener('click', event => { action(session,event).catch(error => host.toast(error.message)); }, options);
-      element.addEventListener('input', event => input(session,event), options);
-      element.addEventListener('change', event => change(session,event), options);
-      if (session.item.widget === 'calendar') element.addEventListener('keydown', event => calendarKeydown(session, event, redraw), options);
-      element.addEventListener('submit', event => { submit(session,event).catch(error => host.toast(error.message)); }, options);
-      globalThis.addEventListener('pagehide', () => { void flush(session); }, options);
-      updateStatus(session);
-      element.closest('dialog').classList.toggle('widget-app-expanded', !!session.view.expanded);
-      if (data.newMemo) newEntry(session);
-      if (session.item.widget === 'weather' && currentItem(session).config.enabled) {
-        const job = requestWeather(currentItem(session).config.city);
-        redraw(session);
-        job.then(() => redraw(session));
-      }
-    },
-  };
-}
-
-function bindCitySearch(form) {
-  if (!form?.querySelector('#city-query')) return () => {};
-  const events = new AbortController();
-  let search = null, results = [];
-  const options = {signal:events.signal};
-  form.querySelector('#city-query').addEventListener('keydown', event => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      form.querySelector('[data-city-search]').click();
-    }
-  }, options);
-  form.addEventListener('click', async event => {
-    const button = event.target.closest('[data-city-search],[data-city-result]');
-    if (!button) return;
-    event.preventDefault();
-    const output = form.querySelector('#city-results');
-    if (button.hasAttribute('data-city-result')) {
-      const city = results[Number(button.dataset.cityResult)];
-      if (city) {
-        form.elements.cityName.value = city.name;
-        form.elements.latitude.value = city.latitude;
-        form.elements.longitude.value = city.longitude;
-        output.replaceChildren();
-      }
-      return;
-    }
-    search?.abort();
-    search = new AbortController();
-    const request = search, timer = setTimeout(() => request.abort(), 8000);
-    output.textContent = t('正在搜索…');
-    try {
-      const found = await searchCities(form.querySelector('#city-query').value, request.signal);
-      if (request !== search || !form.isConnected) return;
-      results = found;
-      output.innerHTML = results.map((city,index) => `<button type="button" data-city-result="${index}"><strong>${escapeText(city.name)}</strong><span>${escapeText(city.region)}</span></button>`).join('') || t('没有找到城市，请使用英文名称或填写坐标。');
-    } catch {
-      if (request === search && form.isConnected) output.textContent = t('城市搜索失败，请重试或填写坐标。');
-    } finally { clearTimeout(timer); }
-  }, options);
-  return () => { events.abort(); search?.abort(); };
-}
-
-return {createWidgetDetails, bindCitySearch};
 })();
 const __layout_sharing = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -16136,7 +16547,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityView, bindCommunity};
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.9.0";
+const APP_VERSION = "0.9.1";
 
 return {APP_VERSION};
 })();
@@ -18714,7 +19125,10 @@ const { TILE_SIZES, sizeLabel, gridMetrics } = __widget_sizes;
 const { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } = __core;
 const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } = __widgets;
 const { chineseLunarDate } = __calendar;
-const { createWidgetDetails, bindCitySearch } = __widget_details;
+const { createWidgetDetails } = __widget_details;
+const { bindCitySearch } = __city_search;
+const { weatherWorkspace } = __weather_view;
+const { bindWeatherWorkspace } = __weather_workspace;
 const { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } = __widget_workspaces;
 const { sharingView, bindSharing } = __sharing_ui;
 const { communityView, bindCommunity } = __community_ui;
@@ -19398,6 +19812,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
+ dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
@@ -19410,6 +19825,7 @@ function openDialog(kind,data={}) {
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
  else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
  else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
@@ -19439,6 +19855,7 @@ function openDialog(kind,data={}) {
   const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
   else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});

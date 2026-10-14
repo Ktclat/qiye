@@ -3,11 +3,9 @@ import { t } from './i18n.js';
 import { localDateKey, parseDate } from './calendar.js';
 import { newCalendarView, calendarAction, calendarChange, calendarKeydown } from './calendar-controls.js';
 import { newMemo, listMemos, MEMO_LIMIT } from './memos.js';
-import { searchCities, requestWeather } from './weather.js';
 import { createWidgetDraft } from './widget-drafts.js';
 import { calendarDetail } from './calendar-view.js';
 import { memoDetail, memoList, memoTimestamp } from './memo-view.js';
-import { weatherDetail, weatherWorkspace } from './widget-detail-views.js';
 import { escapeText } from './html.js';
 
 function download(content, name, type) {
@@ -39,20 +37,15 @@ export function createWidgetDetails(host) {
   function renderBody(session) {
     const item = {...(currentItem(session) || session.item), data:session.draft.data};
     const body = item.widget === 'calendar' ? calendarDetail(item, session.view)
-      : item.widget === 'memo' ? memoDetail(item, session.view) : weatherWorkspace(item, session.view);
+      : memoDetail(item, session.view);
     return `<div class="widget-save-feedback" role="alert" hidden></div>${body}`;
   }
 
-  function redraw(session, settings = false) {
+  function redraw(session) {
     if (!session.root?.isConnected) return;
-    if(session.item.widget==='weather' && !settings && session.root.querySelector('#weather-forecast')){
-      session.root.querySelector('#weather-forecast').innerHTML=weatherDetail(currentItem(session));return;
-    }
-    session.cityCleanup?.();
     const previous = session.root.querySelector('#memo-text');
     const selection = previous && {id:previous.dataset.memoId, start:previous.selectionStart, end:previous.selectionEnd, scroll:previous.scrollTop};
     session.root.innerHTML = renderBody(session);
-    if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(session.root.querySelector('#weather-settings'));
     const editor = session.root.querySelector('#memo-text');
     if (editor && selection?.id === editor.dataset.memoId) {
       editor.setSelectionRange(selection.start, selection.end);
@@ -92,8 +85,7 @@ export function createWidgetDetails(host) {
     if (name === 'window-expand') {
       view.expanded = !view.expanded;
       session.root.closest('dialog').classList.toggle('widget-app-expanded', view.expanded);
-      if(session.item.widget!=='weather')redraw(session);
-      else target.setAttribute('aria-pressed',String(view.expanded));
+      redraw(session);
       session.root.querySelector('[data-detail-action=window-expand]').focus();
     } else if (name === 'event-delete') {
       data.events = data.events.filter(entry => entry.id !== target.dataset.id);
@@ -122,12 +114,6 @@ export function createWidgetDetails(host) {
       await flush(session);
     } else if (name === 'draft-export') {
       exportDraft(session);
-    } else if (name === 'weather-refresh') {
-      const job = requestWeather(currentItem(session).config.city, true);
-      redraw(session);
-      await job;
-      redraw(session);
-      host.refreshCards();
     } else {
       const entry = data.entries?.find(entry => entry.id === view.active);
       if (!entry) return;
@@ -182,17 +168,6 @@ export function createWidgetDetails(host) {
     event.preventDefault();
     event.stopPropagation();
     const form = event.target, data = new FormData(form);
-    if(form.id==='weather-settings'){
-      const button=form.querySelector('[type=submit]');button.disabled=true;
-      try{
-        const updated=await host.saveSettings(session.item.id,{title:String(data.get('title')).trim(),config:{city:{name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))},unit:String(data.get('unit')),enabled:data.has('enabled')}},session.settingsBaseline);
-        session.settingsBaseline=JSON.stringify([updated.title,updated.config]);
-        redraw(session,true);
-        if(updated.config.enabled){const job=requestWeather(updated.config.city);redraw(session);await job;redraw(session);}
-      }catch(error){if(form.isConnected)form.querySelector('.utility-status').textContent=error.message;}
-      finally{if(form.isConnected)button.disabled=false;}
-      return;
-    }
     if (form.id === 'calendar-event-form') {
       const title = String(data.get('title')).trim();
       if (!title) return;
@@ -209,7 +184,6 @@ export function createWidgetDetails(host) {
     if (!session) return closing;
     active = null;
     session.controller?.abort();
-    session.cityCleanup?.();
     if (session.root) session.root.inert = true;
     session.root = null;
     const job = flush(session).then(saved => {
@@ -235,13 +209,11 @@ export function createWidgetDetails(host) {
         drafts.set(item.id, session);
       }
       active = session;
-      session.settingsBaseline=JSON.stringify([item.title,item.config]);
       return renderBody(session);
     },
     mount(element, data = {}) {
       const session = active;
       session.root = element;
-      if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(element.querySelector('#weather-settings'));
       session.controller = new AbortController();
       const options = {signal:session.controller.signal};
       element.addEventListener('click', event => { action(session,event).catch(error => host.toast(error.message)); }, options);
@@ -253,53 +225,6 @@ export function createWidgetDetails(host) {
       updateStatus(session);
       element.closest('dialog').classList.toggle('widget-app-expanded', !!session.view.expanded);
       if (data.newMemo) newEntry(session);
-      if (session.item.widget === 'weather' && currentItem(session).config.enabled) {
-        const job = requestWeather(currentItem(session).config.city);
-        redraw(session);
-        job.then(() => redraw(session));
-      }
     },
   };
-}
-
-export function bindCitySearch(form) {
-  if (!form?.querySelector('#city-query')) return () => {};
-  const events = new AbortController();
-  let search = null, results = [];
-  const options = {signal:events.signal};
-  form.querySelector('#city-query').addEventListener('keydown', event => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      form.querySelector('[data-city-search]').click();
-    }
-  }, options);
-  form.addEventListener('click', async event => {
-    const button = event.target.closest('[data-city-search],[data-city-result]');
-    if (!button) return;
-    event.preventDefault();
-    const output = form.querySelector('#city-results');
-    if (button.hasAttribute('data-city-result')) {
-      const city = results[Number(button.dataset.cityResult)];
-      if (city) {
-        form.elements.cityName.value = city.name;
-        form.elements.latitude.value = city.latitude;
-        form.elements.longitude.value = city.longitude;
-        output.replaceChildren();
-      }
-      return;
-    }
-    search?.abort();
-    search = new AbortController();
-    const request = search, timer = setTimeout(() => request.abort(), 8000);
-    output.textContent = t('正在搜索…');
-    try {
-      const found = await searchCities(form.querySelector('#city-query').value, request.signal);
-      if (request !== search || !form.isConnected) return;
-      results = found;
-      output.innerHTML = results.map((city,index) => `<button type="button" data-city-result="${index}"><strong>${escapeText(city.name)}</strong><span>${escapeText(city.region)}</span></button>`).join('') || t('没有找到城市，请使用英文名称或填写坐标。');
-    } catch {
-      if (request === search && form.isConnected) output.textContent = t('城市搜索失败，请重试或填写坐标。');
-    } finally { clearTimeout(timer); }
-  }, options);
-  return () => { events.abort(); search?.abort(); };
 }

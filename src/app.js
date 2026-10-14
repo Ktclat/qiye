@@ -4,7 +4,10 @@ import { TILE_SIZES, sizeLabel, gridMetrics } from './widget-sizes.js';
 import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
 import { chineseLunarDate } from './calendar.js';
-import { createWidgetDetails, bindCitySearch } from './widget-details.js';
+import { createWidgetDetails } from './widget-details.js';
+import { bindCitySearch } from './city-search.js';
+import { weatherWorkspace } from './weather-view.js';
+import { bindWeatherWorkspace } from './weather-workspace.js';
 import { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } from './widget-workspaces.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
 import { communityView, bindCommunity } from './community-ui.js';
@@ -688,6 +691,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
+ dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
@@ -700,6 +704,7 @@ function openDialog(kind,data={}) {
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
  else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
  else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
@@ -729,6 +734,7 @@ function openDialog(kind,data={}) {
   const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
   else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});

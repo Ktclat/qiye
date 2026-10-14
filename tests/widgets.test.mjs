@@ -82,7 +82,7 @@ test('habit streak allows today to remain unchecked and stops at the first misse
 
 test('weather data keeps missing optional measurements unknown and rejects absent current observations', () => {
   const parsed = parseWeatherResponse({ current: { temperature_2m: 27.4, weather_code: 2, is_day: 0, time: '2026-10-11T22:00' } }, 12345);
-  assert.deepEqual(parsed, { fetchedAt: 12345, temperature: 27.4, feelsLike: null, humidity: null, code: 2, isDay: false, max: null, min: null, observedAt: '2026-10-11T22:00', wind:null, timezone:'', daily:[], hourly:[], air:null });
+  assert.deepEqual(parsed, { fetchedAt: 12345, temperature: 27.4, feelsLike: null, humidity: null, code: 2, isDay: false, max: null, min: null, observedAt: '2026-10-11T22:00', wind:null, pressure:null, precipitation:null, timezone:'', daily:[], hourly:[], air:null });
   for (const raw of [null, {}, { current: {} }, { current: { temperature_2m: '27', weather_code: 2 } }, { current: { temperature_2m: null, weather_code: 2 } }, { current: { temperature_2m: 20, weather_code: NaN } }]) assert.throws(() => parseWeatherResponse(raw), /数据不完整/);
 });
 
