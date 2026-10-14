@@ -3,6 +3,8 @@ import { t, localizeSeed } from './i18n.js';
 import { keys, string, number, bool, enumeration, array, unique, date, time, invalid } from './validation.js';
 import { TILE_SIZES, REQUIRED_WIDGET_SIZES } from './widget-sizes.js';
 import { widgetExtensions } from './widget-extensions.js';
+import { validateCommunityManifest } from './community-format.js';
+import { publicHttpsUrl } from './public-json.js';
 
 const builtins = [
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
@@ -42,6 +44,7 @@ function fieldValue(field, value, path) {
 
 export function createWidgetRegistry(extensions = []) {
   const definitions = new Map(builtins.map(entry => [entry.type, Object.freeze({ ...entry, builtin: true, sizes: TILE_SIZES })]));
+  definitions.set('community',Object.freeze({type:'community',title:'社区组件',description:'作者提供的独立网页组件',size:'2x2',icon:'globe',builtin:true,internal:true,sizes:TILE_SIZES}));
   for (const source of extensions) {
     const entry = { ...source };
     if (!/^[a-z][a-z0-9-]{0,39}$/.test(entry.type) || ['constructor', 'prototype'].includes(entry.type)) throw new Error(t("组件 type 必须是小写字母、数字或连字符"));
@@ -76,7 +79,7 @@ export function createWidgetRegistry(extensions = []) {
     entry.builtin = false;
     definitions.set(entry.type, Object.freeze(entry));
   }
-  const list = Object.freeze([...definitions.values()]);
+  const list = Object.freeze([...definitions.values()].filter(entry=>!entry.internal));
   return Object.freeze({
     get: type => definitions.get(type),
     list: () => list,
@@ -102,6 +105,10 @@ export function newWidgetConfig(type) { return registry.newConfig(type); }
 export function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if(widgetType==='community'){
+    keys(raw,['manifest','source'],path);
+    return {manifest:validateCommunityManifest(raw.manifest),source:publicHttpsUrl(string(raw.source,path+'.source',2048))};
+  }
   const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
   const out = {};
   if (widgetType === 'calendar') {

@@ -4,7 +4,11 @@
 
 Qiye is an account-free, customizable new tab for Chrome and Edge. Organize websites, folders and everyday widgets, use your own wallpaper, and optionally sync through your own WebDAV server. Personal content stays in your browser unless you export it or enable synchronization.
 
-Version **0.8.2** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+Version **0.9.0** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+
+Version 0.9.0 fixes wallpaper dragging and opens every wallpaper size directly in the wallpaper centre. Countdown, workday, focus, weather and utility widgets now have dedicated workspaces with relevant settings and controls.
+
+**Add → Community** accepts public directories or author manifests. Review the source and size, then add the widget; an isolated webpage runs only after you click Run in its detail window. A working counter example and SDK are included. **Add → Share and import** exports selected groups without personal widget content, supports JSON URLs and files, previews imports, merges or creates groups, skips duplicate URLs and offers undo. Host your JSON file to generate a share link. [Author guide and formats](docs/COMMUNITY.md).
 
 The search engine dropdown and search suggestions now appear above desktop widgets, including when the clock and search bar are pinned independently. The same fix ships in the extension and web app, with checks for both themes, narrow screens, editing and minimal mode.
 

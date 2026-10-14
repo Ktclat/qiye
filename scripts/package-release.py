@@ -46,8 +46,8 @@ def build(output):
     extension = output / f'qiye-{version}-chrome-edge.zip'
     archive(extension, runtime)
     source = runtime + ['package.json', 'README.md', 'README.en.md', 'CONTRIBUTING.md', 'REQUIREMENTS.md', '.gitignore', '.gitattributes', '.nojekyll']
-    for folder in ['scripts', 'tests', 'docs', '.github']:
-        source.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs', '.md', '.json', '.yml', '.yaml', '.png', '.jpg'})
+    for folder in ['scripts', 'tests', 'docs', '.github', 'community']:
+        source.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs', '.js', '.html', '.svg', '.md', '.json', '.yml', '.yaml', '.png', '.jpg'})
     source_zip = output / f'qiye-{version}-source.zip'
     archive(source_zip, source)
     preview = output / f'qiye-{version}-preview.html'

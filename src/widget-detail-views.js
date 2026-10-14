@@ -3,7 +3,12 @@ import { t, formatDate } from './i18n.js';
 import { parseDate } from './calendar.js';
 import { escapeText } from './html.js';
 import { weatherState, weatherArt, weatherDescription, temperature, WEATHER_TTL } from './weather.js';
+import { workspaceHeader } from './widget-workspaces.js';
 const e = escapeText;
+export function weatherWorkspace(item,view={}) {
+  const c=item.config;
+  return `<div class="utility-app">${workspaceHeader(item,view.expanded)}<div class="utility-layout"><main id="weather-forecast" class="utility-weather-main">${weatherDetail(item)}</section><form class="utility-settings" id="weather-settings"><h3>${t('城市与预报')}</h3><label class="utility-field"><span>${t('卡片名称')}</span><input name="title" value="${e(item.title)}" required maxlength="30"></label><div class="detail-toolbar"><input id="city-query" placeholder="${t('搜索全球城市')}" aria-label="${t('搜索全球城市')}"><button type="button" data-city-search>${t('搜索城市')}</button></div><div id="city-results" role="status"></div><label class="utility-field"><span>${t('城市名称')}</span><input name="cityName" value="${e(c.city.name)}" required maxlength="60"></label><details><summary>${t('手动坐标')}</summary><label class="utility-field"><span>${t('纬度')}</span><input name="latitude" type="number" step="any" min="-90" max="90" required value="${c.city.latitude}"></label><label class="utility-field"><span>${t('经度')}</span><input name="longitude" type="number" step="any" min="-180" max="180" required value="${c.city.longitude}"></label></details><label class="utility-field"><span>${t('温度单位')}</span><select name="unit"><option value="celsius" ${c.unit==='celsius'?'selected':''}>${t('摄氏度 °C')}</option><option value="fahrenheit" ${c.unit==='fahrenheit'?'selected':''}>${t('华氏度 °F')}</option></select></label><label><input type="checkbox" name="enabled" ${c.enabled?'checked':''}> ${t('启用天气')}</label><p class="utility-help">${t('发送城市坐标至 Open-Meteo')}</p><button type="submit" class="utility-primary">${t('保存设置')}</button><p class="utility-status" role="status"></p></form></div></div>`;
+}
 function forecastUpdatedAt(weather) {
   const options = {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'};
   try { return formatDate(new Date(weather.fetchedAt), {...options, timeZone:weather.timezone || undefined}); }

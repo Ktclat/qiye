@@ -5,6 +5,10 @@ import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, sa
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
 import { chineseLunarDate } from './calendar.js';
 import { createWidgetDetails, bindCitySearch } from './widget-details.js';
+import { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } from './widget-workspaces.js';
+import { sharingView, bindSharing } from './sharing-ui.js';
+import { communityView, bindCommunity } from './community-ui.js';
+import { communityWorkspace, bindCommunityWorkspace } from './community-widget.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
 import { APP_VERSION } from './version.js';
 import { applyWindowSize, WINDOW_SIZES } from './window-layout.js';
@@ -40,7 +44,7 @@ const WALLPAPERS = [
  {id:'midnight',name:'静夜',tag:'为专注留白',background:'radial-gradient(ellipse 75% 60% at 75% 0%,#28495a 0%,transparent 75%),radial-gradient(ellipse 75% 70% at 0% 100%,#1a3546 0%,transparent 80%),linear-gradient(130deg,#101b29,#101820 65%,#09131e)'}
 ];
 const dialog = $('#dialog');
-const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
+const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
 let cleanupCitySearch = () => {};
 let state = clone(DEFAULT_STATE);
 let persistedState = clone(DEFAULT_STATE), saveQueue = Promise.resolve(), saveGeneration = 0;
@@ -363,6 +367,21 @@ async function saveWidgetData(id, data, expectedData) {
  const saved = await persist();
  return saved.items.find(item=>item.id===id).data;
 }
+async function saveWidgetSettings(id, changes, expected) {
+ await saveQueue;
+ const existing=state.items.find(item=>item.id===id);
+ if(!existing || JSON.stringify([existing.title,existing.config])!==expected)throw new Error(t('组件设置已在其他位置修改，请重新打开。'));
+ const candidate=clone(state),item=candidate.items.find(item=>item.id===id);
+ item.title=changes.title;item.config=changes.config;
+ if(changes.duration!==undefined)item.data.focus={duration:changes.duration,remaining:changes.duration*60,running:false,endAt:null};
+ state=validateImport(candidate);await persist();renderDesktop({preserveWidgets:true});
+ return state.items.find(item=>item.id===id);
+}
+async function applyExchange(candidate,expected) {
+ await saveQueue;
+ if(JSON.stringify(state)!==expected)throw new Error(t('桌面已发生变化，请重新预览后再操作。'));
+ state=validateImport({...candidate,updatedAt:state.updatedAt});await persist();renderDesktop({preserveWidgets:true});
+}
 async function commit(render = true, options = {}) { await persist(); if (render) renderDesktop(options); }
 function navigate(url, forceNew = false, searchResult = false) {
  const target = safeUrl(url); if (!target) return toast(t("这个网址无效，请使用 http 或 https 网址。"));
@@ -652,6 +671,7 @@ function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="${t("图标颜色 {v0}", {v0: c})}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="${t("自定义图标颜色")}" value="${esc(selected || COLORS[0])}"></div>`; }
 let viewerCleanup=()=>{};
 function openDialog(kind,data={}) {
+ if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
  viewerCleanup(); viewerCleanup=()=>{};
  if(kind!=='settings' || !dialog.open || dialogKind!=='settings')dialog.classList.toggle('settings-drawer',kind==='settings' && state.settings.settingsPresentation==='sidebar');
  widgetDetails.close(); cleanupCitySearch();
@@ -663,10 +683,12 @@ function openDialog(kind,data={}) {
  dialogKind = kind; dialogData = data;
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
- const dedicatedWidget = ['calendar','memo'].includes(detailWidget);
+ const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
+ const dedicatedWidget = ['calendar','memo','weather','community'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
+ dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
@@ -677,8 +699,10 @@ function openDialog(kind,data={}) {
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
+ else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
- else if (kind === 'widget-detail' && !['calendar','memo','weather'].includes(detailWidget)) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
+ else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
+ else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
  else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=(dedicatedWidget?'':dialogHeader(item.title))+`<div id="widget-detail-body" class="${dedicatedWidget?'widget-app-body':'widget-detail-body'}">${widgetDetails.render(item,data)}</div>`; }
  else if (kind === 'widget-config') html = widgetConfigDialog(state.items.find(i=>i.id===data.item?.id) || data.item);
  else if (kind === 'weather') { const item = state.items.find(i=>i.widget==='weather') || {id:uid(),widget:'weather',title:t('天气'),config:newWidgetConfig('weather')}; html = widgetConfigDialog(item); }
@@ -699,9 +723,14 @@ function openDialog(kind,data={}) {
  dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
+ if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
+ if(kind==='add' && data.tab==='community')viewerCleanup=bindCommunity($('#add-content'),{getState:()=>state,apply:applyExchange});
  if (kind==='widget-detail') {
+  const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
-  if(viewer) {
+  if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
+  else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
     const timer=setInterval(()=>refreshLiveWidgets(viewer,state),1000);
     viewerCleanup=()=>{clearInterval(timer);cleanup();renderDesktop({preserveWidgets:true});};
@@ -711,6 +740,7 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
+ else if(kind==='widget-detail'&&(utilityWidget||['weather','community'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -755,11 +785,13 @@ function addDialog(tab,data) {
  const item = data.item;
  let content = '';
  if (tab === 'widgets' || tab === 'sites') content = renderCatalog({state,groupId:data.groupId||currentGroup().id,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
+ else if(tab==='sharing')content=sharingView(state,data.url||'');
+ else if(tab==='community')content=communityView();
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title',t("文件夹名称"),item?.title || '',{required:true,maxlength:24,placeholder:t("例如：灵感收藏")})}${selectField('groupId',t("所在分组"),item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">${t("把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。")}</p>${formActions(item?t("保存文件夹"):t("创建文件夹"))}</form>`;
  else content = linkEditorForm(item);
  const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):dialogCloseButton()+`<button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>`;
  if(item)return head+`<div class="dialog-body">${content}</div>`;
- const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'}];
+ const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'community',name:t('社区组件'),icon:'globe'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'},{id:'sharing',name:t('分享与导入'),icon:'download'}];
  return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}"><h2 class="workspace-title" id="workspace-title">${t("添加")}</h2>${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div>`;
 
 }
@@ -951,7 +983,7 @@ function widgetConfigDialog(item) {
  else if(type==='notes') content += selectField('color',t("便签颜色"),c.color,[{value:'yellow',label:t("奶油黄")},{value:'pink',label:t("浅樱粉")},{value:'mint',label:t("薄荷绿")}]);
  else if(definition && !definition.builtin) content += renderExtensionSettings(item);
  else content += `<p class="help-text">${t("直接在卡片中使用这个组件。右键卡片可以调整尺寸或位置。")}</p>`;
- content += selectField('size',t("卡片尺寸"),item.size || '2x2',(definition?.sizes || TILE_SIZES).map(value=>({value,label:sizeLabel(value)})));
+ content += selectField('size',t("卡片尺寸"),item.size || '2x2',(type==='community'?c.manifest.sizes:definition?.sizes || TILE_SIZES).map(value=>({value,label:sizeLabel(value)})));
  return dialogHeader(`${t("设置{v0}", {v0: item.title})}`,t("修改后会保存到当前浏览器。")) + `<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}" data-type="${esc(type)}">${content}${formActions()}</form></div>`;
 }
 function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div id="local-results" class="local-results"></div></div>`; }
@@ -1030,7 +1062,7 @@ function openContext(event,{itemId,groupId}={}) {
  const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
- if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.widget==='community'?item.config.manifest.sizes:item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
@@ -1376,6 +1408,7 @@ async function init() {
  document.addEventListener('focusout',()=>syncController.onIdle());
  setInterval(()=>{if(!document.hidden)syncController.onIdle();},60000);
  if(new URLSearchParams(location.search).get('search')==='local')openDialog('local-search');
+ if(location.hash.startsWith('#import=')){try{openDialog('add',{tab:'sharing',url:decodeURIComponent(location.hash.slice(8))});}catch{toast(t('分享链接无效。'));}}
  if(blockedStorage)openDialog('settings',{tab:'data'});
 }
 init().catch(err=>{console.error('Qiye initialization failed',err);toast(t("桌面初始化失败，请刷新页面重试。"));});

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { renderWidgetSummary } from './widget-summary.js';
+import { communityCard } from './community-widget.js';
 import { isCompactWidget } from './widget-sizes.js';
 import { t } from './i18n.js';
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
@@ -349,11 +350,18 @@ function renderCompact(item) {
   return renderWidgetSummary(item, compactModel(item), icon(getWidgetDefinition(item.widget).icon));
 }
 
+export function renderWidgetContent(item, state) {
+  const now = new Date();
+  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
+  return renderers[item.widget]();
+}
+
 export function renderWidget(item, state) {
   const definition = getWidgetDefinition(item.widget);
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
+  if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
   if (definition.builtin && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
@@ -366,9 +374,8 @@ export function renderWidget(item, state) {
     return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${isCompactWidget(item.size) ? '' : header(item.title)}${content}</div>`;
   }
   const now = new Date();
-  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   const color = type === 'notes' && ['yellow', 'pink', 'mint'].includes(item.config?.color) ? ` w-notes-${item.config.color}` : '';
-  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
+  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderWidgetContent(item,state)}</div>`;
 }
 
 function findItem(root, state) { return state.items?.find((item) => item.id === root?.dataset.widgetId); }

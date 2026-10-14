@@ -7,7 +7,7 @@ import { searchCities, requestWeather } from './weather.js';
 import { createWidgetDraft } from './widget-drafts.js';
 import { calendarDetail } from './calendar-view.js';
 import { memoDetail, memoList, memoTimestamp } from './memo-view.js';
-import { weatherDetail } from './widget-detail-views.js';
+import { weatherDetail, weatherWorkspace } from './widget-detail-views.js';
 import { escapeText } from './html.js';
 
 function download(content, name, type) {
@@ -39,15 +39,20 @@ export function createWidgetDetails(host) {
   function renderBody(session) {
     const item = {...(currentItem(session) || session.item), data:session.draft.data};
     const body = item.widget === 'calendar' ? calendarDetail(item, session.view)
-      : item.widget === 'memo' ? memoDetail(item, session.view) : weatherDetail(item);
+      : item.widget === 'memo' ? memoDetail(item, session.view) : weatherWorkspace(item, session.view);
     return `<div class="widget-save-feedback" role="alert" hidden></div>${body}`;
   }
 
-  function redraw(session) {
+  function redraw(session, settings = false) {
     if (!session.root?.isConnected) return;
+    if(session.item.widget==='weather' && !settings && session.root.querySelector('#weather-forecast')){
+      session.root.querySelector('#weather-forecast').innerHTML=weatherDetail(currentItem(session));return;
+    }
+    session.cityCleanup?.();
     const previous = session.root.querySelector('#memo-text');
     const selection = previous && {id:previous.dataset.memoId, start:previous.selectionStart, end:previous.selectionEnd, scroll:previous.scrollTop};
     session.root.innerHTML = renderBody(session);
+    if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(session.root.querySelector('#weather-settings'));
     const editor = session.root.querySelector('#memo-text');
     if (editor && selection?.id === editor.dataset.memoId) {
       editor.setSelectionRange(selection.start, selection.end);
@@ -87,7 +92,8 @@ export function createWidgetDetails(host) {
     if (name === 'window-expand') {
       view.expanded = !view.expanded;
       session.root.closest('dialog').classList.toggle('widget-app-expanded', view.expanded);
-      redraw(session);
+      if(session.item.widget!=='weather')redraw(session);
+      else target.setAttribute('aria-pressed',String(view.expanded));
       session.root.querySelector('[data-detail-action=window-expand]').focus();
     } else if (name === 'event-delete') {
       data.events = data.events.filter(entry => entry.id !== target.dataset.id);
@@ -176,6 +182,17 @@ export function createWidgetDetails(host) {
     event.preventDefault();
     event.stopPropagation();
     const form = event.target, data = new FormData(form);
+    if(form.id==='weather-settings'){
+      const button=form.querySelector('[type=submit]');button.disabled=true;
+      try{
+        const updated=await host.saveSettings(session.item.id,{title:String(data.get('title')).trim(),config:{city:{name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))},unit:String(data.get('unit')),enabled:data.has('enabled')}},session.settingsBaseline);
+        session.settingsBaseline=JSON.stringify([updated.title,updated.config]);
+        redraw(session,true);
+        if(updated.config.enabled){const job=requestWeather(updated.config.city);redraw(session);await job;redraw(session);}
+      }catch(error){if(form.isConnected)form.querySelector('.utility-status').textContent=error.message;}
+      finally{if(form.isConnected)button.disabled=false;}
+      return;
+    }
     if (form.id === 'calendar-event-form') {
       const title = String(data.get('title')).trim();
       if (!title) return;
@@ -192,6 +209,7 @@ export function createWidgetDetails(host) {
     if (!session) return closing;
     active = null;
     session.controller?.abort();
+    session.cityCleanup?.();
     if (session.root) session.root.inert = true;
     session.root = null;
     const job = flush(session).then(saved => {
@@ -217,11 +235,13 @@ export function createWidgetDetails(host) {
         drafts.set(item.id, session);
       }
       active = session;
+      session.settingsBaseline=JSON.stringify([item.title,item.config]);
       return renderBody(session);
     },
     mount(element, data = {}) {
       const session = active;
       session.root = element;
+      if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(element.querySelector('#weather-settings'));
       session.controller = new AbortController();
       const options = {signal:session.controller.signal};
       element.addEventListener('click', event => { action(session,event).catch(error => host.toast(error.message)); }, options);

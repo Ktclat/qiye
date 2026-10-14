@@ -46,12 +46,14 @@ jobs:
           python3 tests/presentation-e2e.py --preview
           python3 tests/search-overlays-e2e.py
           python3 tests/search-overlays-e2e.py --preview
+          python3 tests/workspaces-e2e.py
+          python3 tests/workspaces-e2e.py --preview
           python3 tests/extension-e2e.py
           python3 tests/tab-favicon-e2e.py
       - name: Package extension, source and standalone preview
         run: |
           python3 scripts/package-release.py
-          git diff --exit-code -- Qiye-preview.html src/version.js
+          git diff --exit-code -- Qiye-preview.html src/version.js community/index.json
       - uses: actions/upload-artifact@v4
         with:
           name: qiye-release

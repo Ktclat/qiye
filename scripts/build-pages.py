@@ -15,6 +15,7 @@ if output == root or root in output.parents:
     parser.error('Use a separate publishing directory outside the source repository.')
 
 subprocess.run([sys.executable, str(root / 'scripts/build-preview.py')], check=True)
+subprocess.run(['node', str(root / 'scripts/build-community.mjs')], check=True)
 version = json.loads((root / 'package.json').read_text(encoding='utf-8'))['version']
 html = (root / 'Qiye-preview.html').read_text(encoding='utf-8')
 html = html.replace('<title>栖页 Qiye · 交互预览</title>', '<title>栖页 · 新标签页</title>')
@@ -24,6 +25,7 @@ output.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(root / 'icons/icon32.png', output / 'icons/icon32.png')
 (output / '.nojekyll').write_text('', encoding='utf-8')
 shutil.copyfile(root / 'LICENSE', output / 'LICENSE')
+shutil.copytree(root / 'community', output / 'community', dirs_exist_ok=True)
 (output / 'README.md').write_text(f'''# 栖页 Qiye · GitHub Pages
 
 栖页 v{version} 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
@@ -48,7 +50,7 @@ shutil.copyfile(root / 'LICENSE', output / 'LICENSE')
 python3 scripts/build-pages.py /path/to/qiye-demo
 ```
 
-输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE` 和本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
+输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE`、`community/` 公共索引与示例及本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
 
 Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分支**，GitHub Pages 会自动部署。仅推送 `main` 不会更新演示页面；请先构建，再将生成文件推送到 `gh-pages`。
 

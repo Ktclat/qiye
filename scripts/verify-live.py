@@ -33,13 +33,14 @@ def save_report():
 
 
 try:
-    for path in ['index.html', 'icons/icon32.png', 'LICENSE']:
+    community_assets=sorted(path.relative_to(args.expected).as_posix() for path in (args.expected/'community').rglob('*') if path.is_file())
+    for path in ['index.html', 'icons/icon32.png', 'LICENSE', *community_assets]:
         request = urllib.request.Request(args.url + ('' if path == 'index.html' else path), headers={'Cache-Control':'no-cache'})
         with urllib.request.urlopen(request, timeout=30) as response:
             raw = response.read()
             report['assets'][path] = {'status':response.status, 'url':response.url, 'sha256':hashlib.sha256(raw).hexdigest(), 'bytes':len(raw)}
         expected = (args.expected / path).read_bytes()
-        if path.endswith('.html'):
+        if path.endswith(('.html','.js','.json','.svg')):
             expected = expected.replace(b'\r\n', b'\n')
         check(f'Deployed {path} equals the current build', raw == expected)
 
@@ -116,6 +117,25 @@ try:
             check('Published web fallback explains tab access and retains upload', '网页版可上传本机图片' in page.locator('.visit-icon-control').inner_text() and page.locator('[data-icon-choice=upload]').is_visible())
             page.screenshot(path=str(args.output / 'live-icon-visit.png'), animations='disabled')
             close()
+            page.locator('#desktop [data-item=countdown-home]').focus();page.keyboard.press('Enter')
+            check('Published countdown has a dedicated settings workspace',page.locator('[data-utility-form] [name=date]').count()==1 and page.locator('.utility-countdown').count()==1)
+            page.screenshot(path=str(args.output / 'live-countdown.png'),animations='disabled');close()
+            page.locator('.top-tools [data-action=add]').click();page.locator('[data-add-tab=sharing]').click()
+            with page.expect_download() as download:page.locator('[data-layout-export] button').click()
+            layout_path=args.output/'layout.json';download.value.save_as(layout_path)
+            shared=json.loads(layout_path.read_text(encoding='utf-8'))
+            check('Public layout export excludes memo content',shared['format']=='qiye-layout' and 'Temporary browser profile only' not in json.dumps(shared) and all('data' not in item for item in shared['items']))
+            before=page.evaluate('(key)=>JSON.parse(localStorage.getItem(key)).groups.length',key)
+            page.locator('[data-layout-file]').set_input_files(layout_path);page.locator('[data-layout-apply] button').click();page.locator('[data-layout-undo]').wait_for()
+            check('Published import appends new groups',page.evaluate('(key)=>JSON.parse(localStorage.getItem(key)).groups.length',key)==before+1)
+            page.locator('[data-layout-undo]').click();page.wait_for_function('([key,count])=>JSON.parse(localStorage.getItem(key)).groups.length===count',arg=[key,before]);check('Published import can be undone',True)
+            page.locator('[data-add-tab=community]').click();page.locator('[data-community-source] button').click();page.locator('[data-community-card]').first.wait_for(timeout=25000)
+            check('Public community directory loads without mocks',page.locator('[data-community-card]').count()>=1)
+            page.locator('[data-community-card]').first.locator('[data-community-size]').select_option('1x1');page.locator('[data-community-add]').first.click();page.wait_for_function('(key)=>JSON.parse(localStorage.getItem(key)).items.some(i=>i.widget==="community")',arg=key);close()
+            item_id=page.evaluate('(key)=>JSON.parse(localStorage.getItem(key)).items.find(i=>i.widget==="community").id',key)
+            page.locator(f'#desktop [data-item="{item_id}"]').focus();page.keyboard.press('Enter');page.locator('[data-community-run]').click();page.wait_for_function('()=>document.querySelector("[data-community-status]").textContent==="组件正在运行"',timeout=25000)
+            page.frame_locator('.community-frame-host iframe').locator('#increase').click();page.wait_for_function('(key)=>JSON.parse(localStorage.getItem(key)).items.find(i=>i.widget==="community").data.value===\'{"count":1}\'',arg=key)
+            check('Published isolated example runs and persists its counter',True);page.screenshot(path=str(args.output/'live-community.png'),animations='disabled');close()
             check('No uncaught JavaScript exceptions', not errors)
             report['page_errors'] = errors
             report['result'] = 'passed'

@@ -119,8 +119,7 @@ export function createDesktopDragController({
    if(t.closest('select,[data-no-drag]'))return null;
    const editor=t.closest('input,textarea,[contenteditable]');
    if(editor && doc.activeElement===editor)return null;
-   const control=t.closest('button,a');
-   const holdOnly=!!editor || !!control && control.dataset.openLink!==item.id && control.dataset.openFolder!==item.id;
+   const holdOnly=!!editor;
    return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title,holdOnly};
   }
   if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
