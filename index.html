@@ -1338,6 +1338,84 @@ html[data-theme=light] #dialog.widget-app-dialog {
 }
 
 </style>
+<style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+#dialog.utility-app-dialog{width:min(1040px,var(--dialog-width));height:min(700px,var(--dialog-height))}
+#dialog.utility-app-dialog.widget-app-expanded{width:var(--dialog-width);height:var(--dialog-height)}
+.utility-app{height:100%;display:flex;flex-direction:column;min-height:0}
+.utility-app-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 22px;border-bottom:1px solid var(--app-border);flex:none}
+.utility-app-header h2{display:flex;align-items:center;gap:12px;font-size:21px;margin:0;min-width:0;overflow-wrap:anywhere}
+.utility-app-header h2>.icon{width:36px;height:36px;padding:8px;border-radius:12px;background:var(--app-blue);color:white;flex:none}
+.utility-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;padding:18px;min-height:0;overflow:auto;flex:1;align-items:start}
+.utility-main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.utility-settings{display:flex;flex-direction:column;gap:18px;padding:20px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:18px;min-width:0}
+.utility-settings h3{margin:0;font-size:16px}
+.utility-field{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px}
+.utility-field>span,.utility-help{color:var(--app-muted)}
+.utility-field :is(input,select,textarea){width:100%;box-sizing:border-box;resize:vertical}
+.utility-status{font-size:12px;overflow-wrap:anywhere;margin:0}
+.utility-help{font-size:12px;line-height:1.7;margin:0}
+.utility-app .utility-primary{background:var(--app-blue);color:white;min-height:38px}
+.utility-presets,.utility-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px}
+.utility-toolbar>span{margin-right:auto;color:var(--app-muted)}
+.utility-week{padding:0;border:0;margin:0;display:flex;gap:5px;flex-wrap:wrap;font-size:12px}
+.utility-week legend{margin-bottom:10px;color:var(--app-muted)}
+.utility-week label{display:flex;align-items:center;gap:3px}
+.utility-week input{width:15px;height:15px;padding:0;accent-color:var(--app-blue)}
+.utility-panel.widget-inner{--w-fg:var(--app-fg);--w-heading:var(--app-fg);--w-muted:var(--app-muted);--w-accent:var(--app-blue);--w-accent-ink:#fff;--w-input:var(--app-field);--w-control:var(--app-field);--w-border:var(--app-border);--w-hover:var(--app-selection);position:relative;min-height:330px;width:100%;height:auto;overflow:visible;container-type:normal;border-radius:20px;padding:24px;background:var(--app-pane);color:var(--app-fg);border:1px solid var(--app-border);font-size:15px;gap:18px}
+.utility-panel>.widget-heading{display:none}
+.utility-countdown,.utility-workday{text-align:center;padding:20px 0}
+.utility-countdown>div>strong{font-size:clamp(64px,10vw,108px);font-weight:500;line-height:1.1;font-variant-numeric:tabular-nums}
+.utility-countdown>p,.utility-workday>p{color:var(--app-muted);font-size:14px}
+.utility-countdown h3{font-size:22px;margin:22px 0 10px;overflow-wrap:anywhere}
+.utility-big-time{display:block;font-size:clamp(32px,5vw,62px);font-weight:500;font-variant-numeric:tabular-nums}
+.utility-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}
+.utility-stats article{padding:16px;border-radius:14px;background:var(--app-field);display:flex;flex-direction:column;gap:8px}
+.utility-stats article span{font-size:12px;color:var(--app-muted)}
+.utility-stats article strong{font-size:24px;font-weight:500}
+.utility-week-preview{display:flex;justify-content:center;gap:10px;margin-top:26px}
+.utility-week-preview>span{padding:8px;border-radius:8px;color:var(--app-muted)}
+.utility-week-preview .is-workday{background:var(--app-field);color:var(--app-fg)}
+.utility-week-preview .is-today{outline:2px solid var(--app-blue);color:var(--app-blue)}
+.utility-panel .w-focus-ring{width:min(260px,100%);height:auto;aspect-ratio:1;margin:18px auto;flex:none}
+.utility-panel .w-focus-ring strong{font-size:56px}.utility-panel .w-focus-ring span{font-size:13px;display:block}
+.utility-panel .w-focus-controls{justify-content:center;gap:12px;margin-top:12px}.utility-panel .w-focus-controls button{padding:10px 18px;min-height:42px;width:auto;font-size:15px}
+.utility-panel .w-notes-input{height:350px;min-height:220px;resize:vertical;font-size:16px;line-height:1.85;flex:none;padding:0}
+.utility-panel .w-notes-footer{font-size:12px;margin-top:12px}
+.utility-panel .w-todo-list,.utility-panel .w-habit-list{max-height:370px;min-height:180px}
+.utility-panel :is(.w-todo-row,.w-habit-row){font-size:14px;min-height:44px;gap:10px}.utility-panel .w-row-delete{opacity:.8;flex:none;width:26px}
+.utility-panel .w-inline-form{height:46px;font-size:14px;margin-top:18px}.utility-panel .w-inline-form input{font-size:14px!important;height:34px}.utility-panel .w-inline-form button{height:30px;width:30px}
+.utility-panel .w-calculator-screen{height:68px}.utility-panel .w-calculator-input{font-size:32px!important;height:54px}.utility-panel .w-calculator-error{font-size:12px}.utility-panel .w-calculator-keys{gap:8px}.utility-panel .w-calculator-keys button{min-height:46px;font-size:19px}
+.utility-panel .w-notes-input{font-size:16px!important}.utility-panel .w-todo-row label,.utility-panel .w-habit-name{font-size:14px}.utility-panel .w-clock-time{font-size:58px}.utility-panel .w-clock-date{font-size:15px}.utility-panel .w-clock-world{display:none}
+.calculator-history,.utility-habit-week{padding:20px;border-radius:18px;border:1px solid var(--app-border);font-size:13px}
+.calculator-history h3,.utility-habit-week h3{font-size:14px;margin:0 0 14px}.calculator-history ol{margin:0;padding-left:20px;max-height:180px;overflow:auto}.calculator-history li{padding:6px;overflow-wrap:anywhere}
+.utility-world-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}.utility-world-list article{display:grid;gap:8px;background:var(--app-pane);border:1px solid var(--app-border);padding:14px;border-radius:14px}.utility-world-list article span,.utility-world-list small{font-size:11px;color:var(--app-muted);overflow-wrap:anywhere}.utility-world-list strong{font-size:25px}
+.utility-panel .w-quote-text{font-size:24px;line-height:1.8;-webkit-line-clamp:unset;overflow:visible}.utility-panel .w-quote-author{font-size:14px}.utility-panel .w-hotlinks-grid{gap:12px}.utility-panel .w-hotlink{font-size:14px;min-height:60px}
+[data-habit-week]>div{display:grid;grid-template-columns:minmax(70px,1fr) repeat(7,22px);gap:5px;align-items:center;margin:8px 0;font-size:12px}[data-habit-week]>div>span:first-child{overflow-wrap:anywhere}[data-habit-week]>div>span:not(:first-child){text-align:center;border-radius:5px;background:var(--app-field);color:var(--app-muted)}[data-habit-week] .done{background:var(--app-blue)!important;color:white!important}
+.utility-weather-main{background:var(--app-pane);border:1px solid var(--app-border);border-radius:18px;padding:24px;min-width:0}
+.utility-weather-main .weather-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.utility-weather-main .daily-weather>div{grid-template-columns:1fr 36px 1fr}.utility-weather-main .daily-weather>div>span:nth-child(3){display:none}
+@container(max-width:700px){.utility-layout{grid-template-columns:1fr;padding:12px}.utility-settings{padding:16px}.utility-app-header{padding:12px 16px}.utility-panel.widget-inner{padding:18px;min-height:260px}.utility-panel .w-focus-ring{width:210px}.utility-panel .w-focus-ring strong{font-size:44px}.utility-weather-main{padding:16px}.utility-weather-main .weather-detail-current{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.utility-app *{scroll-behavior:auto}}
+
+</style>
+<style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+.sharing-view,.community-view{display:flex;flex-direction:column;gap:18px;min-width:0;padding-top:18px;color:var(--fg);font-size:13px}
+.sharing-view>h3,.community-view>h3{margin:0;padding-right:60px;font-size:22px}.sharing-view>p,.community-view>p{margin:0;color:var(--muted);line-height:1.7}
+.exchange-panel{background:var(--catalog-card);border:1px solid var(--panel-border);padding:20px;border-radius:18px;min-width:0}.exchange-panel h4{font-size:17px;margin:0 0 18px}.exchange-panel p{font-size:12px;color:var(--muted);line-height:1.7}
+.exchange-panel form,.community-view>form{display:flex;flex-direction:column;gap:12px;align-items:stretch}.exchange-panel :is(input[type=url],input[readonly],input[name=title]),.community-view input{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--panel-border);border-radius:10px;padding:10px;background:var(--control-surface);color:var(--fg)}
+.exchange-panel form>button,.community-view>form>button{align-self:flex-start}.exchange-panel fieldset{display:flex;flex-wrap:wrap;gap:12px;border:1px solid var(--panel-border);border-radius:12px;padding:14px}.exchange-panel fieldset label{display:flex;gap:6px;align-items:center}.exchange-panel input[type=checkbox]{accent-color:var(--accent)}
+.file-import{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}.file-import input{max-width:100%}.exchange-panel select{width:100%}.exchange-status{white-space:pre-wrap;overflow-wrap:anywhere}.exchange-panel [data-layout-preview]:not(:empty){border-top:1px solid var(--panel-border);margin-top:20px;padding-top:20px}
+.import-item-list{max-height:220px;overflow:auto;padding-left:20px}.import-item-list li{padding:6px}.import-item-list small{display:block;overflow-wrap:anywhere;color:var(--muted)}
+.community-sources{display:grid;gap:8px}.community-sources article{display:flex;align-items:center;gap:8px;background:var(--control-surface);padding:12px;border-radius:12px;min-width:0}.community-sources article>span{flex:1;min-width:0}.community-sources small{display:block;color:var(--muted);overflow-wrap:anywhere;font-size:11px;margin-top:5px}.community-sources button{padding:6px 8px;font-size:12px;border:0;border-radius:8px;background:var(--catalog-card);color:var(--fg)}
+.community-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.community-card{padding:18px;border:1px solid var(--panel-border);background:var(--catalog-card);border-radius:16px;min-width:0}.community-card h4{font-size:17px;margin:0 0 6px}.community-card p{color:var(--muted);font-size:12px;line-height:1.65;overflow-wrap:anywhere}.community-card label{display:flex;justify-content:center;align-items:center;gap:10px;font-size:12px}.community-card select{padding:5px 8px;border:1px solid var(--panel-border);border-radius:8px;background:var(--control-surface);color:var(--fg)}.community-card footer{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.community-card footer .secondary-button{font-size:12px;padding:5px 10px}
+.community-preview{display:flex;flex-direction:column;justify-content:center;align-items:center;height:170px;gap:8px;color:var(--muted)}.community-preview>img{object-fit:contain;max-width:100%;max-height:156px;aspect-ratio:var(--community-ratio);border-radius:14px}.community-preview>span{font-size:60px;color:var(--accent)}.community-preview small{font-size:11px}
+.community-launcher{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;height:100%;background:none!important;border:0!important;color:var(--w-fg);padding:8px;text-align:center;cursor:pointer;overflow:hidden}.community-launcher>span:first-child{font-size:32px;color:var(--w-accent)}.community-launcher strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;max-width:100%}.community-launcher small,.community-launcher>span:last-child{font-size:11px;color:var(--w-muted)}.w-community[data-display-size="1x1"] .community-launcher :is(small,span:last-child){display:none}.w-community[data-display-size="1x1"] .community-launcher{gap:0;padding:2px}.w-community[data-display-size="1x1"] strong{font-size:10px}.w-community[data-display-size="2x1"] .community-launcher{flex-direction:row}.w-community[data-display-size="2x1"] small,.w-community[data-display-size="2x1"] span:last-child{display:none}
+.community-workspace{height:100%;display:flex;flex-direction:column;background:var(--app-bg);color:var(--app-fg)}.community-runtime-layout{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:0;flex:1;gap:14px;padding:16px}.community-runtime-layout aside{padding:16px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:16px;overflow:auto;font-size:13px;min-width:0}.community-runtime-layout aside p{line-height:1.7;color:var(--app-muted);overflow-wrap:anywhere}.community-origin{font-size:11px}.community-runtime-layout aside button{margin:8px 0}.community-frame-host{min-height:330px;min-width:0;border:1px solid var(--app-border);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}.community-frame-host iframe{width:100%;height:100%;min-height:330px;border:0;background:var(--app-pane)}.community-frame-host>p{padding:24px;text-align:center;color:var(--app-muted)}
+@container catalog (max-width:620px){.community-cards{grid-template-columns:1fr}}
+@container window (max-width:700px){.community-runtime-layout{grid-template-columns:1fr;overflow:auto}.community-frame-host{height:380px;flex:none}.community-runtime-layout aside{overflow:visible}}
+
+</style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
 .calendar-app { height:100%; display:flex; flex-direction:column; }
@@ -1986,6 +2064,109 @@ const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const englishMessages = {
+  "下载分享文件": "Download layout file",
+  "不会覆盖现有内容；联网组件需重新启用。": "Existing content is preserved. Network widgets must be enabled again.",
+  "仅支持当前桌面分享格式。": "Only the current layout sharing format is supported.",
+  "作者托管组件网页，你可以订阅公开索引或单个组件清单。打开此页会加载作者预览，点击运行才会加载组件网页。": "Subscribe to a public directory or an individual widget manifest. This page loads author previews; widget pages load only when you click Run.",
+  "作者未提供预览": "No preview provided",
+  "保存过于频繁，请稍后重试。": "Too many saves. Please try again shortly.",
+  "停止": "Stop",
+  "公开 JSON 地址": "Public JSON URL",
+  "分享与导入": "Share and import",
+  "分享名称": "Layout name",
+  "分享文件已生成。": "Layout file created.",
+  "分享的网站地址不能包含账号密码。": "Shared URLs cannot contain usernames or passwords.",
+  "分享链接": "Share link",
+  "分享链接或 JSON 地址": "Share link or JSON URL",
+  "分享链接无效。": "Invalid share link.",
+  "创建新分组": "Create new groups",
+  "包含外观设置": "Include appearance settings",
+  "发布你的小组件": "Publish your widget",
+  "合并到现有分组": "Merge into an existing group",
+  "导入排布": "Import layout",
+  "导入方式": "Import mode",
+  "导出排布": "Export layout",
+  "已导入 {added} 项，跳过 {skipped} 个重复网址。": "Imported {added} items and skipped {skipped} duplicate URLs.",
+  "已撤销本次导入。": "Import undone.",
+  "应用分享中的外观": "Apply shared appearance",
+  "我的桌面分享": "My desktop layout",
+  "或选择 JSON 文件": "Or choose a JSON file",
+  "打开组件": "Open widget",
+  "把文件放到自己的仓库或网站，填入公开 JSON 地址，即可生成分享链接。": "Host the file in your repository or website, then enter its public JSON URL to create a share link.",
+  "搜索社区组件": "Search community widgets",
+  "撤销本次导入": "Undo this import",
+  "文件超过大小限制。": "File exceeds the size limit.",
+  "无法读取来源，请检查网络及服务器的跨域访问（CORS）设置，或改为导入文件。": "Cannot read this source. Check your connection and the server's CORS settings, or import a file instead.",
+  "更新已添加的组件": "Update installed widgets",
+  "最多订阅 20 个来源。": "You can subscribe to up to 20 sources.",
+  "未获准访问这个来源。": "Access to this source was not granted.",
+  "未读取": "Not loaded",
+  "来源与权限": "Source and access",
+  "来源列表无效。": "Invalid source list.",
+  "来源已更新，已安装的组件需手动更新。": "Source refreshed. Installed widgets are updated manually.",
+  "来源没有返回有效 JSON。": "The source did not return valid JSON.",
+  "来源返回 HTTP {status}": "Source returned HTTP {status}",
+  "查看将导入的内容": "Review imported content",
+  "查看源码": "View source code",
+  "桌面已发生变化，请重新预览后再操作。": "Your desktop has changed. Preview it again before continuing.",
+  "正在读取…": "Loading…",
+  "正在连接组件…": "Connecting to widget…",
+  "点击运行后连接作者的网站。组件可联网，但只能通过接口读写自身数据，无法访问你的其他桌面内容。": "Run connects to the author's website. The widget can use the network, but its host API only reads and writes this widget's data. It cannot access your other desktop content.",
+  "独立网页，可联网，仅能保存自己的数据。": "An isolated webpage with network access and its own storage.",
+  "生成分享链接": "Create share link",
+  "确认导入": "Import selected content",
+  "社区小组件": "Community widgets",
+  "社区组件": "Community",
+  "组件只分享尺寸和位置，便签、备忘录、待办及其他个人内容不会导出；组件设置恢复默认。": "Widgets share only their size and position. Notes, memos, tasks and other personal content are excluded; widget settings are reset to defaults.",
+  "组件将在这里运行": "Your widget will run here",
+  "组件已保存到桌面，打开后点击运行。": "Widget saved to your desktop. Open it and click Run.",
+  "组件已停止": "Widget stopped",
+  "组件已移除": "Widget removed",
+  "组件未响应，可能不允许嵌入或没有实现接口。": "The widget did not respond. It may block embedding or not implement the SDK.",
+  "组件来源地址": "Widget source URL",
+  "组件正在运行": "Widget is running",
+  "缺少组件：{name}": "Missing widget: {name}",
+  "网站地址无效。": "Invalid website URL.",
+  "请至少选择一个分组。": "Select at least one group.",
+  "请输入不含账号密码的公开 HTTPS 域名地址。": "Enter a public HTTPS domain URL without credentials.",
+  "请输入有效的公开 HTTPS 地址。": "Enter a valid public HTTPS URL.",
+  "请选择有效的导入位置。": "Select a valid import destination.",
+  "读取已取消或超时。": "Request cancelled or timed out.",
+  "读取并订阅": "Load and subscribe",
+  "读取并预览": "Load preview",
+  "跳过相同网址": "Skip duplicate URLs",
+  "运行组件": "Run widget",
+  "还没有匹配的组件，请读取一个来源。": "No matching widgets. Load a source to get started.",
+  "连接失败，可重试或查看源码。": "Connection failed. Try again or inspect the source code.",
+  "选择分组": "Select groups",
+  "通过 JSON 文件或公开链接分享网站、分组和组件排布。": "Share websites, groups and widget layouts through a JSON file or public link.",
+  "链接已生成，可复制给其他人。": "Share link created. You can copy it now.",
+  "预览已就绪，请选择要导入的内容。": "Preview ready. Choose what to import.",
+  "期待的事情": "Something to look forward to",
+  "完整周数": "Whole weeks",
+  "余下天数": "Remaining days",
+  "每周工作天数": "Workdays per week",
+  "按所选星期计算；不自动计入法定调休。月底不足发薪日期时取当月最后一天。": "Uses the selected weekdays, without statutory holiday adjustments. Payday falls on the last day if the month is shorter.",
+  "{count} 分钟": "{count} min",
+  "保存设置": "Save settings",
+  "自定义摘录": "Your quote",
+  "作者": "Author",
+  "暖黄": "Warm yellow",
+  "浅粉": "Soft pink",
+  "薄荷": "Mint",
+  "导出 TXT": "Export TXT",
+  "显示任务": "Show tasks",
+  "未完成": "Active",
+  "已完成": "Completed",
+  "清除已完成": "Clear completed",
+  "支持括号、百分比和键盘输入；Enter 计算，Esc 清空。": "Supports parentheses, percentages and keyboard input. Enter calculates; Esc clears.",
+  "本次计算记录": "Session history",
+  "最近七天": "Last seven days",
+  "筛选平台": "Filter platforms",
+  "组件设置已在其他位置修改，请重新打开。": "Widget settings changed elsewhere. Please reopen the widget.",
+  "城市与预报": "City and forecast",
+  "手动坐标": "Coordinates",
+
   "访问网站取图标": "Visit to get icon",
   "访问网站": "Visit website",
   "取消获取": "Cancel capture",
@@ -3418,12 +3599,99 @@ const widgetExtensions = [];
 
 return {widgetExtensions};
 })();
+const __public_json = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+
+function publicHttpsUrl(value) {
+  let url;
+  try { url=new URL(value); } catch { throw new Error(t('请输入有效的公开 HTTPS 地址。')); }
+  url.hostname=url.hostname.replace(/\.$/,'');
+  const hostname=url.hostname.toLowerCase();
+  if(url.protocol!=='https:' || url.username || url.password || url.port && url.port!=='443' || hostname==='localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local') || !hostname.includes('.') || /^[\d.]+$/.test(hostname) || hostname.includes(':'))throw new Error(t('请输入不含账号密码的公开 HTTPS 域名地址。'));
+  return url.href;
+}
+
+async function requestPublicOrigin(value) {
+  const url=publicHttpsUrl(value), api=globalThis.chrome;
+  if(api?.runtime?.id && api.permissions){
+    const permissions={origins:[new URL(url).origin+'/*']};
+    if(!await api.permissions.contains(permissions) && !await api.permissions.request(permissions))throw new Error(t('未获准访问这个来源。'));
+  }
+  return url;
+}
+
+async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch}={}) {
+  const url=publicHttpsUrl(value), controller=new AbortController();
+  const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
+  if(signal?.aborted)controller.abort();
+  const timer=setTimeout(abort,12000);
+  try {
+    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache:'no-cache',headers:{Accept:'application/json'}});
+    if(!response.ok)throw new Error(t('来源返回 HTTP {status}',{status:response.status}));
+    if(Number(response.headers.get('content-length'))>maxBytes)throw new Error(t('文件超过大小限制。'));
+    const reader=response.body?.getReader();let text='';
+    if(reader){const decoder=new TextDecoder();let bytes=0;try{while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>maxBytes){await reader.cancel();throw new Error(t('文件超过大小限制。'));}text+=decoder.decode(value,{stream:true});}text+=decoder.decode();}finally{reader.releaseLock();}}
+    else {text=await response.text();if(new TextEncoder().encode(text).length>maxBytes)throw new Error(t('文件超过大小限制。'));}
+    if(controller.signal.aborted)throw new Error(t('读取已取消或超时。'));
+    try{return JSON.parse(text.replace(/^\uFEFF/,''));}catch{throw new Error(t('来源没有返回有效 JSON。'));}
+  } catch(error) {
+    if(controller.signal.aborted)throw new Error(t('读取已取消或超时。'));
+    if(error instanceof TypeError)throw new Error(t('无法读取来源，请检查网络及服务器的跨域访问（CORS）设置，或改为导入文件。'));
+    throw error;
+  } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}
+
+return {publicHttpsUrl, requestPublicOrigin, fetchPublicJson};
+})();
+const __community_format = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { keys, string, array, unique, byteLength, invalid } = __validation;
+const { publicHttpsUrl } = __public_json;
+const { TILE_SIZES } = __widget_sizes;
+
+function validateCommunityManifest(raw) {
+  keys(raw,['format','version','id','name','description','author','release','entry','repository','license','sizes','previews'],'manifest');
+  if(raw.format!=='qiye-widget'||raw.version!==1)invalid('manifest','qiye-widget v1 required');
+  const text=(key,max)=>string(raw[key],'manifest.'+key,max);
+  const id=text('id',80),release=text('release',30);
+  if(!/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/.test(id)||!/^\d+\.\d+\.\d+$/.test(release))invalid('manifest','invalid id or release');
+  const sizes=array(raw.sizes,'manifest.sizes',5,2);
+  if(sizes.some(size=>!TILE_SIZES.includes(size))||!sizes.includes('1x1')||!sizes.includes('2x2'))invalid('manifest.sizes','1x1 and 2x2 required');
+  unique(sizes,'manifest.sizes');
+  const previews=array(raw.previews,'manifest.previews',5).map(preview=>{
+    keys(preview,['size','url'],'manifest.previews');if(!sizes.includes(preview.size))invalid('manifest.previews','unsupported size');
+    return {size:preview.size,url:publicHttpsUrl(string(preview.url,'preview.url',2048))};
+  });unique(previews.map(p=>p.size),'manifest.previews');
+  return {format:'qiye-widget',version:1,id,name:text('name',80),description:text('description',500),author:text('author',80),release,entry:publicHttpsUrl(text('entry',2048)),repository:publicHttpsUrl(text('repository',2048)),license:text('license',80),sizes:[...sizes],previews};
+}
+
+function validateCommunitySource(raw) {
+  if(byteLength(JSON.stringify(raw))>512*1024)invalid('source','512 KiB maximum');
+  if(raw?.format==='qiye-widget'){const manifest=validateCommunityManifest(raw);return {format:'qiye-widget-source',version:1,name:manifest.author,widgets:[manifest]};}
+  keys(raw,['format','version','name','widgets'],'source');
+  if(raw.format!=='qiye-widget-source'||raw.version!==1)invalid('source','qiye-widget-source v1 required');
+  const widgets=array(raw.widgets,'source.widgets',50).map(validateCommunityManifest);unique(widgets.map(w=>w.id),'source.widgets');
+  return {format:'qiye-widget-source',version:1,name:string(raw.name,'source.name',80),widgets};
+}
+
+function validateCommunityData(raw) {
+  keys(raw,['value'],'data');const value=string(raw.value,'data.value',65536,true);
+  if(byteLength(value)>65536)invalid('data.value','64 KiB maximum');
+  try{JSON.parse(value);}catch{invalid('data.value','JSON required');}
+  return {value};
+}
+
+return {validateCommunityManifest, validateCommunitySource, validateCommunityData};
+})();
 const __widget_registry = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, localizeSeed } = __i18n;
 const { keys, string, number, bool, enumeration, array, unique, date, time, invalid } = __validation;
 const { TILE_SIZES, REQUIRED_WIDGET_SIZES } = __widget_sizes;
 const { widgetExtensions } = __widget_extensions;
+const { validateCommunityManifest } = __community_format;
+const { publicHttpsUrl } = __public_json;
 
 const builtins = [
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
@@ -3463,6 +3731,7 @@ function fieldValue(field, value, path) {
 
 function createWidgetRegistry(extensions = []) {
   const definitions = new Map(builtins.map(entry => [entry.type, Object.freeze({ ...entry, builtin: true, sizes: TILE_SIZES })]));
+  definitions.set('community',Object.freeze({type:'community',title:'社区组件',description:'作者提供的独立网页组件',size:'2x2',icon:'globe',builtin:true,internal:true,sizes:TILE_SIZES}));
   for (const source of extensions) {
     const entry = { ...source };
     if (!/^[a-z][a-z0-9-]{0,39}$/.test(entry.type) || ['constructor', 'prototype'].includes(entry.type)) throw new Error(t("组件 type 必须是小写字母、数字或连字符"));
@@ -3497,7 +3766,7 @@ function createWidgetRegistry(extensions = []) {
     entry.builtin = false;
     definitions.set(entry.type, Object.freeze(entry));
   }
-  const list = Object.freeze([...definitions.values()]);
+  const list = Object.freeze([...definitions.values()].filter(entry=>!entry.internal));
   return Object.freeze({
     get: type => definitions.get(type),
     list: () => list,
@@ -3523,6 +3792,10 @@ function newWidgetConfig(type) { return registry.newConfig(type); }
 function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if(widgetType==='community'){
+    keys(raw,['manifest','source'],path);
+    return {manifest:validateCommunityManifest(raw.manifest),source:publicHttpsUrl(string(raw.source,path+'.source',2048))};
+  }
   const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
   const out = {};
   if (widgetType === 'calendar') {
@@ -3593,11 +3866,13 @@ const { t } = __i18n;
 const { keys, string, array, id, bool, number, date, unique, invalid } = __validation;
 
 const { validateMemos } = __memos;
+const { validateCommunityData } = __community_format;
 
 const dataKeys = Object.freeze({ notes: 'notes', todo: 'todos', habit: 'habits', focus: 'focus' });
 const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, remaining: 1500, running: false, endAt: null } };
 
 function newWidgetData(type) {
+  if(type==='community')return {value:'null'};
   if (type === 'memo') return { entries: [] };
   if (type === 'calendar') return { events: [] };
   const key = dataKeys[type];
@@ -3614,6 +3889,7 @@ function widgetContentSummary(items) {
 }
 
 function validateWidgetData(type, raw, path) {
+  if(type==='community')return validateCommunityData(raw);
   if (type === 'memo') return validateMemos(raw, path);
   if (type === 'calendar') {
     keys(raw, ['events'], path);
@@ -3679,6 +3955,149 @@ function renderWidgetSummary(item, model, symbol) {
 }
 
 return {renderWidgetSummary};
+})();
+const __icons = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const paths = {
+ flag:'<path d="M5 21V3m0 1c5-4 9 4 14 0v10c-5 4-9-4-14 0"/>',
+ timer:'<circle cx="12" cy="14" r="8"/><path d="M9 2h6m-3 0v4m6 1 2-2m-8 5v5l3 2"/>',
+ calculator:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h1m6 0h1m-8 4h1m6 0h1m-8 4h1m6 0h1"/>',
+ quote:'<path d="M4 6h6v7H5c0 4 2 5 4 5M14 6h6v7h-5c0 4 2 5 4 5"/>',
+ trending:'<path d="m3 18 6-6 4 4 8-11m-6 0h6v6"/>',
+ maximize:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
+ minimize:'<path d="M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5"/>',
+ chevronLeft:'<path d="m14 6-6 6 6 6"/>',
+ chevronRight:'<path d="m10 6 6 6-6 6"/>',
+ pin:'<path d="m16 3 5 5-4 2-3 5-5-5 5-3 2-4ZM9 15l-6 6M7 8l9 9"/>',
+ eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+ eyeOff: '<path d="m3 3 18 18M10.5 5.1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3.3 4.1M6.2 6.2A20 20 0 0 0 2 12s3.5 7 10 7a13 13 0 0 0 5.2-1.2M9.8 9.8a3.1 3.1 0 0 0 4.4 4.4"/>',
+ keyboard: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 15h10"/>',
+ panel: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M6 8h.01M6 12h.01M6 16h.01"/>',
+ cloud: '<path d="M6 18h12a4 4 0 0 0 .5-8A6.5 6.5 0 0 0 6 8a5 5 0 0 0 0 10Z"/>',
+ sync: '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 7a7.5 7.5 0 0 1 12.8-1L20 8M4 16l1.7 2A7.5 7.5 0 0 0 18.5 17"/>',
+ refresh: '<path d="M20 4v6h-6"/><path d="M20 10a8 8 0 1 0-1 7"/>',
+ server: '<rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M12 6.5h5M12 17.5h5"/>',
+ shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/>',
+ github: '<circle cx="7" cy="5" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="7" cy="19" r="2"/><path d="M7 7v10m10-8v1a5 5 0 0 1-5 5H7"/>',
+ play: '<path d="m8 5 11 7-11 7Z" fill="currentColor" stroke="none"/>',
+ mail: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 7 9 7 9-7"/>',
+ calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18M8 15h2m4 0h2M8 18h2"/>',
+ triangle: '<path d="m12 3 10 18H2Z"/>',
+ music: '<path d="M9 17V4l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/>',
+ map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15"/>',
+ pen: '<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/>',
+ briefcase: '<rect x="3" y="7" width="18" height="14" rx="3"/><path d="M8 7V3h8v4M3 12c6 4 12 4 18 0m-9 2v3"/>',
+ home: '<path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-8h6v8"/>',
+ code: '<path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/>',
+ design: '<circle cx="12" cy="12" r="9"/><path d="M16 20c-3 0-4-2-2-4s2-4-1-4H3"/><circle cx="8" cy="8" r=".6"/><circle cx="13" cy="6" r=".6"/><circle cx="17" cy="9" r=".6"/>',
+ product: '<path d="m12 3 9 5v9l-9 5-9-5V8zM3 8l9 5 9-5m-9 5v9M7.5 5.5l9 5"/>',
+ ai: '<path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8z"/>',
+ game: '<path d="M7 7h10c3 0 5 10 3 12-1 1-4-2-5-3H9c-1 1-4 4-5 3C2 17 4 7 7 7Z"/><path d="M8 10v5m-2.5-2.5h5M16 11h.01M18 14h.01"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ settings:'<path d="m9 3-1 3-3 1-2 3 2 2-1 4 3 2 3-1 2 3 4-1 1-3 3-1 1-4-3-2V5l-4-2-2 2z"/><circle cx="12" cy="12" r="3"/>',
+ search:'<circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/>',
+ wallpaper:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.5"/><path d="m21 16-6-6-7 8-3-3-2 2"/>',
+ edit:'<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/>',
+ close:'<path d="m6 6 12 12M18 6 6 18"/>',
+ chevron:'<path d="m8 10 4 4 4-4"/>',
+ right:'<path d="m9 5 7 7-7 7"/>',
+ check:'<path d="m5 12 4 4L19 6"/>',
+ link:'<path d="m10 13 4-4m-6 6-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m2 2 2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0" transform="translate(1 1)"/>',
+ grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+ folder:'<path d="M3 7V5a2 2 0 0 1 2-2h4l3 4h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+ trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
+ download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
+ upload:'<path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/>',
+ more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+ copy:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+ moon:'<path d="M21 13A9 9 0 0 1 11 3a9 9 0 1 0 10 10Z"/>',
+ bookmark:'<path d="M5 3h14v19l-7-5-7 5z"/>',
+ history:'<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l4 2"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>',
+ heart:'<path d="M20 4c-3-3-7-1-8 2-1-3-5-5-8-2-6 6 8 17 8 17S26 10 20 4Z"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 3"/>',
+ note:'<path d="M4 3h16v14l-4 4H4zM16 21v-4h4M8 8h8M8 12h8M8 16h3"/>',
+ sparkles:'<path d="m9 3 2.5 6.5L18 12l-6.5 2.5L9 21l-2.5-6.5L0 12l6.5-2.5zM20 2v6m-3-3h6"/>',
+ move:'<path d="M12 2v20M2 12h20m-14-6 4-4 4 4m-10 2-4 4 4 4m12-8 4 4-4 4m-10 2 4 4 4-4"/>',
+ coffee:'<path d="M4 8h12v9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zm12 1h2a3 3 0 0 1 0 6h-2M7 2v3m5-3v3"/>'
+};
+function icon(name, cls='') { return `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.globe}</svg>`; }
+const iconNames = Object.keys(paths);
+
+return {icon, iconNames};
+})();
+const __widget_app_controls = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { icon } = __icons;
+const { escapeText } = __html;
+
+function appButton(action, label, glyph, extra = '') {
+  return `<button type="button" class="widget-app-button" data-detail-action="${action}" aria-label="${escapeText(label)}" title="${escapeText(label)}" ${extra}>${icon(glyph)}</button>`;
+}
+
+function windowControls(expanded = false) {
+  return `<div class="widget-app-controls">${appButton('window-expand', t(expanded ? '还原窗口' : '最大化窗口'), expanded ? 'minimize' : 'maximize', `aria-pressed="${expanded}"`)}<button type="button" class="widget-app-button" data-close aria-label="${t('关闭')}" title="${t('关闭')}">${icon('close')}</button></div>`;
+}
+
+return {appButton, windowControls};
+})();
+const __community_widget = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { escapeText: e } = __html;
+const { t, getLocale } = __i18n;
+const { validateCommunityData } = __community_format;
+const { windowControls } = __widget_app_controls;
+
+function communityCard(item) {
+  const manifest=item.config.manifest;
+  return `<button class="community-launcher" data-action="widget-open"><span aria-hidden="true">◈</span><strong>${e(item.title)}</strong><small>${e(manifest.author)}</small><span>${t('打开组件')} ↗</span></button>`;
+}
+
+function communityWorkspace(item) {
+  const m=item.config.manifest;
+  return `<div class="community-workspace"><header class="utility-app-header"><h2 id="dialog-title">${e(item.title)}</h2>${windowControls(false)}</header><div class="community-runtime-layout"><aside><h3>${e(m.name)}</h3><p>${e(m.description)}</p><p>${e(m.author)} · ${e(m.release)}</p><p>${e(m.license)}</p><a href="${e(m.repository)}" target="_blank" rel="noopener noreferrer">${t('查看源码')}</a><p class="community-origin">${e(new URL(m.entry).origin)}</p><p>${t('点击运行后连接作者的网站。组件可联网，但只能通过接口读写自身数据，无法访问你的其他桌面内容。')}</p><button class="primary-button" data-community-run>${t('运行组件')}</button><button class="secondary-button" data-community-stop hidden>${t('停止')}</button><p data-community-status role="status"></p></aside><section class="community-frame-host"><p>${t('组件将在这里运行')}</p></section></div></div>`;
+}
+
+function bindCommunityWorkspace(root,item,host) {
+  const events=new AbortController(),options={signal:events.signal};let frame,port,readyTimer,observer,themeObserver,generation=0;
+  const panel=root.querySelector('.community-frame-host'),status=root.querySelector('[data-community-status]'),run=root.querySelector('[data-community-run]'),stopButton=root.querySelector('[data-community-stop]');
+  const latest=()=>host.getState().items.find(entry=>entry.id===item.id);
+  const stop=()=>{generation++;clearTimeout(readyTimer);observer?.disconnect();themeObserver?.disconnect();port?.close();port=null;frame?.remove();frame=null;run.disabled=false;stopButton.hidden=true;};
+  const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||document.body.dataset.theme||host.getState().settings.theme,size:item.size,width:Math.round(panel.clientWidth),height:Math.round(panel.clientHeight)});
+  root.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button)return;
+    if(button.dataset.detailAction==='window-expand')root.closest('dialog').classList.toggle('widget-app-expanded');
+    if(button===stopButton){stop();panel.textContent=t('组件已停止');status.textContent='';}
+    if(button!==run)return;
+    stop();const current=generation;run.disabled=true;stopButton.hidden=false;status.textContent=t('正在连接组件…');panel.replaceChildren();
+    frame=document.createElement('iframe');frame.title=item.title;frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');frame.allow="camera 'none'; microphone 'none'; geolocation 'none'; clipboard-read 'none'; clipboard-write 'none'";
+    frame.addEventListener('load',()=>{
+      if(current!==generation)return;
+      port?.close();const channel=new MessageChannel();port=channel.port1;let ready=false,busy=false,lastWrite=0;
+      port.onmessage=async event=>{
+        if(current!==generation)return;const message=event.data;
+        if(message?.type==='ready'&&message.version===1){ready=true;clearTimeout(readyTimer);status.textContent=t('组件正在运行');return;}
+        if(!ready||message?.type!=='save'||typeof message.id!=='string'||message.id.length>80)return;
+        const reply=payload=>{if(current===generation)channel.port1.postMessage({type:'saved',id:message.id,...payload});};
+        if(busy||Date.now()-lastWrite<100){reply({error:t('保存过于频繁，请稍后重试。')});return;}
+        busy=true;lastWrite=Date.now();
+        try{const data=validateCommunityData({value:message.value}),before=latest();if(!before)throw new Error(t('组件已移除'));await host.saveData(item.id,data,JSON.stringify(before.data));reply({ok:true});}
+        catch(error){reply({error:error.message});}finally{busy=false;}
+      };
+      frame.contentWindow.postMessage({type:'qiye:init',version:1,data:latest()?.data.value||'null',environment:environment()},'*',[channel.port2]);
+      observer?.disconnect();observer=new ResizeObserver(()=>port?.postMessage({type:'environment',environment:environment()}));observer.observe(panel);
+      themeObserver?.disconnect();themeObserver=new MutationObserver(()=>port?.postMessage({type:'environment',environment:environment()}));themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','lang']});
+    },options);
+    readyTimer=setTimeout(()=>{if(current===generation){stop();panel.textContent=t('组件未响应，可能不允许嵌入或没有实现接口。');status.textContent=t('连接失败，可重试或查看源码。');}},12000);
+    frame.src=item.config.manifest.entry;panel.append(frame);
+  },options);
+  return ()=>{events.abort();stop();};
+}
+
+return {communityCard, communityWorkspace, bindCommunityWorkspace};
 })();
 const __wallpaper_catalog = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -4573,89 +4992,6 @@ function weekdayLabels(weekStart = 1) {
 }
 
 return {DAY, localDateKey, parseDate, dayStamp, daysBetween, dateStats, chineseLunarDate, holidayFor, countWorkdays, monthCells, weekdayLabels};
-})();
-const __icons = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const paths = {
- maximize:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
- minimize:'<path d="M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5"/>',
- chevronLeft:'<path d="m14 6-6 6 6 6"/>',
- chevronRight:'<path d="m10 6 6 6-6 6"/>',
- pin:'<path d="m16 3 5 5-4 2-3 5-5-5 5-3 2-4ZM9 15l-6 6M7 8l9 9"/>',
- eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
- eyeOff: '<path d="m3 3 18 18M10.5 5.1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3.3 4.1M6.2 6.2A20 20 0 0 0 2 12s3.5 7 10 7a13 13 0 0 0 5.2-1.2M9.8 9.8a3.1 3.1 0 0 0 4.4 4.4"/>',
- keyboard: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 15h10"/>',
- panel: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M6 8h.01M6 12h.01M6 16h.01"/>',
- cloud: '<path d="M6 18h12a4 4 0 0 0 .5-8A6.5 6.5 0 0 0 6 8a5 5 0 0 0 0 10Z"/>',
- sync: '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 7a7.5 7.5 0 0 1 12.8-1L20 8M4 16l1.7 2A7.5 7.5 0 0 0 18.5 17"/>',
- refresh: '<path d="M20 4v6h-6"/><path d="M20 10a8 8 0 1 0-1 7"/>',
- server: '<rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M12 6.5h5M12 17.5h5"/>',
- shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/>',
- github: '<circle cx="7" cy="5" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="7" cy="19" r="2"/><path d="M7 7v10m10-8v1a5 5 0 0 1-5 5H7"/>',
- play: '<path d="m8 5 11 7-11 7Z" fill="currentColor" stroke="none"/>',
- mail: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 7 9 7 9-7"/>',
- calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18M8 15h2m4 0h2M8 18h2"/>',
- triangle: '<path d="m12 3 10 18H2Z"/>',
- music: '<path d="M9 17V4l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/>',
- map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15"/>',
- pen: '<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/>',
- briefcase: '<rect x="3" y="7" width="18" height="14" rx="3"/><path d="M8 7V3h8v4M3 12c6 4 12 4 18 0m-9 2v3"/>',
- home: '<path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-8h6v8"/>',
- code: '<path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/>',
- design: '<circle cx="12" cy="12" r="9"/><path d="M16 20c-3 0-4-2-2-4s2-4-1-4H3"/><circle cx="8" cy="8" r=".6"/><circle cx="13" cy="6" r=".6"/><circle cx="17" cy="9" r=".6"/>',
- product: '<path d="m12 3 9 5v9l-9 5-9-5V8zM3 8l9 5 9-5m-9 5v9M7.5 5.5l9 5"/>',
- ai: '<path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8z"/>',
- game: '<path d="M7 7h10c3 0 5 10 3 12-1 1-4-2-5-3H9c-1 1-4 4-5 3C2 17 4 7 7 7Z"/><path d="M8 10v5m-2.5-2.5h5M16 11h.01M18 14h.01"/>',
- plus:'<path d="M12 5v14M5 12h14"/>',
- settings:'<path d="m9 3-1 3-3 1-2 3 2 2-1 4 3 2 3-1 2 3 4-1 1-3 3-1 1-4-3-2V5l-4-2-2 2z"/><circle cx="12" cy="12" r="3"/>',
- search:'<circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/>',
- wallpaper:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.5"/><path d="m21 16-6-6-7 8-3-3-2 2"/>',
- edit:'<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/>',
- close:'<path d="m6 6 12 12M18 6 6 18"/>',
- chevron:'<path d="m8 10 4 4 4-4"/>',
- right:'<path d="m9 5 7 7-7 7"/>',
- check:'<path d="m5 12 4 4L19 6"/>',
- link:'<path d="m10 13 4-4m-6 6-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m2 2 2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0" transform="translate(1 1)"/>',
- grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
- folder:'<path d="M3 7V5a2 2 0 0 1 2-2h4l3 4h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
- trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
- download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
- upload:'<path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/>',
- more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
- copy:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/>',
- sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
- moon:'<path d="M21 13A9 9 0 0 1 11 3a9 9 0 1 0 10 10Z"/>',
- bookmark:'<path d="M5 3h14v19l-7-5-7 5z"/>',
- history:'<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l4 2"/>',
- globe:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
- info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>',
- heart:'<path d="M20 4c-3-3-7-1-8 2-1-3-5-5-8-2-6 6 8 17 8 17S26 10 20 4Z"/>',
- clock:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 3"/>',
- note:'<path d="M4 3h16v14l-4 4H4zM16 21v-4h4M8 8h8M8 12h8M8 16h3"/>',
- sparkles:'<path d="m9 3 2.5 6.5L18 12l-6.5 2.5L9 21l-2.5-6.5L0 12l6.5-2.5zM20 2v6m-3-3h6"/>',
- move:'<path d="M12 2v20M2 12h20m-14-6 4-4 4 4m-10 2-4 4 4 4m12-8 4 4-4 4m-10 2 4 4 4-4"/>',
- coffee:'<path d="M4 8h12v9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zm12 1h2a3 3 0 0 1 0 6h-2M7 2v3m5-3v3"/>'
-};
-function icon(name, cls='') { return `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.globe}</svg>`; }
-const iconNames = Object.keys(paths);
-
-return {icon, iconNames};
-})();
-const __widget_app_controls = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-const { icon } = __icons;
-const { escapeText } = __html;
-
-function appButton(action, label, glyph, extra = '') {
-  return `<button type="button" class="widget-app-button" data-detail-action="${action}" aria-label="${escapeText(label)}" title="${escapeText(label)}" ${extra}>${icon(glyph)}</button>`;
-}
-
-function windowControls(expanded = false) {
-  return `<div class="widget-app-controls">${appButton('window-expand', t(expanded ? '还原窗口' : '最大化窗口'), expanded ? 'minimize' : 'maximize', `aria-pressed="${expanded}"`)}<button type="button" class="widget-app-button" data-close aria-label="${t('关闭')}" title="${t('关闭')}">${icon('close')}</button></div>`;
-}
-
-return {appButton, windowControls};
 })();
 const __memo_view = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -13404,6 +13740,7 @@ return {calendarGrid, dateToolResults, calendarDetail};
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { renderWidgetSummary } = __widget_summary;
+const { communityCard } = __community_widget;
 const { isCompactWidget } = __widget_sizes;
 const { t } = __i18n;
 /* 栖页 Qiye — independent, local-first new-tab widgets. */
@@ -13753,11 +14090,18 @@ function renderCompact(item) {
   return renderWidgetSummary(item, compactModel(item), icon(getWidgetDefinition(item.widget).icon));
 }
 
+function renderWidgetContent(item, state) {
+  const now = new Date();
+  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
+  return renderers[item.widget]();
+}
+
 function renderWidget(item, state) {
   const definition = getWidgetDefinition(item.widget);
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
+  if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
   if (definition.builtin && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
@@ -13770,9 +14114,8 @@ function renderWidget(item, state) {
     return `<div class="widget-inner w-extension" data-widget="${escapeHtml(type)}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${isCompactWidget(item.size) ? '' : header(item.title)}${content}</div>`;
   }
   const now = new Date();
-  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   const color = type === 'notes' && ['yellow', 'pink', 'mint'].includes(item.config?.color) ? ` w-notes-${item.config.color}` : '';
-  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderers[type]()}</div>`;
+  return `<div class="widget-inner w-${type}${color}" data-widget="${type}" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}"${type === 'calendar' ? ` data-calendar-month="${now.getFullYear()}-${now.getMonth()}" data-calendar-today="${localDateKey(now)}"` : ''}${type === 'habit' || type === 'quote' ? ` data-widget-day="${localDateKey(now)}"` : ''}>${renderWidgetContent(item,state)}</div>`;
 }
 
 function findItem(root, state) { return state.items?.find((item) => item.id === root?.dataset.widgetId); }
@@ -14106,7 +14449,7 @@ function refreshLiveWidgets(container, state) {
     }
 }
 
-return {widgetCatalog, escapeHtml, daysUntil, focusRemaining, workdayStatus, calculateExpression, habitStreak, renderWidget, bindWidgets, refreshLiveWidgets};
+return {widgetCatalog, escapeHtml, daysUntil, focusRemaining, workdayStatus, calculateExpression, habitStreak, renderWidgetContent, renderWidget, bindWidgets, refreshLiveWidgets};
 })();
 const __widget_catalog = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -14748,6 +15091,7 @@ function validateImport(raw) {
     if (type === 'widget') {
       if (!getWidgetDefinition(item.widget)) invalid(`${path}.widget`, t("组件类型不受支持"));
       if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, t("组件不支持此尺寸"));
+      if(item.widget==='community'&&!item.config?.manifest?.sizes?.includes(size))invalid(`${path}.size`,t('组件不支持此尺寸'));
       return { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
     }
     const appearance = { icon: string(item.icon, `${path}.icon`, 80), color: color(item.color, `${path}.color`), size };
@@ -15117,13 +15461,137 @@ function createWidgetDraft(item, saveData, onChange = () => {}) {
 
 return {createWidgetDraft};
 })();
+const __widget_workspaces = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, formatDate } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { renderWidgetContent, bindWidgets, refreshLiveWidgets, daysUntil, workdayStatus } = __widgets;
+const { parseDate, localDateKey } = __calendar;
+
+const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks'];
+const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',calculator:'calculator',hotlinks:'trending'};
+const input = (name,label,value,type='text',attributes='') => `<label class="utility-field"><span>${e(label)}</span><input name="${name}" type="${type}" value="${e(value)}" ${attributes}></label>`;
+const zones = ['Asia/Hong_Kong','Asia/Shanghai','Asia/Tokyo','Asia/Singapore','Asia/Kolkata','Australia/Sydney','Europe/London','Europe/Paris','America/New_York','America/Los_Angeles','UTC'];
+const week = () => [t('日'),t('一'),t('二'),t('三'),t('四'),t('五'),t('六')];
+
+function workspaceHeader(item, expanded=false) {
+  return `<header class="utility-app-header"><h2 id="dialog-title">${icon(glyphs[item.widget] || 'cloud')}${e(item.title)}</h2>${windowControls(expanded)}</header>`;
+}
+
+function utilitySettings(item) {
+  const c=item.config;
+  let fields=input('title',t('卡片名称'),item.title,'text','required maxlength="30"');
+  if(item.widget==='countdown') fields+=input('eventTitle',t('期待的事情'),c.title,'text','required maxlength="120"')+input('date',t('目标日期'),c.date,'date','required min="1900-01-01" max="2200-12-31"');
+  if(item.widget==='workday') fields+=input('endTime',t('下班时间'),c.endTime,'time','required')+input('payday',t('每月发薪日'),c.payday,'number','required min="1" max="31"')+`<fieldset class="utility-week"><legend>${t('工作日')}</legend>${week().map((label,day)=>`<label><input type="checkbox" name="workdays" value="${day}" ${c.workdays.includes(day)?'checked':''}><span>${label}</span></label>`).join('')}</fieldset><p class="utility-help">${t('按所选星期计算；不自动计入法定调休。月底不足发薪日期时取当月最后一天。')}</p>`;
+  if(item.widget==='focus') fields+=`<div class="utility-presets">${[5,15,25,45,60].map(n=>`<button type="button" data-duration="${n}">${t('{count} 分钟',{count:n})}</button>`).join('')}</div>`+input('duration',t('每次专注时长（分钟）'),item.data.focus.duration,'number','required min="1" max="180"')+`<p class="utility-help">${t('保存时会停止当前计时，并开始一轮新的时长。')}</p>`;
+  if(item.widget==='clock') fields+=input('label',t('城市名称'),c.label,'text','required maxlength="60"')+`<label class="utility-field"><span>${t('时区')}</span><input name="timeZone" value="${e(c.timeZone)}" list="utility-timezones" required maxlength="80"><datalist id="utility-timezones">${zones.map(zone=>`<option value="${zone}"></option>`).join('')}</datalist></label>`;
+  if(item.widget==='quote') fields+=`<label class="utility-field"><span>${t('自定义摘录')}</span><textarea name="text" maxlength="1000" rows="7">${e(c.text)}</textarea></label>`+input('author',t('作者'),c.author,'text','maxlength="120"');
+  if(item.widget==='notes') fields+=`<label class="utility-field"><span>${t('便签颜色')}</span><select name="color">${[['yellow','暖黄'],['pink','浅粉'],['mint','薄荷']].map(([value,label])=>`<option value="${value}" ${c.color===value?'selected':''}>${t(label)}</option>`).join('')}</select></label>`;
+  return `<form class="utility-settings" data-utility-form><h3>${t('设置组件')}</h3>${fields}<button type="submit" class="utility-primary">${t('保存设置')}</button><p class="utility-status" role="status"></p></form>`;
+}
+
+function readUtilitySettings(item, form) {
+  const config=structuredClone(item.config), value=name=>String(form.get(name) || '').trim();
+  if(item.widget==='countdown')Object.assign(config,{title:value('eventTitle'),date:value('date')});
+  if(item.widget==='workday')Object.assign(config,{endTime:value('endTime'),payday:Number(value('payday')),workdays:form.getAll('workdays').map(Number)});
+  if(item.widget==='clock')Object.assign(config,{label:value('label'),timeZone:value('timeZone')});
+  if(item.widget==='quote')Object.assign(config,{text:value('text'),author:value('author')});
+  if(item.widget==='notes')config.color=value('color');
+  return {title:value('title'),config,...(item.widget==='focus'?{duration:Number(value('duration'))}:{})};
+}
+
+function countdownContent(item) {
+  const date=parseDate(item.config.date), days=daysUntil(item.config.date);
+  return `<div class="utility-countdown"><span>${t(days===0?'就是今天':days<0?'已经过去':'还有')}</span><div><strong data-live="countdown-number">${Math.abs(days)}</strong><span>${t('天')}</span></div><h3>${e(item.config.title)}</h3><p>${e(date?formatDate(date,{dateStyle:'full'}):item.config.date)}</p><div class="utility-stats"><article><span>${t('完整周数')}</span><strong>${Math.floor(Math.abs(days)/7)}</strong></article><article><span>${t('余下天数')}</span><strong>${Math.abs(days)%7}</strong></article></div></div>`;
+}
+
+function workdayContent(item) {
+  const status=workdayStatus(item.config);
+  return `<div class="utility-workday"><p data-live="workday-caption">${status.caption}</p><strong class="utility-big-time" data-live="workday-time">${status.text}</strong><p>${t('每天 {v0} 准时收工',{v0:e(item.config.endTime)})}</p><div class="utility-stats"><article><span>${t('距发薪日')}</span><strong data-live="workday-pay">${t('{v0} 天',{v0:status.paydays})}</strong></article><article><span>${t('每周工作天数')}</span><strong>${item.config.workdays.length}</strong></article></div><div class="utility-week-preview">${week().map((label,day)=>`<span class="${item.config.workdays.includes(day)?'is-workday':''} ${day===new Date().getDay()?'is-today':''}">${label}</span>`).join('')}</div></div>`;
+}
+
+function clockComparison(item) {
+  return [...new Set([item.config.timeZone,...zones])].map(zone=>`<article><span>${e(zone.replaceAll('_',' '))}</span><strong>${e(formatDate(new Date(),{timeZone:zone,hour:'2-digit',minute:'2-digit',hour12:false}))}</strong><small>${e(formatDate(new Date(),{timeZone:zone,weekday:'short',month:'short',day:'numeric'}))}</small></article>`).join('');
+}
+
+function tools(item) {
+  if(item.widget==='notes')return `<div class="utility-toolbar"><span data-utility-count>${t('{count} 字符',{count:item.data.notes.length})}</span><button type="button" data-utility-export>${t('导出 TXT')}</button></div>`;
+  if(item.widget==='todo')return `<div class="utility-toolbar"><label>${t('显示任务')}<select data-todo-filter><option value="all">${t('全部')}</option><option value="active">${t('未完成')}</option><option value="done">${t('已完成')}</option></select></label><button type="button" data-clear-done>${t('清除已完成')}</button></div>`;
+  if(item.widget==='calculator')return `<div class="utility-help">${t('支持括号、百分比和键盘输入；Enter 计算，Esc 清空。')}</div><div class="calculator-history" aria-live="polite"><h3>${t('本次计算记录')}</h3><ol></ol></div>`;
+  if(item.widget==='habit')return `<section class="utility-habit-week"><h3>${t('最近七天')}</h3><div data-habit-week></div></section>`;
+  if(item.widget==='clock')return `<section class="utility-world-list" data-world-list>${clockComparison(item)}</section>`;
+  if(item.widget==='hotlinks')return `<label class="utility-field"><span>${t('筛选平台')}</span><input type="search" data-platform-filter></label>`;
+  return '';
+}
+
+function utilityWorkspace(item,state) {
+  const content=item.widget==='countdown'?countdownContent(item):item.widget==='workday'?workdayContent(item):renderWidgetContent(item,state);
+  return `<div class="utility-app" data-utility-type="${item.widget}">${workspaceHeader(item)}<div class="utility-layout"><section class="utility-main"><section class="utility-panel widget-inner w-${item.widget}" data-widget="${item.widget}" data-widget-id="${e(item.id)}" data-widget-day="${localDateKey()}">${content}</section>${tools(item)}</section>${utilitySettings(item)}</div></div>`;
+}
+
+function bindUtilityWorkspace(root,item,host) {
+  const controller=new AbortController(), options={signal:controller.signal};
+  const initial=JSON.stringify([item.title,item.config]), form=root.querySelector('[data-utility-form]');
+  const latest=()=>host.getState().items.find(entry=>entry.id===item.id);
+  const cleanup=bindWidgets(root,{...host,openDialog:(kind,data)=>{if(kind!=='widget-detail')host.openDialog(kind,data);}});
+  const refresh=()=>{
+    refreshLiveWidgets(root,host.getState());
+    const current=latest();if(!current)return;
+    const world=root.querySelector('[data-world-list]');if(world)world.innerHTML=clockComparison(current);
+    const weekRoot=root.querySelector('[data-habit-week]');
+    if(weekRoot){const days=Array.from({length:7},(_,i)=>{const day=new Date();day.setDate(day.getDate()-6+i);return localDateKey(day);});weekRoot.innerHTML=current.data.habits.map(h=>`<div><span>${e(h.name)}</span>${days.map(day=>`<span title="${day}" aria-label="${day}: ${t(h.dates.includes(day)?'已完成':'未完成')}" class="${h.dates.includes(day)?'done':''}">${h.dates.includes(day)?'✓':'·'}</span>`).join('')}</div>`).join('');}
+    const filter=root.querySelector('[data-todo-filter]')?.value;
+    if(filter)for(const row of root.querySelectorAll('.w-todo-row'))row.hidden=filter!=='all'&&(row.classList.contains('is-done')!==(filter==='done'));
+  };
+  const timer=setInterval(refresh,1000);refresh();
+  let saving=false;
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();event.stopPropagation();if(saving)return;
+    saving=true;form.querySelector('[type=submit]').disabled=true;
+    try{await host.saveSettings(item.id,readUtilitySettings(item,new FormData(form)),initial);if(root.isConnected)host.openDialog('widget-detail',{item:latest()});}
+    catch(error){if(root.isConnected)form.querySelector('[role=status]').textContent=error.message;}
+    finally{saving=false;if(root.isConnected)form.querySelector('[type=submit]').disabled=false;}
+  },options);
+  root.addEventListener('click',async event=>{
+    const button=event.target.closest('button');if(!button)return;
+    if(button.dataset.detailAction==='window-expand'){root.closest('dialog').classList.toggle('widget-app-expanded');button.setAttribute('aria-pressed',String(root.closest('dialog').classList.contains('widget-app-expanded')));}
+    if(button.dataset.duration){form.elements.duration.value=button.dataset.duration;form.elements.duration.focus();}
+    if(button.hasAttribute('data-utility-export')){const url=URL.createObjectURL(new Blob([latest().data.notes],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='Qiye-note.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+    if(button.hasAttribute('data-clear-done')){try{await host.saveData(item.id,{todos:latest().data.todos.filter(todo=>!todo.done)},JSON.stringify(latest().data));if(root.isConnected)host.openDialog('widget-detail',{item:latest()});}catch(error){host.toast(error.message);}}
+    refresh();
+  },options);
+  root.addEventListener('change',refresh,options);
+  root.addEventListener('input',event=>{
+    if(event.target.matches('[data-widget-input=notes]'))root.querySelector('[data-utility-count]').textContent=t('{count} 字符',{count:event.target.value.length});
+    if(event.target.hasAttribute('data-platform-filter'))for(const link of root.querySelectorAll('.w-hotlink'))link.hidden=!link.textContent.toLocaleLowerCase().includes(event.target.value.trim().toLocaleLowerCase());
+  },options);
+  const record=event=>{
+    if(item.widget!=='calculator')return;
+    const control=event.target.closest('[data-value="="],[data-widget-input=calculator]');
+    if(!control||event.type==='keydown'&&!['Enter','='].includes(event.key))return;
+    const expression=root.querySelector('[data-widget-input=calculator]').value;
+    setTimeout(()=>{if(!root.isConnected)return;const result=root.querySelector('[data-widget-input=calculator]').value;const list=root.querySelector('.calculator-history ol');if(expression&&result!==expression){const row=document.createElement('li');row.textContent=expression+' = '+result;list.prepend(row);while(list.children.length>20)list.lastElementChild.remove();}},0);
+  };
+  root.addEventListener('click',record,{...options,capture:true});root.addEventListener('keydown',record,{...options,capture:true});
+  return ()=>{controller.abort();clearInterval(timer);cleanup();};
+}
+
+return {UTILITY_WIDGETS, workspaceHeader, utilitySettings, readUtilitySettings, utilityWorkspace, bindUtilityWorkspace};
+})();
 const __widget_detail_views = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, formatDate } = __i18n;
 const { parseDate } = __calendar;
 const { escapeText } = __html;
 const { weatherState, weatherArt, weatherDescription, temperature, WEATHER_TTL } = __weather;
+const { workspaceHeader } = __widget_workspaces;
 const e = escapeText;
+function weatherWorkspace(item,view={}) {
+  const c=item.config;
+  return `<div class="utility-app">${workspaceHeader(item,view.expanded)}<div class="utility-layout"><main id="weather-forecast" class="utility-weather-main">${weatherDetail(item)}</section><form class="utility-settings" id="weather-settings"><h3>${t('城市与预报')}</h3><label class="utility-field"><span>${t('卡片名称')}</span><input name="title" value="${e(item.title)}" required maxlength="30"></label><div class="detail-toolbar"><input id="city-query" placeholder="${t('搜索全球城市')}" aria-label="${t('搜索全球城市')}"><button type="button" data-city-search>${t('搜索城市')}</button></div><div id="city-results" role="status"></div><label class="utility-field"><span>${t('城市名称')}</span><input name="cityName" value="${e(c.city.name)}" required maxlength="60"></label><details><summary>${t('手动坐标')}</summary><label class="utility-field"><span>${t('纬度')}</span><input name="latitude" type="number" step="any" min="-90" max="90" required value="${c.city.latitude}"></label><label class="utility-field"><span>${t('经度')}</span><input name="longitude" type="number" step="any" min="-180" max="180" required value="${c.city.longitude}"></label></details><label class="utility-field"><span>${t('温度单位')}</span><select name="unit"><option value="celsius" ${c.unit==='celsius'?'selected':''}>${t('摄氏度 °C')}</option><option value="fahrenheit" ${c.unit==='fahrenheit'?'selected':''}>${t('华氏度 °F')}</option></select></label><label><input type="checkbox" name="enabled" ${c.enabled?'checked':''}> ${t('启用天气')}</label><p class="utility-help">${t('发送城市坐标至 Open-Meteo')}</p><button type="submit" class="utility-primary">${t('保存设置')}</button><p class="utility-status" role="status"></p></form></div></div>`;
+}
 function forecastUpdatedAt(weather) {
   const options = {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'};
   try { return formatDate(new Date(weather.fetchedAt), {...options, timeZone:weather.timezone || undefined}); }
@@ -15137,7 +15605,7 @@ function weatherDetail(item) {
   return `<div class="weather-detail"><div class="weather-detail-current"><div><h3>${e(item.config.city.name)}</h3><strong>${temp(weather.temperature)}${unit==='fahrenheit'?'F':'C'}</strong><p>${weatherDescription(weather.code)} · ${temp(weather.min)} / ${temp(weather.max)}</p></div>${weatherArt(weather.code,weather.isDay)}<button type="button" data-detail-action="weather-refresh" ${state.status==='loading'?'disabled':''}>${t('刷新')}</button></div><p role="status">${state.status==='error'?e(state.error)+' · ':''}${Date.now()-weather.fetchedAt>=WEATHER_TTL?t('缓存'):t('更新')} ${e(forecastUpdatedAt(weather))} · ${e(weather.timezone)}</p><div class="weather-metrics">${[[t('体感'),temp(weather.feelsLike)],[t('湿度'),weather.humidity===null?'—':weather.humidity+'%'],[t('风速'),weather.wind===null?'—':weather.wind+' km/h'],['AQI (US)',weather.air?.aqi ?? '—'],['PM2.5',weather.air?.pm25==null?'—':weather.air.pm25+' μg/m³'],[t('紫外线'),weather.daily[0]?.uv ?? '—'],[t('日出'),weather.daily[0]?.sunrise?.slice(11,16) || '—'],[t('日落'),weather.daily[0]?.sunset?.slice(11,16) || '—']].map(([label,value])=>`<div><span>${label}</span><strong>${e(value)}</strong></div>`).join('')}</div><h4>${t('未来 24 小时')}</h4><div class="hourly-weather">${weather.hourly.map(hour=>`<div><span>${e(hour.time.slice(11,16))}</span>${weatherArt(hour.code ?? 2,hour.isDay)}<strong>${temp(hour.temperature)}</strong><small>${hour.rain===null?'—':hour.rain+'%'}</small></div>`).join('')}</div><h4>${t('未来 7 天')}</h4><div class="daily-weather">${weather.daily.map(day=>`<div><span>${e(parseDate(day.time)?formatDate(parseDate(day.time),{weekday:'short',month:'short',day:'numeric'}):day.time)}</span>${weatherArt(day.code ?? 2)}<span>${weatherDescription(day.code)}</span><strong>${temp(day.min)} / ${temp(day.max)}</strong><small>${day.rain===null?'—':day.rain+'%'}</small></div>`).join('')}</div><p class="help-text">${t('降水概率以百分比显示；时间采用预报城市时区。空气质量不可用时显示 —。')} <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · <a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">CAMS</a></p></div>`;
 }
 
-return {weatherDetail};
+return {weatherWorkspace, weatherDetail};
 })();
 const __widget_details = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -15149,7 +15617,7 @@ const { searchCities, requestWeather } = __weather;
 const { createWidgetDraft } = __widget_drafts;
 const { calendarDetail } = __calendar_view;
 const { memoDetail, memoList, memoTimestamp } = __memo_view;
-const { weatherDetail } = __widget_detail_views;
+const { weatherDetail, weatherWorkspace } = __widget_detail_views;
 const { escapeText } = __html;
 
 function download(content, name, type) {
@@ -15181,15 +15649,20 @@ function createWidgetDetails(host) {
   function renderBody(session) {
     const item = {...(currentItem(session) || session.item), data:session.draft.data};
     const body = item.widget === 'calendar' ? calendarDetail(item, session.view)
-      : item.widget === 'memo' ? memoDetail(item, session.view) : weatherDetail(item);
+      : item.widget === 'memo' ? memoDetail(item, session.view) : weatherWorkspace(item, session.view);
     return `<div class="widget-save-feedback" role="alert" hidden></div>${body}`;
   }
 
-  function redraw(session) {
+  function redraw(session, settings = false) {
     if (!session.root?.isConnected) return;
+    if(session.item.widget==='weather' && !settings && session.root.querySelector('#weather-forecast')){
+      session.root.querySelector('#weather-forecast').innerHTML=weatherDetail(currentItem(session));return;
+    }
+    session.cityCleanup?.();
     const previous = session.root.querySelector('#memo-text');
     const selection = previous && {id:previous.dataset.memoId, start:previous.selectionStart, end:previous.selectionEnd, scroll:previous.scrollTop};
     session.root.innerHTML = renderBody(session);
+    if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(session.root.querySelector('#weather-settings'));
     const editor = session.root.querySelector('#memo-text');
     if (editor && selection?.id === editor.dataset.memoId) {
       editor.setSelectionRange(selection.start, selection.end);
@@ -15229,7 +15702,8 @@ function createWidgetDetails(host) {
     if (name === 'window-expand') {
       view.expanded = !view.expanded;
       session.root.closest('dialog').classList.toggle('widget-app-expanded', view.expanded);
-      redraw(session);
+      if(session.item.widget!=='weather')redraw(session);
+      else target.setAttribute('aria-pressed',String(view.expanded));
       session.root.querySelector('[data-detail-action=window-expand]').focus();
     } else if (name === 'event-delete') {
       data.events = data.events.filter(entry => entry.id !== target.dataset.id);
@@ -15318,6 +15792,17 @@ function createWidgetDetails(host) {
     event.preventDefault();
     event.stopPropagation();
     const form = event.target, data = new FormData(form);
+    if(form.id==='weather-settings'){
+      const button=form.querySelector('[type=submit]');button.disabled=true;
+      try{
+        const updated=await host.saveSettings(session.item.id,{title:String(data.get('title')).trim(),config:{city:{name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))},unit:String(data.get('unit')),enabled:data.has('enabled')}},session.settingsBaseline);
+        session.settingsBaseline=JSON.stringify([updated.title,updated.config]);
+        redraw(session,true);
+        if(updated.config.enabled){const job=requestWeather(updated.config.city);redraw(session);await job;redraw(session);}
+      }catch(error){if(form.isConnected)form.querySelector('.utility-status').textContent=error.message;}
+      finally{if(form.isConnected)button.disabled=false;}
+      return;
+    }
     if (form.id === 'calendar-event-form') {
       const title = String(data.get('title')).trim();
       if (!title) return;
@@ -15334,6 +15819,7 @@ function createWidgetDetails(host) {
     if (!session) return closing;
     active = null;
     session.controller?.abort();
+    session.cityCleanup?.();
     if (session.root) session.root.inert = true;
     session.root = null;
     const job = flush(session).then(saved => {
@@ -15359,11 +15845,13 @@ function createWidgetDetails(host) {
         drafts.set(item.id, session);
       }
       active = session;
+      session.settingsBaseline=JSON.stringify([item.title,item.config]);
       return renderBody(session);
     },
     mount(element, data = {}) {
       const session = active;
       session.root = element;
+      if(session.item.widget==='weather')session.cityCleanup=bindCitySearch(element.querySelector('#weather-settings'));
       session.controller = new AbortController();
       const options = {signal:session.controller.signal};
       element.addEventListener('click', event => { action(session,event).catch(error => host.toast(error.message)); }, options);
@@ -15428,10 +15916,227 @@ function bindCitySearch(form) {
 
 return {createWidgetDetails, bindCitySearch};
 })();
+const __layout_sharing = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { DEFAULT_STATE, validateImport, uid } = __core;
+const { getWidgetDefinition, newWidgetConfig } = __widget_registry;
+const { newWidgetData } = __widget_data;
+const { keys, array, string, byteLength, invalid } = __validation;
+const { publicHttpsUrl } = __public_json;
+const { t } = __i18n;
+
+const LAYOUT_MAX_BYTES=2*1024*1024;
+const APPEARANCE_KEYS=['theme','surfaceStyle','useThemeColor','themeColor','wallpaper','blur','dim','gridSize','gap','desktopMaxWidth','iconShape','iconBackdrop','radius','iconOpacity','labelSize','clockSize','searchWidth','searchHeight','pinClock','pinSearch'];
+
+function validateLayout(raw) {
+  const encoded=typeof raw==='string'?raw:JSON.stringify(raw);
+  if(typeof encoded!=='string'||byteLength(encoded)>LAYOUT_MAX_BYTES)invalid('layout',t('文件超过大小限制。'));
+  let value;try{value=JSON.parse(encoded);}catch{invalid('layout',t('来源没有返回有效 JSON。'));}
+  keys(value,['format','version','title','description','groups','items','appearance'],'layout');
+  if(value.format!=='qiye-layout'||value.version!==1)invalid('layout',t('仅支持当前桌面分享格式。'));
+  const title=string(value.title,'layout.title',80),description=string(value.description,'layout.description',1000,true);
+  const groups=array(value.groups,'layout.groups',30,1);
+  const items=array(value.items,'layout.items',1200).map((source,index)=>{
+    const item=structuredClone(source),path='layout.items['+index+']';
+    if(item.type==='widget'){
+      keys(item,['id','groupId','type','widget','title','size','config'],path);
+      if(!getWidgetDefinition(item.widget))invalid(path,t('缺少组件：{name}',{name:item.widget}));
+      item.data=newWidgetData(item.widget);
+      if(item.widget==='weather')item.config={...item.config,enabled:false};
+    } else if(item.type==='link'){
+      let url;try{url=new URL(item.url);}catch{invalid(path,t('网站地址无效。'));}
+      if(url.username||url.password)invalid(path,t('分享的网站地址不能包含账号密码。'));
+    }
+    return item;
+  });
+  let appearance=null;
+  if(value.appearance!==null){keys(value.appearance,APPEARANCE_KEYS,'layout.appearance');appearance=structuredClone(value.appearance);}
+  const desktop=validateImport({...structuredClone(DEFAULT_STATE),groups,items,activeGroupId:groups[0].id,settings:{...DEFAULT_STATE.settings,...appearance}});
+  return {format:'qiye-layout',version:1,title,description,groups:desktop.groups,items:desktop.items.map(({data,...item})=>item),appearance};
+}
+
+function createLayout(state,{groupIds=[state.activeGroupId],appearance=false,title=t('我的桌面分享'),description=''}={}) {
+  const groups=state.groups.filter(group=>groupIds.includes(group.id));
+  const selected=new Set(groups.map(group=>group.id));
+  const items=state.items.filter(item=>selected.has(item.groupId)).map(item=>{
+    if(item.type!=='widget')return structuredClone(item);
+    const definition=getWidgetDefinition(item.widget);
+    return {id:item.id,groupId:item.groupId,type:'widget',widget:item.widget,title:t(definition.title),size:item.size,config:item.widget==='community'?structuredClone(item.config):newWidgetConfig(item.widget)};
+  });
+  return validateLayout({format:'qiye-layout',version:1,title,description,groups,items,appearance:appearance?Object.fromEntries(APPEARANCE_KEYS.map(key=>[key,state.settings[key]])):null});
+}
+
+function layoutImportPlan(state,raw,{groupIds,mode='new',targetGroupId=state.activeGroupId,skipDuplicates=true,appearance=false}={}) {
+  const layout=validateLayout(raw), chosen=layout.groups.filter(group=>!groupIds||groupIds.includes(group.id));
+  if(!chosen.length)throw new Error(t('请至少选择一个分组。'));
+  if(!['new','merge'].includes(mode)||mode==='merge'&&!state.groups.some(group=>group.id===targetGroupId))throw new Error(t('请选择有效的导入位置。'));
+  const next=structuredClone(state),groupMap=new Map(),itemMap=new Map(),selected=new Set(chosen.map(group=>group.id));
+  for(const group of chosen){const id=mode==='merge'?targetGroupId:uid();groupMap.set(group.id,id);if(mode==='new')next.groups.push({...group,id});}
+  const source=layout.items.filter(item=>selected.has(item.groupId));
+  const seen=new Set(state.items.filter(item=>item.type==='link').map(item=>item.url));let skipped=0;
+  for(const item of source){
+    if(skipDuplicates&&item.type==='link'&&seen.has(item.url)){skipped++;continue;}
+    itemMap.set(item.id,uid());if(item.type==='link')seen.add(item.url);
+  }
+  for(const original of source){
+    if(!itemMap.has(original.id))continue;
+    const item={...structuredClone(original),id:itemMap.get(original.id),groupId:groupMap.get(original.groupId)};
+    if(item.type==='link'&&item.folderId)item.folderId=itemMap.get(item.folderId)||null;
+    if(item.type==='widget')item.data=newWidgetData(item.widget);
+    next.items.push(item);
+  }
+  if(appearance&&layout.appearance)Object.assign(next.settings,layout.appearance);
+  next.activeGroupId=groupMap.get(chosen[0].id);
+  return {state:validateImport(next),added:itemMap.size,skipped,groups:mode==='new'?chosen.length:0};
+}
+
+function layoutShareLink(source) {
+  return 'https://ktclat.github.io/qiye/#import='+encodeURIComponent(publicHttpsUrl(source));
+}
+
+return {LAYOUT_MAX_BYTES, APPEARANCE_KEYS, validateLayout, createLayout, layoutImportPlan, layoutShareLink};
+})();
+const __sharing_ui = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { createLayout, validateLayout, layoutImportPlan, layoutShareLink, LAYOUT_MAX_BYTES } = __layout_sharing;
+const { publicHttpsUrl, requestPublicOrigin, fetchPublicJson } = __public_json;
+
+function sharingView(state,url='') {
+  return `<div class="sharing-view"><h3>${t('分享与导入')}</h3><p>${t('通过 JSON 文件或公开链接分享网站、分组和组件排布。')}</p>
+  <section class="exchange-panel"><h4>${t('导入排布')}</h4><form data-layout-load><label class="field"><span>${t('分享链接或 JSON 地址')}</span><input name="url" type="url" value="${e(url)}" placeholder="https://…" required></label><button class="primary-button">${t('读取并预览')}</button></form><label class="file-import">${t('或选择 JSON 文件')}<input type="file" data-layout-file accept="application/json,.json"></label><div data-layout-preview></div></section>
+  <section class="exchange-panel"><h4>${t('导出排布')}</h4><form data-layout-export><label class="field"><span>${t('分享名称')}</span><input name="title" value="${t('我的桌面分享')}" maxlength="80" required></label><fieldset><legend>${t('选择分组')}</legend>${state.groups.map(group=>`<label><input type="checkbox" name="groups" value="${e(group.id)}"${group.id===state.activeGroupId?' checked':''}>${e(group.name)}</label>`).join('')}</fieldset><label><input name="appearance" type="checkbox">${t('包含外观设置')}</label><p>${t('组件只分享尺寸和位置，便签、备忘录、待办及其他个人内容不会导出；组件设置恢复默认。')}</p><button class="primary-button">${t('下载分享文件')}</button></form><p>${t('把文件放到自己的仓库或网站，填入公开 JSON 地址，即可生成分享链接。')}</p><form data-layout-link><label class="field"><span>${t('公开 JSON 地址')}</span><input type="url" name="url" required placeholder="https://…"></label><button class="secondary-button">${t('生成分享链接')}</button><input data-share-link readonly hidden aria-label="${t('分享链接')}"></form></section><p class="exchange-status" data-exchange-status role="status"></p><button class="secondary-button" data-layout-undo hidden>${t('撤销本次导入')}</button></div>`;
+}
+
+function sourceFromShareLink(value) {
+  const url=new URL(value);
+  if(url.hash.startsWith('#import='))return publicHttpsUrl(decodeURIComponent(url.hash.slice(8)));
+  return publicHttpsUrl(value);
+}
+
+function bindSharing(root,host) {
+  const events=new AbortController(),options={signal:events.signal};let layout,loading=false,undo=null;
+  const status=root.querySelector('[data-exchange-status]');
+  const report=message=>{if(root.isConnected)status.textContent=message;};
+  const preview=value=>{
+    layout=validateLayout(value);
+    const state=host.getState();
+    root.querySelector('[data-layout-preview]').innerHTML=`<form data-layout-apply><h4>${e(layout.title)}</h4><p>${e(layout.description)}</p><fieldset><legend>${t('选择分组')}</legend>${layout.groups.map(group=>`<label><input type="checkbox" name="groups" value="${e(group.id)}" checked>${e(group.name)} (${layout.items.filter(item=>item.groupId===group.id).length})</label>`).join('')}</fieldset><details><summary>${t('查看将导入的内容')}</summary><ul class="import-item-list">${layout.items.map(item=>`<li><strong>${e(item.title)}</strong><small>${e(item.type==='link'?item.url:item.type==='widget'?item.widget+' · '+item.size:t('文件夹'))}</small></li>`).join('')}</ul></details><label class="field"><span>${t('导入方式')}</span><select name="mode"><option value="new">${t('创建新分组')}</option><option value="merge">${t('合并到现有分组')}</option></select></label><label class="field"><span>${t('目标分组')}</span><select name="targetGroupId">${state.groups.map(group=>`<option value="${e(group.id)}"${group.id===state.activeGroupId?' selected':''}>${e(group.name)}</option>`).join('')}</select></label><label><input type="checkbox" name="skipDuplicates" checked>${t('跳过相同网址')}</label>${layout.appearance?`<label><input type="checkbox" name="appearance">${t('应用分享中的外观')}</label>`:''}<p>${t('不会覆盖现有内容；联网组件需重新启用。')}</p><button class="primary-button">${t('确认导入')}</button></form>`;
+    report(t('预览已就绪，请选择要导入的内容。'));
+  };
+  root.addEventListener('submit',async event=>{
+    const form=event.target;event.preventDefault();event.stopPropagation();if(loading)return;
+    const data=new FormData(form),button=form.querySelector('button');loading=true;button.disabled=true;
+    try {
+      if(form.hasAttribute('data-layout-load')){
+        const url=await requestPublicOrigin(sourceFromShareLink(data.get('url')));
+        report(t('正在读取…'));preview(await fetchPublicJson(url,{signal:events.signal,maxBytes:LAYOUT_MAX_BYTES}));
+      } else if(form.hasAttribute('data-layout-export')){
+        const value=createLayout(host.getState(),{title:data.get('title').trim(),groupIds:data.getAll('groups'),appearance:data.has('appearance')});
+        const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));
+        const anchor=document.createElement('a');anchor.href=url;anchor.download='qiye-layout.json';anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);report(t('分享文件已生成。'));
+      } else if(form.hasAttribute('data-layout-link')){
+        const input=form.querySelector('[data-share-link]');input.value=layoutShareLink(data.get('url'));input.hidden=false;input.focus();input.select();report(t('链接已生成，可复制给其他人。'));
+      } else if(form.hasAttribute('data-layout-apply')){
+        const before=structuredClone(host.getState()),plan=layoutImportPlan(before,layout,{groupIds:data.getAll('groups'),mode:data.get('mode'),targetGroupId:data.get('targetGroupId'),skipDuplicates:data.has('skipDuplicates'),appearance:data.has('appearance')});
+        await host.apply(plan.state,JSON.stringify(before));undo={before,expected:JSON.stringify(host.getState())};
+        root.querySelector('[data-layout-undo]').hidden=false;report(t('已导入 {added} 项，跳过 {skipped} 个重复网址。',{added:plan.added,skipped:plan.skipped}));
+      }
+    } catch(error){report(error.message);}finally{loading=false;if(button.isConnected)button.disabled=false;}
+  },options);
+  root.querySelector('[data-layout-file]').addEventListener('change',async event=>{
+    if(loading)return;const file=event.target.files[0];if(!file)return;loading=true;
+    try{if(file.size>LAYOUT_MAX_BYTES)throw new Error(t('文件超过大小限制。'));const text=await file.text();if(root.isConnected)preview(text);}catch(error){report(error.message);}finally{loading=false;event.target.value='';}
+  },options);
+  root.querySelector('[data-layout-undo]').addEventListener('click',async()=>{
+    if(!undo||loading)return;loading=true;
+    try{await host.apply(undo.before,undo.expected);undo=null;root.querySelector('[data-layout-undo]').hidden=true;report(t('已撤销本次导入。'));}catch(error){report(error.message);}finally{loading=false;}
+  },options);
+  return ()=>events.abort();
+}
+
+return {sharingView, sourceFromShareLink, bindSharing};
+})();
+const __community_ui = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { validateCommunitySource } = __community_format;
+const { publicHttpsUrl, requestPublicOrigin, fetchPublicJson } = __public_json;
+const { uid } = __core;
+const { sizeLabel } = __widget_sizes;
+
+const KEY='qiye.community.v1';
+const DEFAULT_COMMUNITY_SOURCE='https://ktclat.github.io/qiye/community/index.json';
+function readSources() {
+  const raw=JSON.parse(localStorage.getItem(KEY)||'[]');
+  if(!Array.isArray(raw)||raw.length>20)throw new Error(t('来源列表无效。'));
+  return raw.map(source=>({url:publicHttpsUrl(source.url),catalog:source.catalog?validateCommunitySource(source.catalog):null}));
+}
+function communityView() {
+  return `<div class="community-view"><h3>${t('社区小组件')}</h3><p>${t('作者托管组件网页，你可以订阅公开索引或单个组件清单。打开此页会加载作者预览，点击运行才会加载组件网页。')}</p><form data-community-source><label class="field"><span>${t('组件来源地址')}</span><input name="url" type="url" value="${DEFAULT_COMMUNITY_SOURCE}" required maxlength="2048"></label><button class="primary-button">${t('读取并订阅')}</button></form><div class="community-sources" data-community-sources></div><div class="catalog-toolbar"><input type="search" data-community-query placeholder="${t('搜索名称或用途')}" aria-label="${t('搜索社区组件')}"><label>${t('添加到')}<select data-community-group></select></label></div><div data-community-cards class="community-cards"></div><p data-community-status role="status"></p><a href="https://github.com/Ktclat/qiye/blob/main/docs/COMMUNITY.md" target="_blank" rel="noopener noreferrer">${t('发布你的小组件')}</a></div>`;
+}
+
+function bindCommunity(root,host) {
+  const events=new AbortController(),options={signal:events.signal},selectedSizes=new Map();let sources=[],busy=false;
+  const status=root.querySelector('[data-community-status]'),cards=root.querySelector('[data-community-cards]'),group=root.querySelector('[data-community-group]');
+  const report=message=>{if(root.isConnected)status.textContent=message;};
+  try{sources=readSources();}catch(error){report(error.message);}
+  group.innerHTML=host.getState().groups.map(g=>`<option value="${e(g.id)}"${g.id===host.getState().activeGroupId?' selected':''}>${e(g.name)}</option>`).join('');
+  const persist=next=>{localStorage.setItem(KEY,JSON.stringify(next));sources=next;};
+  const entries=()=>sources.flatMap((source,sourceIndex)=>(source.catalog?.widgets||[]).map(manifest=>({manifest,sourceIndex})));
+  const render=()=>{
+    root.querySelector('[data-community-sources]').innerHTML=sources.map((source,index)=>`<article><span><strong>${e(source.catalog?.name||t('未读取'))}</strong><small>${e(source.url)}</small></span><button type="button" data-source-refresh="${index}">${t('刷新')}</button><button type="button" data-source-remove="${index}">${t('移除')}</button></article>`).join('');
+    const query=root.querySelector('[data-community-query]').value.trim().toLocaleLowerCase();
+    cards.innerHTML=entries().map(({manifest:m,sourceIndex},index)=>{
+      if(!(m.name+' '+m.description+' '+m.author).toLocaleLowerCase().includes(query))return '';
+      const changed=host.getState().items.some(i=>i.widget==='community'&&i.config.source===sources[sourceIndex].url&&i.config.manifest.id===m.id&&JSON.stringify(i.config.manifest)!==JSON.stringify(m));
+      const previous=selectedSizes.get(sources[sourceIndex].url+'|'+m.id),selected=m.sizes.includes(previous)?previous:'2x2';
+      return `<article class="community-card" data-community-card="${index}"><h4>${e(m.name)}</h4><p>${e(m.description)}</p><div class="community-preview"><span>◈</span></div><label>${t('预览尺寸')}<select data-community-size>${m.sizes.map(size=>`<option value="${size}"${size===selected?' selected':''}>${sizeLabel(size)}</option>`).join('')}</select></label><p>${e(m.author)} · ${e(m.release)}</p><details><summary>${t('来源与权限')}</summary><p>${e(new URL(m.entry).origin)}</p><p>${e(m.license)} · ${e(sources[sourceIndex].catalog.name)}</p><p>${t('独立网页，可联网，仅能保存自己的数据。')}</p><a href="${e(m.repository)}" target="_blank" rel="noopener noreferrer">${t('查看源码')}</a></details><footer><button class="catalog-add" data-community-add>${t('添加')}</button>${changed?`<button class="secondary-button" data-community-update>${t('更新已添加的组件')}</button>`:''}</footer></article>`;
+    }).join('')||`<p>${t('还没有匹配的组件，请读取一个来源。')}</p>`;
+    for(const card of cards.querySelectorAll('[data-community-card]'))updatePreview(card);
+  };
+  const updatePreview=card=>{
+    const entry=entries()[Number(card.dataset.communityCard)],m=entry?.manifest;if(!m)return;
+    const size=card.querySelector('[data-community-size]').value,p=m.previews.find(p=>p.size===size),panel=card.querySelector('.community-preview');
+    selectedSizes.set(sources[entry.sourceIndex].url+'|'+m.id,size);
+    const [w,h]=size.split('x').map(Number);panel.style.setProperty('--community-ratio',w+'/'+h);panel.innerHTML=p?`<img src="${e(p.url)}" alt="${e(m.name+' '+sizeLabel(size))}" loading="lazy" referrerpolicy="no-referrer">`:`<span>◈</span><small>${sizeLabel(size)} · ${t('作者未提供预览')}</small>`;
+  };
+  const load=async url=>{
+    if(busy)return;busy=true;report(t('正在读取…'));
+    try{
+      const value=await requestPublicOrigin(url),catalog=validateCommunitySource(await fetchPublicJson(value,{signal:events.signal,maxBytes:512*1024}));
+      if(!root.isConnected)return;
+      if(!sources.some(s=>s.url===value)&&sources.length>=20)throw new Error(t('最多订阅 20 个来源。'));
+      persist([...sources.filter(s=>s.url!==value),{url:value,catalog}]);render();report(t('来源已更新，已安装的组件需手动更新。'));
+    }catch(error){report(error.message);}finally{busy=false;}
+  };
+  root.addEventListener('submit',event=>{event.preventDefault();event.stopPropagation();void load(new FormData(event.target).get('url'));},options);
+  root.addEventListener('input',event=>{if(event.target.hasAttribute('data-community-query'))render();},options);
+  root.addEventListener('change',event=>{if(event.target.hasAttribute('data-community-size'))updatePreview(event.target.closest('[data-community-card]'));},options);
+  root.addEventListener('click',async event=>{
+    const button=event.target.closest('button');if(!button||busy)return;
+    if(button.hasAttribute('data-source-refresh')){void load(sources[Number(button.dataset.sourceRefresh)].url);return;}
+    if(button.hasAttribute('data-source-remove')){try{persist(sources.filter((_,index)=>index!==Number(button.dataset.sourceRemove)));render();}catch(error){report(error.message);}return;}
+    if(!button.hasAttribute('data-community-add')&&!button.hasAttribute('data-community-update'))return;
+    const card=button.closest('[data-community-card]'),entry=entries()[Number(card.dataset.communityCard)],manifest=entry.manifest,source=sources[entry.sourceIndex].url;
+    const before=host.getState(),next=structuredClone(before);busy=true;button.disabled=true;
+    try{
+      if(button.hasAttribute('data-community-add'))next.items.push({id:uid(),groupId:group.value,type:'widget',widget:'community',title:manifest.name.slice(0,30),size:card.querySelector('[data-community-size]').value,config:{manifest,source},data:{value:'null'}});
+      else for(const item of next.items.filter(i=>i.widget==='community'&&i.config.source===source&&i.config.manifest.id===manifest.id)){item.config={manifest,source};if(!manifest.sizes.includes(item.size))item.size='2x2';}
+      await host.apply(next,JSON.stringify(before));if(root.isConnected){render();report(t('组件已保存到桌面，打开后点击运行。'));}
+    }catch(error){report(error.message);}finally{busy=false;if(button.isConnected)button.disabled=false;}
+  },options);
+  render();return ()=>events.abort();
+}
+
+return {DEFAULT_COMMUNITY_SOURCE, communityView, bindCommunity};
+})();
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.8.2";
+const APP_VERSION = "0.9.0";
 
 return {APP_VERSION};
 })();
@@ -17752,8 +18457,7 @@ function createDesktopDragController({
    if(t.closest('select,[data-no-drag]'))return null;
    const editor=t.closest('input,textarea,[contenteditable]');
    if(editor && doc.activeElement===editor)return null;
-   const control=t.closest('button,a');
-   const holdOnly=!!editor || !!control && control.dataset.openLink!==item.id && control.dataset.openFolder!==item.id;
+   const holdOnly=!!editor;
    return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title,holdOnly};
   }
   if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
@@ -18011,6 +18715,10 @@ const { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, sav
 const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } = __widgets;
 const { chineseLunarDate } = __calendar;
 const { createWidgetDetails, bindCitySearch } = __widget_details;
+const { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } = __widget_workspaces;
+const { sharingView, bindSharing } = __sharing_ui;
+const { communityView, bindCommunity } = __community_ui;
+const { communityWorkspace, bindCommunityWorkspace } = __community_widget;
 const { t, setLocale, getLocale, formatDate, localizeDocument } = __i18n;
 const { APP_VERSION } = __version;
 const { applyWindowSize, WINDOW_SIZES } = __window_layout;
@@ -18046,7 +18754,7 @@ const WALLPAPERS = [
  {id:'midnight',name:'静夜',tag:'为专注留白',background:'radial-gradient(ellipse 75% 60% at 75% 0%,#28495a 0%,transparent 75%),radial-gradient(ellipse 75% 70% at 0% 100%,#1a3546 0%,transparent 80%),linear-gradient(130deg,#101b29,#101820 65%,#09131e)'}
 ];
 const dialog = $('#dialog');
-const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
+const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
 let cleanupCitySearch = () => {};
 let state = clone(DEFAULT_STATE);
 let persistedState = clone(DEFAULT_STATE), saveQueue = Promise.resolve(), saveGeneration = 0;
@@ -18369,6 +19077,21 @@ async function saveWidgetData(id, data, expectedData) {
  const saved = await persist();
  return saved.items.find(item=>item.id===id).data;
 }
+async function saveWidgetSettings(id, changes, expected) {
+ await saveQueue;
+ const existing=state.items.find(item=>item.id===id);
+ if(!existing || JSON.stringify([existing.title,existing.config])!==expected)throw new Error(t('组件设置已在其他位置修改，请重新打开。'));
+ const candidate=clone(state),item=candidate.items.find(item=>item.id===id);
+ item.title=changes.title;item.config=changes.config;
+ if(changes.duration!==undefined)item.data.focus={duration:changes.duration,remaining:changes.duration*60,running:false,endAt:null};
+ state=validateImport(candidate);await persist();renderDesktop({preserveWidgets:true});
+ return state.items.find(item=>item.id===id);
+}
+async function applyExchange(candidate,expected) {
+ await saveQueue;
+ if(JSON.stringify(state)!==expected)throw new Error(t('桌面已发生变化，请重新预览后再操作。'));
+ state=validateImport({...candidate,updatedAt:state.updatedAt});await persist();renderDesktop({preserveWidgets:true});
+}
 async function commit(render = true, options = {}) { await persist(); if (render) renderDesktop(options); }
 function navigate(url, forceNew = false, searchResult = false) {
  const target = safeUrl(url); if (!target) return toast(t("这个网址无效，请使用 http 或 https 网址。"));
@@ -18658,6 +19381,7 @@ function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="${t("图标颜色 {v0}", {v0: c})}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="${t("自定义图标颜色")}" value="${esc(selected || COLORS[0])}"></div>`; }
 let viewerCleanup=()=>{};
 function openDialog(kind,data={}) {
+ if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
  viewerCleanup(); viewerCleanup=()=>{};
  if(kind!=='settings' || !dialog.open || dialogKind!=='settings')dialog.classList.toggle('settings-drawer',kind==='settings' && state.settings.settingsPresentation==='sidebar');
  widgetDetails.close(); cleanupCitySearch();
@@ -18669,10 +19393,12 @@ function openDialog(kind,data={}) {
  dialogKind = kind; dialogData = data;
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
- const dedicatedWidget = ['calendar','memo'].includes(detailWidget);
+ const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
+ const dedicatedWidget = ['calendar','memo','weather','community'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
+ dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
@@ -18683,8 +19409,10 @@ function openDialog(kind,data={}) {
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
+ else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
- else if (kind === 'widget-detail' && !['calendar','memo','weather'].includes(detailWidget)) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
+ else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
+ else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
  else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=(dedicatedWidget?'':dialogHeader(item.title))+`<div id="widget-detail-body" class="${dedicatedWidget?'widget-app-body':'widget-detail-body'}">${widgetDetails.render(item,data)}</div>`; }
  else if (kind === 'widget-config') html = widgetConfigDialog(state.items.find(i=>i.id===data.item?.id) || data.item);
  else if (kind === 'weather') { const item = state.items.find(i=>i.widget==='weather') || {id:uid(),widget:'weather',title:t('天气'),config:newWidgetConfig('weather')}; html = widgetConfigDialog(item); }
@@ -18705,9 +19433,14 @@ function openDialog(kind,data={}) {
  dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
+ if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
+ if(kind==='add' && data.tab==='community')viewerCleanup=bindCommunity($('#add-content'),{getState:()=>state,apply:applyExchange});
  if (kind==='widget-detail') {
+  const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
-  if(viewer) {
+  if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
+  else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
     const timer=setInterval(()=>refreshLiveWidgets(viewer,state),1000);
     viewerCleanup=()=>{clearInterval(timer);cleanup();renderDesktop({preserveWidgets:true});};
@@ -18717,6 +19450,7 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
+ else if(kind==='widget-detail'&&(utilityWidget||['weather','community'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -18761,11 +19495,13 @@ function addDialog(tab,data) {
  const item = data.item;
  let content = '';
  if (tab === 'widgets' || tab === 'sites') content = renderCatalog({state,groupId:data.groupId||currentGroup().id,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
+ else if(tab==='sharing')content=sharingView(state,data.url||'');
+ else if(tab==='community')content=communityView();
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title',t("文件夹名称"),item?.title || '',{required:true,maxlength:24,placeholder:t("例如：灵感收藏")})}${selectField('groupId',t("所在分组"),item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">${t("把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。")}</p>${formActions(item?t("保存文件夹"):t("创建文件夹"))}</form>`;
  else content = linkEditorForm(item);
  const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):dialogCloseButton()+`<button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>`;
  if(item)return head+`<div class="dialog-body">${content}</div>`;
- const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'}];
+ const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'community',name:t('社区组件'),icon:'globe'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'},{id:'sharing',name:t('分享与导入'),icon:'download'}];
  return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}"><h2 class="workspace-title" id="workspace-title">${t("添加")}</h2>${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div>`;
 
 }
@@ -18957,7 +19693,7 @@ function widgetConfigDialog(item) {
  else if(type==='notes') content += selectField('color',t("便签颜色"),c.color,[{value:'yellow',label:t("奶油黄")},{value:'pink',label:t("浅樱粉")},{value:'mint',label:t("薄荷绿")}]);
  else if(definition && !definition.builtin) content += renderExtensionSettings(item);
  else content += `<p class="help-text">${t("直接在卡片中使用这个组件。右键卡片可以调整尺寸或位置。")}</p>`;
- content += selectField('size',t("卡片尺寸"),item.size || '2x2',(definition?.sizes || TILE_SIZES).map(value=>({value,label:sizeLabel(value)})));
+ content += selectField('size',t("卡片尺寸"),item.size || '2x2',(type==='community'?c.manifest.sizes:definition?.sizes || TILE_SIZES).map(value=>({value,label:sizeLabel(value)})));
  return dialogHeader(`${t("设置{v0}", {v0: item.title})}`,t("修改后会保存到当前浏览器。")) + `<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}" data-type="${esc(type)}">${content}${formActions()}</form></div>`;
 }
 function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div id="local-results" class="local-results"></div></div>`; }
@@ -19036,7 +19772,7 @@ function openContext(event,{itemId,groupId}={}) {
  const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
- if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.widget==='community'?item.config.manifest.sizes:item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
@@ -19382,6 +20118,7 @@ async function init() {
  document.addEventListener('focusout',()=>syncController.onIdle());
  setInterval(()=>{if(!document.hidden)syncController.onIdle();},60000);
  if(new URLSearchParams(location.search).get('search')==='local')openDialog('local-search');
+ if(location.hash.startsWith('#import=')){try{openDialog('add',{tab:'sharing',url:decodeURIComponent(location.hash.slice(8))});}catch{toast(t('分享链接无效。'));}}
  if(blockedStorage)openDialog('settings',{tab:'data'});
 }
 init().catch(err=>{console.error('Qiye initialization failed',err);toast(t("桌面初始化失败，请刷新页面重试。"));});

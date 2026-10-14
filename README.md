@@ -1,6 +1,6 @@
 # 栖页 Qiye · GitHub Pages
 
-栖页 v0.8.2 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
+栖页 v0.9.0 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
 
 **[打开栖页](https://ktclat.github.io/qiye/)** · **[完整源码与扩展安装](https://github.com/Ktclat/qiye/tree/main)**
 
@@ -22,7 +22,7 @@
 python3 scripts/build-pages.py /path/to/qiye-demo
 ```
 
-输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE` 和本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
+输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE`、`community/` 公共索引与示例及本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
 
 Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分支**，GitHub Pages 会自动部署。仅推送 `main` 不会更新演示页面；请先构建，再将生成文件推送到 `gh-pages`。
 
