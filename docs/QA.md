@@ -1,4 +1,25 @@
-# v0.8.1 验证记录
+# v0.8.2 搜索浮层验证
+
+日期：2026-10-14。修复滚动标题区域的独立层叠上下文被后续桌面组件覆盖的问题；固定搜索区域保留更高层级，避免被滚动时间区域盖住。无状态格式、权限或组件运行接口变更。
+
+本地使用与下方 v0.8.1 相同的 Chromium / Node / Python 环境，已通过：
+
+| 检查 | 结果 |
+| --- | --- |
+| `npm test` / Python 发布测试 | 330 项 / 3 项 |
+| `tests/search-overlays-e2e.py` / `--preview` | 各 55 项：1440 / 390 px、深浅主题、四种独立固定组合的真实鼠标命中检测；引擎选择及持久化、建议列表及键盘、编辑 / 极简模式、设置窗口和滚动收起 |
+| `tests/browser-e2e.py` | 108 项桌面 + 68 项编辑器 / 工作区检查 |
+| `tests/extension-e2e.py` | 9 项真实 MV3 扩展检查，包括搜索菜单层级、选择后写入 chrome.storage.local |
+
+本轮本地共 295 项浏览器 / 扩展检查。新增搜索回归在修复前确实因菜单被遮挡而失败，修复后通过；没有以 CSS 数值断言代替实际命中检测。截图和结果在 `test-results/search-overlays/`。页面请求使用受控离线响应，扩展使用临时配置，不接触用户浏览器数据。
+
+CI 继续运行全部既有套件，并新增源码 / 单文件网页的搜索回归。公开网页部署后由 `scripts/verify-live.py` 对比构建文件，并实际打开下拉菜单、点击切换和检查持久化；线上结果与 Actions 状态以对应提交为准。
+
+新增回归可用 `python tests/search-overlays-e2e.py` 和 `python tests/search-overlays-e2e.py --preview` 复现，构建和其他命令见下方。组件市场与分享链接导入仍处于方案讨论，未随本次修复上线。
+
+---
+
+# v0.8.1 历史验证记录
 
 日期：2026-10-14。本轮在 Windows 使用 Playwright 1.56.0 配套的 Chromium 141.0.7390.37，覆盖页面和解压扩展。网页使用真实 HTTP origin / localStorage；扩展检查使用临时浏览器配置和实际 `chrome.storage.local`，不读取用户浏览器数据。本地使用 Node.js 26.3.0、Python 3.14.6；CI 目标为 Node.js 22、Python 3.13。
 

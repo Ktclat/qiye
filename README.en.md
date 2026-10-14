@@ -4,7 +4,9 @@
 
 Qiye is an account-free, customizable new tab for Chrome and Edge. Organize websites, folders and everyday widgets, use your own wallpaper, and optionally sync through your own WebDAV server. Personal content stays in your browser unless you export it or enable synchronization.
 
-Version **0.8.1** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+Version **0.8.2** supports English and Simplified Chinese. It follows your browser language by default. Click the Qiye logo, then **Opening behavior → Language**, to change it. Interface text changes immediately; your own names and notes are preserved.
+
+The search engine dropdown and search suggestions now appear above desktop widgets, including when the clock and search bar are pinned independently. The same fix ships in the extension and web app, with checks for both themes, narrow screens, editing and minimal mode.
 
 Website icons now default to their original outline with no added background. Choose rounded frames or an adaptive background explicitly in icon settings.
 

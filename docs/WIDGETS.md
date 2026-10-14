@@ -43,7 +43,7 @@ export const example = {
 
 | 字段 | 约束 |
 | --- | --- |
-| `apiVersion` | 当前仅接受整数 `2` |
+| `apiVersion` | 当前仅接受整数 `3` |
 | `type` | 小写字母开头，后接小写字母、数字、连字符，最长 40 字符；不可重复或覆盖内置类型 |
 | `title` / `description` | 非空文本，最长 160 字符 |
 | `icon` | 已有 `src/icons.js` 名称；找不到时使用宿主回退图标 |

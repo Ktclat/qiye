@@ -14,6 +14,11 @@ with tempfile.TemporaryDirectory(prefix='qiye-extension-') as profile, sync_play
         page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(f'chrome-extension://{extension_id}/index.html')
         page.locator('[data-widget=memo]').wait_for()
+        page.locator('#engine-button').click()
+        assert page.locator('#engine-menu button').evaluate_all('ns=>ns.every(n=>{const r=n.getBoundingClientRect();return n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))})'), 'Search engines must be above widgets'
+        page.locator('#engine-menu [data-engine=google]').click()
+        expect(page.locator('#engine-menu')).to_be_hidden()
+        page.wait_for_function('async key=>(await chrome.storage.local.get(key))[key]?.settings.searchEngine==="google"',arg=key)
         page.locator('#brand-button').click();page.locator('[data-preference=language]').select_option('en');page.wait_for_function('document.querySelector("#workspace-title")?.textContent==="Settings"')
         page.locator('[data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
         page.locator('[data-widget=memo] [data-action=widget-memo-new]').first.click();page.locator('#memo-title').fill('Extension test');page.locator('#memo-text').fill('Uses chrome.storage.local')
@@ -23,7 +28,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-extension-') as profile, sync_play
         expect(page.locator('[data-widget=memo]')).to_contain_text('Extension test')
         page.goto(f'chrome-extension://{extension_id}/popup.html');page.wait_for_function('document.documentElement.lang==="en"');assert page.locator('h1').inner_text()=='Save this page'
         manifest=page.evaluate('chrome.runtime.getManifest()');assert manifest['version']==version and '__MSG_' not in manifest['name'];assert not errors,errors
-        result={'browser':context.browser.version if context.browser else 'Edge','manifest_name':manifest['name'],'version':version,'checks':['MV3 service worker starts','new tab loads bundled modules','English preference persists','memo uses chrome.storage.local','memo survives reload','popup uses chosen language','manifest locale placeholders resolve'],'errors':errors}
+        result={'browser':context.browser.version if context.browser else 'Chromium','manifest_name':manifest['name'],'version':version,'checks':['MV3 service worker starts','new tab loads bundled modules','search menu receives pointer events above widgets','selected search engine saves to chrome.storage.local','English preference persists','memo uses chrome.storage.local','memo survives reload','popup uses chosen language','manifest locale placeholders resolve'],'errors':errors}
         (root/'test-results/extension-smoke.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(result,ensure_ascii=False))
     except Exception:
         if 'page' in locals() and not page.is_closed():
