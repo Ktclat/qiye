@@ -2558,24 +2558,22 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 #dialog.pomodoro-app-dialog{width:min(1000px,var(--dialog-width));height:min(780px,var(--dialog-height))}
 #dialog.pomodoro-app-dialog.widget-app-expanded{width:var(--dialog-width);height:var(--dialog-height)}
 .pomo-app{height:100%;display:flex;flex-direction:column;min-height:0;color:var(--w-fg);background:var(--w-bg);font-size:14px}
-.pomo-app-header{display:flex;align-items:center;justify-content:space-between;padding:19px 28px;border-bottom:1px solid var(--w-border);gap:15px;flex:none}
-.pomo-brand{display:flex;gap:12px;align-items:center;min-width:0}
-.pomo-brand>.icon{width:35px;height:35px;color:var(--w-accent)}
-.pomo-brand>div{min-width:0}
-.pomo-brand h2{font-size:18px;line-height:1.4;margin:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pomo-brand span{font-size:9px;letter-spacing:.2em;color:var(--w-muted)}
-.pomo-header-actions{display:flex;gap:13px;align-items:center}
+.pomo-app-header{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:6px 20px;border-bottom:1px solid var(--w-border);gap:12px;flex:none;box-sizing:border-box}
+.pomo-brand{display:flex;gap:9px;align-items:center;min-width:0}
+.pomo-brand>.icon{width:23px;height:23px;flex:none;color:var(--w-accent)}
+.pomo-brand h2{font-size:15px;line-height:1.4;margin:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pomo-header-actions{display:flex;gap:4px;align-items:center;flex:none}
 .pomo-app .pomo-settings-jump{background:none;padding:6px;color:var(--w-muted)}
 .pomo-app-scroll{min-height:0;flex:1;overflow:auto;scrollbar-color:var(--pomo-soft) transparent;scrollbar-width:thin}
 .pomo-workbench{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,1fr);padding:28px 32px 24px;gap:38px}
 .pomo-studio{display:flex;flex-direction:column;align-items:center;min-width:0;padding:0 0 14px}
-.pomo-phase-tabs{display:flex;padding:4px;border:1px solid var(--w-border);border-radius:999px;gap:2px;max-width:100%;margin-bottom:34px}
+.pomo-phase-tabs{display:flex;padding:4px;border:1px solid var(--w-border);border-radius:999px;gap:2px;max-width:100%;margin-bottom:14px}
 .pomo-app .pomo-phase-tabs button{font-size:12px;border-radius:999px;background:transparent;padding:7px 17px;white-space:nowrap;color:var(--w-muted)}
 .pomo-app .pomo-phase-tabs button[aria-pressed=true]{background:var(--w-accent);color:var(--w-accent-ink)}
 .pomo-phase-tabs button:disabled{cursor:default;opacity:.65}
 .pomo-phase-tabs button[aria-pressed=true]:disabled{opacity:1}
-.pomo-studio>.pomo-dial{width:min(100%,266px);flex:none}
-.pomo-hint{color:var(--w-muted);font-size:13px;text-align:center;line-height:1.7;margin:19px 0 22px}
+.pomo-studio>.pomo-dial{width:min(100%,246px);flex:none}
+.pomo-hint{color:var(--w-muted);font-size:13px;text-align:center;line-height:1.7;margin:14px 0 16px}
 .pomo-controls{display:flex;gap:16px;align-items:center}
 .pomo-controls .pomo-start{min-width:150px;height:46px;padding:10px 22px;font-size:14px;font-weight:550}
 .pomo-app .pomo-secondary{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:transparent;color:var(--w-muted);padding:8px}
@@ -2611,6 +2609,17 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 .pomo-preferences form{display:flex;flex-direction:column;gap:14px;margin-top:16px}
 .pomo-presets{display:flex;gap:7px}
 .pomo-app .pomo-presets button{border:1px solid var(--w-border);background:var(--w-control);font-size:11px;padding:7px 9px}
+.pomo-duration-editor{width:min(100%,330px);margin:0 0 24px}
+.pomo-duration-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pomo-duration-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--w-muted);font-size:10px}
+.pomo-duration-value{display:flex;align-items:center;gap:2px;border:1px solid var(--w-border);border-radius:9px;background:var(--w-input);padding:4px 7px}
+.pomo-app .pomo-duration-value input{width:100%;min-width:0;border:0;background:none;padding:2px 0;color:var(--w-fg);font-size:19px;line-height:1.4;font-variant-numeric:tabular-nums;appearance:textfield}
+.pomo-duration-value input::-webkit-inner-spin-button,.pomo-duration-value input::-webkit-outer-spin-button{appearance:none;margin:0}
+.pomo-duration-value small{flex:none;font-size:9px;white-space:nowrap}
+.pomo-duration-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.pomo-app .pomo-duration-actions .pomo-presets button{padding:3px 8px;font-size:10px}
+.pomo-app .pomo-apply-duration{padding:5px 10px;font-size:11px;background:var(--w-accent);color:var(--w-accent-ink);white-space:nowrap}
+.pomo-duration-help{font-size:10px;line-height:1.5;color:var(--w-muted);margin:7px 0 0;text-align:center}
 .pomo-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pomo-settings-grid>label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--w-muted);min-width:0}
 .pomo-number-field{display:flex;align-items:center;gap:5px;min-width:0}
@@ -2641,13 +2650,13 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 .pomo-app :is(button,input,summary):focus-visible{outline:2px solid var(--w-accent);outline-offset:3px}
 .pomo-app button:disabled{cursor:default;opacity:.6}
 @container(max-width:700px){
-  .pomo-app-header{padding:15px 20px}.pomo-workbench{grid-template-columns:1fr;gap:24px;padding:24px 22px}
+  .pomo-app-header{padding:6px 12px}.pomo-workbench{grid-template-columns:1fr;gap:24px;padding:20px 22px}
   .pomo-companion{border-left:0;border-top:1px solid var(--w-border);padding:24px 0 0;gap:22px}
-  .pomo-studio>.pomo-dial{width:230px}.pomo-phase-tabs{margin-bottom:27px}.pomo-hint{margin:14px 0 18px}
+  .pomo-studio>.pomo-dial{width:220px}.pomo-phase-tabs{margin-bottom:14px}.pomo-hint{margin:14px 0 18px}
   .pomo-rounds{margin-top:20px}.pomo-history{margin:0 22px}.pomo-history ol{grid-template-columns:1fr}.pomo-storage-note{padding:12px 22px 20px}
   .pomo-harvest{padding:18px}.pomo-totals{gap:55px}.pomo-history-heading{align-items:flex-start}.pomo-history-heading>span{font-size:9px}
 }
-@container(max-width:340px){.pomo-studio>.pomo-dial{width:min(100%,210px)}.pomo-app .pomo-phase-tabs button{padding:7px 13px;font-size:11px}.pomo-controls{gap:9px}.pomo-controls .pomo-start{min-width:130px}.pomo-brand h2{font-size:16px}.pomo-brand>.icon{width:29px;height:29px}.pomo-header-actions{gap:3px}}
+@container(max-width:340px){.pomo-studio>.pomo-dial{width:min(100%,210px)}.pomo-app .pomo-phase-tabs button{padding:7px 13px;font-size:11px}.pomo-controls{gap:9px}.pomo-controls .pomo-start{min-width:130px}.pomo-brand h2{font-size:14px}.pomo-brand>.icon{width:21px;height:21px}.pomo-header-actions{gap:3px}}
 @media(prefers-reduced-motion:reduce){.w-pomodoro *{transition:none!important;scroll-behavior:auto!important}}
 
 </style>
@@ -2990,6 +2999,11 @@ const englishMessages = {
   "切换收藏来源": "Switch bookmark source",
   "搜索书签": "Search bookmarks",
   "书签设置": "Bookmark settings",
+  "更多设置": "More settings",
+  "应用时长": "Apply times",
+  "设置专注与休息时长": "Set focus and break times",
+  "直接输入分钟数，应用或开始专注。": "Enter minutes, then apply or start your timer.",
+  "本轮保持原时长，修改从下一轮生效。": "This round keeps its length. Changes apply to the next round.",
   "进制转换": "Base converter",
   "粘贴": "Paste",
   "复制": "Copy",
@@ -5759,6 +5773,18 @@ function newPomodoroData() {
   return { phase: 'focus', status: 'idle', duration: 1500, remaining: 1500, endAt: null, cycle: 0, task: '', sessions: [] };
 }
 
+// Receives an already validated legacy timer. Completed, stopped timers have no
+// reliable completion timestamp, so migration does not invent session history.
+function migrateFocusTimer(focus) {
+  const duration = focus.duration * 60;
+  const remaining = Math.min(duration, Math.ceil(focus.remaining));
+  const running = focus.running && focus.endAt > 0;
+  const data = { ...newPomodoroData(), duration, remaining: remaining || duration };
+  if (running) Object.assign(data, { status: 'running', endAt: Math.ceil(focus.endAt) });
+  else if (remaining > 0 && remaining < duration) data.status = 'paused';
+  return { config: { ...POMODORO_DEFAULTS, focusMinutes: focus.duration }, data };
+}
+
 function validatePomodoroConfig(raw, path = 'config') {
   keys(raw, Object.keys(POMODORO_DEFAULTS), path);
   return {
@@ -5841,7 +5867,7 @@ function pomodoroTime(seconds) {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-return {POMODORO_DEFAULTS, POMODORO_PHASES, POMODORO_HISTORY_LIMIT, pomodoroDuration, newPomodoroData, validatePomodoroConfig, validatePomodoroData, pomodoroRemaining, settlePomodoro, changePomodoro, configurePomodoro, pomodoroToday, pomodoroTime};
+return {POMODORO_DEFAULTS, POMODORO_PHASES, POMODORO_HISTORY_LIMIT, pomodoroDuration, newPomodoroData, migrateFocusTimer, validatePomodoroConfig, validatePomodoroData, pomodoroRemaining, settlePomodoro, changePomodoro, configurePomodoro, pomodoroToday, pomodoroTime};
 })();
 const __pomodoro_view = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -5897,13 +5923,21 @@ function pomodoroCard(item, now = Date.now()) {
   return `<div class="widget-inner w-pomodoro${compact ? ' pomo-compact' : ''}" data-widget="pomodoro" data-widget-id="${e(item.id)}" data-display-size="${size}" data-phase="${item.data.phase}" data-status="${item.data.status}">${content}</div>`;
 }
 
-function pomodoroSettingsFields(config) {
-  const fields = [['focusMinutes', '专注时长', 180], ['shortBreakMinutes', '短休时长', 60], ['longBreakMinutes', '长休时长', 120], ['longBreakEvery', '长休间隔（颗）', 12], ['dailyGoal', '每日目标（颗）', 24]];
+function pomodoroSettingsFields(config, advancedOnly = false) {
+  const fields = [...(advancedOnly ? [] : [['focusMinutes', '专注时长', 180], ['shortBreakMinutes', '短休时长', 60], ['longBreakMinutes', '长休时长', 120]]), ['longBreakEvery', '长休间隔（颗）', 12], ['dailyGoal', '每日目标（颗）', 24]];
   return `<div class="pomo-settings-grid">${fields.map(([name, label, max]) => `<label><span>${t(label)}</span><span class="pomo-number-field"><input name="${name}" type="number" min="${name === 'longBreakEvery' ? 2 : 1}" max="${max}" step="1" value="${config[name]}" required>${name.endsWith('Minutes') ? `<small>${t('分钟')}</small>` : ''}</span></label>`).join('')}</div><label class="pomo-sound-setting"><input name="sound" type="checkbox" ${config.sound ? 'checked' : ''}><span>${t('阶段结束时播放提示音')}</span></label><p class="pomo-settings-help">${t('时长调整从下一阶段生效；正在进行的这一轮保持原时长。')}</p>`;
 }
 
-function readPomodoroSettings(form) {
-  return { ...Object.fromEntries(['focusMinutes', 'shortBreakMinutes', 'longBreakMinutes', 'longBreakEvery', 'dailyGoal'].map(key => [key, Number(form.get(key))])), sound: form.has('sound') };
+function readPomodoroSettings(form, previous = {}) {
+  return { ...previous, ...Object.fromEntries(['focusMinutes', 'shortBreakMinutes', 'longBreakMinutes', 'longBreakEvery', 'dailyGoal'].filter(key => form.has(key)).map(key => [key, Number(form.get(key))])), sound: form.has('sound') };
+}
+
+function readPomodoroDurations(form, previous) {
+  return { ...previous, ...Object.fromEntries(['focusMinutes', 'shortBreakMinutes', 'longBreakMinutes'].map(key => [key, Number(form.get(key))])) };
+}
+
+function durationEditor(config) {
+  return `<form class="pomo-duration-editor" data-pomo-duration-form aria-label="${t('设置专注与休息时长')}"><div class="pomo-duration-fields">${[['focusMinutes', '专注', 180], ['shortBreakMinutes', '短休息', 60], ['longBreakMinutes', '长休息', 120]].map(([name, label, max]) => `<label><span>${t(label)}</span><span class="pomo-duration-value"><input name="${name}" aria-label="${t(label)} · ${t('分钟')}" type="number" inputmode="numeric" min="1" max="${max}" step="1" value="${config[name]}" required><small>${t('分钟')}</small></span></label>`).join('')}</div><div class="pomo-duration-actions"><div class="pomo-presets"><button type="button" data-pomo-preset="classic" title="${t('经典 25 / 5')}">25 / 5</button><button type="button" data-pomo-preset="deep" title="${t('深入 50 / 10')}">50 / 10</button></div><button type="submit" class="pomo-apply-duration">${t('应用时长')}</button></div><p class="pomo-duration-help" data-pomo="duration-help">${t('直接输入分钟数，应用或开始专注。')}</p></form>`;
 }
 
 function historyMarkup(item, now) {
@@ -5914,17 +5948,17 @@ function historyMarkup(item, now) {
 function pomodoroWorkspace(item, now = Date.now()) {
   const today = pomodoroToday(item.data, now);
   return `<div class="pomo-app w-pomodoro" data-widget="pomodoro" data-widget-id="${e(item.id)}" data-phase="${item.data.phase}" data-status="${item.data.status}">
-    <header class="pomo-app-header"><div class="pomo-brand">${icon('tomato')}<div><h2 id="dialog-title">${e(item.title)}</h2><span>POMODORO</span></div></div><div class="pomo-header-actions"><button type="button" class="pomo-settings-jump" data-pomo-action="preferences" title="${t('调整节奏')}" aria-label="${t('调整节奏')}">${icon('settings')}</button>${windowControls()}</div></header>
+    <header class="pomo-app-header"><div class="pomo-brand">${icon('tomato')}<h2 id="dialog-title">${e(item.title)}</h2></div><div class="pomo-header-actions"><button type="button" class="pomo-settings-jump" data-pomo-action="preferences" title="${t('更多设置')}" aria-label="${t('更多设置')}">${icon('settings')}</button>${windowControls()}</div></header>
     <div class="pomo-app-scroll"><div class="pomo-workbench"><section class="pomo-studio" aria-label="${t('番茄计时器')}">
       <div class="pomo-phase-tabs" role="group" aria-label="${t('计时阶段')}">${POMODORO_PHASES.map(phase => `<button type="button" data-pomo-action="phase" data-phase-value="${phase}" aria-pressed="${phase === item.data.phase}">${pomodoroPhaseLabel(phase)}</button>`).join('')}</div>
-      ${dial(item, now)}<p class="pomo-hint" data-pomo="hint">${phaseHint(item.data)}</p>
+      ${durationEditor(item.config)}${dial(item, now)}<p class="pomo-hint" data-pomo="hint">${phaseHint(item.data)}</p>
       <div class="pomo-controls"><button type="button" class="pomo-secondary" data-pomo-action="reset" aria-label="${t('重新计时')}" title="${t('重新计时')}">${icon('reset')}</button>${toggle(item)}<button type="button" class="pomo-secondary" data-pomo-action="skip" aria-label="${t('结束本轮，进入下一阶段（不计为完成）')}" title="${t('结束本轮，进入下一阶段（不计为完成）')}">${icon('skip')}</button></div>
       <div class="pomo-rounds"><div class="pomo-cycle" data-pomo="cycle" role="img" aria-label="${cycleLabel(item)}">${cycleMarkup(item)}</div><span data-pomo="next">${t('每 {count} 颗番茄，长休一次', { count: item.config.longBreakEvery })}</span></div>
       <p class="pomo-phase-help">${t('完成后，下一阶段等你亲手开启。')}</p>
     </section><aside class="pomo-companion">
       <section class="pomo-intention"><span class="pomo-section-number">01 / ${t('把注意力放在这里')}</span><h3>${t('这一颗，为哪件事？')}</h3><form data-pomo-task-form><input name="task" type="text" maxlength="120" value="${e(item.data.task)}" placeholder="${t('例如：读完一章，写好一段')}" aria-label="${t('当前专注事项')}" autocomplete="off"><button type="submit" aria-label="${t('保存专注事项')}">${icon('check')}</button></form><p data-pomo="task-help">${t('把大任务拆成一个番茄能完成的小步。')}</p></section>
       <section class="pomo-harvest"><span class="pomo-section-number">02 / ${t('今天的收获')}</span><div class="pomo-totals"><div><strong data-pomo="count">${formatNumber(today.count)}</strong><span>${t('颗番茄')}</span></div><div><strong data-pomo="total-minutes">${formatNumber(today.minutes)}</strong><span>${t('专注分钟')}</span></div></div><div class="pomo-goal-caption"><span data-pomo="goal">${t('今日目标 {done}/{goal}', { done: today.count, goal: item.config.dailyGoal })}</span><span data-pomo="goal-percent">${Math.min(100, Math.round(today.count / item.config.dailyGoal * 100))}%</span></div><progress class="pomo-goal" data-pomo="goal-bar" max="${item.config.dailyGoal}" value="${Math.min(today.count, item.config.dailyGoal)}" aria-label="${t('每日番茄目标')}"></progress></section>
-      <details class="pomo-preferences"><summary>${icon('settings')}${t('调整节奏')}<span>＋</span></summary><form data-pomo-settings-form><div class="pomo-presets"><button type="button" data-pomo-preset="classic">${t('经典 25 / 5')}</button><button type="button" data-pomo-preset="deep">${t('深入 50 / 10')}</button></div>${pomodoroSettingsFields(item.config)}<button type="submit" class="pomo-save">${t('保存节奏')}</button></form></details>
+      <details class="pomo-preferences"><summary>${icon('settings')}${t('更多设置')}<span>＋</span></summary><form data-pomo-settings-form>${pomodoroSettingsFields(item.config, true)}<button type="submit" class="pomo-save">${t('保存节奏')}</button></form></details>
     </aside></div><section class="pomo-history"><div class="pomo-history-heading"><h3>${t('留下的专注时光')}</h3><span>${t('今天 · 最近 6 次')}</span></div><div data-pomo="history">${historyMarkup(item, now)}</div></section><p class="pomo-storage-note">${t('关闭页面后按实际时间恢复；提示音需页面保持打开。')}</p></div><div class="pomo-feedback" role="status" aria-live="polite"></div>
   </div>`;
 }
@@ -5946,6 +5980,11 @@ function updatePomodoroView(root, item, now = Date.now()) {
   set('goal-percent', `${Math.min(100, Math.round(today.count / item.config.dailyGoal * 100))}%`);
   set('next', data.phase === 'long' ? t('这一组辛苦了，好好休息。') : t('每 {count} 颗番茄，长休一次', { count: item.config.longBreakEvery }));
   set('task-help', t(data.status === 'idle' ? '把大任务拆成一个番茄能完成的小步。' : '事项已锁定，安心完成这一轮。'));
+  set('duration-help', t(data.status === 'idle' ? '直接输入分钟数，应用或开始专注。' : '本轮保持原时长，修改从下一轮生效。'));
+  const durations = root.querySelector('[data-pomo-duration-form]');
+  if (durations && !durations.dataset.dirty) for (const input of durations.querySelectorAll('input')) {
+    if (!input.matches(':focus')) input.value = item.config[input.name];
+  }
   const progress = root.querySelector('.pomo-progress');
   root.querySelector('.pomo-dial')?.style.setProperty('--pomo-digits', pomodoroTime(pomodoroRemaining(data, now)).length);
   if (progress) progress.style.strokeDasharray = `${pomodoroRemaining(data, now) / data.duration * 100} 100`;
@@ -5969,14 +6008,14 @@ function updatePomodoroView(root, item, now = Date.now()) {
   if (history && history.dataset.key !== historyKey) { history.innerHTML = historyMarkup(item, now); history.dataset.key = historyKey; }
 }
 
-return {pomodoroPhaseLabel, pomodoroCard, pomodoroSettingsFields, readPomodoroSettings, pomodoroWorkspace, updatePomodoroView};
+return {pomodoroPhaseLabel, pomodoroCard, pomodoroSettingsFields, readPomodoroSettings, readPomodoroDurations, pomodoroWorkspace, updatePomodoroView};
 })();
 const __pomodoro_runtime = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
 const { icon } = __icons;
 const { changePomodoro, configurePomodoro, settlePomodoro, validatePomodoroConfig } = __pomodoro;
-const { readPomodoroSettings, updatePomodoroView } = __pomodoro_view;
+const { readPomodoroSettings, readPomodoroDurations, updatePomodoroView } = __pomodoro_view;
 
 const pending = new Set(), failedCompletions = new Map(), observers = new Set();
 let audioContext;
@@ -6095,32 +6134,44 @@ function bindPomodoro(container, host) {
     }
     if (button.dataset.pomoPreset) {
       const form = button.closest('form'), deep = button.dataset.pomoPreset === 'deep';
-      for (const [name, value] of Object.entries({ focusMinutes: deep ? 50 : 25, shortBreakMinutes: deep ? 10 : 5, longBreakMinutes: deep ? 30 : 15, longBreakEvery: 4 })) form.elements[name].value = value;
+      for (const [name, value] of Object.entries({ focusMinutes: deep ? 50 : 25, shortBreakMinutes: deep ? 10 : 5, longBreakMinutes: deep ? 30 : 15 })) form.elements[name].value = value;
+      form.dataset.dirty = 'true';
       return;
     }
     if (item.config.sound) enableSound();
     const taskInput = root.querySelector('[name="task"]');
+    const durations = root.querySelector('[data-pomo-duration-form]');
+    const applyDurations = action === 'toggle' && item.data.status === 'idle' && durations?.dataset.dirty;
+    if (applyDurations && !durations.reportValidity()) return;
     try {
       const saved = await savePomodoroChange(host, item.id, current => {
-        const data = action === 'toggle' && current.data.status === 'idle' && taskInput
-          ? changePomodoro(current.data, current.config, { type: 'task', task: taskInput.value }) : current.data;
-        return { config: current.config, data: changePomodoro(data, current.config, { type: action, phase: button.dataset.phaseValue }) };
+        if (applyDurations && JSON.stringify(current.config) !== settingsBase) throw new Error(t('组件设置已在其他位置修改，请重新打开。'));
+        const config = applyDurations ? validatePomodoroConfig(readPomodoroDurations(new FormData(durations), current.config)) : current.config;
+        const configured = applyDurations ? configurePomodoro(current.data, config) : current.data;
+        const data = action === 'toggle' && configured.status === 'idle' && taskInput
+          ? changePomodoro(configured, config, { type: 'task', task: taskInput.value }) : configured;
+        return { config, data: changePomodoro(data, config, { type: action, phase: button.dataset.phaseValue }) };
       });
       if (saved && taskInput && action === 'toggle') delete taskInput.dataset.dirty;
+      if (saved && applyDurations) { delete durations.dataset.dirty; settingsBase = JSON.stringify(host.getState().items.find(entry => entry.id === item.id)?.config); }
       if (!controller.signal.aborted) { feedback(saved ? '' : t('未能保存，请重试。')); refresh(); }
     } catch (error) { if (!controller.signal.aborted) { feedback(error.message); host.toast?.(error.message); } }
   }, options);
   container.addEventListener('input', event => {
     if (event.target.matches('[data-pomo-task-form] input')) event.target.dataset.dirty = 'true';
+    const durations = event.target.closest('[data-pomo-duration-form]');
+    if (durations) durations.dataset.dirty = 'true';
   }, options);
   container.addEventListener('submit', async event => {
     const form = event.target;
-    if (!form.matches('[data-pomo-task-form],[data-pomo-settings-form]')) return;
+    if (!form.matches('[data-pomo-task-form],[data-pomo-settings-form],[data-pomo-duration-form]')) return;
     event.preventDefault(); event.stopPropagation();
     const id = form.closest('[data-widget="pomodoro"]').dataset.widgetId;
     try {
-      const fields = new FormData(form), settings = form.hasAttribute('data-pomo-settings-form');
-      const config = settings ? validatePomodoroConfig(readPomodoroSettings(fields)) : null;
+      const fields = new FormData(form), durations = form.hasAttribute('data-pomo-duration-form');
+      const settings = durations || form.hasAttribute('data-pomo-settings-form');
+      const previous = host.getState().items.find(entry => entry.id === id)?.config;
+      const config = settings ? validatePomodoroConfig(durations ? readPomodoroDurations(fields, previous) : readPomodoroSettings(fields, previous)) : null;
       if (config?.sound) enableSound();
       const saved = await savePomodoroChange(host, id, item => {
         if (settings && JSON.stringify(item.config) !== settingsBase) throw new Error(t('组件设置已在其他位置修改，请重新打开。'));
@@ -6128,7 +6179,7 @@ function bindPomodoro(container, host) {
           : { config: item.config, data: changePomodoro(item.data, item.config, { type: 'task', task: String(fields.get('task') || '') }) };
       });
       if (saved) {
-        if (settings) settingsBase = JSON.stringify(config);
+        if (settings) { settingsBase = JSON.stringify(config); if (durations) delete form.dataset.dirty; }
         else delete form.elements.task.dataset.dirty;
       }
       if (!controller.signal.aborted) { feedback(saved ? t('已保存') : t('未能保存，请重试。')); refresh(); }
@@ -6477,7 +6528,8 @@ const builtins = [
   { type: 'notes', title: '便签', description: '随手记录，自动保存到本机', size: '2x2', icon: 'note' },
   { type: 'todo', title: '待办清单', description: '添加、勾选和删除日常任务', size: '2x2', icon: 'check' },
   { type: 'countdown', title: '倒数日', description: '记住值得期待的日子', size: '2x2', icon: 'flag' },
-  { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer' },
+  // Validation only: existing focus timers upgrade to Pomodoro on load/import.
+  { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer', internal: true },
   { type: 'pomodoro', title: '番茄钟', description: '一颗番茄，一件事。专注与休息交替，收获每天的小小成果', size: '2x2', icon: 'tomato' },
   { type: 'workday', title: '下班倒计时', description: '工作日下班与发薪日倒计时', size: '2x2', icon: 'briefcase' },
   { type: 'quote', title: '每日一句', description: '给日常留一点思考的空白', size: '4x2', icon: 'quote' },
@@ -20403,7 +20455,7 @@ const { renderWidget } = __widgets;
 
 const categories = ['全部', '日常', '效率', '工具'];
 const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock', 'hotsearch']);
-const productivity = new Set(['todo', 'focus', 'pomodoro', 'habit', 'countdown', 'workday', 'bookmarks']);
+const productivity = new Set(['todo', 'pomodoro', 'habit', 'countdown', 'workday', 'bookmarks']);
 const categoryOf = type => daily.has(type) ? '日常' : productivity.has(type) ? '效率' : '工具';
 
 function preview(definition, size, state) {
@@ -20498,6 +20550,7 @@ const { t, localizeSeed } = __i18n;
 const { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } = __validation;
 const { getWidgetDefinition, newWidgetConfig, validateWidgetConfig } = __widget_registry;
 const { newWidgetData, validateWidgetData } = __widget_data;
+const { migrateFocusTimer } = __pomodoro;
 const { normalizeWallpaperPhoto } = __wallpapers;
 const { validateAvatarDataUrl } = __avatar;
 const { normalizeIconSelection } = __icon_selection;
@@ -20594,7 +20647,7 @@ const DEFAULT_STATE = deepFreeze({
     link('site-douban', 'home', '豆瓣', 'https://www.douban.com/', '豆', '#2DA854'),
     link('site-notion', 'home', 'Notion', 'https://www.notion.so/', 'N', '#F6F4F0'),
     widget('countdown-home', 'countdown', '下一份期待'),
-    widget('focus-home', 'focus', '专注时刻'),
+    widget('focus-home', 'pomodoro', '番茄钟'),
     widget('workday-home', 'workday', '下班倒计时'),
     { id: 'folder-tools', groupId: 'home', type: 'folder', title: '随手工具', icon: 'folder', color: '#A6B1E1', size: '2x2' },
     link('tool-deepl', 'home', 'DeepL', 'https://www.deepl.com/translator', '译', '#234D68', 'folder-tools'),
@@ -20606,7 +20659,7 @@ const DEFAULT_STATE = deepFreeze({
     link('work-calendar', 'work', 'Google 日历', 'https://calendar.google.com/', 'calendar', '#4385EF'),
     link('work-drive', 'work', 'Google 云端硬盘', 'https://drive.google.com/', 'triangle', '#2FAC75'),
     widget('todo-work', 'todo', '工作清单', '2x2', {}, 'work'),
-    widget('focus-work', 'focus', '专注工作', '2x2', {}, 'work'),
+    widget('focus-work', 'pomodoro', '番茄钟', '2x2', {}, 'work'),
     link('code-mdn', 'code', 'MDN', 'https://developer.mozilla.org/zh-CN/', 'M', '#242933'),
     link('code-github', 'code', 'GitHub', 'https://github.com/', 'github', '#24292F'),
     link('code-stack', 'code', 'Stack Overflow', 'https://stackoverflow.com/', 'code', '#EF8A38'),
@@ -20815,6 +20868,11 @@ function validateImport(raw) {
       if(item.widget==='community'&&!item.config?.manifest?.sizes?.includes(size))invalid(`${path}.size`,t('组件不支持此尺寸'));
       const checked = { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
       // Validate legacy records before upgrading; keep identity, placement and custom names.
+      if (checked.widget === 'focus') {
+        Object.assign(checked, { widget: 'pomodoro' }, migrateFocusTimer(checked.data.focus));
+        if (checked.title === '专注计时') checked.title = '番茄钟';
+        else if (checked.title === 'Focus timer') checked.title = 'Pomodoro';
+      }
       if (checked.widget === 'hotlinks') {
         checked.widget = 'hotsearch';
         checked.config = newWidgetConfig('hotsearch');
