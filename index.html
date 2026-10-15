@@ -878,17 +878,24 @@ html.hide-content-scrollbar,html.hide-content-scrollbar body{scrollbar-width:non
 html.hide-content-scrollbar::-webkit-scrollbar,html.hide-content-scrollbar body::-webkit-scrollbar{display:none;width:0;height:0}
 /* Stable quote position and enough bottom space for the last row to clear it. */
 main{padding-bottom:112px}
-.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));display:flex;gap:10px;margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:80px;overflow:hidden;line-height:1.5;text-wrap:balance}
-.daily-quote>span:first-child{min-width:0}
-.daily-quote>span:first-child:before,.daily-quote>span:first-child:after{content:none}
-.daily-quote [data-quote-refresh]{pointer-events:auto;padding:0;max-width:100%;line-height:inherit;letter-spacing:inherit;text-shadow:inherit;vertical-align:bottom;text-wrap:balance;overflow-wrap:anywhere}
-.daily-quote [data-quote-refresh]:before{content:'「 ';opacity:.7}
-.daily-quote [data-quote-refresh]:after{content:' 」';opacity:.7}
-.daily-quote [data-quote-refresh]:hover{color:#fff}
-.daily-quote [data-quote-refresh]:disabled{opacity:1}
-.daily-quote-source{pointer-events:auto;flex-shrink:0;font-size:.8em;opacity:.65;white-space:nowrap}
-.daily-quote-source:not([href]){pointer-events:none}
-.daily-quote-source[href]:hover,.daily-quote-source:focus-visible{opacity:1;text-decoration:underline}
+.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;margin:0;padding:10px 16px 2px;z-index:9;text-align:center;pointer-events:none;max-height:none;overflow:visible;line-height:1.5;text-wrap:balance}
+.daily-quote-content{position:relative;min-width:0;max-width:calc(100% - 272px);pointer-events:auto}
+.daily-quote-text{padding:4px 2px;max-width:100%;line-height:inherit;letter-spacing:inherit;text-shadow:inherit;text-wrap:balance;overflow-wrap:anywhere;user-select:text}
+.daily-quote-text:before{content:'「 ';opacity:.7}
+.daily-quote-text:after{content:' 」';opacity:.7}
+.daily-quote-text:hover{color:#fff}
+.daily-quote-text:disabled{opacity:1}
+.daily-quote-actions{position:absolute;left:100%;top:50%;display:flex;align-items:center;gap:2px;padding:4px 0 4px 10px;width:max-content;opacity:0;visibility:hidden;pointer-events:none;transform:translate(4px,-50%);transition:opacity .16s,transform .16s,visibility .16s}
+.daily-quote-content:hover .daily-quote-actions,.daily-quote-content:has(:focus-visible) .daily-quote-actions{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%)}
+.daily-quote-actions>button,.daily-quote-actions>a{display:grid;place-items:center;width:28px;height:28px;padding:5px;border-radius:7px;color:inherit;background:rgba(15,23,32,.28);text-decoration:none;transition:background .16s,color .16s}
+.daily-quote-actions>button:hover,.daily-quote-actions>a:hover{background:rgba(255,255,255,.16);color:#fff}
+.daily-quote-actions .icon{width:16px;height:16px}
+.daily-quote-actions .is-copied{color:#b7e9d4}
+.daily-quote[data-quote-status=loading] [data-quote-refresh] .icon{animation:quote-spin 1s linear infinite}
+@keyframes quote-spin{to{transform:rotate(360deg)}}
+@media(hover:none){.daily-quote-actions{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%)}}
+@media(max-width:600px){.daily-quote-content{display:flex;align-items:center;gap:6px;width:100%;max-width:100%}.daily-quote-text{flex:1;min-width:0}.daily-quote-actions,.daily-quote-content:hover .daily-quote-actions,.daily-quote-content:has(:focus-visible) .daily-quote-actions{position:static;flex-shrink:0;padding:0;transform:none}.daily-quote-actions>button,.daily-quote-actions>a{width:26px;height:28px}}
+@media(prefers-reduced-motion:reduce){.daily-quote-actions,.daily-quote-actions>button,.daily-quote-actions>a{transition:none}.daily-quote[data-quote-status=loading] [data-quote-refresh] .icon{animation:none}}
 html[data-sidebar-position=right] .daily-quote{left:24px;right:calc(var(--sidebar-width) + 24px)}
 html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .daily-quote,.minimal .daily-quote{left:24px;right:24px}
 .wallpaper-credit{max-width:33vw;bottom:8px;z-index:10}
@@ -3021,7 +3028,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div id="desktop" class="desktop"></div>
     </section>
     </div>
-    <footer id="daily-quote" class="daily-quote" aria-live="polite"><span><button type="button" data-quote-refresh><span data-quote-text>正在获取一言…</span></button></span><a class="daily-quote-source" data-quote-source target="_blank" rel="noopener noreferrer" hidden></a></footer>
+    <footer id="daily-quote" class="daily-quote">
+      <div class="daily-quote-content">
+        <button type="button" class="daily-quote-text" data-quote-copy><span data-quote-text aria-live="polite" aria-atomic="true">正在获取一言…</span></button>
+        <div class="daily-quote-actions" role="group" aria-label="短句操作">
+          <button type="button" data-quote-copy aria-label="复制短句"></button>
+          <button type="button" data-quote-refresh aria-label="换一句"></button>
+          <button type="button" data-quote-search aria-label="搜索这句话"></button>
+          <a data-quote-source href="https://hitokoto.cn/" target="_blank" rel="noopener noreferrer" aria-label="打开一言"></a>
+        </div>
+      </div>
+    </footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
   <div id="context-menu" class="context-menu" role="menu" hidden></div>
@@ -3350,6 +3367,15 @@ const englishMessages = {
   "十六进制输入必须由成对的 0–9、A–F 字符组成。": "Hex input must contain pairs of 0–9 or A–F characters.",
   "请输入带双引号的有效 JSON 字符串。": "Enter a valid JSON string enclosed in double quotes.",
   "只能解码 JSON 字符串，不能解码对象、数组或数字。": "Only JSON strings can be decoded, not objects, arrays or numbers.",
+  "短句操作": "Quote actions",
+  "复制短句": "Copy quote",
+  "复制短句：{text}": "Copy quote: {text}",
+  "点击复制": "Click to copy",
+  "已复制短句": "Quote copied",
+  "复制失败，请检查浏览器的剪贴板权限。": "Could not copy. Check your browser's clipboard permissions.",
+  "搜索这句话": "Search this quote",
+  "打开一言": "Open Hitokoto",
+  "固定在底部；每次打开或刷新页面时获取一言，点击句子复制，悬停可换一句或搜索。": "Fixed at the bottom. Fetches a quote on each visit or reload. Click to copy; hover for another quote or search.",
   "浏览器收藏": "Browser bookmarks",
   "切换收藏来源": "Switch bookmark source",
   "搜索书签": "Search bookmarks",
@@ -25710,6 +25736,7 @@ return {reconcileKeyedChildren};
 const __daily_quote = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
+const { icon } = __icons;
 const { fetchPublicJson } = __public_json;
 
 const CACHE_KEY = 'qiye.daily-quote.v1';
@@ -25793,26 +25820,59 @@ function createDailyQuoteClient({fetcher = globalThis.fetch, storage = localStor
   return {next};
 }
 
-function createDailyQuote(root, options) {
+function createDailyQuote(root, {onSearch = () => {}, onNotify = () => {}, ...options} = {}) {
   const client = createDailyQuoteClient(options);
-  const button = root.querySelector('[data-quote-refresh]');
+  const refreshButton = root.querySelector('[data-quote-refresh]');
+  const copyButtons = root.querySelectorAll('[data-quote-copy]');
+  const copyIcon = root.querySelector('.daily-quote-actions [data-quote-copy]');
+  const searchButton = root.querySelector('[data-quote-search]');
   const text = root.querySelector('[data-quote-text]');
   const source = root.querySelector('[data-quote-source]');
-  let enabled = false, result = null, request = null;
+  let enabled = false, result = null, request = null, copiedText = '', copiedTimer;
+  refreshButton.innerHTML = icon('refresh');
+  searchButton.innerHTML = icon('search');
+  source.innerHTML = icon('quote');
+  function label(element, value) {
+    element.title = value;
+    element.setAttribute('aria-label', value);
+  }
   function render() {
     const quote = result?.quote;
     text.textContent = quote ? (result.status === 'local' ? t(quote.text) : quote.text) : t('正在获取一言…');
     root.dataset.quoteStatus = request ? 'loading' : result?.status || 'idle';
     root.setAttribute('aria-busy', String(!!request));
-    button.disabled = !!request;
-    button.setAttribute('aria-label', t('换一句：{text}', {text: text.textContent}));
+    refreshButton.disabled = !!request;
+    searchButton.disabled = !quote;
+    const copied = !!quote && copiedText === text.textContent;
+    copyIcon.innerHTML = icon(copied ? 'check' : 'copy');
+    copyIcon.classList.toggle('is-copied', copied);
+    copyButtons.forEach(button => {
+      button.disabled = !quote;
+      label(button, copied ? t('已复制短句') : t('复制短句'));
+    });
+    text.parentElement.title = copied ? t('已复制短句') : t('点击复制');
+    text.parentElement.setAttribute('aria-label', t('复制短句：{text}', {text: text.textContent}));
+    root.querySelector('.daily-quote-actions').setAttribute('aria-label', t('短句操作'));
+    label(searchButton, t('搜索这句话'));
     const hint = request ? t('正在获取一言…') : result?.status === 'local' ? t('一言暂时无法连接，显示本地短句，点击重试。') : result?.status === 'cached' ? t('当前为缓存的一言，点击重试。') : t('点击换一句');
-    button.title = [quote?.author, quote?.from, hint].filter(Boolean).join(' · ');
-    source.hidden = !quote;
-    source.textContent = result?.status === 'local' ? t('本地短句') : result?.status === 'cached' ? t('一言 · 缓存') : t('一言');
-    source.title = result?.status === 'local' ? hint : t('查看一言来源');
-    if (quote && result.status !== 'local') source.href = quote.uuid ? `https://hitokoto.cn/?uuid=${quote.uuid}` : 'https://hitokoto.cn/';
-    else source.removeAttribute('href');
+    label(refreshButton, hint);
+    label(source, t('打开一言'));
+    source.href = quote?.uuid && result.status !== 'local' ? `https://hitokoto.cn/?uuid=${quote.uuid}` : 'https://hitokoto.cn/';
+  }
+  async function copy() {
+    if (!enabled || !result) return;
+    const value = text.textContent;
+    try {
+      await navigator.clipboard.writeText(value);
+      if (!enabled) return;
+      copiedText = value;
+      clearTimeout(copiedTimer);
+      copiedTimer = setTimeout(() => { copiedText = ''; render(); }, 1800);
+      render();
+      onNotify(t('已复制短句'));
+    } catch {
+      onNotify(t('复制失败，请检查浏览器的剪贴板权限。'));
+    }
   }
   function refresh() {
     if (!enabled || request) return;
@@ -25827,13 +25887,15 @@ function createDailyQuote(root, options) {
       render();
     });
   }
-  button.addEventListener('click', refresh);
+  refreshButton.addEventListener('click', refresh);
+  copyButtons.forEach(button => button.addEventListener('click', copy));
+  searchButton.addEventListener('click', () => { if (enabled && result) onSearch(text.textContent); });
   return {
     update(visible) {
       root.hidden = !visible;
       const start = visible && !enabled;
       enabled = visible;
-      if (!visible) { request?.abort(); request = null; }
+      if (!visible) { request?.abort(); request = null; clearTimeout(copiedTimer); copiedText = ''; }
       render();
       if (start) refresh();
     },
@@ -25905,7 +25967,10 @@ const WALLPAPERS = [
  {id:'midnight',name:'静夜',tag:'为专注留白',background:'radial-gradient(ellipse 75% 60% at 75% 0%,#28495a 0%,transparent 75%),radial-gradient(ellipse 75% 70% at 0% 100%,#1a3546 0%,transparent 80%),linear-gradient(130deg,#101b29,#101820 65%,#09131e)'}
 ];
 const dialog = $('#dialog');
-const dailyQuote = createDailyQuote($('#daily-quote'));
+const dailyQuote = createDailyQuote($('#daily-quote'), {
+ onNotify: message => toast(message),
+ onSearch: text => navigate(currentEngine().url.replace(/\{q\}/g, encodeURIComponent(text)), false, true),
+});
 const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
 let cleanupCitySearch = () => {};
 let state = clone(DEFAULT_STATE);
@@ -26797,7 +26862,7 @@ function settingsDialog(tab) {
   <div class="section-label">${t("桌面布局")}</div>
   ${settingSwitch('minimal',t("极简模式"),t("只显示时间、搜索与壁纸；按 Esc 可恢复桌面。"))}
   ${settingSwitch('showWallpaperCredit',t("显示壁纸作者"),t("图片来源和许可仍可在壁纸预览中查看。"))}
-  ${settingSwitch('quote',t("显示页底短句"),t("固定在底部；每次打开或刷新时获取一言，点击短句可换一句。"))}
+  ${settingSwitch('quote',t("显示页底短句"),t("固定在底部；每次打开或刷新页面时获取一言，点击句子复制，悬停可换一句或搜索。"))}
   ${settingSwitch('hideScrollbar',t("隐藏内容区滚动条"),t("只隐藏轨道，滚轮、触屏、Page Down 和空格仍可滚动。"))}
   ${settingSwitch('hideEditorScrollbar',t("隐藏网站编辑窗口滚动条"),t("同时用于添加网站表单；仅隐藏轨道，内容仍可滚动，与桌面滚动条独立。"))}
   ${settingSwitch('animateGroups',t("分组切换动画"),t("图标从下方向上轻滑入场。遵循系统的减少动态效果设置。"))}
