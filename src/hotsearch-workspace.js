@@ -13,7 +13,22 @@ export function bindHotsearchWorkspace(root, initial, host) {
   const alive = () => !events.signal.aborted && root.isConnected && !!current();
   const view = {category:'subscribed', query:'', active:initial.config.activeSource, collapsed:new Set(), manageCategory:'all', manageQuery:''};
   let baseline = JSON.stringify([initial.title,initial.config]), saving = false, loading = null, expanded = false, dragged = '', managerOpen = false;
-  const feedback = message => { if (alive()) for (const node of root.querySelectorAll('.hotsearch-feedback,.hotsearch-manager-feedback')) { node.textContent=message; node.hidden=!message; } };
+  let feedbackTimer, feedbackMessage='', feedbackTemporary=false, dragScope=null, dragPreview=null, dragFrame=0, dragClickUntil=0;
+  const sortAnimations=new Set();
+  function renderFeedback() {
+    if (!alive()) return;
+    for (const node of root.querySelectorAll('.hotsearch-feedback,.hotsearch-manager-feedback')) {
+      node.textContent=feedbackMessage;
+      node.hidden=!feedbackMessage || node.classList.contains('hotsearch-manager-feedback')!==managerOpen;
+      node.classList.toggle('is-transient',feedbackTemporary);
+    }
+  }
+  function feedback(message, duration=0) {
+    clearTimeout(feedbackTimer);
+    feedbackMessage=message; feedbackTemporary=duration>0;
+    renderFeedback();
+    if (message && duration && alive()) feedbackTimer=setTimeout(()=>feedback(''),duration);
+  }
   function selectVisible() {
     const sources = filterHotsearchSources(current().config,view.category,view.query);
     if (!sources.some(source=>source.id===view.active)) view.active=sources[0]?.id || '';
@@ -37,6 +52,7 @@ export function bindHotsearchWorkspace(root, initial, host) {
     panel.scrollTop=scroll;
     if (draft) { panel.querySelector('details').open=draft.open; panel.querySelector('[name=apiBase]').value=draft.apiBase; panel.querySelector('[name=enabled]').checked=draft.enabled; }
     if (queryFocused) panel.querySelector('[data-hot-manage-query]').focus();
+    renderFeedback();
   }
   function render() {
     if (!alive()) return;
@@ -57,6 +73,7 @@ export function bindHotsearchWorkspace(root, initial, host) {
     for (const selector of ['.hotsearch-app-header','.hotsearch-toolbar','.hotsearch-layout','.hotsearch-app-footer']) find(selector).inert=open;
     if (open) { renderManager(); find('[data-hot-action=manage-close]').focus(); }
     else find('[data-hot-action=manage]').focus({preventScroll:true});
+    renderFeedback();
   }
   async function save(patch) {
     if (!alive() || saving) return false;
@@ -115,11 +132,29 @@ export function bindHotsearchWorkspace(root, initial, host) {
     if (await save({subscriptions,activeSource})) { view.active=activeSource; render(); if(managerOpen)renderManager(); void load(); }
   }
   async function reorder(from,to) {
+    if (!alive() || saving) return;
     const subscriptions=moveHotsearchSubscription(current().config.subscriptions,from,to);
     if (subscriptions.join()===current().config.subscriptions.join()) return;
-    if (await save({subscriptions})) { render(); if(managerOpen)renderManager(); (managerOpen?find('#hotsearch-manager'):root).querySelector(`[data-hot-drag="${from}"]`)?.focus({preventScroll:true}); feedback(t('订阅顺序已保存')); }
+    const containers=['.hotsearch-sidebar','.hotsearch-sort-list'];
+    const positions=containers.map(selector=>new Map([...root.querySelectorAll(`${selector} [data-hot-sort]`)]
+      .filter(row=>row.getClientRects().length).map(row=>[row.dataset.hotSort,row.getBoundingClientRect().top])));
+    if (await save({subscriptions})) {
+      render(); if(managerOpen)renderManager();
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) containers.forEach((selector,index)=>{
+        for (const row of root.querySelectorAll(`${selector} [data-hot-sort]`)) {
+          const before=positions[index].get(row.dataset.hotSort), offset=before-row.getBoundingClientRect().top;
+          if (before===undefined || !offset || !row.getClientRects().length) continue;
+          const animation=row.animate([{transform:`translateY(${offset}px)`},{transform:'none'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
+          sortAnimations.add(animation);
+          animation.finished.catch(()=>{}).finally(()=>sortAnimations.delete(animation));
+        }
+      });
+      (managerOpen?find('#hotsearch-manager'):root).querySelector(`[data-hot-drag="${from}"]`)?.focus({preventScroll:true});
+      feedback(t('订阅顺序已保存'),2400);
+    }
   }
   async function click(event) {
+    if (event.detail && performance.now()<dragClickUntil) { event.preventDefault(); return; }
     const target=event.target.closest('button');
     if (event.target===find('.hotsearch-manager-overlay')) { toggleManager(false); return; }
     if (!target) return;
@@ -169,6 +204,7 @@ export function bindHotsearchWorkspace(root, initial, host) {
     })();
   },options);
   root.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && dragged){event.preventDefault();event.stopPropagation();clearDrag();return;}
     const id=event.target.dataset.hotDrag;
     if(id && event.altKey && ['ArrowUp','ArrowDown'].includes(event.key)) {
       event.preventDefault();event.stopPropagation();const ids=current().config.subscriptions,index=ids.indexOf(id);
@@ -184,19 +220,56 @@ export function bindHotsearchWorkspace(root, initial, host) {
   },options);
   root.addEventListener('dragstart',event=>{
     const handle=event.target.closest('[data-hot-drag]');if(!handle)return;
-    dragged=handle.dataset.hotDrag;event.stopPropagation();event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',dragged);
+    event.stopPropagation();
+    if(saving || !event.dataTransfer){event.preventDefault();return;}
+    clearDrag();
+    const row=handle.closest('[data-hot-sort]'), rect=row.getBoundingClientRect();
+    dragged=handle.dataset.hotDrag;dragScope=row.parentElement;
+    event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',dragged);
+    // Capture the whole platform row, rather than the small grip alone.
+    const clone=row.cloneNode(true);
+    for(const node of [clone,...clone.querySelectorAll('*')]) {
+      for(const attribute of [...node.attributes]) if(attribute.name==='id' || attribute.name.startsWith('data-hot-')) node.removeAttribute(attribute.name);
+      node.removeAttribute('draggable');
+    }
+    dragPreview=document.createElement('div');
+    dragPreview.className='hotsearch-drag-preview'+(row.matches('li')?' hotsearch-sort-list':'');
+    dragPreview.inert=true;dragPreview.setAttribute('aria-hidden','true');
+    Object.assign(dragPreview.style,{width:rect.width+10+'px',left:rect.left-5+'px',top:rect.top-5+'px'});
+    dragPreview.append(clone);root.append(dragPreview);
+    event.dataTransfer.setDragImage(dragPreview,Math.max(0,event.clientX-rect.left+5),Math.max(0,event.clientY-rect.top+5));
+    root.classList.add('is-sorting');
+    dragFrame=requestAnimationFrame(()=>{dragPreview?.remove();dragPreview=null;row.classList.add('is-dragging');});
   },options);
+  function clearDropTarget() {
+    for(const row of root.querySelectorAll('.is-drop-target'))row.classList.remove('is-drop-target','is-drop-before','is-drop-after');
+  }
   root.addEventListener('dragover',event=>{
-    const row=event.target.closest('[data-hot-sort]');if(!dragged||!row)return;
-    event.preventDefault();event.dataTransfer.dropEffect='move';
-    for(const old of root.querySelectorAll('.is-drop-target'))old.classList.remove('is-drop-target');row.classList.add('is-drop-target');
+    if(!dragged)return;
+    const row=event.target.closest('[data-hot-sort]');clearDropTarget();
+    if(!row || row.parentElement!==dragScope)return;
+    event.preventDefault();event.stopPropagation();event.dataTransfer.dropEffect='move';
+    if(row.dataset.hotSort===dragged)return;
+    const ids=current().config.subscriptions;
+    row.classList.add('is-drop-target',ids.indexOf(dragged)<ids.indexOf(row.dataset.hotSort)?'is-drop-after':'is-drop-before');
   },options);
-  const clearDrag=()=>{dragged='';for(const row of root.querySelectorAll('.is-drop-target'))row.classList.remove('is-drop-target');};
-  root.addEventListener('drop',event=>{const row=event.target.closest('[data-hot-sort]');if(dragged&&row){event.preventDefault();event.stopPropagation();void reorder(dragged,row.dataset.hotSort);}clearDrag();},options);
+  function clearDrag() {
+    if(dragged)dragClickUntil=performance.now()+250;
+    dragged='';dragScope=null;cancelAnimationFrame(dragFrame);dragPreview?.remove();dragPreview=null;
+    root.classList.remove('is-sorting');clearDropTarget();
+    for(const row of root.querySelectorAll('.is-dragging'))row.classList.remove('is-dragging');
+  }
+  root.addEventListener('dragleave',event=>{if(!root.contains(event.relatedTarget))clearDropTarget();},options);
+  root.addEventListener('drop',event=>{
+    if(!dragged)return;
+    event.preventDefault();event.stopPropagation();
+    const row=event.target.closest('[data-hot-sort]'), from=dragged, to=row?.parentElement===dragScope?row.dataset.hotSort:'';
+    clearDrag();if(to)void reorder(from,to);
+  },options);
   root.addEventListener('dragend',clearDrag,options);
-  const timer=setInterval(()=>{if(!document.hidden&&!managerOpen)void load(false,'',true);},60000);
+  const timer=setInterval(()=>{if(!document.hidden&&!managerOpen&&!dragged&&!saving)void load(false,'',true);},60000);
   render();void load();
-  return ()=>{events.abort();loading?.abort();clearInterval(timer);};
+  return ()=>{events.abort();loading?.abort();clearInterval(timer);clearTimeout(feedbackTimer);clearDrag();for(const animation of sortAnimations)animation.cancel();};
 }
 
 export function bindHotsearchCards(container,host) {

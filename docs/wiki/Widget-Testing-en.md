@@ -21,6 +21,8 @@ References for the daily-life widgets:
 
 Rebuild the standalone preview and synchronize the web version for each delivered change, then verify that public content matches the release build.
 
+Trending cards follow the supplied iTab reference with text-only platform tabs. Detail windows retain site icons on transparent containers. Ordering follows [MDN setDragImage](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage) and [dragend](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dragend_event): a whole-row preview, source placeholder and insertion marker, cleaned up on drop or cancellation. Saved reorders animate unless reduced motion is requested. Success feedback uses a [status](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/status_role), clears after 2.4 seconds and does not take focus; save errors remain visible. Trending E2E checks text-only tabs, transparent icon backgrounds, dragging, cancellation, persistence, notice expiry and protection of newer errors from old timers.
+
 ## Environment and commands
 
 Run from the repository root. CI uses Node.js 22 and Python 3.13. Logic tests and builds need no npm dependencies; browser tests additionally use Python Playwright.

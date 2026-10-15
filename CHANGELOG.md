@@ -10,6 +10,9 @@ This is the canonical version history, moved from the original README. Historica
 
 ## 未发布 / Unreleased
 
+- 热搜榜桌面标签默认只显示平台名称，详情图标改用透明底；订阅排序新增整行拖拽预览、占位、插入提示与移动动画，修复“订阅顺序已保存”提示不消失，保存失败仍保留错误信息。
+- Trending cards now use text-only platform tabs and transparent detail icons. Subscription sorting adds a whole-row drag preview, placeholder, insertion marker and movement animation. Success notices dismiss automatically while save errors remain visible.
+
 - 新增“编码工具”：Base64 / Base64 URL、三种 URL 范围、HTML 实体、Unicode、UTF-8 十六进制和 JSON 字符串编解码，以及 MD2 / MD4 / MD5 / SHA 摘要。支持实时转换、双栏编辑、复制与连续转换、中英文、深浅主题和窄屏；文本仅留在当前窗口，关闭清空。
 - 编码工具新增“趣味编码”：经典佛曰、兽语 / 兽音译者、原版熊曰 / 与熊论道。标明格式版本，支持自定义兽音字表、解码自动识别字表、损坏密文提示与解压长度限制，全部在本机处理。
 - 编码工具窗口改为 46px 单行标题栏，缩小图标并移除副标题，将更多空间留给输入与结果；长标题省略显示，悬停可查看完整名称。

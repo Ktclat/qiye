@@ -21,6 +21,8 @@
 
 交付修改时同时重新构建独立预览并同步网页版，核对线上内容与发布构建一致。
 
+热搜榜按用户提供的 iTab 卡片截图默认只显示平台名称；详情页仍显示网站图标，容器保持透明。排序参考 [MDN setDragImage](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage) 与 [dragend](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dragend_event)：以整行生成拖拽预览，显示占位和插入位置，结束或取消时清理；保存后移动到新位置的动画遵守减少动态效果设置。成功提示使用 [status](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/status_role)，2.4 秒后隐藏，不抢焦点；保存失败保持可见。热搜 E2E 覆盖纯文字标签、图标透明底、拖拽与取消、排序持久化、提示消失和新错误不被旧计时器清除。
+
 ## 环境与命令
 
 从仓库根目录执行。CI 使用 Node.js 22、Python 3.13；逻辑测试和构建不需要 npm 依赖。浏览器测试额外使用 Python Playwright。
