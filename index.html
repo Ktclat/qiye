@@ -1232,6 +1232,7 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 #dialog.settings-dialog{--settings-focus:#b8b8b8}
 html[data-theme=light] #dialog.settings-dialog{--settings-focus:#565656}
 #dialog.settings-dialog :is(input,select,textarea,button,a):focus{outline:none}
+#dialog.settings-dialog .settings-section-title:focus{outline:none}
 #dialog.settings-dialog :is(input,select,textarea,button,a):focus-visible{outline:2px solid var(--settings-focus);outline-offset:3px}
 #dialog.settings-dialog.pointer-focus :is(input,select,textarea,button,a):focus{outline:none}
 #dialog.settings-dialog :is(.theme-option,.material-option).selected{border-color:var(--settings-focus)}
@@ -1328,6 +1329,91 @@ html[data-theme=light] #dialog.widget-app-dialog {
 @container(max-width:500px) {
   .widget-app-body .widget-app-button { width:27px; height:27px; padding:5px; }
 }
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+.hotsearch-app{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
+.hotsearch-app [hidden]{display:none!important}
+.hotsearch-app .icon{width:18px;height:18px;flex:none}
+.hotsearch-app-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--app-border);flex:none}
+.hotsearch-emblem{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:15px;color:#fff;background:linear-gradient(145deg,#ff703d,#ff3429)}
+.hotsearch-emblem .icon{width:27px;height:27px}
+.hotsearch-app-header h2{font-size:23px;line-height:1.3;letter-spacing:-.5px;margin:0 auto 0 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hotsearch-header-actions{display:flex;align-items:center;border:1px solid var(--app-border);border-radius:14px;padding:3px;gap:2px}
+.hotsearch-header-actions button{display:flex;gap:7px;align-items:center;justify-content:center;background:transparent;padding:7px 9px;min-height:32px;white-space:nowrap;font-size:14px}
+.hotsearch-header-actions button.is-loading .icon{animation:hotsearch-spin 1s linear infinite}
+@keyframes hotsearch-spin{to{transform:rotate(360deg)}}
+.hotsearch-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;min-width:0;flex:none}
+.hotsearch-toolbar>button{display:grid;place-items:center;flex:none;width:38px;height:38px;padding:8px;border:1px solid var(--app-border);background:var(--app-pane);border-radius:50%}
+.hotsearch-toolbar>input{width:170px;max-width:36%;border:1px solid var(--app-border);height:38px}
+.hotsearch-categories{display:flex;gap:7px;overflow:auto;scrollbar-width:none;min-width:0;padding:1px}
+.hotsearch-categories button{flex:none;white-space:nowrap;border:1px solid var(--app-border);border-radius:22px;padding:7px 22px;background:var(--app-pane);font-size:16px}
+.hotsearch-categories button[aria-pressed=true]{color:var(--app-blue);border-color:var(--app-blue);background:color-mix(in srgb,var(--app-blue) 7%,var(--app-bg));font-weight:600}
+.hotsearch-layout{display:grid;grid-template-columns:248px minmax(0,1fr);gap:10px;padding:0 10px;flex:1;min-height:0}
+.hotsearch-sidebar{border:1px solid var(--app-border);border-radius:20px;background:var(--app-pane);padding:9px;overflow:auto;scrollbar-width:thin}
+.hotsearch-source-row{display:flex;align-items:center;border-radius:13px;min-width:0;position:relative;margin-bottom:3px}
+.hotsearch-source-row:has([aria-pressed=true]){background:var(--app-selection);color:var(--app-blue)}
+.hotsearch-source-row:has([aria-pressed=true]):before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:4px;background:var(--app-blue)}
+.hotsearch-source-row .hotsearch-source{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left;border-radius:13px;padding:10px 8px;background:transparent;font-size:17px}
+.hotsearch-source>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hotsearch-logo{display:inline-grid;place-items:center;background:var(--source-color);color:#fff;border-radius:9px;width:30px;height:30px;font-size:16px;font-weight:650;line-height:1;flex:none;letter-spacing:-.4px}
+.hotsearch-app .hotsearch-grip{background:transparent;color:var(--app-muted);font-size:19px;padding:6px 3px;cursor:grab;flex:none}
+.hotsearch-source-row .hotsearch-grip{margin-left:5px}
+.hotsearch-main{min-width:0;min-height:0;overflow:auto;scrollbar-width:thin}
+.hotsearch-boards{height:100%;min-height:0}
+.hotsearch-board{display:flex;flex-direction:column;border:1px solid var(--app-border);border-radius:20px;background:var(--app-pane);height:100%;overflow:hidden;min-width:0;min-height:0}
+.hotsearch-board>header{display:flex;align-items:center;gap:11px;min-height:60px;padding:12px 18px;flex:none;border-bottom:1px solid var(--app-border)}
+.hotsearch-board h3{font-size:20px;line-height:1.4;margin:0;min-width:0;flex:1}
+.hotsearch-board h3 a{color:inherit;text-decoration:none}
+.hotsearch-board h3 span{font-size:18px;font-weight:500}
+.hotsearch-board header button{display:grid;place-items:center;background:transparent;width:30px;height:30px;padding:5px;color:var(--app-muted);flex:none}
+.hotsearch-board header button[aria-pressed=true]{color:var(--app-blue)}
+.hotsearch-board header .hotsearch-collapse{font-size:20px}
+.hotsearch-board-content{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;overscroll-behavior:contain;padding:4px 12px}
+.hotsearch-rows{margin:0;padding:0;list-style:none}
+.hotsearch-rows a,.hotsearch-unlinked{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:8px 5px;border-radius:9px;min-width:0}
+.hotsearch-rows a:hover{background:var(--app-selection,var(--w-hover))}
+.hotsearch-rows a:focus-visible{outline:2px solid var(--app-blue,var(--w-accent));outline-offset:-2px}
+.hotsearch-rank{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--app-field,var(--w-control));color:var(--app-muted,var(--w-muted));font-size:16px;font-weight:650;flex:none;font-variant-numeric:tabular-nums}
+.hotsearch-rank.rank-1{background:#f52b43;color:#fff}.hotsearch-rank.rank-2{background:#ff7b12;color:#fff}.hotsearch-rank.rank-3{background:#e8a600;color:#fff}
+.hotsearch-title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px}
+.hotsearch-heat{flex:none;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:var(--app-muted,var(--w-muted));font-variant-numeric:tabular-nums}
+.hotsearch-board>footer{display:flex;justify-content:space-between;gap:12px;font-size:11px;padding:9px 18px;color:var(--app-muted);flex:none;border-top:1px solid var(--app-border)}
+.hotsearch-board>footer a{color:inherit;text-decoration:none;white-space:nowrap}.hotsearch-board>footer a:hover{color:var(--app-blue)}
+.hotsearch-app-footer{text-align:center;color:var(--app-muted);font-size:11px;flex:none;line-height:1.5;padding:6px 14px}
+.hotsearch-layout.is-grid{grid-template-columns:minmax(0,1fr)}.hotsearch-layout.is-grid>.hotsearch-sidebar{display:none}
+.hotsearch-boards.is-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;height:auto;align-items:start;padding-bottom:5px}
+.hotsearch-boards.is-grid .hotsearch-board{height:430px}.hotsearch-board:has(.hotsearch-board-content[hidden]){height:auto}
+.hotsearch-empty{padding:24px 14px;color:var(--app-muted);text-align:center;font-size:14px}
+.hotsearch-main-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px}.hotsearch-main-empty h3,.hotsearch-main-empty p{margin:0}
+.hotsearch-main-empty>.icon{width:36px;height:36px;opacity:.6}.hotsearch-main-empty h3{color:var(--app-fg)}
+.hotsearch-error{display:flex;gap:12px;align-items:center;justify-content:space-between;color:#ed956e;background:#f0805010;padding:12px;border-radius:10px;margin:8px 0;font-size:13px}.hotsearch-error button{flex:none}
+html[data-theme=light] .hotsearch-error{color:#9b411e}
+.hotsearch-skeleton{padding:4px 6px}.hotsearch-skeleton>span{display:flex;align-items:center;gap:14px;height:44px}.hotsearch-skeleton i{font-style:normal;color:var(--app-muted);opacity:.5;width:26px;text-align:center}.hotsearch-skeleton b{height:12px;border-radius:4px;width:72%;background:var(--app-field)}.hotsearch-skeleton>span:nth-child(3n) b{width:48%}.hotsearch-skeleton>span:nth-child(2n) b{width:86%}
+.hotsearch-feedback{margin:0 14px 8px;padding:8px 12px;border-radius:10px;background:var(--app-field);font-size:13px;overflow-wrap:anywhere}
+.hotsearch-source-note{font-size:12px;color:var(--app-muted);margin:8px 5px;line-height:1.6}
+.hotsearch-manager-feedback{padding:10px;border-radius:9px;background:var(--app-field);font-size:13px;overflow-wrap:anywhere}
+.hotsearch-manager-overlay{position:absolute;inset:0;z-index:8;background:#0008;display:flex;justify-content:flex-end;padding:10px;backdrop-filter:blur(3px)}
+.hotsearch-manager{width:min(650px,100%);height:100%;overflow:auto;overscroll-behavior:contain;background:var(--app-pane);border:1px solid var(--app-border);border-radius:20px;padding:22px;box-shadow:0 12px 50px #0003;scrollbar-width:thin}
+.hotsearch-manager>header{display:flex;gap:16px;align-items:flex-start;justify-content:space-between}.hotsearch-manager h3{font-size:22px;margin:0 0 5px}.hotsearch-manager header p{font-size:12px;color:var(--app-muted);margin:0;line-height:1.6}.hotsearch-manager header button{padding:6px;display:grid;place-items:center}
+.hotsearch-manager-tools{display:flex;gap:10px;margin:20px 0 14px}.hotsearch-manager-tools input{flex:1;width:0}.hotsearch-manager-tools select{max-width:35%}
+.hotsearch-manager-sources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.hotsearch-manager-sources button{display:flex;align-items:center;text-align:left;gap:8px;padding:10px 8px;background:var(--app-bg);border:1px solid var(--app-border)}
+.hotsearch-manager-sources button[aria-pressed=true]{border-color:var(--app-blue);background:color-mix(in srgb,var(--app-blue) 7%,var(--app-bg))}.hotsearch-manager-sources button>span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.hotsearch-manager-sources small{display:block;font-size:10px;color:var(--app-muted)}.hotsearch-manager-sources button>.icon{width:14px;height:14px;color:var(--app-blue)}
+.hotsearch-manager h4{margin:24px 0 10px;font-size:14px}.hotsearch-manager h4 span{font-size:12px;color:var(--app-muted);margin-left:8px}
+.hotsearch-sort-list{list-style:none;margin:0;padding:0}.hotsearch-sort-list li{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--app-border);padding:7px 0}.hotsearch-sort-list li>span:last-of-type{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hotsearch-sort-list button{display:grid;place-items:center;padding:4px 9px;background:transparent}.hotsearch-sort-list button:disabled{opacity:.25;cursor:default}.hotsearch-sort-list .hotsearch-logo{width:26px;height:26px;font-size:14px}
+.hotsearch-app .is-drop-target{outline:2px solid var(--app-blue);outline-offset:-2px;border-radius:10px}
+.hotsearch-connection{margin-top:24px;border:1px solid var(--app-border);padding:12px;border-radius:12px}.hotsearch-connection summary{cursor:pointer;font-size:14px}.hotsearch-connection form{display:flex;flex-direction:column;gap:12px;margin-top:12px}.hotsearch-connection label{font-size:13px}.hotsearch-connection input[type=url]{display:block;width:100%;margin-top:6px;font-size:12px}.hotsearch-connection p{font-size:12px;color:var(--app-muted);margin:0;line-height:1.6}.hotsearch-connection .hotsearch-switch{display:flex;align-items:center;gap:8px}.hotsearch-connection button{align-self:flex-start}
+.w-hotsearch{--w-bg:#fffaf6;--w-heading:#c04e32;--w-fg:#493b36;--w-muted:#8c7166;--w-accent:#ef603c;--w-hover:#f5e9e0}
+html[data-theme=dark] .w-hotsearch{--w-bg:#292322;--w-heading:#ff9e7d;--w-fg:#f4e7df;--w-muted:#bea69a;--w-hover:#42322b;--w-control:#ffffff10}
+.hotsearch-card-header{display:flex;align-items:center;justify-content:space-between;flex:none;gap:6px}.hotsearch-card-header button{display:flex;align-items:center;gap:6px;background:transparent;border:0;padding:0;color:var(--w-heading);cursor:pointer;font:inherit}.hotsearch-card-header .icon{width:16px;height:16px}
+.hotsearch-card-tabs{display:flex;gap:4px;overflow:auto;scrollbar-width:none;margin:7px 0 4px;flex:none}.hotsearch-card-tabs button{border:0;background:transparent;color:var(--w-muted);border-radius:6px;padding:3px 6px;font:inherit;font-size:10px;white-space:nowrap;cursor:pointer}.hotsearch-card-tabs button[aria-pressed=true]{background:var(--w-hover);color:var(--w-heading);font-weight:600}
+.hotsearch-card-content{flex:1;min-height:0;overflow:auto;scrollbar-width:thin}.hotsearch-card-content .hotsearch-rows a,.hotsearch-card-content .hotsearch-unlinked{padding:4px 1px;gap:7px}.hotsearch-card-content .hotsearch-title{font-size:11px}.hotsearch-card-content .hotsearch-rank{width:18px;height:19px;font-size:10px;border-radius:5px}.hotsearch-card-content .hotsearch-heat{font-size:9px;max-width:55px}
+.hotsearch-card-empty{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;font:inherit;border:0;background:transparent;color:var(--w-fg);cursor:pointer;padding:6px}.hotsearch-card-empty>.icon{color:var(--w-heading);width:26px;height:26px;opacity:.8}.hotsearch-card-empty strong{font-size:12px}.hotsearch-card-empty span{font-size:10px;color:var(--w-muted)}
+.hotsearch-card-footer{font-size:8px;color:var(--w-muted);text-align:right;flex:none;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.w-hotsearch[data-display-size="2x2"] .hotsearch-heat{display:none}
+@container(max-width:760px){.hotsearch-layout{grid-template-columns:170px minmax(0,1fr);gap:8px}.hotsearch-boards.is-grid{grid-template-columns:minmax(0,1fr)}.hotsearch-board>header{padding:11px}.hotsearch-board h3{font-size:15px}.hotsearch-board h3 span{font-size:12px}.hotsearch-board-content{padding:4px 7px}.hotsearch-title{font-size:14px}.hotsearch-heat{max-width:70px}.hotsearch-provider{display:none}.hotsearch-manager-sources{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container(max-width:520px){.hotsearch-app-header{gap:7px;padding:10px}.hotsearch-app-header h2{font-size:18px}.hotsearch-app-header .hotsearch-emblem{width:34px;height:34px;border-radius:12px}.hotsearch-header-actions{border:0;padding:0;gap:0}.hotsearch-header-actions button{padding:5px;min-width:28px}.hotsearch-header-actions button span{display:none}.hotsearch-app-header .widget-app-controls{gap:0}.hotsearch-layout{display:flex;flex-direction:column;padding:0 8px;gap:8px}.hotsearch-sidebar{display:flex;overflow:auto;min-height:52px;flex:none;border-radius:12px;padding:4px;gap:4px}.hotsearch-source-row{margin:0;flex:none}.hotsearch-source-row .hotsearch-source{padding:6px 8px;font-size:12px;gap:6px}.hotsearch-source-row .hotsearch-grip{display:none}.hotsearch-source-row:has([aria-pressed=true]):before{display:none}.hotsearch-source-row .hotsearch-logo{width:24px;height:24px;font-size:13px}.hotsearch-main{flex:1}.hotsearch-toolbar{padding:8px}.hotsearch-categories button{padding:6px 13px;font-size:12px}.hotsearch-toolbar>input{max-width:42%;font-size:12px}.hotsearch-toolbar>button{width:32px;height:32px}.hotsearch-board{border-radius:14px}.hotsearch-board-content .hotsearch-rows a{gap:8px;padding:10px 2px}.hotsearch-heat{max-width:60px;font-size:10px}.hotsearch-title{font-size:13px}.hotsearch-rank{width:23px;height:24px;font-size:12px}.hotsearch-board footer{font-size:10px;padding:8px 10px}.hotsearch-app-footer{font-size:9px;padding:5px}.hotsearch-manager{padding:16px 12px}.hotsearch-manager-overlay{padding:5px}.hotsearch-manager h3{font-size:19px}.hotsearch-manager-sources button{gap:6px}.hotsearch-manager-sources .hotsearch-logo{width:26px;height:26px;font-size:14px}.hotsearch-layout.is-grid>.hotsearch-main{min-height:0}}
+@media(prefers-reduced-motion:reduce){.hotsearch-header-actions button.is-loading .icon{animation:none}}
 
 </style>
 <style>
@@ -1612,6 +1698,10 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
 #dialog.settings-drawer.compact-dialog .settings-content { padding:18px 12px; }
 #dialog.settings-drawer .setting-row { flex-wrap:wrap; gap:10px; }
 #dialog.widget-app-expanded,#dialog.workspace-expanded { width:var(--dialog-width); height:var(--dialog-height); }
+#dialog.hotsearch-app-dialog:not(.widget-app-expanded) {
+  width:min(var(--hotsearch-width,1260px),var(--dialog-width));
+  height:min(var(--hotsearch-height,840px),var(--dialog-height));
+}
 .workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
 .context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
 .context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:18px; min-height:39px; padding:9px 10px; border-radius:9px; font-size:13px; }
@@ -2204,6 +2294,106 @@ const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const englishMessages = {
+  "热搜榜": "Trending",
+  "订阅全网热榜，分类浏览与实时更新": "Follow trending lists, browse categories and stay up to date",
+  "我的订阅": "Following",
+  "综合": "General",
+  "科技": "Technology",
+  "人工智能": "AI",
+  "娱乐": "Entertainment",
+  "社区": "Community",
+  "购物": "Shopping",
+  "财经": "Business",
+  "日报": "Daily",
+  "热榜": "Trending",
+  "微博": "Weibo",
+  "吾爱破解": "52pojie",
+  "热帖": "Popular posts",
+  "本周新星": "New this week",
+  "今日头条": "Toutiao",
+  "澎湃新闻": "The Paper",
+  "IT之家": "IT Home",
+  "少数派": "SSPAI",
+  "稀土掘金": "Juejin",
+  "本月 AI 新星": "New AI projects this month",
+  "热门榜": "Popular",
+  "抖音": "Douyin",
+  "热点榜": "Hot topics",
+  "豆瓣电影": "Douban Movies",
+  "新片榜": "New releases",
+  "百度贴吧": "Baidu Tieba",
+  "热议榜": "Discussions",
+  "主题榜": "Popular topics",
+  "虎扑": "Hupu",
+  "步行街热帖": "Popular discussions",
+  "IT之家 · 喜加一": "IT Home · Free games",
+  "游戏优惠": "Game deals",
+  "36氪": "36Kr",
+  "虎嗅": "Huxiu",
+  "24小时": "Past 24 hours",
+  "知乎日报": "Zhihu Daily",
+  "推荐榜": "Recommended",
+  "果壳": "Guokr",
+  "热门文章": "Popular articles",
+  "数据源地址不能包含查询参数或片段。": "The service URL cannot contain a query or fragment.",
+  "榜单服务返回的数据不完整。": "The service returned an incomplete list.",
+  "暂时无法获取榜单，请稍后重试或打开平台。": "Could not load this list. Try again later or open the platform.",
+  "更新于 {time}": "Updated {time}",
+  "正在显示上次缓存。": "Showing the last cached list.",
+  "重试": "Retry",
+  "这个榜单暂时没有内容。": "This list is currently empty.",
+  "正在加载榜单…": "Loading trending list…",
+  "取消订阅 {name}": "Unfollow {name}",
+  "订阅 {name}": "Follow {name}",
+  "已订阅": "Following",
+  "订阅": "Follow",
+  "展开榜单": "Expand list",
+  "收起榜单": "Collapse list",
+  "公开平台榜单": "Public trending list",
+  "打开平台": "Open platform",
+  "平台未提供原文链接": "The platform did not provide an article link",
+  "部分条目未提供原文链接，可通过“打开平台”查看。": "Some entries have no article link. Use Open platform to find them.",
+  "拖动排序，或按 Alt + 方向键调整": "Drag to reorder, or use Alt + arrow keys",
+  "调整 {name} 的顺序": "Reorder {name}",
+  "没有找到匹配的平台": "No matching platforms",
+  "还没有订阅榜单": "No followed lists yet",
+  "把全网热点，收进一页": "Your trends, all in one place",
+  "订阅喜欢的平台，随时查看热门话题。启用后每 10 分钟检查更新，离线时保留上次榜单。": "Follow your favorite platforms and explore popular topics. Check for updates every 10 minutes, with cached lists available offline.",
+  "启用热搜榜": "Enable trending lists",
+  "数据来源": "Data source",
+  "试试平台名称，例如知乎或 GitHub。": "Try a platform name, such as Zhihu or GitHub.",
+  "在管理订阅中添加你喜欢的平台。": "Add your favorite platforms in Manage subscriptions.",
+  "管理订阅": "Manage subscriptions",
+  "选择喜欢的平台，拖动或使用方向按钮调整顺序。": "Choose your platforms. Drag or use the arrow buttons to reorder them.",
+  "关闭订阅管理": "Close subscription manager",
+  "搜索平台": "Search platforms",
+  "搜索订阅平台": "Search subscriptions",
+  "平台分类": "Platform category",
+  "订阅顺序": "Subscription order",
+  "上移 {name}": "Move {name} up",
+  "下移 {name}": "Move {name} down",
+  "数据源设置": "Data source settings",
+  "热榜服务地址": "Trending service URL",
+  "默认使用 UAPI，也可填写兼容 DailyHotApi 的公开 HTTPS 服务。GitHub 新星榜直接使用 GitHub API。": "Uses UAPI by default. You can also enter a public HTTPS service compatible with DailyHotApi. New GitHub projects use the GitHub API directly.",
+  "自动更新热搜榜": "Automatically update trending lists",
+  "点击查看实时榜单": "Open live trending lists",
+  "关闭自动更新后，打开榜单或手动刷新仍会获取最新内容。": "With automatic updates off, opening a list or refreshing still loads the latest content.",
+  "保存数据源": "Save data source",
+  "刷新榜单": "Refresh lists",
+  "切换多榜视图": "Show multiple lists",
+  "切换单榜视图": "Show a single list",
+  "榜单分类": "Trending categories",
+  "榜单平台": "Trending platforms",
+  "榜单内容": "Trending content",
+  "热搜数据来自公开平台，按需聚合展示": "Trending lists from public platforms, loaded on demand",
+  "全网热点，一眼掌握": "Trending topics at a glance",
+  "点击启用与管理订阅": "Open to enable and manage subscriptions",
+  "榜单暂不可用": "List temporarily unavailable",
+  "打开热搜榜": "Open trending lists",
+  "订阅你关心的每一份热榜": "Follow the trends that matter to you",
+  "订阅顺序已保存": "Subscription order saved",
+  "请先启用热搜榜": "Enable trending lists first",
+  "数据源已保存": "Data source saved",
   "下载分享文件": "Download layout file",
   "不会覆盖现有内容；联网组件需重新启用。": "Existing content is preserved. Network widgets must be enabled again.",
   "仅支持当前桌面分享格式。": "Only the current layout sharing format is supported.",
@@ -3851,6 +4041,76 @@ function validateCommunityData(raw) {
 
 return {validateCommunityManifest, validateCommunitySource, validateCommunityData};
 })();
+const __hotsearch_sources = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { keys, array, unique, enumeration, bool, string } = __validation;
+const { publicHttpsUrl } = __public_json;
+
+const HOTSEARCH_API = 'https://uapis.cn';
+const HOTSEARCH_CATEGORIES = [
+  ['subscribed', '我的订阅'], ['all', '全部'], ['general', '综合'], ['tech', '科技'],
+  ['ai', '人工智能'], ['entertainment', '娱乐'], ['community', '社区'], ['shopping', '购物'], ['finance', '财经'], ['daily', '日报'],
+];
+// Default API: https://uapis.cn/docs/api-reference/get-misc-hotboard
+// Custom services use DailyHotApi route names: https://github.com/imsyy/DailyHotApi
+// GitHub uses its public search API and is explicitly labelled as newly created repositories.
+const HOTSEARCH_SOURCES = [
+  {id:'zhihu', name:'知乎', label:'热榜', categories:['general','community'], mark:'知', color:'#087cf5', url:'https://www.zhihu.com/hot'},
+  {id:'weibo', name:'微博', label:'热搜榜', categories:['general','entertainment'], mark:'微', color:'#e84136', url:'https://s.weibo.com/top/summary'},
+  {id:'52pojie', name:'吾爱破解', label:'热帖', categories:['tech','community'], mark:'吾', color:'#e72d52', url:'https://www.52pojie.cn/'},
+  {id:'github', name:'GitHub', label:'本周新星', categories:['tech'], mark:'GH', color:'#303744', url:'https://github.com/trending', github:true},
+  {id:'baidu', name:'百度', label:'热搜榜', categories:['general'], mark:'百', color:'#3462f5', url:'https://top.baidu.com/board?tab=realtime'},
+  {id:'toutiao', name:'今日头条', label:'热榜', categories:['general'], mark:'头', color:'#ed4148', url:'https://www.toutiao.com/'},
+  {id:'thepaper', name:'澎湃新闻', label:'热榜', categories:['general'], mark:'澎', color:'#246d8b', url:'https://www.thepaper.cn/'},
+  {id:'ithome', name:'IT之家', label:'热榜', categories:['tech'], mark:'IT', color:'#d93e42', url:'https://www.ithome.com/'},
+  {id:'sspai', name:'少数派', label:'热榜', categories:['tech'], mark:'少', color:'#d64136', url:'https://sspai.com/'},
+  {id:'juejin', name:'稀土掘金', label:'热榜', categories:['tech','community'], mark:'掘', color:'#2878ed', url:'https://juejin.cn/'},
+  {id:'github-ai', name:'GitHub AI', label:'本月 AI 新星', categories:['ai','tech'], mark:'AI', color:'#7656d6', url:'https://github.com/topics/artificial-intelligence', github:true},
+  {id:'bilibili', name:'哔哩哔哩', label:'热门榜', categories:['entertainment'], mark:'哔', color:'#e56491', url:'https://www.bilibili.com/v/popular/rank/all'},
+  {id:'douyin', name:'抖音', label:'热点榜', categories:['entertainment'], mark:'抖', color:'#272a37', url:'https://www.douyin.com/hot'},
+  {id:'douban-movie', name:'豆瓣电影', label:'新片榜', categories:['entertainment'], mark:'豆', color:'#31834b', url:'https://movie.douban.com/chart'},
+  {id:'tieba', name:'百度贴吧', label:'热议榜', categories:['community'], mark:'贴', color:'#3d70ef', url:'https://tieba.baidu.com/hottopic/browse/topicList'},
+  {id:'v2ex', name:'V2EX', label:'主题榜', categories:['community','tech'], mark:'V2', color:'#66717c', url:'https://www.v2ex.com/?tab=hot'},
+  {id:'hupu', name:'虎扑', label:'步行街热帖', categories:['community'], mark:'虎', color:'#cb3035', url:'https://bbs.hupu.com/all-gambia'},
+  {id:'ithome-xijiayi', name:'IT之家 · 喜加一', label:'游戏优惠', categories:['shopping'], mark:'喜', color:'#e17b30', url:'https://www.ithome.com/'},
+  {id:'36kr', name:'36氪', label:'热榜', categories:['finance','tech'], mark:'氪', color:'#2870bd', url:'https://36kr.com/'},
+  {id:'huxiu', name:'虎嗅', label:'24小时', categories:['finance'], mark:'虎', color:'#ea7d28', url:'https://www.huxiu.com/'},
+  {id:'zhihu-daily', name:'知乎日报', label:'推荐榜', categories:['daily'], mark:'知', color:'#0782bd', url:'https://daily.zhihu.com/'},
+  {id:'guokr', name:'果壳', label:'热门文章', categories:['daily','tech'], mark:'果', color:'#489b43', url:'https://www.guokr.com/'},
+];
+
+const HOTSEARCH_DEFAULTS = {subscriptions:['zhihu','weibo','52pojie','github'], activeSource:'zhihu', layout:'list', enabled:false, apiBase:HOTSEARCH_API};
+function hotsearchSource(id) { return HOTSEARCH_SOURCES.find(source => source.id === id); }
+function hotsearchApiBase(value) {
+  const url = new URL(publicHttpsUrl(value));
+  if (url.search || url.hash) throw new Error(t('数据源地址不能包含查询参数或片段。'));
+  return url.href.replace(/\/+$/, '');
+}
+function validateHotsearchConfig(raw, path = 'config') {
+  keys(raw, Object.keys(HOTSEARCH_DEFAULTS), path);
+  const ids = HOTSEARCH_SOURCES.map(source => source.id);
+  const subscriptions = array(raw.subscriptions, path+'.subscriptions', ids.length).map(id => enumeration(id, ids, path+'.subscriptions'));
+  unique(subscriptions, path+'.subscriptions');
+  return {subscriptions, activeSource:enumeration(raw.activeSource, ids, path+'.activeSource'),
+    layout:enumeration(raw.layout, ['list','grid'], path+'.layout'), enabled:bool(raw.enabled, path+'.enabled'),
+    apiBase:hotsearchApiBase(string(raw.apiBase, path+'.apiBase', 2048))};
+}
+function filterHotsearchSources(config, category = 'subscribed', query = '') {
+  const sources = category === 'subscribed' ? config.subscriptions.map(hotsearchSource).filter(Boolean)
+    : HOTSEARCH_SOURCES.filter(source => category === 'all' || source.categories.includes(category));
+  const needle = query.trim().toLocaleLowerCase();
+  return sources.filter(source => `${source.id} ${source.name} ${t(source.name)} ${t(source.label)}`.toLocaleLowerCase().includes(needle));
+}
+function moveHotsearchSubscription(ids, from, to) {
+  const result = [...ids], start = result.indexOf(from), end = result.indexOf(to);
+  if (start < 0 || end < 0 || start === end) return result;
+  result.splice(start, 1); result.splice(end, 0, from);
+  return result;
+}
+
+return {HOTSEARCH_API, HOTSEARCH_CATEGORIES, HOTSEARCH_SOURCES, HOTSEARCH_DEFAULTS, hotsearchSource, hotsearchApiBase, validateHotsearchConfig, filterHotsearchSources, moveHotsearchSubscription};
+})();
 const __widget_registry = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, localizeSeed } = __i18n;
@@ -3859,6 +4119,7 @@ const { TILE_SIZES, REQUIRED_WIDGET_SIZES } = __widget_sizes;
 const { widgetExtensions } = __widget_extensions;
 const { validateCommunityManifest } = __community_format;
 const { publicHttpsUrl } = __public_json;
+const { HOTSEARCH_DEFAULTS, validateHotsearchConfig } = __hotsearch_sources;
 
 const builtins = [
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
@@ -3871,7 +4132,9 @@ const builtins = [
   { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer' },
   { type: 'workday', title: '下班倒计时', description: '工作日下班与发薪日倒计时', size: '2x2', icon: 'briefcase' },
   { type: 'quote', title: '每日一句', description: '给日常留一点思考的空白', size: '4x2', icon: 'quote' },
-  { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending' },
+  // Kept for validating old desktops and backups; the catalog offers its replacement.
+  { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending', internal: true },
+  { type: 'hotsearch', title: '热搜榜', description: '订阅全网热榜，分类浏览与实时更新', size: '4x2', icon: 'trending' },
   { type: 'calculator', title: '计算器', description: '加减乘除、括号和百分比计算', size: '2x2', icon: 'calculator' },
   { type: 'habit', title: '习惯打卡', description: '每日打卡和连续天数', size: '2x2', icon: 'sparkles' },
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
@@ -3880,6 +4143,7 @@ const builtins = [
 const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  hotsearch: HOTSEARCH_DEFAULTS,
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
   weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius' },
   countdown: { title: '新年，新的期待', date: '2027-01-01' },
@@ -3959,6 +4223,7 @@ function newWidgetConfig(type) { return registry.newConfig(type); }
 function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if (widgetType === 'hotsearch') return validateHotsearchConfig(raw, path);
   if(widgetType==='community'){
     keys(raw,['manifest','source'],path);
     return {manifest:validateCommunityManifest(raw.manifest),source:publicHttpsUrl(string(raw.source,path+'.source',2048))};
@@ -4986,6 +5251,427 @@ function mountWidgetExtensions(container, host, registry = { get: getWidgetDefin
 }
 
 return {mountWidgetExtensions};
+})();
+const __hotsearch_data = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, formatNumber } = __i18n;
+const { fetchPublicJson, publicHttpsUrl } = __public_json;
+const { HOTSEARCH_API, hotsearchSource, hotsearchApiBase } = __hotsearch_sources;
+
+const HOTSEARCH_TTL = 10 * 60000;
+const MAX_AGE = 7 * 86400000;
+const CACHE_KEY = 'qiye.hotsearch.v1';
+function articleUrl(value) { try { return publicHttpsUrl(value); } catch { return ''; } }
+function hotsearchHeat(value) {
+  if (typeof value === 'string' && /^\d+$/.test(value)) value = Number(value);
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return formatNumber(value, {notation:'compact', maximumFractionDigits:1});
+  return typeof value === 'string' ? value.slice(0, 40) : '';
+}
+function parseHotsearchResponse(raw, source, now = Date.now()) {
+  const rows = source.github ? raw?.items : raw?.list ?? raw?.data;
+  if (!Array.isArray(rows) || !source.github && raw.code !== undefined && raw.code !== 200) throw new Error(t('榜单服务返回的数据不完整。'));
+  const seen = new Set();
+  const items = rows.slice(0, 100).flatMap((row, index) => {
+    const title = source.github ? row?.full_name : row?.title;
+    const rawUrl = source.github ? row?.html_url : row?.url || row?.mobileUrl;
+    const url = rawUrl ? articleUrl(rawUrl) : '';
+    if (typeof title !== 'string' || !title.trim() || rawUrl && !url || seen.has(url || title)) return [];
+    seen.add(url || title);
+    const heat = source.github ? row.stargazers_count : row.hot_value ?? row.hot;
+    const rank = Number.isInteger(row.index) && row.index > 0 && row.index <= 100 ? row.index : index+1;
+    return [{rank, title:title.trim().slice(0, 500), url, heat:typeof heat === 'number' && Number.isFinite(heat) && heat >= 0 ? heat : typeof heat === 'string' ? heat.slice(0,40) : ''}];
+  });
+  if (rows.length && !items.length) throw new Error(t('榜单服务返回的数据不完整。'));
+  const updatedAt = raw.update_time ? Date.parse(raw.update_time) : Number(raw.updateTime);
+  return {items, fetchedAt:now, updatedAt:Number.isFinite(updatedAt) && updatedAt > 0 && updatedAt <= now ? updatedAt : now};
+}
+function hotsearchRequestUrl(config, source, now = Date.now()) {
+  if (source.github) {
+    const since = new Date(now - (source.id === 'github-ai' ? 30 : 7) * 86400000).toISOString().slice(0,10);
+    const q = `created:>=${since}` + (source.id === 'github-ai' ? ' topic:artificial-intelligence' : '');
+    return 'https://api.github.com/search/repositories?' + new URLSearchParams({q, sort:'stars', order:'desc', per_page:'30'});
+  }
+  const base = hotsearchApiBase(config.apiBase);
+  return base === HOTSEARCH_API ? `${base}/api/v1/misc/hotboard?type=${source.id}` : `${base}/${source.id}`;
+}
+
+function createHotsearchClient({fetcher = fetchPublicJson, storage = () => globalThis.localStorage, now = () => Date.now()} = {}) {
+  const states = new Map(), requests = new Map();
+  const keyOf = (config, id) => (hotsearchSource(id)?.github ? 'github' : hotsearchApiBase(config.apiBase)) + ':' + id;
+  function read(key) {
+    try {
+      const data = JSON.parse(storage()?.getItem(CACHE_KEY) || '{}')[key];
+      if (!data || !Number.isFinite(data.fetchedAt) || data.fetchedAt > now() || now()-data.fetchedAt >= MAX_AGE || !Number.isFinite(data.updatedAt) || data.updatedAt > data.fetchedAt || !Array.isArray(data.items) || data.items.length > 100) return null;
+      if (!data.items.every(row => Number.isInteger(row.rank) && row.rank > 0 && row.rank <= 100 && typeof row.title === 'string' && row.title.length <= 500 && row.title.trim() && (row.url === '' || articleUrl(row.url)) && (typeof row.heat === 'string' && row.heat.length <= 40 || typeof row.heat === 'number' && Number.isFinite(row.heat) && row.heat >= 0))) return null;
+      return data;
+    } catch { return null; }
+  }
+  function cache(key, data) {
+    try {
+      const previous = JSON.parse(storage()?.getItem(CACHE_KEY) || '{}');
+      const entries = Object.entries(previous).filter(([k,v]) => k !== key && Number.isFinite(v?.fetchedAt) && now()-v.fetchedAt < MAX_AGE).sort((a,b) => b[1].fetchedAt-a[1].fetchedAt).slice(0,47);
+      storage()?.setItem(CACHE_KEY, JSON.stringify({...Object.fromEntries(entries), [key]:data}));
+    } catch { /* Cache failure must not discard the fetched list. */ }
+  }
+  function state(config, id) {
+    const key = keyOf(config,id);
+    if (!states.has(key)) {
+      if (states.size >= 96) for (const old of states.keys()) { if (!requests.has(old)) { states.delete(old); break; } }
+      states.set(key, {status:'idle', data:read(key), error:'', lastAttempt:0});
+    }
+    return states.get(key);
+  }
+  function request(config, id, {force = false, manual = false, signal} = {}) {
+    const source = hotsearchSource(id);
+    if (!source || !config.enabled && !manual || signal?.aborted) return Promise.resolve();
+    const key = keyOf(config,id), current = state(config,id);
+    let job = requests.get(key);
+    if (job?.controller.signal.aborted) { job = null; current.lastAttempt = 0; current.status = 'idle'; }
+    if (!job) {
+      if (current.lastAttempt && now()-current.lastAttempt < (force ? 3000 : 60000) || !force && current.data && now()-current.data.fetchedAt < HOTSEARCH_TTL) return Promise.resolve();
+      const controller = new AbortController();
+      job = {controller, consumers:new Set()};
+      current.status = 'loading'; current.error = ''; current.lastAttempt = now();
+      requests.set(key,job);
+      const ownJob = job;
+      job.promise = (async () => {
+        try {
+          const raw = await fetcher(hotsearchRequestUrl(config,source,now()), {signal:controller.signal, maxBytes:1024*1024});
+          if (controller.signal.aborted) return;
+          current.data = parseHotsearchResponse(raw,source,now());
+          current.status = 'success'; current.error = ''; cache(key,current.data);
+        } catch {
+          if (!controller.signal.aborted) { current.status = 'error'; current.error = t('暂时无法获取榜单，请稍后重试或打开平台。'); }
+        } finally {
+          if (requests.get(key) === ownJob) {
+            if (controller.signal.aborted) { current.status = 'idle'; current.lastAttempt = 0; }
+            requests.delete(key);
+          }
+        }
+      })();
+    }
+    const consumer = {}, ownJob = job;
+    ownJob.consumers.add(consumer);
+    const release = () => { ownJob.consumers.delete(consumer); if (!ownJob.consumers.size && requests.get(key) === ownJob) ownJob.controller.abort(); };
+    signal?.addEventListener('abort', release, {once:true});
+    return ownJob.promise.finally(() => { signal?.removeEventListener('abort',release); release(); });
+  }
+  return {state, request};
+}
+const hotsearchClient = createHotsearchClient();
+
+return {HOTSEARCH_TTL, hotsearchHeat, parseHotsearchResponse, hotsearchRequestUrl, createHotsearchClient, hotsearchClient};
+})();
+const __hotsearch_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, formatDate } = __i18n;
+const { escapeText: esc } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { HOTSEARCH_CATEGORIES, hotsearchSource, filterHotsearchSources } = __hotsearch_sources;
+const { hotsearchClient, hotsearchHeat, HOTSEARCH_TTL } = __hotsearch_data;
+
+function hotsearchLogo(source) {
+  return `<span class="hotsearch-logo" style="--source-color:${source.color}" aria-hidden="true">${esc(source.mark)}</span>`;
+}
+const linkAttrs = state => `${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer"`;
+function hotsearchRows(data, source, state, limit = 100) {
+  return `<ol class="hotsearch-rows">${data.items.slice(0,limit).map(row => `<li>${row.url?`<a href="${esc(row.url)}"${linkAttrs(state)} title="${esc(row.title)}">`:`<span class="hotsearch-unlinked" title="${esc(row.title+' · '+t('平台未提供原文链接'))}">`}<span class="hotsearch-rank rank-${Math.min(row.rank,4)}">${row.rank}</span><span class="hotsearch-title">${esc(row.title)}</span><span class="hotsearch-heat">${source.github && row.heat ? '★ ' : ''}${esc(hotsearchHeat(row.heat))}</span>${row.url?'</a>':'</span>'}</li>`).join('')}</ol>`;
+}
+function timestamp(data) {
+  return t('更新于 {time}', {time:formatDate(new Date(data.updatedAt), {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})});
+}
+function hotsearchBoard(source, item, state, collapsed = false) {
+  const current = hotsearchClient.state(item.config,source.id), data = current.data;
+  const stale = data && Date.now()-data.fetchedAt >= HOTSEARCH_TTL;
+  const subscribed = item.config.subscriptions.includes(source.id);
+  let content = '';
+  if (current.status === 'error') content += `<div class="hotsearch-error" role="status"><span>${esc(current.error)}${data ? ' '+t('正在显示上次缓存。') : ''}</span><button type="button" data-hot-retry="${source.id}">${t('重试')}</button></div>`;
+  if (data?.items.some(row=>!row.url)) content += `<p class="hotsearch-source-note">${t('部分条目未提供原文链接，可通过“打开平台”查看。')}</p>`;
+  if (data?.items.length) content += hotsearchRows(data,source,state);
+  else if (data && current.status !== 'loading' && current.status !== 'error') content += `<div class="hotsearch-empty">${t('这个榜单暂时没有内容。')}</div>`;
+  else if (current.status !== 'error') content += `<div class="hotsearch-skeleton" role="status" aria-label="${t('正在加载榜单…')}">${Array.from({length:14}, (_,i)=>`<span><i>${i+1}</i><b></b></span>`).join('')}</div>`;
+  return `<section class="hotsearch-board" data-hot-board="${source.id}" aria-label="${esc(t(source.name)+' · '+t(source.label))}" aria-busy="${current.status==='loading'}">
+    <header>${hotsearchLogo(source)}<h3><a href="${esc(source.url)}"${linkAttrs(state)}>${esc(t(source.name))}<span> · ${esc(t(source.label))}</span></a></h3>
+      <button class="hotsearch-subscribe" type="button" data-hot-subscribe="${source.id}" aria-pressed="${subscribed}" aria-label="${esc(t(subscribed?'取消订阅 {name}':'订阅 {name}',{name:t(source.name)}))}" title="${t(subscribed?'已订阅':'订阅')}">${icon(subscribed?'check':'plus')}</button>
+      <button type="button" class="hotsearch-collapse" data-hot-collapse="${source.id}" aria-expanded="${!collapsed}" aria-label="${t(collapsed?'展开榜单':'收起榜单')}">${collapsed?'+':'−'}</button>
+    </header><div class="hotsearch-board-content" ${collapsed?'hidden':''}>${content}</div>
+    <footer ${collapsed?'hidden':''}><span>${data?esc(timestamp(data)):t('公开平台榜单')}${stale?' · '+t('缓存'):''}</span><a href="${esc(source.url)}"${linkAttrs(state)}>${t('打开平台')} ↗</a></footer>
+  </section>`;
+}
+function hotsearchSidebar(item, view) {
+  const sources = filterHotsearchSources(item.config,view.category,view.query);
+  return sources.map(source => `<div class="hotsearch-source-row" data-hot-sort="${source.id}">${view.category==='subscribed'?`<button type="button" class="hotsearch-grip" draggable="true" data-hot-drag="${source.id}" title="${t('拖动排序，或按 Alt + 方向键调整')}" aria-label="${esc(t('调整 {name} 的顺序',{name:t(source.name)}))}">⠿</button>`:''}<button type="button" class="hotsearch-source" data-hot-source="${source.id}" aria-pressed="${source.id===view.active}">${hotsearchLogo(source)}<span>${esc(t(source.name))}</span></button></div>`).join('') || `<p class="hotsearch-empty">${t(view.query?'没有找到匹配的平台':'还没有订阅榜单')}</p>`;
+}
+function hotsearchMain(item, state, view) {
+  const sources = filterHotsearchSources(item.config,view.category,view.query);
+  if (!sources.length) return `<div class="hotsearch-empty hotsearch-main-empty">${icon('search')}<h3>${t(view.query?'没有找到匹配的平台':'还没有订阅榜单')}</h3><p>${t(view.query?'试试平台名称，例如知乎或 GitHub。':'在管理订阅中添加你喜欢的平台。')}</p><button type="button" data-hot-action="manage">${t('管理订阅')}</button></div>`;
+  const shown = item.config.layout === 'grid' ? sources : sources.filter(source => source.id===view.active);
+  return `<div class="hotsearch-boards ${item.config.layout==='grid'?'is-grid':''}">${shown.map(source => hotsearchBoard(source,item,state,view.collapsed.has(source.id))).join('')}</div>`;
+}
+function hotsearchManager(item, view) {
+  const sources = filterHotsearchSources(item.config,view.manageCategory,view.manageQuery);
+  return `<header><div><h3 id="hotsearch-manage-title">${t('管理订阅')}</h3><p>${t('选择喜欢的平台，拖动或使用方向按钮调整顺序。')}</p></div><button type="button" data-hot-action="manage-close" aria-label="${t('关闭订阅管理')}">${icon('close')}</button></header>
+    <p class="hotsearch-manager-feedback" role="status" hidden></p><div class="hotsearch-manager-tools"><input type="search" data-hot-manage-query value="${esc(view.manageQuery)}" placeholder="${t('搜索平台')}" aria-label="${t('搜索订阅平台')}"><select data-hot-manage-category aria-label="${t('平台分类')}">${HOTSEARCH_CATEGORIES.filter(([id])=>id!=='subscribed').map(([id,label])=>`<option value="${id}" ${id===view.manageCategory?'selected':''}>${t(label)}</option>`).join('')}</select></div>
+    <div class="hotsearch-manager-sources">${sources.map(source => `<button type="button" data-hot-subscribe="${source.id}" aria-pressed="${item.config.subscriptions.includes(source.id)}">${hotsearchLogo(source)}<span>${esc(t(source.name))}<small>${esc(t(source.label))}</small></span>${icon(item.config.subscriptions.includes(source.id)?'check':'plus')}</button>`).join('') || `<p>${t('没有找到匹配的平台')}</p>`}</div>
+    <h4>${t('订阅顺序')} <span>${item.config.subscriptions.length}</span></h4><ol class="hotsearch-sort-list">${item.config.subscriptions.map((id,index)=>{const source=hotsearchSource(id);return `<li data-hot-sort="${id}"><button type="button" class="hotsearch-grip" draggable="true" data-hot-drag="${id}" aria-label="${esc(t('调整 {name} 的顺序',{name:t(source.name)}))}" title="${t('拖动排序，或按 Alt + 方向键调整')}">⠿</button>${hotsearchLogo(source)}<span>${esc(t(source.name))}</span><button type="button" data-hot-move="${id}" data-direction="-1" ${index===0?'disabled':''} aria-label="${esc(t('上移 {name}',{name:t(source.name)}))}">↑</button><button type="button" data-hot-move="${id}" data-direction="1" ${index===item.config.subscriptions.length-1?'disabled':''} aria-label="${esc(t('下移 {name}',{name:t(source.name)}))}">↓</button><button type="button" data-hot-subscribe="${id}" aria-label="${esc(t('取消订阅 {name}',{name:t(source.name)}))}">${icon('close')}</button></li>`;}).join('') || `<p>${t('还没有订阅榜单')}</p>`}</ol>
+    <details class="hotsearch-connection"><summary>${t('数据源设置')}</summary><form id="hotsearch-settings"><label>${t('热榜服务地址')}<input name="apiBase" type="url" value="${esc(item.config.apiBase)}" required maxlength="2048"></label><p>${t('默认使用 UAPI，也可填写兼容 DailyHotApi 的公开 HTTPS 服务。GitHub 新星榜直接使用 GitHub API。')}</p><label class="hotsearch-switch"><input name="enabled" type="checkbox" ${item.config.enabled?'checked':''}>${t('自动更新热搜榜')}</label><p>${t('关闭自动更新后，打开榜单或手动刷新仍会获取最新内容。')}</p><button type="submit">${t('保存数据源')}</button></form></details>`;
+}
+function hotsearchWorkspace(item) {
+  return `<section class="hotsearch-app"><header class="hotsearch-app-header"><span class="hotsearch-emblem">${icon('trending')}</span><h2 id="dialog-title">${esc(item.title)}</h2><div class="hotsearch-header-actions"><button type="button" data-hot-action="refresh" aria-label="${t('刷新榜单')}" title="${t('刷新榜单')}">${icon('refresh')}</button><button type="button" data-hot-action="manage" aria-expanded="false" aria-controls="hotsearch-manager">${icon('settings')}<span>${t('管理订阅')}</span></button><button type="button" data-hot-action="layout" aria-label="${t('切换多榜视图')}" title="${t('切换多榜视图')}">${icon('grid')}</button></div>${windowControls()}</header>
+    <div class="hotsearch-toolbar"><button type="button" data-hot-action="search" aria-label="${t('搜索平台')}" aria-expanded="false" aria-controls="hotsearch-query">${icon('search')}</button><input id="hotsearch-query" type="search" placeholder="${t('搜索平台')}" aria-label="${t('搜索平台')}" hidden><nav class="hotsearch-categories" aria-label="${t('榜单分类')}">${HOTSEARCH_CATEGORIES.map(([id,label])=>`<button type="button" data-hot-category="${id}" aria-pressed="${id==='subscribed'}">${t(label)}</button>`).join('')}</nav></div>
+    <p class="hotsearch-feedback" role="status" hidden></p><div class="hotsearch-layout"><aside class="hotsearch-sidebar" aria-label="${t('榜单平台')}"></aside><div class="hotsearch-main" role="region" aria-label="${t('榜单内容')}"></div></div>
+    <footer class="hotsearch-app-footer">${t('热搜数据来自公开平台，按需聚合展示')}<span class="hotsearch-provider"></span></footer>
+    <div class="hotsearch-manager-overlay" hidden><section id="hotsearch-manager" class="hotsearch-manager" role="dialog" aria-modal="true" aria-labelledby="hotsearch-manage-title" tabindex="-1"></section></div>
+  </section>`;
+}
+function hotsearchCard(item, state) {
+  const source = hotsearchSource(item.config.activeSource), status = hotsearchClient.state(item.config,source.id);
+  const sources = item.config.subscriptions.map(hotsearchSource);
+  if (sources.length && !sources.some(entry=>entry.id===source.id)) sources.unshift(source);
+  const content = !item.config.subscriptions.length ? `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t('还没有订阅榜单')}</strong><span>${t('管理订阅')}</span></button>`
+    : status.data?.items.length ? hotsearchRows(status.data,source,state,5)
+    : `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t(status.status==='error'?'榜单暂不可用':status.data?'这个榜单暂时没有内容。':status.status==='loading'||item.config.enabled?'正在加载榜单…':'点击查看实时榜单')}</strong><span>${t('打开热搜榜')}</span></button>`;
+  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${esc(t(entry.name))}</button>`).join('')}</div><div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
+}
+
+function refreshHotsearchCards(container, state) {
+  for (const root of container.querySelectorAll('[data-widget=hotsearch]:not([data-compact])')) {
+    const item=state.items.find(item=>item.id===root.dataset.widgetId);
+    if (item) root.innerHTML=hotsearchCard(item,state);
+  }
+}
+
+return {hotsearchLogo, hotsearchRows, hotsearchBoard, hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchWorkspace, hotsearchCard, refreshHotsearchCards};
+})();
+const __hotsearch_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { icon } = __icons;
+const { requestPublicOrigin } = __public_json;
+const { hotsearchApiBase, hotsearchSource, filterHotsearchSources, moveHotsearchSubscription } = __hotsearch_sources;
+const { hotsearchClient } = __hotsearch_data;
+const { hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchCard } = __hotsearch_view;
+
+function bindHotsearchWorkspace(root, initial, host) {
+  const events = new AbortController(), options = {signal:events.signal};
+  const find = selector => root.querySelector(selector);
+  const current = () => host.getState().items.find(item => item.id===initial.id);
+  const alive = () => !events.signal.aborted && root.isConnected && !!current();
+  const view = {category:'subscribed', query:'', active:initial.config.activeSource, collapsed:new Set(), manageCategory:'all', manageQuery:''};
+  let baseline = JSON.stringify([initial.title,initial.config]), saving = false, loading = null, expanded = false, dragged = '', managerOpen = false;
+  const feedback = message => { if (alive()) for (const node of root.querySelectorAll('.hotsearch-feedback,.hotsearch-manager-feedback')) { node.textContent=message; node.hidden=!message; } };
+  function selectVisible() {
+    const sources = filterHotsearchSources(current().config,view.category,view.query);
+    if (!sources.some(source=>source.id===view.active)) view.active=sources[0]?.id || '';
+  }
+  function renderMain() {
+    if (!alive()) return;
+    const main = find('.hotsearch-main'), scroll = main.scrollTop;
+    const positions = new Map([...main.querySelectorAll('[data-hot-board]')].map(board => [board.dataset.hotBoard, board.querySelector('.hotsearch-board-content').scrollTop]));
+    main.innerHTML=hotsearchMain(current(),host.getState(),view);
+    main.scrollTop=scroll;
+    for (const board of main.querySelectorAll('[data-hot-board]')) board.querySelector('.hotsearch-board-content').scrollTop=positions.get(board.dataset.hotBoard) || 0;
+  }
+  function renderManager() {
+    const panel = find('#hotsearch-manager'), scroll = panel.scrollTop, active = document.activeElement;
+    const queryFocused = active?.hasAttribute('data-hot-manage-query');
+    const form = panel.querySelector('#hotsearch-settings');
+    const draft = form && {apiBase:form.elements.apiBase.value, enabled:form.elements.enabled.checked, open:panel.querySelector('details').open};
+    panel.innerHTML=hotsearchManager(current(),view);
+    panel.scrollTop=scroll;
+    if (draft) { panel.querySelector('details').open=draft.open; panel.querySelector('[name=apiBase]').value=draft.apiBase; panel.querySelector('[name=enabled]').checked=draft.enabled; }
+    if (queryFocused) panel.querySelector('[data-hot-manage-query]').focus();
+  }
+  function render() {
+    if (!alive()) return;
+    selectVisible();
+    find('.hotsearch-sidebar').innerHTML=hotsearchSidebar(current(),view);
+    find('.hotsearch-layout').classList.toggle('is-grid',current().config.layout==='grid');
+    for (const button of root.querySelectorAll('[data-hot-category]')) button.setAttribute('aria-pressed',String(button.dataset.hotCategory===view.category));
+    const grid=current().config.layout==='grid', layout=find('[data-hot-action=layout]');
+    layout.innerHTML=icon(grid?'list':'grid'); layout.title=t(grid?'切换单榜视图':'切换多榜视图'); layout.setAttribute('aria-label',layout.title);
+    find('.hotsearch-provider').textContent=' · '+new URL(current().config.apiBase).hostname+' / GitHub';
+    renderMain();
+  }
+  function toggleManager(open) {
+    managerOpen=open;
+    find('.hotsearch-manager-overlay').hidden=!open;
+    find('[data-hot-action=manage]').setAttribute('aria-expanded',String(open));
+    for (const selector of ['.hotsearch-app-header','.hotsearch-toolbar','.hotsearch-layout','.hotsearch-app-footer']) find(selector).inert=open;
+    if (open) { renderManager(); find('[data-hot-action=manage-close]').focus(); }
+    else find('[data-hot-action=manage]').focus({preventScroll:true});
+  }
+  async function save(patch) {
+    if (!alive() || saving) return false;
+    saving=true; feedback('');
+    find('#hotsearch-manager').setAttribute('aria-busy','true');
+    try {
+      const item=current();
+      const updated=await host.saveSettings(item.id,{title:item.title,config:{...item.config,...patch}},baseline);
+      baseline=JSON.stringify([updated.title,updated.config]);
+      return alive();
+    } catch (error) { feedback(error.message || t('保存失败，请重试')); return false; }
+    finally { saving=false; if (alive()) find('#hotsearch-manager').setAttribute('aria-busy','false'); }
+  }
+  async function load(force=false, only='', automatic=false) {
+    if (!alive() || automatic && !current().config.enabled) return;
+    loading?.abort();
+    const controller=loading=new AbortController();
+    const config={...current().config};
+    let sources=filterHotsearchSources(config,view.category,view.query);
+    if (config.layout==='list') sources=sources.filter(source=>source.id===view.active);
+    if (only) sources=sources.filter(source=>source.id===only);
+    const refresh=find('[data-hot-action=refresh]'); refresh.classList.remove('is-loading'); refresh.disabled=false;
+    if (!automatic && sources.some(source=>!source.github)) {
+      try { await requestPublicOrigin(config.apiBase); }
+      catch (error) {
+        if(alive() && !controller.signal.aborted) {
+          feedback(error.message);
+          for (const source of sources) {
+            const status=hotsearchClient.state(config,source.id);
+            if (!source.github && status.status!=='loading') { status.status='error';status.error=error.message; }
+          }
+          renderMain();
+        }
+        return;
+      }
+      if (!alive() || controller.signal.aborted) return;
+    }
+    feedback(''); refresh.classList.add('is-loading'); refresh.disabled=true;
+    let index=0;
+    async function worker() {
+      while (!controller.signal.aborted && index<sources.length) {
+        const source=sources[index++];
+        const job=hotsearchClient.request(config,source.id,{force,manual:!automatic,signal:controller.signal});
+        renderMain();
+        await job;
+        if (!controller.signal.aborted) renderMain();
+      }
+    }
+    await Promise.all(Array.from({length:Math.min(3,sources.length)},worker));
+    if (alive() && loading===controller) { refresh.classList.remove('is-loading'); refresh.disabled=false; host.refreshCards(); }
+  }
+  async function subscribe(id) {
+    const ids=current().config.subscriptions;
+    const subscriptions=ids.includes(id)?ids.filter(value=>value!==id):[...ids,id];
+    const activeSource=!subscriptions.includes(current().config.activeSource)&&subscriptions.length?subscriptions[0]:current().config.activeSource;
+    if (await save({subscriptions,activeSource})) { view.active=activeSource; render(); if(managerOpen)renderManager(); void load(); }
+  }
+  async function reorder(from,to) {
+    const subscriptions=moveHotsearchSubscription(current().config.subscriptions,from,to);
+    if (subscriptions.join()===current().config.subscriptions.join()) return;
+    if (await save({subscriptions})) { render(); if(managerOpen)renderManager(); (managerOpen?find('#hotsearch-manager'):root).querySelector(`[data-hot-drag="${from}"]`)?.focus({preventScroll:true}); feedback(t('订阅顺序已保存')); }
+  }
+  async function click(event) {
+    const target=event.target.closest('button');
+    if (event.target===find('.hotsearch-manager-overlay')) { toggleManager(false); return; }
+    if (!target) return;
+    if (target.dataset.hotSubscribe) { const id=target.dataset.hotSubscribe; await subscribe(id); (managerOpen?find('#hotsearch-manager'):root).querySelector(`[data-hot-subscribe="${id}"]`)?.focus({preventScroll:true}); return; }
+    if (target.dataset.hotMove) {
+      const ids=current().config.subscriptions, index=ids.indexOf(target.dataset.hotMove);
+      await reorder(ids[index],ids[index+Number(target.dataset.direction)]); return;
+    }
+    if (target.dataset.hotSource) {
+      if (await save({activeSource:target.dataset.hotSource})) { view.active=target.dataset.hotSource; render(); find(`[data-hot-source="${view.active}"]`)?.focus(); void load(); } return;
+    }
+    if (target.dataset.hotCategory) { view.category=target.dataset.hotCategory; render(); void load(); return; }
+    if (target.dataset.hotRetry) { void load(true,target.dataset.hotRetry); return; }
+    if (target.dataset.hotCollapse) {
+      const id=target.dataset.hotCollapse; if(view.collapsed.has(id))view.collapsed.delete(id);else view.collapsed.add(id);
+      renderMain(); find(`[data-hot-collapse="${id}"]`)?.focus(); return;
+    }
+    const action=target.dataset.hotAction;
+    if (action==='manage' || action==='manage-close') toggleManager(action==='manage');
+    else if (action==='search') {
+      const input=find('#hotsearch-query'); input.hidden=!input.hidden; target.setAttribute('aria-expanded',String(!input.hidden));
+      if(!input.hidden)input.focus();else {input.value='';view.query='';render();void load();}
+    } else if (action==='layout') {
+      if(await save({layout:current().config.layout==='list'?'grid':'list'})){render();void load();}
+    } else if(action==='refresh') { void load(true); }
+    else if(target.dataset.detailAction==='window-expand') {
+      expanded=!expanded; root.closest('dialog').classList.toggle('widget-app-expanded',expanded);
+      target.innerHTML=icon(expanded?'minimize':'maximize'); target.setAttribute('aria-pressed',String(expanded));
+      target.title=t(expanded?'还原窗口':'最大化窗口');target.setAttribute('aria-label',target.title);
+    }
+  }
+  root.addEventListener('click',event=>{void click(event).catch(error=>feedback(error.message));},options);
+  root.addEventListener('input',event=>{
+    if(event.target.id==='hotsearch-query'){view.query=event.target.value;render();void load();}
+    else if(event.target.hasAttribute('data-hot-manage-query')){view.manageQuery=event.target.value;renderManager();}
+  },options);
+  root.addEventListener('change',event=>{if(event.target.hasAttribute('data-hot-manage-category')){view.manageCategory=event.target.value;renderManager();find('[data-hot-manage-category]').focus();}},options);
+  root.addEventListener('submit',event=>{
+    if(event.target.id!=='hotsearch-settings')return;
+    event.preventDefault();event.stopPropagation();
+    void (async()=>{
+      try {
+        const form=new FormData(event.target), apiBase=hotsearchApiBase(String(form.get('apiBase')).trim()), enabled=form.has('enabled');
+        await requestPublicOrigin(apiBase);
+        if(await save({apiBase,enabled})){render();feedback(t('数据源已保存'));toggleManager(false);void load();}
+      }catch(error){feedback(error.message);}
+    })();
+  },options);
+  root.addEventListener('keydown',event=>{
+    const id=event.target.dataset.hotDrag;
+    if(id && event.altKey && ['ArrowUp','ArrowDown'].includes(event.key)) {
+      event.preventDefault();event.stopPropagation();const ids=current().config.subscriptions,index=ids.indexOf(id);
+      void reorder(id,ids[index+(event.key==='ArrowUp'?-1:1)]);return;
+    }
+    if(event.key==='Escape' && managerOpen){event.preventDefault();event.stopPropagation();toggleManager(false);}
+    if(event.key==='Tab' && managerOpen){
+      const nodes=[...find('#hotsearch-manager').querySelectorAll('button,input,select,summary,[tabindex="0"]')].filter(node=>!node.disabled&&node.getClientRects().length);
+      const first=nodes[0],last=nodes.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+    }
+  },options);
+  root.addEventListener('dragstart',event=>{
+    const handle=event.target.closest('[data-hot-drag]');if(!handle)return;
+    dragged=handle.dataset.hotDrag;event.stopPropagation();event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',dragged);
+  },options);
+  root.addEventListener('dragover',event=>{
+    const row=event.target.closest('[data-hot-sort]');if(!dragged||!row)return;
+    event.preventDefault();event.dataTransfer.dropEffect='move';
+    for(const old of root.querySelectorAll('.is-drop-target'))old.classList.remove('is-drop-target');row.classList.add('is-drop-target');
+  },options);
+  const clearDrag=()=>{dragged='';for(const row of root.querySelectorAll('.is-drop-target'))row.classList.remove('is-drop-target');};
+  root.addEventListener('drop',event=>{const row=event.target.closest('[data-hot-sort]');if(dragged&&row){event.preventDefault();event.stopPropagation();void reorder(dragged,row.dataset.hotSort);}clearDrag();},options);
+  root.addEventListener('dragend',clearDrag,options);
+  const timer=setInterval(()=>{if(!document.hidden&&!managerOpen)void load(false,'',true);},60000);
+  render();void load();
+  return ()=>{events.abort();loading?.abort();clearInterval(timer);};
+}
+
+function bindHotsearchCards(container,host) {
+  const controller=new AbortController(), pending=new Map();
+  const roots=()=>container.querySelectorAll('[data-widget=hotsearch]:not([data-compact])');
+  const current=root=>host.getState().items.find(item=>item.id===root.dataset.widgetId);
+  const alive=root=>!controller.signal.aborted && root.isConnected && !!current(root);
+  function render(root) { if(alive(root))root.innerHTML=hotsearchCard(current(root),host.getState()); }
+  async function load(root,manual=false) {
+    if(!alive(root))return;
+    const item=current(root);if(!item.config.enabled&&!manual||!item.config.subscriptions.length)return;
+    const key=item.config.apiBase+':'+item.config.activeSource, previous=pending.get(root);
+    if(previous?.key===key)return;
+    previous?.controller.abort();
+    const entry={key,controller:new AbortController()};pending.set(root,entry);
+    try { const job=hotsearchClient.request(item.config,item.config.activeSource,{manual,signal:entry.controller.signal});render(root);await job;if(pending.get(root)===entry)render(root); }
+    finally {if(pending.get(root)===entry)pending.delete(root);}
+  }
+  container.addEventListener('click',event=>{
+    const button=event.target.closest('[data-hot-card-source]'),root=button?.closest('[data-widget=hotsearch]');
+    if(!root||!alive(root))return;
+    event.preventDefault();event.stopPropagation();
+    const item=current(root),previous=item.config;
+    void (async()=>{try{if(!hotsearchSource(button.dataset.hotCardSource)?.github)await requestPublicOrigin(previous.apiBase);if(!alive(root)||current(root)!==item)return;item.config={...previous,activeSource:button.dataset.hotCardSource};await host.save();render(root);root.querySelector(`[data-hot-card-source="${button.dataset.hotCardSource}"]`)?.focus({preventScroll:true});void load(root,true);}catch(error){if(current(root)===item)item.config=previous;render(root);if(!error?.notified)host.toast?.(error.message);}})();
+  },{signal:controller.signal});
+  const tick=()=>{if(!globalThis.document?.hidden)for(const root of roots())void load(root);};
+  const timer=setInterval(tick,60000);tick();
+  return ()=>{controller.abort();for(const entry of pending.values())entry.controller.abort();pending.clear();clearInterval(timer);};
+}
+
+return {bindHotsearchWorkspace, bindHotsearchCards};
 })();
 const __weather = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -13920,6 +14606,9 @@ const { t } = __i18n;
 const { normalizeWallpaperPhoto } = __wallpapers;
 const { listWidgetDefinitions, getWidgetDefinition } = __widget_registry;
 const { mountWidgetExtensions } = __widget_runtime;
+const { hotsearchCard } = __hotsearch_view;
+const { bindHotsearchCards } = __hotsearch_workspace;
+const { hotsearchSource } = __hotsearch_sources;
 
 const DAY = 86_400_000;
 const { WEATHER_TTL, weatherState, requestWeather, cityKey, temperature, weatherDescription, weatherArt } = __weather;
@@ -14255,6 +14944,7 @@ function compactModel(item) {
     const quote = getQuote(item); value = quote.text; caption = quote.author; detail = t('每日一句');
   } else if (type === 'wallpaper') { caption = t('壁纸'); detail = t('换一片风景'); meta = t('打开壁纸中心'); }
   else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
+  else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
   else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
   return {value, caption, detail, meta, unit};
 }
@@ -14263,6 +14953,7 @@ function renderCompact(item) {
 }
 
 function renderWidgetContent(item, state) {
+  if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   return renderers[item.widget]();
@@ -14529,6 +15220,7 @@ function bindWidgets(container, context) {
     flushNotes();
     binding.alive = false;
     binding.extensions?.cleanup();
+    binding.hotsearchCleanup?.();
     clearTimeout(binding.noteTimer);
     container.removeEventListener('click', click);
     container.removeEventListener('input', input);
@@ -14538,6 +15230,7 @@ function bindWidgets(container, context) {
     if (bindings.get(container) === binding) bindings.delete(container);
   };
   binding.extensions = mountWidgetExtensions(container, context);
+  binding.hotsearchCleanup = bindHotsearchCards(container, context);
   binding.cleanup = cleanup;
   bindings.set(container, binding);
   refreshLiveWidgets(container, context.getState());
@@ -14633,7 +15326,7 @@ const { newWidgetData } = __widget_data;
 const { renderWidget } = __widgets;
 
 const categories = ['全部', '日常', '效率', '工具'];
-const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock']);
+const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock', 'hotsearch']);
 const productivity = new Set(['todo', 'focus', 'habit', 'countdown', 'workday']);
 const categoryOf = type => daily.has(type) ? '日常' : productivity.has(type) ? '效率' : '工具';
 
@@ -14701,6 +15394,8 @@ function windowMetrics(percent, width, height) {
   return { width: availableWidth, height: availableHeight,
     windowWidth: Math.min(980 * ratio, availableWidth),
     windowHeight: Math.min(640 * ratio, availableHeight),
+    hotsearchWidth: Math.min(1260 * ratio, availableWidth),
+    hotsearchHeight: Math.min(840 * ratio, availableHeight),
     settingsWidth: Math.min(880 * ratio, availableWidth),
     drawerWidth: Math.min(480 * ratio, width),
     formWidth: Math.min(640 * ratio, availableWidth),
@@ -15264,7 +15959,15 @@ function validateImport(raw) {
       if (!getWidgetDefinition(item.widget)) invalid(`${path}.widget`, t("组件类型不受支持"));
       if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, t("组件不支持此尺寸"));
       if(item.widget==='community'&&!item.config?.manifest?.sizes?.includes(size))invalid(`${path}.size`,t('组件不支持此尺寸'));
-      return { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
+      const checked = { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
+      // Validate legacy records before upgrading; keep identity, placement and custom names.
+      if (checked.widget === 'hotlinks') {
+        checked.widget = 'hotsearch';
+        checked.config = newWidgetConfig('hotsearch');
+        if (checked.title === '热搜入口') checked.title = '热搜榜';
+        else if (checked.title === 'Trending links') checked.title = 'Trending';
+      }
+      return checked;
     }
     const appearance = { icon: string(item.icon, `${path}.icon`, 80), color: color(item.color, `${path}.color`), size };
     if (type === 'folder') return { ...base, ...appearance };
@@ -16360,7 +17063,7 @@ function validateLayout(raw) {
       keys(item,['id','groupId','type','widget','title','size','config'],path);
       if(!getWidgetDefinition(item.widget))invalid(path,t('缺少组件：{name}',{name:item.widget}));
       item.data=newWidgetData(item.widget);
-      if(item.widget==='weather')item.config={...item.config,enabled:false};
+      if(['weather','hotsearch'].includes(item.widget))item.config={...item.config,enabled:false};
     } else if(item.type==='link'){
       let url;try{url=new URL(item.url);}catch{invalid(path,t('网站地址无效。'));}
       if(url.username||url.password)invalid(path,t('分享的网站地址不能包含账号密码。'));
@@ -19136,6 +19839,8 @@ const { createWidgetDetails } = __widget_details;
 const { bindCitySearch } = __city_search;
 const { weatherWorkspace } = __weather_view;
 const { bindWeatherWorkspace } = __weather_workspace;
+const { hotsearchWorkspace, refreshHotsearchCards } = __hotsearch_view;
+const { bindHotsearchWorkspace } = __hotsearch_workspace;
 const { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } = __widget_workspaces;
 const { sharingView, bindSharing } = __sharing_ui;
 const { communityView, bindCommunity } = __community_ui;
@@ -19815,11 +20520,12 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['calendar','memo','weather','community'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['calendar','memo','weather','community','hotsearch'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
+ dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
@@ -19833,6 +20539,7 @@ function openDialog(kind,data={}) {
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
  else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
  else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
@@ -19863,6 +20570,7 @@ function openDialog(kind,data={}) {
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
+  else if(detailWidget==='hotsearch')viewerCleanup=bindHotsearchWorkspace($('#hotsearch-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>refreshHotsearchCards($('#desktop'),state)});
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
   else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
@@ -19874,7 +20582,8 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
- else if(kind==='widget-detail'&&(utilityWidget||['weather','community'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
+ else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -20083,7 +20792,7 @@ function settingsDialog(tab) {
  const current = tabs.find(item=>item.id===tab);
  return dialogCloseButton() + `
  <div class="settings-layout"><nav class="settings-nav" aria-label="${t("设置分类")}"><h2 class="workspace-title" id="workspace-title">${t("设置")}</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>${t("栖页 Qiye · {v0}", {v0: APP_VERSION})}</small></nav>
- <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
+ <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}"><h3 class="settings-section-title" tabindex="-1">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
  getState:()=>state, wallpapers:WALLPAPERS, toast,
