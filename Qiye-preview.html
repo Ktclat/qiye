@@ -2723,6 +2723,47 @@ html[data-theme=dark] .codec-app{--codec-accent:#8eb8ff;--codec-soft:#8eb8ff15;-
 @container(max-width:520px){.codec-layout{display:flex}.codec-nav{display:none}.codec-main{width:100%;padding:16px;gap:12px}.codec-mobile-select{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--app-muted)}.codec-mobile-select select{width:100%;color:var(--app-fg)}.codec-header{padding:0 12px}.codec-method h3{font-size:21px}.codec-app .codec-direction button{padding:5px 12px}.codec-editor-meta{font-size:10px}.codec-options label{flex-wrap:wrap}.codec-footer{align-items:flex-start}}
 
 </style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+.widget-inner.w-map{--w-bg:#e2eae1;--w-fg:#234a3f;position:relative;padding:0;overflow:hidden;isolation:isolate}
+html[data-theme=dark] .widget-inner.w-map{--w-bg:#223a33;--w-fg:#e2f1e5}
+.map-card-grid{position:absolute;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(110deg,transparent 48%,#91b8c65c 48%,#91b8c65c 64%,transparent 64%),repeating-linear-gradient(22deg,transparent 0 34px,#fff6 35px 38px,transparent 39px 74px)}
+.map-card-grid i{position:absolute;width:140%;height:10px;left:-10%;top:50%;background:#fff9;transform:rotate(-32deg);border:1px solid #b4bfab60}.map-card-grid i:nth-child(2){top:10%;height:5px;transform:rotate(63deg)}.map-card-grid i:nth-child(3){top:80%;height:5px;transform:rotate(12deg)}
+.map-card-grid>span{position:absolute;left:70%;top:30%;display:grid;place-items:center;width:32px;height:32px;color:#27765d;filter:drop-shadow(0 3px 2px #29453733)}.map-card-grid>span .icon{width:32px;height:32px;fill:#edf7ec;stroke-width:1.8}
+.widget-inner .map-card-open{display:flex;flex:1;min-height:0;flex-direction:column;justify-content:center;gap:4px;padding:12px 15px;width:100%;text-align:left;border:0;border-radius:0;background:linear-gradient(90deg,var(--w-bg) 8%,transparent 90%);color:var(--w-fg)}
+.map-card-eyebrow{display:flex;align-items:center;gap:5px;font-size:10px;opacity:.8}.map-card-eyebrow .icon{width:13px;height:13px}.map-card-open strong{font-size:clamp(15px,8cqi,25px);font-weight:650;max-width:78%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.04em}.map-card-coordinate{font:8px ui-monospace,Consolas,monospace;opacity:.7}.map-card-caption{display:flex;align-items:center;gap:6px;font-size:9px;margin-top:7px;white-space:nowrap}.map-card-caption .icon{width:13px;height:13px}
+.map-card-regions{display:flex;flex:none;background:#ffffffb5;border-top:1px solid #fff8;backdrop-filter:blur(8px);padding:5px 6px;gap:2px}.widget-inner .map-card-regions button{background:transparent;border:0;flex:1;font-size:9px;line-height:1.6;padding:2px;border-radius:5px;color:var(--w-fg)}.widget-inner .map-card-regions button:hover{background:#30665215}
+html[data-theme=dark] .map-card-grid{opacity:.65}html[data-theme=dark] .map-card-regions{background:#18372ec9;border-color:#fff1}
+.w-map[data-display-size="1x1"] .map-card-open{padding:6px;align-items:center}.w-map[data-display-size="1x1"] .map-card-eyebrow{display:none}.w-map[data-display-size="1x1"] .map-card-open strong{font-size:11px;max-width:100%;margin-top:22px}.w-map[data-display-size="1x1"] .map-card-grid>span{left:calc(50% - 13px);top:5px;width:26px;height:26px}.w-map[data-display-size="1x1"] .map-card-grid>span .icon{width:26px;height:26px}
+.w-map[data-display-size="1x1"] :is(.map-card-caption,.map-card-coordinate),.w-map[data-display-size="1x2"] :is(.map-card-caption,.map-card-coordinate),.w-map[data-display-size="2x1"] :is(.map-card-caption,.map-card-coordinate){display:none}.w-map[data-display-size="1x2"] .map-card-open{padding:9px 5px;align-items:center;justify-content:flex-end}.w-map[data-display-size="1x2"] .map-card-open strong{max-width:100%;font-size:11px}.w-map[data-display-size="1x2"] .map-card-grid>span{top:30%;left:calc(50% - 16px)}.w-map[data-display-size="2x1"] .map-card-open{padding:6px 10px;gap:1px}.w-map[data-display-size="2x1"] .map-card-open strong{font-size:16px}.w-map[data-display-size="4x2"] .map-card-regions{max-width:58%;border-radius:0 12px 0 0}.w-map[data-display-size="4x2"] .map-card-grid>span{width:45px;height:45px;top:35%}.w-map[data-display-size="4x2"] .map-card-grid>span .icon{width:45px;height:45px}
+.map-app{--map-accent:#28785d;--map-soft:#28785d12;--map-water:#dae8eb;position:relative;display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;background:var(--app-bg);color:var(--app-fg)}
+.map-app .map-stage{margin:0;padding:0;min-height:0}
+.widget-inner.w-map .map-card-regions button{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.widget-inner.w-map .map-card-open>*{flex:none}.widget-inner.w-map .map-card-open strong{line-height:1.25}
+.w-map[data-display-size="2x2"] .map-card-open{padding:9px 12px;gap:3px}.w-map[data-display-size="2x2"] .map-card-caption{font-size:8px;gap:3px;margin-top:4px}.w-map[data-display-size="2x2"] .map-card-caption .icon{width:10px;height:10px}
+html[data-theme=dark] .map-app{--map-accent:#9bd4b7;--map-soft:#9bd4b719;--map-water:#243c40}
+.map-app [hidden]{display:none!important}.map-app .icon{width:18px;height:18px;flex:none}.map-app a{color:var(--map-accent);text-decoration:none}.map-app a:hover{text-decoration:underline}.map-app button:disabled{opacity:.4;cursor:not-allowed}
+.map-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;flex:none;border-bottom:1px solid var(--app-border)}.map-brand{display:flex;align-items:center;gap:11px;min-width:0}.map-brand>.icon{width:36px;height:36px;padding:8px;border-radius:11px;background:var(--map-soft);color:var(--map-accent)}.map-brand h2{margin:0;font-size:17px;line-height:1.35;overflow-wrap:anywhere}.map-brand span{font-size:10px;color:var(--app-muted)}.map-header-actions{display:flex;align-items:center;gap:5px}.map-header-actions>button{display:grid;place-items:center;width:34px;height:34px;padding:6px;background:transparent}.map-header-actions>.widget-app-controls{margin-left:6px;padding-left:8px;border-left:1px solid var(--app-border)}
+.map-regions{display:flex;flex:none;padding:0 20px;background:var(--app-bg);gap:24px;border-bottom:1px solid var(--app-border)}.map-app .map-regions button{display:flex;align-items:center;gap:10px;border-radius:0;background:transparent;padding:11px 0 10px;border-bottom:2px solid transparent;white-space:nowrap;font-size:12px}.map-regions button small{color:var(--app-muted);font-size:10px}.map-app .map-regions button[aria-pressed=true]{color:var(--map-accent);border-bottom-color:var(--map-accent);font-weight:650}
+.map-layout{display:flex;flex:1;min-height:0;position:relative}.map-sidebar{width:276px;flex:none;display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--app-border);background:var(--app-bg);z-index:5}.map-search-area{padding:16px 14px 0;flex:none}.map-search-input{display:flex;align-items:center;gap:5px;border:1px solid var(--app-border);border-radius:10px;background:var(--app-pane);padding:3px 5px 3px 9px}.map-search-input>.icon{width:15px;height:15px;color:var(--app-muted)}.map-search-input input{padding:8px 0;flex:1;width:0;background:transparent;border-radius:4px;font-size:11px}.map-search-input button{display:grid;place-items:center;padding:6px;background:var(--map-soft);color:var(--map-accent)}.map-search-input button .icon{width:16px;height:16px}.map-search-options{display:flex;gap:6px;padding-top:8px}.map-search-options select{font-size:10px;padding:5px 6px;background:var(--app-pane);max-width:65%}.map-search-hint{font-size:10px;color:var(--app-muted);line-height:1.65;margin:8px 1px 10px}
+.map-list-tabs{display:flex;gap:15px;padding:0 15px;border-bottom:1px solid var(--app-border);flex:none}.map-app .map-list-tabs button{background:transparent;padding:7px 0;font-size:11px;border-bottom:2px solid transparent;border-radius:0;display:flex;gap:5px;align-items:center;color:var(--app-muted)}.map-app .map-list-tabs button[aria-pressed=true]{border-color:var(--map-accent);color:var(--map-accent)}.map-list-tabs span{font:9px ui-monospace,monospace;padding:0 4px;border-radius:4px;background:var(--map-soft)}
+.map-result-scroll{flex:1;min-height:76px;overflow:auto;padding:5px 7px}.map-search-status{font-size:11px;line-height:1.7;color:var(--app-muted);padding:0 9px;margin:5px 0}.map-search-status:empty{display:none}.map-app .map-place-row{width:100%;display:flex;align-items:center;gap:9px;background:transparent;text-align:left;padding:10px 8px;border-radius:8px}.map-place-row .map-place-symbol{width:29px;height:31px;flex:none;display:grid;place-items:center;color:var(--map-accent);background:var(--map-soft);border-radius:8px}.map-place-row .map-place-symbol .icon{width:15px;height:15px}.map-place-row>span:nth-child(2){flex:1;min-width:0}.map-place-row strong{display:block;font-size:12px;font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.map-place-row small{display:block;font-size:10px;margin-top:3px;color:var(--app-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.map-place-row>.icon{width:12px;height:12px;color:var(--app-muted)}
+.map-selection{padding:13px 15px 12px;border-top:1px solid var(--app-border);background:var(--app-pane);flex:none;max-height:48%;overflow:auto}.map-selection-title{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.08em;color:var(--app-muted)}.map-location-dot{height:6px;width:6px;border-radius:50%;background:var(--map-accent);box-shadow:0 0 0 3px var(--map-soft)}.map-selection h3{margin:7px 0 3px;font-size:17px;line-height:1.35;overflow-wrap:anywhere}.map-selection p{font-size:10px;margin:0 0 10px;line-height:1.5;color:var(--app-muted)}.map-coordinate-line{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:var(--app-muted)}.map-coordinate-line code{font:10px ui-monospace,Consolas,monospace}.map-coordinate-line>span{font-size:8px;border:1px solid var(--app-border);border-radius:3px;padding:0 3px}.map-place-tools{display:flex;gap:5px;margin-top:12px}.map-place-tools button{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;padding:7px 9px;background:var(--app-bg);border:1px solid var(--app-border)}.map-place-tools button:first-child{flex:1}.map-place-tools button[aria-pressed=true]{color:var(--map-accent);background:var(--map-soft);border-color:transparent}.map-place-tools .icon{width:14px;height:14px}.map-external-links{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}.map-external-links a{display:flex;align-items:center;gap:4px;font-size:10px}.map-external-links .icon{width:12px;height:12px}
+.map-stage{position:relative;min-width:0;flex:1;overflow:hidden;background:var(--map-water)}.map-viewport{position:absolute;inset:0;overflow:hidden;cursor:grab;touch-action:none;background-color:var(--map-water);background-image:linear-gradient(#879d9214 1px,transparent 1px),linear-gradient(90deg,#879d9214 1px,transparent 1px);background-size:32px 32px;outline-offset:-3px}.map-viewport.is-dragging{cursor:grabbing}.map-image-plane{position:absolute;inset:0;pointer-events:none}.map-image-plane img{position:absolute;display:block;max-width:none;max-height:none;user-select:none}.map-image-plane img.is-failed{visibility:hidden}.map-selected-marker{position:absolute;z-index:3;pointer-events:none;width:0;height:0}.map-selected-marker>.icon{position:absolute;width:38px;height:38px;left:-19px;top:-36px;color:#276f57;fill:#fafff4;stroke-width:2;filter:drop-shadow(0 3px 3px #0004)}
+.map-scale{position:absolute;bottom:52px;left:15px;min-width:16px;border:solid #264e43;border-width:0 1px 2px;font:9px ui-monospace,Consolas,monospace;text-align:center;color:#163d32;text-shadow:0 0 4px #fff,0 0 2px #fff;pointer-events:none;z-index:4}.map-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;position:absolute;z-index:6;top:14px;left:14px;right:14px;pointer-events:none}.map-toolbar>label,.map-layer-switch{pointer-events:auto;display:flex;align-items:center;background:var(--app-bg);box-shadow:0 2px 12px #0c211b1a;border:1px solid var(--app-border);border-radius:10px;padding:4px;min-width:0}.map-toolbar>label{gap:4px;padding-left:9px;max-width:65%}.map-toolbar>label>.icon{width:14px;height:14px;color:var(--map-accent)}.map-toolbar select{font-size:11px;background:transparent;padding:6px 5px;max-width:100%;border-radius:6px;text-overflow:ellipsis}.map-layer-switch button{font-size:11px;padding:6px 10px;background:transparent;border-radius:6px}.map-layer-switch button[aria-pressed=true]{background:var(--map-soft);color:var(--map-accent)}
+.map-source-notice{position:absolute;top:59px;left:14px;right:14px;margin:0;padding:7px 10px;border-radius:7px;font-size:10px;line-height:1.5;background:var(--app-bg);color:var(--app-muted);z-index:6;box-shadow:0 2px 12px #0c211b0c;pointer-events:none}.map-navigation{position:absolute;right:15px;bottom:52px;display:flex;flex-direction:column;gap:5px;z-index:6}.map-navigation button{background:var(--app-bg);display:grid;place-items:center;border:1px solid var(--app-border);box-shadow:0 2px 9px #0c211b12;padding:9px;border-radius:9px}.map-navigation .icon{width:16px;height:16px}.map-north{display:flex;flex-direction:column;text-align:center;font:9px ui-monospace,monospace;color:#2e564a;text-shadow:0 0 4px white;margin-bottom:7px}.map-north span{font-size:26px;line-height:1.2}
+.map-gate{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 50px 45px;text-align:center;background:linear-gradient(130deg,var(--app-bg),transparent 250%)}.map-gate-symbol{color:var(--map-accent);width:70px;height:70px;border-radius:24px;display:grid;place-items:center;background:var(--map-soft);border:1px solid var(--app-border);transform:rotate(-8deg);margin-bottom:20px}.map-gate-symbol>.icon{width:34px;height:34px}.map-gate h3{font-size:21px;margin:0 0 9px;letter-spacing:-.03em}.map-gate p{font-size:12px;line-height:1.8;color:var(--app-muted);margin:0 0 18px;max-width:300px}.map-app .map-gate button{font-size:12px;padding:10px 20px;background:var(--map-accent);color:var(--app-bg)}.map-app .map-gate button+button{background:transparent;color:var(--app-muted);font-size:11px;margin-top:7px}
+.map-load-state{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:9px;max-width:calc(100% - 100px);background:var(--app-bg);border:1px solid var(--app-border);padding:7px 10px;border-radius:9px;box-shadow:0 2px 8px #0001;font-size:10px}.map-load-state button{background:var(--map-soft);color:var(--map-accent);font-size:10px;padding:3px 6px;white-space:nowrap}.map-attribution{position:absolute;z-index:6;bottom:0;left:0;right:0;min-height:30px;padding:5px 10px;display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;background:var(--app-bg);font-size:9px;line-height:1.4}.map-attribution:empty{display:none}.map-attribution img{width:72px;height:24px;object-fit:contain;background:#fff}.map-attribution a{color:var(--app-muted)}
+.map-footer{display:flex;align-items:center;flex:none;gap:12px;padding:8px 15px;border-top:1px solid var(--app-border);font-size:9px;color:var(--app-muted);min-height:32px}.map-footer [data-map-center]{font-family:ui-monospace,Consolas,monospace}.map-footer [data-map-save]{margin-left:auto}.map-footer [data-map-feedback]{color:var(--map-accent);max-width:45%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.map-footer [data-map-feedback]:empty{display:none}.map-footer button{font-size:9px;padding:1px 5px}
+.map-settings-shade{position:absolute;inset:0;background:#071b1944;z-index:14;backdrop-filter:blur(2px)}.map-settings-panel{position:absolute;inset:0 0 0 auto;width:min(430px,100%);z-index:15;background:var(--app-bg);border-left:1px solid var(--app-border);box-shadow:-12px 0 40px #071b1920;display:flex;flex-direction:column;min-height:0}.map-settings-heading{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--app-border);flex:none}.map-settings-heading small{font-size:9px;letter-spacing:.15em;color:var(--map-accent)}.map-settings-heading h3{font-size:18px;margin:3px 0 0}.map-settings-heading button{background:transparent;padding:5px;display:grid;place-items:center}.map-settings-panel form{display:flex;flex:1;min-height:0;flex-direction:column}.map-settings-scroll{padding:20px 22px;overflow:auto;flex:1;min-height:0}.map-enable-setting{display:flex;align-items:center;justify-content:space-between;gap:16px}.map-enable-setting strong{font-size:12px;font-weight:600}.map-enable-setting small{display:block;font-size:10px;color:var(--app-muted);margin-top:3px}.map-enable-setting input{width:18px;height:18px;accent-color:var(--map-accent)}
+.map-settings-section{margin-top:23px;padding-top:18px;border-top:1px solid var(--app-border)}.map-settings-section h4,.map-source-reference h4{font-size:12px;margin:0 0 9px;display:flex;align-items:center;justify-content:space-between}.map-settings-section h4 span{font:10px ui-monospace,Consolas,monospace;color:var(--app-muted)}.map-settings-section p{font-size:10px;line-height:1.7;margin:6px 0 12px;color:var(--app-muted)}.map-field{display:flex;flex-direction:column;gap:5px;margin-top:12px;min-width:0;flex:1}.map-field>span{font-size:11px}.map-field input,.map-field select{font-size:11px;padding:9px 10px;width:100%;background:var(--app-pane);border:1px solid var(--app-border);border-radius:7px}.map-field input:invalid:not(:placeholder-shown){border-color:#bb8e643f}.map-region-preference{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:10px 0}.map-region-preference>span{font-size:11px;white-space:nowrap}.map-region-preference select{max-width:65%;font-size:11px;padding:7px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:6px}
+.map-custom-source{border:1px solid var(--app-border);padding:10px 12px 13px;border-radius:10px;margin:14px 0;background:var(--app-pane)}.map-custom-source legend{font-size:10px;color:var(--app-muted);padding:0 5px}.map-custom-heading{display:flex;align-items:flex-end;gap:10px}.map-custom-heading .map-field{margin-top:0}.map-custom-heading button{display:grid;place-items:center;padding:8px;background:transparent}.map-custom-options{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.7fr) minmax(0,.7fr);gap:7px}.map-custom-options .map-field>span{font-size:10px}.map-custom-options input,.map-custom-options select{padding:8px 6px}.map-app .map-add-source{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--map-soft);color:var(--map-accent);font-size:11px;padding:10px;border:1px dashed var(--app-border)}.map-source-reference{margin-top:25px}.map-source-reference>a{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--app-border);font-size:11px}.map-source-reference small{display:block;font-size:9px;color:var(--app-muted);margin-top:2px}.map-source-reference .icon{width:13px;height:13px}.map-settings-footer{flex:none;padding:12px 22px;border-top:1px solid var(--app-border);display:flex;align-items:center;gap:12px}.map-settings-footer>span{font-size:10px;color:var(--app-muted);flex:1}.map-app .map-settings-footer button{background:var(--map-accent);color:var(--app-bg);font-size:12px;white-space:nowrap;padding:9px 15px}
+@container(max-width:760px){.map-sidebar{width:250px}.map-regions{gap:18px}.map-regions button small{display:none}.map-toolbar{flex-wrap:wrap;justify-content:flex-start}.map-toolbar>label{max-width:100%}.map-layer-switch{margin-left:auto}.map-source-notice{top:104px}.map-gate{padding:110px 24px 35px}.map-gate-symbol{width:54px;height:54px;margin-bottom:14px}.map-gate h3{font-size:17px}.map-footer-coordinates{display:none}}
+@container(max-width:620px){.map-header{padding:12px}.map-brand span{display:none}.map-brand>.icon{width:30px;height:30px;padding:6px}.map-header-actions{gap:0}.map-header-actions>.widget-app-controls{margin-left:3px;padding-left:3px}.map-header-actions>button{width:30px;height:30px}.map-regions{padding:0 12px;gap:0;justify-content:space-between}.map-app .map-regions button{font-size:10px;padding:9px 0}.map-layout{flex-direction:column}.map-sidebar{position:absolute;inset:0 auto 0 0;width:min(290px,88%);box-shadow:8px 0 25px #071b1930;z-index:10}.map-stage{width:100%;height:100%;min-height:0}.map-footer{padding:7px 10px;gap:8px}.map-footer [data-map-provider]{max-width:40%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.map-footer [data-map-feedback]{max-width:55%}.map-footer:has([data-map-feedback]:not(:empty)) [data-map-save]{display:none}.map-source-notice{top:60px}.map-gate{padding:110px 35px 40px}.map-gate h3{font-size:20px}.map-selection{max-height:46%}.map-search-area{padding-top:12px}.map-settings-heading{padding:17px}.map-settings-scroll{padding:16px}.map-settings-footer{padding:12px 16px}.map-navigation{bottom:60px}.map-attribution{font-size:8px}.map-toolbar{gap:5px;left:10px;right:10px}.map-toolbar>label{max-width:calc(100% - 96px)}.map-toolbar select{font-size:10px}.map-layer-switch{margin-left:auto}.map-layer-switch button{font-size:10px;padding:6px 7px}}
+@media(prefers-reduced-motion:reduce){.map-app *{scroll-behavior:auto}}
+.map-app .map-header{height:48px;min-height:48px;padding:0 14px;gap:8px}.map-app .map-brand{gap:8px}.map-app .map-brand>.icon{width:21px;height:21px;padding:0;border-radius:0;background:none}.map-app .map-brand h2{font-size:14px;font-weight:550}.map-app .map-brand span{display:none}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -2888,10 +2929,56 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   <input id="backup-file" type="file" accept="application/json,.json" hidden>
   <input id="wallpaper-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm" hidden>
   <script type="module">
+const __map_messages_en = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const mapEnglishMessages = {
+  '地图':'Maps',
+  '探索大陆、港澳台，切换高德与多个地图源，收藏地点与打开导航':'Explore mainland China, Hong Kong, Macao and Taiwan with multiple map sources, saved places and directions',
+  '中国大陆':'Mainland China', '中国香港':'Hong Kong, China', '中国澳门':'Macao, China', '中国台湾':'Taiwan, China', '大陆':'Mainland', '台湾':'Taiwan', '世界':'World',
+  '高德地图':'Amap', '天地图':'Tianditu', '香港地政总署':'Hong Kong Lands Department', '台湾通用电子地图':'Taiwan e-Map',
+  '大陆街道 · 地点搜索':'Mainland streets · Place search', '街道与卫星 · 需要 Key':'Streets and satellite · Key required', '香港街道 · 繁体标注':'Hong Kong streets · Local labels', '台湾街道 · 正射影像':'Taiwan streets · Orthophotos', '全球街道 · 无需 Key':'Global streets · No key required',
+  '地图源标识无效。':'Invalid map source ID.',
+  '瓦片地址须包含 {z}、{x}、{y}，并使用公开 HTTPS 域名。':'Use a public HTTPS tile URL containing {z}, {x} and {y}.',
+  '瓦片地址不能在域名中使用占位符或包含片段。':'Tile URLs cannot contain fragments or hostname placeholders.',
+  '地区首选地图源无效。':'Invalid preferred source for this region.',
+  '这个自定义地图源仅保存在原设备，请在本机重新配置。':'This custom source is only stored on the original device. Set it up on this device.',
+  '这个地图源不覆盖当前地区，请切换地图源。':'This source does not cover this region. Choose another source.',
+  '请先在地图源设置中填写 {name} Key。':'Add your {name} key in map source settings first.',
+  '首选源尚未配置，当前使用 {name}。':'The preferred source needs setup. Currently using {name}.',
+  '当前地图源仅提供街道底图。':'This source only provides a street map.',
+  '未获准访问地图源，请重新授权。':'Map source access was denied. Grant access to try again.',
+  '高德请求失败，请检查 Key、服务权限与调用额度。':'Amap could not complete the request. Check your key, service access and quota.',
+  '地点来源返回的数据格式无效。':'The place service returned invalid data.',
+  '打开地图':'Open maps', '搜索地点 · 收藏 · 出发':'Find a place. Save it. Go.', '按地区自动选择':'Automatic by region', '待配置':'Set up key', '地图源':'Map source',
+  '此设备尚未配置的地图源':'Source not set up on this device', '选中地点':'SELECTED PLACE', '已收藏':'Saved', '收藏地点':'Save place', '复制坐标':'Copy coordinates', '回到选中地点':'Return to selected place', '在高德中打开':'Open in Amap', '报告地图问题':'Report a map issue',
+  '自定义地图源':'Custom map source', '移除地图源':'Remove map source', '名称':'Name', '瓦片地址':'Tile URL', '地图署名':'Map attribution', '坐标系':'Coordinate system', '最小级别':'Min. zoom', '最大级别':'Max. zoom',
+  '地图源与偏好':'Map sources & preferences', '返回地图':'Back to map', '启用地图服务':'Enable maps', '仅打开地图工作台时加载底图。':'Maps load only while this workspace is open.',
+  '接入地图服务':'Connect map services', '密钥、地区偏好和自定义源仅保存在本机，不进入备份或同步。':'Keys, regional preferences and custom sources stay on this device, outside backups and sync.',
+  '高德 Web 服务 Key':'Amap Web Service key', '天地图 Key':'Tianditu key', '选择「Web 服务」类型的 Key；用于静态地图与地点搜索。':'Choose a Web Service key for static maps and place search.', '申请高德 Key':'Get an Amap key', '申请天地图 Key':'Get a Tianditu key',
+  '地区首选地图源':'Preferred sources by region', '选择「按地区自动选择」时生效。缺少 Key 时会显示实际使用的备用源。':'Used in automatic mode. If a key is missing, the active fallback source is shown.',
+  '支持 256 像素 Web Mercator XYZ / WMTS 瓦片。地址使用 {z}、{x}、{y}；服务需允许浏览器访问。':'Supports 256 px Web Mercator XYZ / WMTS tiles. Use {z}, {x} and {y}; the service must allow browser access.',
+  '添加地图源':'Add map source', '内置地图源':'Built-in sources', '保存地图设置':'Save map settings', '每个地点，都有下一程':'Find your next stop', '地点列表':'Places', '地图地区':'Map region',
+  '搜索地点或输入经度, 纬度':'Place or longitude, latitude', '搜索地图地点':'Search map places', '地点搜索来源':'Place search source', '本地地点':'Local places', '高德地点搜索':'Amap place search', '输入坐标系':'Input coordinate system',
+  '常用城市、收藏与坐标可离线搜索。':'Common cities, saved places and coordinates work offline.', '探索地点':'Explore', '我的收藏':'Saved places', '当前地图源':'Active map source', '地图图层':'Map layer', '街道':'Streets', '卫星':'Satellite',
+  '交互地图；方向键平移，加减键缩放，点击选点':'Interactive map. Pan with arrow keys, zoom with plus or minus, click to select a place.',
+  '开始浏览地图':'Start exploring', '启用后，会向所选地图源发送当前地图范围。':'Enabling maps sends the visible map area to your selected provider.', '启用地图':'Enable maps', '配置地图源':'Set up sources', '地图朝北':'Map faces north', '我的位置':'My location', '放大地图':'Zoom in', '缩小地图':'Zoom out',
+  '地图选点':'Dropped pin', '正在加载地图…':'Loading map…', '部分地图未能加载，请重试或切换地图源。':'Some map images failed. Retry or change the source.', '配置当前地图源':'Set up this source', '允许访问地图源':'Allow map access', '点击授权后加载这个来源的地图。':'Grant access to load maps from this provider.', '授权并加载':'Allow and load',
+  '地图设置已保存。':'Map settings saved.', '坐标地点':'Coordinates', '高德地点搜索用于中国大陆；其他地区可搜索内置地点或输入坐标。':'Amap search is for mainland China. Use local places or coordinates in other regions.', '正在搜索地点…':'Searching places…', '高德搜索 · {count} 个地点':'Amap · {count} places', '没有找到地点，请换一个关键词。':'No places found. Try another search.',
+  '当前浏览器不支持定位。':'This browser does not support geolocation.', '未获准定位。可以搜索地点或输入坐标。':'Location access was denied. Search for a place or enter coordinates.', '定位精度约 {metres} 米':'Location accuracy: about {metres} m', '定位失败。可以搜索地点或输入坐标。':'Could not locate you. Search for a place or enter coordinates.',
+  '最多收藏 {count} 个地点。':'You can save up to {count} places.', '坐标已复制':'Coordinates copied', '无法访问剪贴板，请选中坐标后手动复制。':'Clipboard unavailable. Select the coordinates and copy them manually.', '按 Enter 搜索地点。':'Press Enter to search.', '地图尚未保存，重新打开后可重试。':'Your map changes are not saved. Reopen maps to retry.',
+  '还没有匹配的收藏。选择地点后即可收藏。':'No matching saved places. Select a place to save it.', '未找到本地地点。可输入经度, 纬度，或配置高德搜索。':'No local matches. Enter longitude, latitude, or set up Amap search.', '提交搜索时，将关键词发送给高德地图。':'Submitting a search sends your keywords to Amap.',
+  '地图源、个人 Key 和地区偏好可在地图工作台右上角设置。':'Configure sources, personal keys and regional preferences in the top right of the map workspace.',
+  '珠海':'Zhuhai', '重庆':'Chongqing', '武汉':'Wuhan', '南京':'Nanjing', '西安':'Xi’an', '厦门':'Xiamen', '中环':'Central', '尖沙咀':'Tsim Sha Tsui', '香港国际机场':'Hong Kong International Airport', '沙田':'Sha Tin', '大三巴牌坊':'Ruins of St. Paul’s', '氹仔':'Taipa', '台北 101':'Taipei 101', '台中':'Taichung', '台南':'Tainan', '高雄':'Kaohsiung', '花莲':'Hualien', '桃园':'Taoyuan', '新竹':'Hsinchu',
+};
+
+return {mapEnglishMessages};
+})();
 const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
+const { mapEnglishMessages } = __map_messages_en;
 const englishMessages = {
+  ...mapEnglishMessages,
   "编码工具": "Encoding tools",
   "Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道": "Base64, URL, Unicode, MD2 / MD4 / MD5 and SHA, plus Buddha, Beast and Bear codecs",
   "趣味编码": "Playful encodings",
@@ -4936,6 +5023,13 @@ return {escapeText};
 const __icons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
+ mapPin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+ layers:'<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
+ sliders:'<path d="M4 21v-7M4 10V3M12 21v-3M12 14V3M20 21V10M20 6V3M1 10h6M9 18h6M17 6h6"/>',
+ star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',
+ arrowRight:'<path d="M4 12h16m-6-6 6 6-6 6"/>',
+ arrowUpRight:'<path d="M5 19 19 5M5 5h14v14"/>',
+ minus:'<path d="M5 12h14"/>',
  tomato:'<path d="M12 7C6 3 2 8 3 14c1 8 17 8 18 0 1-6-3-11-9-7Z"/><path d="m7 5 5 3 5-3-2 5-3-2-3 2 2-4 2-4"/>',
  pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',
  reset:'<path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/>',
@@ -5687,6 +5781,807 @@ function byteLength(value) { return new TextEncoder().encode(value).byteLength; 
 
 return {invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, date, time, unique, byteLength};
 })();
+const __map_model = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { keys, string, number, bool, enumeration, array, unique, id } = __validation;
+
+const MAP_REGIONS = Object.freeze([
+  { id:'CN', name:'中国大陆', short:'大陆', city:'深圳', longitude:114.0579, latitude:22.5431, zoom:12 },
+  { id:'HK', name:'中国香港', short:'香港', city:'香港', longitude:114.1694, latitude:22.3193, zoom:12 },
+  { id:'MO', name:'中国澳门', short:'澳门', city:'澳门', longitude:113.5439, latitude:22.1987, zoom:14 },
+  { id:'TW', name:'中国台湾', short:'台湾', city:'台北', longitude:121.5654, latitude:25.0330, zoom:12 },
+]);
+const MAP_DEFAULTS = Object.freeze({ enabled:false, source:'auto', layer:'street' });
+const MAP_SOURCE_IDS = Object.freeze(['auto','amap','tianditu','hk','nlsc','osm']);
+const MAP_FAVORITE_LIMIT = 80;
+const regionIds = ['CN','HK','MO','TW','WORLD'];
+const mapRegion = region => MAP_REGIONS.find(row => row.id === region);
+function inPolygon(x,y,points) {
+  let inside=false;
+  for(let i=0,j=points.length-1;i<points.length;j=i++){
+    const [xi,yi]=points[i],[xj,yj]=points[j];
+    if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)inside=!inside;
+  }
+  return inside;
+}
+function regionAt({ longitude:x, latitude:y }) {
+  // Coarse service coverage only, never drawn as administrative boundaries.
+  if (inPolygon(x,y,[[113.82,22.13],[114.5,22.13],[114.5,22.55],[114.25,22.56],[114.16,22.56],[114.11,22.53],[114.04,22.50],[113.98,22.52],[113.91,22.50],[113.82,22.40]])) return 'HK';
+  if (x >= 113.52 && x <= 113.61 && y >= 22.1 && y <= 22.22) return 'MO';
+  if (x >= 119.3 && x <= 122.1 && y >= 21.8 && y <= 25.5) return 'TW';
+  if (x >= 72.004 && x <= 137.8347 && y >= 0.8293 && y <= 55.8271) return 'CN';
+  return 'WORLD';
+}
+function regionPlace(region) {
+  const entry = mapRegion(region) || MAP_REGIONS[0];
+  return { name:t(entry.city), address:t(entry.name), region:entry.id, longitude:entry.longitude, latitude:entry.latitude, crs:'wgs84' };
+}
+function newMapData() {
+  const selected = regionPlace('CN');
+  return { region:'CN', center:pointOnly(selected), zoom:12, selected, favorites:[] };
+}
+function pointOnly(point) { return { longitude:point.longitude, latitude:point.latitude, crs:point.crs }; }
+function validateMapPoint(raw, path='point') {
+  keys(raw, ['longitude','latitude','crs'], path);
+  return { longitude:number(raw.longitude,path+'.longitude',-180,180), latitude:number(raw.latitude,path+'.latitude',-85.05112878,85.05112878), crs:enumeration(raw.crs,['wgs84','gcj02'],path+'.crs') };
+}
+function validateMapPlace(raw, path='place', favorite=false) {
+  keys(raw, ['name','address','region','longitude','latitude','crs',...(favorite?['id']:[])],path);
+  return { ...(favorite?{id:id(raw.id,path+'.id')}:{}), name:string(raw.name,path+'.name',120), address:string(raw.address,path+'.address',400,true), region:enumeration(raw.region,regionIds,path+'.region'), ...validateMapPoint(pointOnly(raw),path) };
+}
+function validateMapConfig(raw, path='config') {
+  keys(raw,['enabled','source','layer'],path);
+  const source=string(raw.source,path+'.source',80);
+  if (!MAP_SOURCE_IDS.includes(source) && !/^custom-[a-zA-Z0-9_-]{1,60}$/.test(source)) throw new Error(t('地图源标识无效。'));
+  return {enabled:bool(raw.enabled,path+'.enabled'),source,layer:enumeration(raw.layer,['street','satellite'],path+'.layer')};
+}
+function validateMapData(raw, path='data') {
+  keys(raw,['region','center','zoom','selected','favorites'],path);
+  const favorites=array(raw.favorites,path+'.favorites',MAP_FAVORITE_LIMIT).map((place,i)=>validateMapPlace(place,`${path}.favorites[${i}]`,true));
+  unique(favorites.map(place=>place.id),path+'.favorites');
+  return {region:enumeration(raw.region,regionIds,path+'.region'),center:validateMapPoint(raw.center,path+'.center'),zoom:number(raw.zoom,path+'.zoom',1,20,true),selected:validateMapPlace(raw.selected,path+'.selected'),favorites};
+}
+
+// Web Mercator pixels. Keep the stored coordinate system explicit across providers.
+function project(point, zoom) {
+  const size=256*2**zoom, lat=Math.max(-85.05112878,Math.min(85.05112878,point.latitude))*Math.PI/180;
+  return {x:(point.longitude+180)/360*size,y:(1-Math.asinh(Math.tan(lat))/Math.PI)/2*size};
+}
+function unproject({x,y},zoom,crs='wgs84') {
+  const size=256*2**zoom;
+  return {longitude:((x/size*360)%360+360)%360-180,latitude:Math.atan(Math.sinh(Math.PI*(1-2*Math.max(0,Math.min(size,y))/size)))*180/Math.PI,crs};
+}
+function gcjDelta(point) {
+  const x=point.longitude-105,y=point.latitude-35,pi=Math.PI;
+  let lat=-100+2*x+3*y+.2*y*y+.1*x*y+.2*Math.sqrt(Math.abs(x));
+  let lon=300+x+2*y+.1*x*x+.1*x*y+.1*Math.sqrt(Math.abs(x));
+  const waves=(20*Math.sin(6*x*pi)+20*Math.sin(2*x*pi))*2/3;
+  lat+=waves+(20*Math.sin(y*pi)+40*Math.sin(y/3*pi))*2/3+(160*Math.sin(y/12*pi)+320*Math.sin(y*pi/30))*2/3;
+  lon+=waves+(20*Math.sin(x*pi)+40*Math.sin(x/3*pi))*2/3+(150*Math.sin(x/12*pi)+300*Math.sin(x/30*pi))*2/3;
+  const rad=point.latitude*pi/180,magic=1-.00669342162296594323*Math.sin(rad)**2,root=Math.sqrt(magic);
+  return {longitude:lon*180/(6378245/root*Math.cos(rad)*pi),latitude:lat*180/(6378245*(1-.00669342162296594323)/(magic*root)*pi)};
+}
+function convertMapPoint(point, crs, region=regionAt(point)) {
+  if (point.crs===crs) return pointOnly(point);
+  // Regional WGS84 services must never receive the mainland GCJ offset.
+  // This is an approximate display conversion, not a surveying transformation.
+  if (region!=='CN' || regionAt(point)!=='CN') return {...pointOnly(point),crs};
+  if (crs==='gcj02') {const d=gcjDelta(point);return {longitude:point.longitude+d.longitude,latitude:point.latitude+d.latitude,crs};}
+  let result={...pointOnly(point),crs};
+  for(let i=0;i<5;i++){const d=gcjDelta(result);result={longitude:point.longitude-d.longitude,latitude:point.latitude-d.latitude,crs};}
+  return result;
+}
+function sameMapPlace(a,b) {return a.crs===b.crs && Math.abs(a.longitude-b.longitude)<.00001 && Math.abs(a.latitude-b.latitude)<.00001;}
+function coordinateText(point) {return `${point.longitude.toFixed(6)}, ${point.latitude.toFixed(6)}`;}
+function parseMapCoordinates(query, crs='wgs84') {
+  const match=String(query).trim().match(/^(-?\d+(?:\.\d+)?)\s*[,，]\s*(-?\d+(?:\.\d+)?)$/);
+  if(!match)return null;
+  return validateMapPoint({longitude:Number(match[1]),latitude:Number(match[2]),crs});
+}
+function mapExternalUrl(place, provider='amap') {
+  if(provider==='amap') {
+    const url=new URL('https://uri.amap.com/marker');
+    url.search=new URLSearchParams({position:`${place.longitude.toFixed(6)},${place.latitude.toFixed(6)}`,name:place.name,coordinate:place.crs==='gcj02'?'gaode':'wgs84',src:'Qiye',callnative:'0'});
+    return url.href;
+  }
+  const p=convertMapPoint(place,'wgs84',place.region),url=new URL('https://www.google.com/maps/dir/');
+  url.search=new URLSearchParams({api:'1',destination:`${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`});
+  return url.href;
+}
+
+const places = [
+  ['深圳','Shenzhen','CN',114.0579,22.5431],['广州','廣州 Guangzhou','CN',113.2644,23.1291],['珠海','Zhuhai','CN',113.5767,22.2707],
+  ['北京','Beijing','CN',116.4074,39.9042],['上海','Shanghai','CN',121.4737,31.2304],['杭州','Hangzhou','CN',120.1551,30.2741],
+  ['成都','Chengdu','CN',104.0665,30.5723],['重庆','重慶 Chongqing','CN',106.5516,29.5630],['武汉','武漢 Wuhan','CN',114.3055,30.5928],
+  ['南京','Nanjing','CN',118.7969,32.0603],['西安','Xi’an Xian','CN',108.9398,34.3416],['厦门','廈門 Xiamen','CN',118.0894,24.4798],
+  ['香港','Hong Kong 香港','HK',114.1694,22.3193],['中环','中環 Central','HK',114.1588,22.2819],['尖沙咀','Tsim Sha Tsui','HK',114.1722,22.2986],
+  ['香港国际机场','香港國際機場 Hong Kong International Airport','HK',113.9185,22.3080],['沙田','Sha Tin','HK',114.1898,22.3810],
+  ['澳门','澳門 Macao Macau','MO',113.5439,22.1987],['大三巴牌坊','Ruins of St. Paul’s','MO',113.5408,22.1976],['氹仔','Taipa 凼仔','MO',113.5577,22.1534],
+  ['台北','臺北 Taipei','TW',121.5654,25.0330],['台北 101','臺北 Taipei 101','TW',121.5645,25.0339],['台中','臺中 Taichung','TW',120.6736,24.1477],
+  ['台南','臺南 Tainan','TW',120.2270,22.9997],['高雄','Kaohsiung','TW',120.3014,22.6273],['花莲','花蓮 Hualien','TW',121.6068,23.9911],
+  ['桃园','桃園 Taoyuan','TW',121.3010,24.9937],['新竹','Hsinchu','TW',120.9675,24.8138],
+];
+const MAP_PLACES=Object.freeze(places.map(([name,aliases,region,longitude,latitude])=>({name,aliases,region,longitude,latitude,crs:'wgs84',address:mapRegion(region).name})));
+function searchMapPlaces(query, favorites=[], region='CN') {
+  const term=query.trim().toLocaleLowerCase().replace(/臺/g,'台');
+  const rows=[...favorites,...MAP_PLACES].filter(place=>!term || `${place.name} ${place.address} ${place.aliases||''} ${t(place.name)}`.toLocaleLowerCase().replace(/臺/g,'台').includes(term));
+  return rows.sort((a,b)=>Number(b.region===region)-Number(a.region===region)).filter((place,i,all)=>all.findIndex(p=>sameMapPlace(p,place))===i).slice(0,12).map(({aliases,id,...place})=>({...place,name:t(place.name),address:t(place.address)}));
+}
+
+return {MAP_REGIONS, MAP_DEFAULTS, MAP_SOURCE_IDS, MAP_FAVORITE_LIMIT, mapRegion, regionAt, regionPlace, newMapData, pointOnly, validateMapPoint, validateMapPlace, validateMapConfig, validateMapData, project, unproject, convertMapPoint, sameMapPlace, coordinateText, parseMapCoordinates, mapExternalUrl, MAP_PLACES, searchMapPlaces};
+})();
+const __public_json = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+
+function publicHttpsUrl(value) {
+  let url;
+  try { url=new URL(value); } catch { throw new Error(t('请输入有效的公开 HTTPS 地址。')); }
+  url.hostname=url.hostname.replace(/\.$/,'');
+  const hostname=url.hostname.toLowerCase();
+  if(url.protocol!=='https:' || url.username || url.password || url.port && url.port!=='443' || hostname==='localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local') || !hostname.includes('.') || /^[\d.]+$/.test(hostname) || hostname.includes(':'))throw new Error(t('请输入不含账号密码的公开 HTTPS 域名地址。'));
+  return url.href;
+}
+
+async function requestPublicOrigin(value) {
+  const url=publicHttpsUrl(value), api=globalThis.chrome;
+  if(api?.runtime?.id && api.permissions){
+    const permissions={origins:[new URL(url).origin+'/*']};
+    if(!await api.permissions.contains(permissions) && !await api.permissions.request(permissions))throw new Error(t('未获准访问这个来源。'));
+  }
+  return url;
+}
+
+async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch,cache='no-cache'}={}) {
+  const url=publicHttpsUrl(value), controller=new AbortController();
+  const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
+  if(signal?.aborted)controller.abort();
+  const timer=setTimeout(abort,12000);
+  try {
+    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache,headers:{Accept:'application/json'}});
+    if(!response.ok)throw new Error(t('来源返回 HTTP {status}',{status:response.status}));
+    if(Number(response.headers.get('content-length'))>maxBytes)throw new Error(t('文件超过大小限制。'));
+    const reader=response.body?.getReader();let text='';
+    if(reader){const decoder=new TextDecoder();let bytes=0;try{while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>maxBytes){await reader.cancel();throw new Error(t('文件超过大小限制。'));}text+=decoder.decode(value,{stream:true});}text+=decoder.decode();}finally{reader.releaseLock();}}
+    else {text=await response.text();if(new TextEncoder().encode(text).length>maxBytes)throw new Error(t('文件超过大小限制。'));}
+    if(controller.signal.aborted)throw new Error(t('读取已取消或超时。'));
+    try{return JSON.parse(text.replace(/^\uFEFF/,''));}catch{throw new Error(t('来源没有返回有效 JSON。'));}
+  } catch(error) {
+    if(controller.signal.aborted)throw new Error(t('读取已取消或超时。'));
+    if(error instanceof TypeError)throw new Error(t('无法读取来源，请检查网络及服务器的跨域访问（CORS）设置，或改为导入文件。'));
+    throw error;
+  } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}
+
+return {publicHttpsUrl, requestPublicOrigin, fetchPublicJson};
+})();
+const __map_sources = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, getLocale } = __i18n;
+const { keys, string, number, array, unique, enumeration } = __validation;
+const { publicHttpsUrl, fetchPublicJson } = __public_json;
+const { MAP_REGIONS, MAP_SOURCE_IDS, convertMapPoint, validateMapPlace } = __map_model;
+
+const LOCAL_KEY='qiye.map.sources.v1';
+const MAP_SOURCES=Object.freeze([
+  {id:'amap',name:'高德地图',note:'大陆街道 · 地点搜索',crs:'gcj02',minZoom:3,maxZoom:17,layers:['street'],regions:['CN'],credential:'amapKey',url:'https://lbs.amap.com/api/webservice/guide/api/staticmaps',credit:'© 高德地图'},
+  {id:'tianditu',name:'天地图',note:'街道与卫星 · 需要 Key',crs:'wgs84',minZoom:3,maxZoom:18,layers:['street','satellite'],credential:'tiandituKey',url:'https://lbs.tianditu.gov.cn/server/MapService.html',credit:'© 天地图'},
+  {id:'hk',name:'香港地政总署',note:'香港街道 · 繁体标注',crs:'wgs84',minZoom:10,maxZoom:20,layers:['street'],regions:['HK'],url:'https://p1static.csdi.gov.hk/csdi-webpage/apidoc/TopographicMapAPI',credit:'Map from Lands Department'},
+  {id:'nlsc',name:'台湾通用电子地图',note:'台湾街道 · 正射影像',crs:'wgs84',minZoom:7,maxZoom:19,layers:['street','satellite'],regions:['TW'],url:'https://maps.nlsc.gov.tw/S09SOA/pro/Wmts_ajax_main.jsp',credit:'© 內政部國土測繪中心'},
+  {id:'osm',name:'OpenStreetMap',note:'全球街道 · 无需 Key',crs:'wgs84',minZoom:2,maxZoom:19,layers:['street'],url:'https://www.openstreetmap.org/copyright',credit:'© OpenStreetMap contributors'},
+]);
+const defaultMapLocal = () => ({amapKey:'',tiandituKey:'',preferences:{CN:'amap',HK:'hk',MO:'tianditu',TW:'nlsc'},custom:[]});
+function validateTileTemplate(value) {
+  const url=string(value,'tile.url',2048);
+  if(!['{z}','{x}','{y}'].every(key=>url.includes(key)) || /\{(?![zxy]\})/.test(url))throw new Error(t('瓦片地址须包含 {z}、{x}、{y}，并使用公开 HTTPS 域名。'));
+  const resolved=publicHttpsUrl(url.replace(/\{[zxy]\}/g,'1'));
+  if(new URL(resolved).hash || /\{/.test(new URL(url).hostname))throw new Error(t('瓦片地址不能在域名中使用占位符或包含片段。'));
+  return url;
+}
+function validateMapLocal(raw) {
+  keys(raw,['amapKey','tiandituKey','preferences','custom'],'map.sources');
+  const clean=defaultMapLocal();
+  for(const name of ['amapKey','tiandituKey']) {
+    const key=string(raw[name]??'','map.'+name,128,true).trim();
+    if(key&&!/^[a-zA-Z0-9_-]+$/.test(key))throw new Error(t('API Key 格式无效。'));
+    clean[name]=key;
+  }
+  clean.custom=array(raw.custom??[],'map.custom',8).map((entry,i)=>{
+    const p=`map.custom[${i}]`;
+    keys(entry,['id','name','template','credit','crs','minZoom','maxZoom'],p);
+    if(!/^custom-[a-zA-Z0-9_-]{1,60}$/.test(entry.id))throw new Error(t('地图源标识无效。'));
+    const minZoom=number(entry.minZoom,p+'.minZoom',1,20,true);
+    return {id:entry.id,name:string(entry.name,p+'.name',50),template:validateTileTemplate(entry.template),credit:string(entry.credit,p+'.credit',160),crs:enumeration(entry.crs,['wgs84','gcj02'],p+'.crs'),minZoom,maxZoom:number(entry.maxZoom,p+'.maxZoom',minZoom,20,true)};
+  });
+  unique(clean.custom.map(entry=>entry.id),'map.custom');
+  const all=[...MAP_SOURCES,...clean.custom];
+  keys(raw.preferences??clean.preferences,MAP_REGIONS.map(r=>r.id),'map.preferences');
+  for(const region of MAP_REGIONS) {
+    const value=raw.preferences?.[region.id]??clean.preferences[region.id],source=all.find(s=>s.id===value);
+    if(!source || source.regions&&!source.regions.includes(region.id))throw new Error(t('地区首选地图源无效。'));
+    clean.preferences[region.id]=value;
+  }
+  return clean;
+}
+function readMapLocal() {try{return validateMapLocal(JSON.parse(globalThis.localStorage?.getItem(LOCAL_KEY)||'{}'));}catch{return defaultMapLocal();}}
+function saveMapLocal(raw) {const clean=validateMapLocal(raw);globalThis.localStorage.setItem(LOCAL_KEY,JSON.stringify(clean));return clean;}
+function allMapSources(local=readMapLocal()) {return [...MAP_SOURCES,...local.custom.map(row=>({...row,layers:['street'],note:'自定义地图源',url:new URL(row.template).origin}))];}
+function mapSourceProblem(source,region,local) {
+  if(!source)return t('这个自定义地图源仅保存在原设备，请在本机重新配置。');
+  if(source.regions&&!source.regions.includes(region))return t('这个地图源不覆盖当前地区，请切换地图源。');
+  if(source.credential&&!local[source.credential])return t('请先在地图源设置中填写 {name} Key。',{name:t(source.name)});
+  return '';
+}
+function resolveMapSource(config,region,local=readMapLocal()) {
+  const sources=allMapSources(local),preferred=config.source==='auto'?(local.preferences[region]||'osm'):config.source;
+  let source=sources.find(row=>row.id===preferred),problem=mapSourceProblem(source,region,local),notice='';
+  if(config.source==='auto'&&problem) {
+    const fallback=local.tiandituKey?'tianditu':'osm';
+    source=sources.find(row=>row.id===fallback);
+    notice=t('首选源尚未配置，当前使用 {name}。',{name:t(source.name)});problem='';
+  }
+  const layer=source?.layers.includes(config.layer)?config.layer:'street';
+  if(source&&config.layer!==layer)notice=[notice,t('当前地图源仅提供街道底图。')].filter(Boolean).join(' ');
+  return {source,layer,problem,notice};
+}
+function tdtUrl(layer,key,z,x,y) {
+  const url=new URL(`https://t0.tianditu.gov.cn/${layer}_w/wmts`);
+  url.search=new URLSearchParams({SERVICE:'WMTS',REQUEST:'GetTile',VERSION:'1.0.0',LAYER:layer,STYLE:'default',TILEMATRIXSET:'w',FORMAT:'tiles',TILEMATRIX:String(z),TILEROW:String(y),TILECOL:String(x),tk:key});
+  return url.href;
+}
+function mapTileUrls(source,layer,local,z,x,y) {
+  if(source.id==='tianditu')return (layer==='satellite'?['img','cia']:['vec','cva']).map(l=>tdtUrl(l,local.tiandituKey,z,x,y));
+  if(source.id==='hk')return [`https://mapapi.geodata.gov.hk/gs/api/v1.0.0/xyz/basemap/WGS84/${z}/${x}/${y}.png`,`https://mapapi.geodata.gov.hk/gs/api/v1.0.0/xyz/label/hk/${getLocale()==='en'?'en':'tc'}/WGS84/${z}/${x}/${y}.png`];
+  if(source.id==='nlsc')return [`https://wmts.nlsc.gov.tw/wmts/${layer==='satellite'?'PHOTO2':getLocale()==='en'?'EMAP8':'EMAP'}/default/GoogleMapsCompatible/${z}/${y}/${x}`];
+  if(source.id==='osm')return [`https://tile.openstreetmap.org/${z}/${x}/${y}.png`];
+  if(source.template)return [source.template.replace(/\{([zxy])\}/g,(_,key)=>({z,x,y})[key])];
+  return [];
+}
+function amapStaticUrl(center,zoom,width,height,local) {
+  if(!local.amapKey)throw new Error(t('请先在地图源设置中填写 {name} Key。',{name:t('高德地图')}));
+  const p=convertMapPoint(center,'gcj02','CN'),url=new URL('https://restapi.amap.com/v3/staticmap');
+  url.search=new URLSearchParams({key:local.amapKey,location:`${p.longitude.toFixed(6)},${p.latitude.toFixed(6)}`,zoom:String(Math.max(3,Math.min(17,zoom))),size:`${Math.max(1,Math.min(1024,Math.round(width)))}*${Math.max(1,Math.min(1024,Math.round(height)))}`,scale:'1'});
+  return url.href;
+}
+function mapOrigins(source,layer,local) {
+  if(!source)return [];
+  if(source.id==='amap')return ['https://restapi.amap.com/*'];
+  return [...new Set(mapTileUrls(source,layer,local,12,0,0).map(url=>new URL(publicHttpsUrl(url)).origin+'/*'))];
+}
+// Call synchronously from a user gesture; never request permission during rendering.
+function requestMapPermission(source,layer,local) {
+  const origins=mapOrigins(source,layer,local);
+  if(!globalThis.chrome?.runtime?.id||!chrome.permissions?.request||!origins.length)return Promise.resolve(true);
+  return chrome.permissions.request({origins}).then(granted=>{if(!granted)throw new Error(t('未获准访问地图源，请重新授权。'));return true;});
+}
+async function hasMapPermission(source,layer,local) {
+  if(!globalThis.chrome?.runtime?.id||!chrome.permissions?.contains)return true;
+  return chrome.permissions.contains({origins:mapOrigins(source,layer,local)});
+}
+function parseAmapPlaces(raw) {
+  if(String(raw?.status)!=='1')throw new Error(t('高德请求失败，请检查 Key、服务权限与调用额度。'));
+  if(!Array.isArray(raw.pois))throw new Error(t('地点来源返回的数据格式无效。'));
+  return raw.pois.slice(0,20).flatMap(poi=>{
+    const location=typeof poi.location==='string'?poi.location.split(',').map(Number):[];
+    if(location.length!==2||!location.every(Number.isFinite))return [];
+    try {return [validateMapPlace({name:poi.name,address:[poi.pname,poi.cityname,poi.adname,poi.address].filter(s=>typeof s==='string').join(' ').slice(0,400),longitude:location[0],latitude:location[1],crs:'gcj02',region:'CN'})];}catch{return [];}
+  });
+}
+async function searchAmapPlaces(query,local,{signal,fetcher=globalThis.fetch}={}) {
+  const keywords=string(query,'query',120).trim();
+  if(!local.amapKey)throw new Error(t('请先在地图源设置中填写 {name} Key。',{name:t('高德地图')}));
+  const url=new URL('https://restapi.amap.com/v3/place/text');
+  url.search=new URLSearchParams({key:local.amapKey,keywords,offset:'20',page:'1',extensions:'base',output:'JSON'});
+  return parseAmapPlaces(await fetchPublicJson(url.href,{signal,fetcher,maxBytes:512*1024}));
+}
+
+return {MAP_SOURCES, defaultMapLocal, validateTileTemplate, validateMapLocal, readMapLocal, saveMapLocal, allMapSources, mapSourceProblem, resolveMapSource, mapTileUrls, amapStaticUrl, mapOrigins, requestMapPermission, hasMapPermission, parseAmapPlaces, searchAmapPlaces};
+})();
+const __map_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, getLocale } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { MAP_REGIONS, coordinateText, mapRegion, mapExternalUrl, sameMapPlace } = __map_model;
+const { MAP_SOURCES, allMapSources, readMapLocal, resolveMapSource } = __map_sources;
+
+const button=(action,label,glyph,extra='')=>`<button type="button" data-map-action="${action}" aria-label="${e(label)}" title="${e(label)}" ${extra}>${icon(glyph)}</button>`;
+const sourceName=source=>source?.template?source.name:t(source?.name||'地图源');
+function mapCard(item) {
+  const place=item.data.selected,compact=['1x1','1x2','2x1'].includes(item.size);
+  return `<div class="widget-inner w-map" data-widget="map" data-widget-id="${e(item.id)}" data-display-size="${item.size}" title="${e(item.title)}">
+    <div class="map-card-grid" aria-hidden="true"><i></i><i></i><i></i><span>${icon('mapPin')}</span></div>
+    <button type="button" class="map-card-open" data-action="widget-open" aria-label="${e(t('打开地图'))}"><span class="map-card-eyebrow">${icon('map')}<span>${t('地图')}</span></span><strong>${e(place.name)}</strong><span class="map-card-coordinate">${Math.abs(place.latitude).toFixed(2)}° ${place.latitude<0?'S':'N'} · ${Math.abs(place.longitude).toFixed(2)}° ${place.longitude<0?'W':'E'}</span><span class="map-card-caption">${t('搜索地点 · 收藏 · 出发')}${icon('arrowUpRight')}</span></button>
+    ${!compact?`<div class="map-card-regions">${MAP_REGIONS.map(region=>`<button type="button" data-action="widget-open" data-map-region="${region.id}" title="${e(t(region.name))}" aria-label="${e(t(region.name))}">${getLocale()==='en'?region.id:e(t(region.short))}</button>`).join('')}</div>`:''}
+  </div>`;
+}
+function mapSourceOptions(selected,region,local,auto=true) {
+  return `${auto?`<option value="auto" ${selected==='auto'?'selected':''}>${t('按地区自动选择')}</option>`:''}${allMapSources(local).map(source=>`<option value="${e(source.id)}" ${source.id===selected?'selected':''} ${source.regions&&!source.regions.includes(region)?'disabled':''}>${e(sourceName(source))}${source.credential&&!local[source.credential]?` · ${t('待配置')}`:''}</option>`).join('')}${selected!=='auto'&&!allMapSources(local).some(row=>row.id===selected)?`<option value="${e(selected)}" selected>${t('此设备尚未配置的地图源')}</option>`:''}`;
+}
+function mapPlaceRows(places,kind='result') {
+  return places.map((place,i)=>`<button type="button" class="map-place-row" data-map-${kind}="${i}"><span class="map-place-symbol">${icon(kind==='favorite'?'star':'mapPin')}</span><span><strong>${e(place.name)}</strong><small>${e(place.address||t(mapRegion(place.region)?.name||'世界'))}</small></span>${icon('chevronRight')}</button>`).join('');
+}
+function mapSelection(place,favorites=[]) {
+  const saved=favorites.some(row=>sameMapPlace(row,place));
+  return `<div class="map-selection-title"><span class="map-location-dot"></span><span>${t('选中地点')}</span></div><h3>${e(place.name)}</h3><p>${e(place.address||t(mapRegion(place.region)?.name||'世界'))}</p><div class="map-coordinate-line"><code>${coordinateText(place)}</code><span>${place.crs==='gcj02'?'GCJ-02':'WGS84'}</span></div><div class="map-place-tools"><button type="button" data-map-action="favorite" aria-pressed="${saved}">${icon(saved?'check':'star')}${t(saved?'已收藏':'收藏地点')}</button>${button('copy',t('复制坐标'),'copy')}${button('recenter',t('回到选中地点'),'target')}</div><div class="map-external-links"><a href="${e(mapExternalUrl(place))}" target="_blank" rel="noopener noreferrer">${t('在高德中打开')}${icon('arrowUpRight')}</a><a href="${e(mapExternalUrl(place,'google'))}" target="_blank" rel="noopener noreferrer">Google Maps ${icon('arrowUpRight')}</a></div>`;
+}
+function mapAttribution(source,enabled) {
+  if(!source||!enabled)return '';
+  return `${source.id==='hk'?'<img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" alt="Lands Department" width="72" height="24" referrerpolicy="no-referrer">':''}<a href="${e(source.url)}" target="_blank" rel="noopener noreferrer">${e(source.credit)}</a>${source.id==='osm'?'<a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">'+t('报告地图问题')+'</a>':''}`;
+}
+const field=(label,name,value,attrs='')=>`<label class="map-field"><span>${e(t(label))}</span><input name="${e(name)}" value="${e(value)}" ${attrs}></label>`;
+function customMapSourceFields(source) {
+  return `<fieldset class="map-custom-source" data-map-custom="${e(source.id)}"><legend>${t('自定义地图源')}</legend><div class="map-custom-heading">${field('名称','custom-name',source.name,'required maxlength="50"')}${button('remove-source',t('移除地图源'),'trash',`data-source-id="${e(source.id)}"`)}</div>${field('瓦片地址','custom-template',source.template,'required maxlength="2048" placeholder="https://example.com/{z}/{x}/{y}.png" spellcheck="false"')}${field('地图署名','custom-credit',source.credit,'required maxlength="160"')}<div class="map-custom-options"><label class="map-field"><span>${t('坐标系')}</span><select name="custom-crs"><option value="wgs84" ${source.crs==='wgs84'?'selected':''}>WGS84 / CGCS2000</option><option value="gcj02" ${source.crs==='gcj02'?'selected':''}>GCJ-02</option></select></label>${field('最小级别','custom-min',source.minZoom,'type="number" min="1" max="20" required')}${field('最大级别','custom-max',source.maxZoom,'type="number" min="1" max="20" required')}</div></fieldset>`;
+}
+function mapSettings(local,enabled) {
+  return `<div class="map-settings-heading"><div><small>MAP SOURCES</small><h3 id="map-settings-title">${t('地图源与偏好')}</h3></div>${button('settings-close',t('返回地图'),'close')}</div><form id="map-settings-form"><div class="map-settings-scroll"><label class="map-enable-setting"><span><strong>${t('启用地图服务')}</strong><small>${t('仅打开地图工作台时加载底图。')}</small></span><input type="checkbox" name="enabled" ${enabled?'checked':''}></label>
+    <div class="map-settings-section"><h4>${t('接入地图服务')}</h4><p>${t('密钥、地区偏好和自定义源仅保存在本机，不进入备份或同步。')}</p>${field('高德 Web 服务 Key','amapKey',local.amapKey,'type="password" maxlength="128" autocomplete="off" spellcheck="false"')}<p>${t('选择「Web 服务」类型的 Key；用于静态地图与地点搜索。')} <a href="https://console.amap.com/dev/key/app" target="_blank" rel="noopener noreferrer">${t('申请高德 Key')} ↗</a></p>${field('天地图 Key','tiandituKey',local.tiandituKey,'type="password" maxlength="128" autocomplete="off" spellcheck="false"')}<p><a href="https://console.tianditu.gov.cn/" target="_blank" rel="noopener noreferrer">${t('申请天地图 Key')} ↗</a></p></div>
+    <div class="map-settings-section"><h4>${t('地区首选地图源')}</h4><p>${t('选择「按地区自动选择」时生效。缺少 Key 时会显示实际使用的备用源。')}</p>${MAP_REGIONS.map(region=>`<label class="map-region-preference"><span>${e(t(region.name))}</span><select name="preferred-${region.id}" aria-label="${e(t(region.name))}">${mapSourceOptions(local.preferences[region.id],region.id,local,false)}</select></label>`).join('')}</div>
+    <div class="map-settings-section"><h4>${t('自定义地图源')}<span data-map-custom-count>${local.custom.length} / 8</span></h4><p>${t('支持 256 像素 Web Mercator XYZ / WMTS 瓦片。地址使用 {z}、{x}、{y}；服务需允许浏览器访问。')}</p><div data-map-custom-list>${local.custom.map(customMapSourceFields).join('')}</div><button type="button" class="map-add-source" data-map-action="add-source">${icon('plus')}${t('添加地图源')}</button></div>
+    <div class="map-source-reference"><h4>${t('内置地图源')}</h4>${MAP_SOURCES.map(source=>`<a href="${e(source.url)}" target="_blank" rel="noopener noreferrer"><span>${e(t(source.name))}<small>${e(t(source.note))}</small></span>${icon('arrowUpRight')}</a>`).join('')}</div></div><footer class="map-settings-footer"><span data-map-settings-status role="status"></span><button type="submit">${t('保存地图设置')}</button></footer></form>`;
+}
+function mapWorkspace(item) {
+  const local=readMapLocal(),data=item.data,plan=resolveMapSource(item.config,data.region,local);
+  return `<div class="map-app"><header class="map-header"><div class="map-brand">${icon('map')}<div><h2 id="dialog-title">${e(item.title)}</h2><span>${t('每个地点，都有下一程')}</span></div></div><div class="map-header-actions">${button('places',t('地点列表'),'list','aria-expanded="true"')}${button('settings',t('地图源与偏好'),'sliders','aria-expanded="false"')}${windowControls()}</div></header>
+    <nav class="map-regions" aria-label="${t('地图地区')}">${MAP_REGIONS.map(region=>`<button type="button" data-map-region="${region.id}" aria-pressed="${data.region===region.id}"><span>${e(t(region.name))}</span><small>${e(t(region.city))}</small></button>`).join('')}</nav>
+    <div class="map-layout"><aside class="map-sidebar" aria-label="${t('地点列表')}"><div class="map-search-area"><form id="map-search-form"><div class="map-search-input">${icon('search')}<input name="query" type="search" maxlength="120" placeholder="${t('搜索地点或输入经度, 纬度')}" aria-label="${t('搜索地图地点')}" autocomplete="off"><button type="submit" aria-label="${t('搜索')}">${icon('arrowRight')}</button></div><div class="map-search-options"><select name="searchSource" aria-label="${t('地点搜索来源')}"><option value="local">${t('本地地点')}</option><option value="amap">${t('高德地点搜索')}</option></select><select name="coordinateSystem" aria-label="${t('输入坐标系')}"><option value="wgs84">WGS84</option><option value="gcj02">GCJ-02</option></select></div></form><p class="map-search-hint" data-map-search-hint>${t('常用城市、收藏与坐标可离线搜索。')}</p></div><div class="map-list-tabs"><button type="button" data-map-tab="places" aria-pressed="true">${t('探索地点')}</button><button type="button" data-map-tab="favorites" aria-pressed="false">${t('我的收藏')} <span data-map-favorite-count>${data.favorites.length}</span></button></div><div class="map-result-scroll"><p class="map-search-status" data-map-search-status role="status"></p><div data-map-results></div></div><section class="map-selection" data-map-selection aria-label="${t('选中地点')}">${mapSelection(data.selected,data.favorites)}</section></aside>
+    <main class="map-stage"><div class="map-toolbar"><label>${icon('layers')}<select data-map-source aria-label="${t('当前地图源')}">${mapSourceOptions(item.config.source,data.region,local)}</select></label><div class="map-layer-switch" role="group" aria-label="${t('地图图层')}"><button type="button" data-map-layer="street" aria-pressed="${plan.layer==='street'}">${t('街道')}</button><button type="button" data-map-layer="satellite" aria-pressed="${plan.layer==='satellite'}">${t('卫星')}</button></div></div><p class="map-source-notice" data-map-notice hidden role="status"></p>
+      <div class="map-viewport" tabindex="0" role="region" aria-label="${t('交互地图；方向键平移，加减键缩放，点击选点')}"><div class="map-image-plane"></div><div class="map-selected-marker" hidden>${icon('mapPin')}</div><div class="map-scale"></div></div>
+      <div class="map-gate" data-map-gate><div class="map-gate-symbol">${icon('map')}</div><h3 data-map-gate-title>${t('开始浏览地图')}</h3><p data-map-gate-copy>${t('启用后，会向所选地图源发送当前地图范围。')}</p><button type="button" data-map-action="enable">${t('启用地图')}</button><button type="button" data-map-action="settings">${t('配置地图源')}</button></div>
+      <div class="map-navigation"><span class="map-north" aria-label="${t('地图朝北')}">N<span>↑</span></span>${button('locate',t('我的位置'),'target')}${button('zoom-in',t('放大地图'),'plus')}${button('zoom-out',t('缩小地图'),'minus')}</div><div class="map-load-state" role="status" data-map-load hidden><span></span><button type="button" data-map-action="retry">${t('重试')}</button></div>
+      <div class="map-attribution" data-map-attribution></div></main></div>
+    <footer class="map-footer"><span data-map-provider>${e(sourceName(plan.source))}</span><span class="map-footer-coordinates" data-map-center>${coordinateText(data.center)}</span><span data-map-save role="status">${t('已保存在本机')}</span><button type="button" data-map-action="save-retry" hidden>${t('重试保存')}</button><span data-map-feedback role="status" aria-live="polite"></span></footer>
+    <div class="map-settings-shade" data-map-action="settings-close" hidden></div><section class="map-settings-panel" aria-labelledby="map-settings-title" hidden>${mapSettings(local,item.config.enabled)}</section></div>`;
+}
+
+return {mapCard, mapSourceOptions, mapPlaceRows, mapSelection, mapAttribution, customMapSourceFields, mapSettings, mapWorkspace};
+})();
+const __widget_drafts = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Drafts stay separate from persisted desktop state, including after a failed save.
+function createWidgetDraft(item, saveData, onChange = () => {}) {
+  let base = JSON.stringify(item.data);
+  let revision = 0, savedRevision = 0, timer, job = null;
+  const draft = {
+    data: structuredClone(item.data),
+    error: null,
+    get dirty() { return revision !== savedRevision; },
+    get saving() { return job !== null; },
+    changed() {
+      revision++;
+      draft.error = null;
+      clearTimeout(timer);
+      timer = setTimeout(draft.flush, 350);
+      onChange();
+    },
+    flush() {
+      clearTimeout(timer);
+      if (job) return job;
+      if (!draft.dirty) return Promise.resolve(true);
+      job = Promise.resolve().then(async () => {
+        while (draft.dirty) {
+          const version = revision, snapshot = structuredClone(draft.data);
+          const saved = await saveData(item.id, snapshot, base);
+          base = JSON.stringify(saved ?? snapshot);
+          savedRevision = version;
+          draft.error = null;
+        }
+        return true;
+      }).catch(error => {
+        draft.error = error;
+        return false;
+      }).finally(() => {
+        job = null;
+        onChange();
+      });
+      onChange();
+      return job;
+    },
+  };
+  return draft;
+}
+
+return {createWidgetDraft};
+})();
+const __map_canvas = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { project, unproject, convertMapPoint, pointOnly } = __map_model;
+const { mapTileUrls, amapStaticUrl } = __map_sources;
+
+// Only the visible viewport is requested. Native image caching respects each
+// provider's HTTP headers; no prefetch, service worker cache or remote script.
+function createMapCanvas(element, {onMove,onPick,onStatus}) {
+  const events=new AbortController(),options={signal:events.signal};
+  const plane=element.querySelector('.map-image-plane'),marker=element.querySelector('.map-selected-marker');
+  let state=null,generation=0,resizeTimer,renderTimer,drag=null,disposed=false,scale=1;
+  const nodes=new Map();
+  const dimensions=()=>({width:Math.max(1,element.clientWidth),height:Math.max(1,element.clientHeight)});
+  const centerPoint=()=>convertMapPoint(state.center,state.source.crs,state.region);
+  const centerPixel=()=>project(centerPoint(),state.zoom);
+  function release(record) {
+    clearTimeout(record.timer);record.controller?.abort();
+    if(record.objectUrl)URL.revokeObjectURL(record.objectUrl);
+    record.image.onload=null;record.image.onerror=null;record.image.removeAttribute('src');record.image.remove();
+  }
+  function clear() {generation++;for(const record of nodes.values())release(record);nodes.clear();plane.replaceChildren();marker.hidden=true;}
+  function positionMarker() {
+    if(!state)return;
+    const {width,height}=dimensions(),center=centerPixel(),point=project(convertMapPoint(state.selected,state.source.crs,state.selected.region),state.zoom),world=256*2**state.zoom;
+    let dx=point.x-center.x;if(dx>world/2)dx-=world;if(dx<-world/2)dx+=world;
+    const x=width/2+dx*scale,y=height/2+(point.y-center.y)*scale;
+    marker.hidden=x<0||x>width||y<0||y>height;
+    marker.style.left=`${x}px`;marker.style.top=`${y}px`;
+    marker.setAttribute('aria-label',state.selected.name);
+    const metres=156543.03392*Math.cos(centerPoint().latitude*Math.PI/180)/2**state.zoom/scale*90;
+    const power=10**Math.floor(Math.log10(metres)),value=[1,2,5,10].map(n=>n*power).filter(n=>n<=metres).at(-1)||power;
+    const bar=element.querySelector('.map-scale');
+    bar.style.width=`${Math.round(value/metres*90)}px`;bar.textContent=value>=1000?`${value/1000} km`:`${value} m`;
+  }
+  function render() {
+    if(disposed||!state)return;
+    const token=++generation,{width,height}=dimensions(),source=state.source,z=state.zoom,center=centerPixel();
+    const wanted=[];
+    scale=source.id==='amap'?Math.max(1,width/1024,height/1024):1;
+    if(source.id==='amap') {
+      const url=amapStaticUrl(centerPoint(),z,width/scale,height/scale,state.local);
+      wanted.push({key:url,url,left:0,top:0,width,height,layer:0});
+    } else {
+      const left=center.x-width/2,top=center.y-height/2,count=2**z;
+      for(let y=Math.max(0,Math.floor(top/256));y<=Math.min(count-1,Math.floor((top+height-1)/256));y++) {
+        for(let x=Math.floor(left/256);x<=Math.floor((left+width-1)/256);x++) {
+          mapTileUrls(source,state.layer,state.local,z,((x%count)+count)%count,y).forEach((url,layer)=>wanted.push({key:`${x}:${y}:${url}`,url,left:x*256-left,top:y*256-top,width:256,height:256,layer}));
+        }
+      }
+    }
+    const keys=new Set(wanted.map(row=>row.key));
+    for(const [key,record] of nodes)if(!keys.has(key)){release(record);nodes.delete(key);}
+    const report=()=>{
+      if(disposed||token!==generation)return;
+      const records=[...nodes.values()],pending=records.some(row=>row.status==='loading');
+      const failed=records.filter(row=>row.status==='error').length;
+      onStatus(pending?'loading':failed?'error':'ready',failed);
+    };
+    for(const row of wanted) {
+      let record=nodes.get(row.key);
+      if(!record) {
+        const image=document.createElement('img');image.alt='';image.draggable=false;image.decoding='async';
+        image.referrerPolicy='strict-origin-when-cross-origin';
+        record={image,status:'loading',timer:null,report};nodes.set(row.key,record);
+        const finish=status=>{clearTimeout(record.timer);record.status=status;image.classList.toggle('is-failed',status==='error');record.report();};
+        image.onload=()=>finish('ready');image.onerror=()=>finish('error');
+        record.timer=setTimeout(()=>{if(record.status==='loading'){record.controller?.abort();image.removeAttribute('src');finish('error');}},12000);
+        plane.append(image);
+        // Extension/file contexts do not send an HTTP Referer. Identify Qiye
+        // explicitly to OSM instead of disguising the request as a website.
+        if(source.id==='osm' && globalThis.chrome?.runtime?.id) {
+          record.controller=new AbortController();
+          fetch(row.url,{signal:record.controller.signal,credentials:'omit',redirect:'error',cache:'default',headers:{'X-Requested-With':'Qiye (https://github.com/Ktclat/qiye)'}})
+            .then(response=>{if(!response.ok)throw new Error('Tile request failed');return response.blob();})
+            .then(blob=>{if(!disposed&&nodes.get(row.key)===record&&record.status==='loading'){record.objectUrl=URL.createObjectURL(blob);image.src=record.objectUrl;}})
+            .catch(()=>{if(!disposed&&nodes.get(row.key)===record)finish('error');});
+        } else image.src=row.url;
+      }
+      record.report=report;
+      Object.assign(record.image.style,{left:`${row.left}px`,top:`${row.top}px`,width:`${row.width}px`,height:`${row.height}px`,zIndex:String(row.layer)});
+    }
+    plane.style.transform='';positionMarker();report();
+  }
+  function schedule() {clearTimeout(renderTimer);renderTimer=setTimeout(render,160);}
+  function moveTo(center,zoom=state.zoom) {
+    if(!state)return;
+    state={...state,center,zoom:Math.max(state.source.minZoom,Math.min(state.source.maxZoom,zoom))};
+    onMove(pointOnly(center),state.zoom);schedule();
+  }
+  function zoomBy(delta,anchor) {
+    if(!state)return;
+    const next=Math.max(state.source.minZoom,Math.min(state.source.maxZoom,state.zoom+delta));
+    if(next===state.zoom)return;
+    const {width,height}=dimensions(),center=centerPixel(),dx=((anchor?.x??width/2)-width/2)/scale,dy=((anchor?.y??height/2)-height/2)/scale,factor=2**(next-state.zoom);
+    moveTo(unproject({x:(center.x+dx)*factor-dx,y:(center.y+dy)*factor-dy},next,state.source.crs),next);
+  }
+  element.addEventListener('pointerdown',event=>{
+    if(!state||event.button!==0||event.target.closest('button,a')||drag)return;
+    clearTimeout(renderTimer);element.focus({preventScroll:true});
+    drag={id:event.pointerId,x:event.clientX,y:event.clientY,center:centerPixel(),moved:false};
+    element.setPointerCapture(event.pointerId);element.classList.add('is-dragging');
+  },options);
+  element.addEventListener('pointermove',event=>{
+    if(!drag||event.pointerId!==drag.id)return;
+    const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
+    drag.moved ||= Math.hypot(dx,dy)>4;
+    if(drag.moved){plane.style.transform=`translate(${dx}px,${dy}px)`;marker.style.transform=`translate(${dx}px,${dy}px)`;}
+  },options);
+  const endDrag=event=>{
+    if(!drag||event.pointerId!==drag.id)return;
+    const current=drag;drag=null;element.classList.remove('is-dragging');marker.style.transform='';
+    if(element.hasPointerCapture(event.pointerId))element.releasePointerCapture(event.pointerId);
+    if(event.type==='pointercancel'){plane.style.transform='';return;}
+    if(current.moved)moveTo(unproject({x:current.center.x-(event.clientX-current.x)/scale,y:current.center.y-(event.clientY-current.y)/scale},state.zoom,state.source.crs));
+    else {const rect=element.getBoundingClientRect(),{width,height}=dimensions();onPick(unproject({x:current.center.x+(event.clientX-rect.left-width/2)/scale,y:current.center.y+(event.clientY-rect.top-height/2)/scale},state.zoom,state.source.crs));}
+  };
+  element.addEventListener('pointerup',endDrag,options);element.addEventListener('pointercancel',endDrag,options);
+  element.addEventListener('wheel',event=>{
+    if(!state||event.target.closest('button,a'))return;event.preventDefault();
+    const rect=element.getBoundingClientRect();zoomBy(event.deltaY<0?1:-1,{x:event.clientX-rect.left,y:event.clientY-rect.top});
+  },{...options,passive:false});
+  element.addEventListener('keydown',event=>{
+    if(!state||event.target!==element)return;
+    if(['+','=','-'].includes(event.key)){event.preventDefault();zoomBy(event.key==='-'?-1:1);}
+    const delta={ArrowLeft:[-100,0],ArrowRight:[100,0],ArrowUp:[0,-100],ArrowDown:[0,100]}[event.key];
+    if(delta){event.preventDefault();const p=centerPixel();moveTo(unproject({x:p.x+delta[0]/scale,y:p.y+delta[1]/scale},state.zoom,state.source.crs));}
+  },options);
+  const resize=new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(state)render();},180);});resize.observe(element);
+  return {
+    set(next) {clearTimeout(renderTimer);if(!next){state=null;clear();return;}const sourceChanged=state?.source.id!==next.source.id;state={...next,zoom:Math.max(next.source.minZoom,Math.min(next.source.maxZoom,next.zoom))};if(sourceChanged)clear();render();},
+    mark(selected) {if(state){state={...state,selected};positionMarker();}},
+    zoom:zoomBy,
+    retry() {clear();render();},
+    destroy() {disposed=true;events.abort();resize.disconnect();clearTimeout(resizeTimer);clearTimeout(renderTimer);clear();state=null;},
+  };
+}
+
+return {createMapCanvas};
+})();
+const __map_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { createWidgetDraft } = __widget_drafts;
+const { MAP_REGIONS, MAP_FAVORITE_LIMIT, regionPlace, mapRegion, regionAt, pointOnly, sameMapPlace, coordinateText, parseMapCoordinates, searchMapPlaces, validateMapPlace } = __map_model;
+const { MAP_SOURCES, readMapLocal, saveMapLocal, validateMapLocal, resolveMapSource, requestMapPermission, hasMapPermission, searchAmapPlaces } = __map_sources;
+const { mapPlaceRows, mapSelection, mapSourceOptions, mapSettings, customMapSourceFields, mapAttribution } = __map_view;
+const { createMapCanvas } = __map_canvas;
+
+const drafts=new Map();
+function bindMapWorkspace(root,initial,host,openingRegion) {
+  const events=new AbortController(),options={signal:events.signal},find=selector=>root.querySelector(selector);
+  let alive=true,local=readMapLocal(),config=structuredClone(initial.config),baseline=JSON.stringify([initial.title,initial.config]);
+  let settingsOpen=false,sidebarOpen=root.clientWidth>620,expanded=false,results=[],tab='places',search=null,searchVersion=0,loadVersion=0,feedbackTimer,busy=false;
+  let draft=drafts.get(initial.id),plan=resolveMapSource(config,initial.data.region,local);
+  const feedback=message=>{
+    if(!alive)return;clearTimeout(feedbackTimer);find('[data-map-feedback]').textContent=message;
+    feedbackTimer=setTimeout(()=>{if(alive)find('[data-map-feedback]').textContent='';},6000);
+  };
+  const saveStatus=()=>{
+    if(!alive)return;
+    find('[data-map-save]').textContent=t(draft.error?'保存失败，请重试':draft.dirty?'保存中…':'已保存在本机');
+    find('[data-map-save]').title=draft.error?.message||'';find('[data-map-action=save-retry]').hidden=!draft.error;
+    if(!draft.dirty&&!draft.error)host.refreshCards();
+  };
+  if(!draft){draft=createWidgetDraft(initial,(...args)=>host.saveData(...args),()=>draft.notify?.());drafts.set(initial.id,draft);}
+  draft.notify=saveStatus;
+  const canvas=createMapCanvas(find('.map-viewport'),{
+    onMove(center,zoom){if(!alive)return;draft.data.center=center;draft.data.zoom=zoom;draft.changed();updateCoordinates();},
+    onPick(point){if(!alive)return;draft.data.selected={...point,name:t('地图选点'),address:'',region:draft.data.region};draft.changed();renderSelection();},
+    onStatus(status,failed){
+      if(!alive)return;const node=find('[data-map-load]');node.hidden=status==='ready';
+      node.querySelector('span').textContent=status==='loading'?t('正在加载地图…'):t('部分地图未能加载，请重试或切换地图源。');
+      node.querySelector('button').hidden=status!=='error';node.dataset.status=status;
+    },
+  });
+  function updateCoordinates() {
+    find('[data-map-center]').textContent=coordinateText(draft.data.center);
+    find('[data-map-center]').title=`${draft.data.center.crs==='gcj02'?'GCJ-02':'WGS84'} · Z${draft.data.zoom}`;
+    find('[data-map-action=zoom-in]').disabled=!config.enabled||!!plan.problem||draft.data.zoom>=plan.source?.maxZoom;
+    find('[data-map-action=zoom-out]').disabled=!config.enabled||!!plan.problem||draft.data.zoom<=plan.source?.minZoom;
+  }
+  function renderSelection() {
+    find('[data-map-selection]').innerHTML=mapSelection(draft.data.selected,draft.data.favorites);
+    find('[data-map-favorite-count]').textContent=draft.data.favorites.length;canvas.mark(draft.data.selected);
+  }
+  function cancelSearch() {searchVersion++;search?.abort();search=null;find('#map-search-form [type=submit]').disabled=false;}
+  function renderList() {
+    const query=find('#map-search-form [name=query]').value;
+    results=tab==='favorites'?draft.data.favorites.filter(place=>`${place.name} ${place.address}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())):searchMapPlaces(query,draft.data.favorites,draft.data.region);
+    find('[data-map-results]').innerHTML=mapPlaceRows(results);
+    find('[data-map-search-status]').textContent=results.length?'':t(tab==='favorites'?'还没有匹配的收藏。选择地点后即可收藏。':'未找到本地地点。可输入经度, 纬度，或配置高德搜索。');
+    root.querySelectorAll('[data-map-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mapTab===tab)));
+  }
+  function updateSidebar() {
+    find('.map-sidebar').hidden=!sidebarOpen;
+    find('[data-map-action=places]').setAttribute('aria-expanded',String(sidebarOpen));
+  }
+  function showGate(title,copy,action='enable') {
+    find('[data-map-gate]').hidden=false;find('[data-map-gate-title]').textContent=title;find('[data-map-gate-copy]').textContent=copy;
+    const enable=find('[data-map-action=enable]');enable.hidden=action!=='enable';enable.textContent=t(config.enabled?'授权并加载':'启用地图');
+    find('[data-map-load]').hidden=true;canvas.set(null);
+  }
+  async function loadMap() {
+    const version=++loadVersion;
+    plan=resolveMapSource(config,draft.data.region,local);
+    find('[data-map-source]').innerHTML=mapSourceOptions(config.source,draft.data.region,local);
+    find('[data-map-provider]').textContent=plan.source?.template?plan.source.name:t(plan.source?.name||'地图源');
+    find('[data-map-notice]').hidden=!plan.notice;find('[data-map-notice]').textContent=plan.notice;
+    find('[data-map-attribution]').innerHTML='';
+    root.querySelectorAll('[data-map-region]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mapRegion===draft.data.region)));
+    root.querySelectorAll('[data-map-layer]').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.mapLayer===plan.layer));button.disabled=!plan.source?.layers.includes(button.dataset.mapLayer)||busy;});
+    updateCoordinates();
+    if(!config.enabled){showGate(t('开始浏览地图'),t('启用后，会向所选地图源发送当前地图范围。'));return;}
+    if(plan.problem){showGate(t('配置当前地图源'),plan.problem,'settings');return;}
+    // Clear the previous source before awaiting permissions, so old geography
+    // cannot be presented with a new provider's name or attribution.
+    canvas.set(null);
+    try {
+      const granted=await hasMapPermission(plan.source,plan.layer,local);
+      if(!alive||version!==loadVersion)return;
+      if(!granted){showGate(t('允许访问地图源'),t('点击授权后加载这个来源的地图。'));return;}
+      const zoom=Math.max(plan.source.minZoom,Math.min(plan.source.maxZoom,draft.data.zoom));
+      if(zoom!==draft.data.zoom){draft.data.zoom=zoom;draft.changed();}
+      find('[data-map-gate]').hidden=true;find('[data-map-attribution]').innerHTML=mapAttribution(plan.source,true);
+      canvas.set({...draft.data,...plan,local});updateCoordinates();
+    } catch {if(alive&&version===loadVersion)showGate(t('允许访问地图源'),t('未获准访问地图源，请重新授权。'));}
+  }
+  async function saveConfig(next,permission=Promise.resolve(true)) {
+    if(busy)return false;busy=true;find('[data-map-source]').disabled=true;
+    try {
+      await permission;if(!alive)return false;
+      const updated=await host.saveSettings(initial.id,{title:initial.title,config:next},baseline);
+      baseline=JSON.stringify([updated.title,updated.config]);config=structuredClone(updated.config);
+      if(alive){host.refreshCards();await loadMap();}return true;
+    } catch(error){if(alive){feedback(error.message);find('[data-map-source]').value=config.source;}return false;}
+    finally {busy=false;if(alive){find('[data-map-source]').disabled=false;root.querySelectorAll('[data-map-layer]').forEach(button=>button.disabled=!plan.source?.layers.includes(button.dataset.mapLayer));}}
+  }
+  function permissionFor(next=config,region=draft.data.region,settings=local) {
+    const nextPlan=resolveMapSource(next,region,settings);
+    return next.enabled&&!nextPlan.problem?requestMapPermission(nextPlan.source,nextPlan.layer,settings):Promise.resolve(true);
+  }
+  async function selectPlace(place,zoom=15) {
+    if(busy)return;
+    cancelSearch();
+    const {id,...clean}=place;
+    draft.data.selected=validateMapPlace(clean);draft.data.center=pointOnly(place);draft.data.region=place.region;draft.data.zoom=zoom;
+    draft.changed();renderSelection();
+    if(root.clientWidth<=620){sidebarOpen=false;updateSidebar();}
+    // Permission request is initiated within the selecting click's user gesture.
+    try {await permissionFor();}catch(error){feedback(error.message);}
+    if(alive)await loadMap();
+  }
+  function openSettings() {
+    if(busy)return;
+    find('.map-settings-panel').innerHTML=mapSettings(local,config.enabled);settingsOpen=true;toggleSettings();
+    find('#map-settings-form [name=amapKey]').focus({preventScroll:true});
+  }
+  function toggleSettings() {
+    find('.map-settings-panel').hidden=!settingsOpen;find('.map-settings-shade').hidden=!settingsOpen;
+    root.querySelectorAll('.map-header,.map-regions,.map-layout,.map-footer').forEach(node=>node.inert=settingsOpen);
+    find('[data-map-action=settings]').setAttribute('aria-expanded',String(settingsOpen));
+  }
+  function closeSettings() {settingsOpen=false;toggleSettings();find('[data-map-action=settings]').focus({preventScroll:true});}
+  function readSettings() {
+    const form=find('#map-settings-form'),data=new FormData(form);
+    return validateMapLocal({amapKey:String(data.get('amapKey')),tiandituKey:String(data.get('tiandituKey')),preferences:Object.fromEntries(MAP_REGIONS.map(region=>[region.id,String(data.get(`preferred-${region.id}`))])),custom:[...form.querySelectorAll('[data-map-custom]')].map(node=>({id:node.dataset.mapCustom,name:node.querySelector('[name=custom-name]').value.trim(),template:node.querySelector('[name=custom-template]').value.trim(),credit:node.querySelector('[name=custom-credit]').value.trim(),crs:node.querySelector('[name=custom-crs]').value,minZoom:Number(node.querySelector('[name=custom-min]').value),maxZoom:Number(node.querySelector('[name=custom-max]').value)}))});
+  }
+  function updateCustomOptions() {
+    const rows=[...root.querySelectorAll('[data-map-custom]')].map(node=>({id:node.dataset.mapCustom,name:node.querySelector('[name=custom-name]').value||t('自定义地图源'),template:'https://example.com/{z}/{x}/{y}.png',crs:'wgs84',minZoom:1,maxZoom:19,credit:''}));
+    for(const region of MAP_REGIONS) {
+      const select=find(`[name=preferred-${region.id}]`),value=select.value;
+      select.innerHTML=mapSourceOptions(value,region.id,{...local,custom:rows},false);
+      if(![...MAP_SOURCES,...rows].some(source=>source.id===value))select.value=MAP_SOURCES.find(source=>!source.regions||source.regions.includes(region.id)).id;
+    }
+    find('[data-map-custom-count]').textContent=`${rows.length} / 8`;find('[data-map-action=add-source]').disabled=rows.length>=8;
+  }
+  async function saveSettings(form) {
+    if(busy)return;
+    let nextLocal;
+    try {nextLocal=readSettings();}catch(error){find('[data-map-settings-status]').textContent=error.message;return;}
+    const next={...config,enabled:form.elements.enabled.checked};
+    if(next.source.startsWith('custom-')&&!nextLocal.custom.some(source=>source.id===next.source))next.source='auto';
+    const permission=permissionFor(next,draft.data.region,nextLocal);
+    busy=true;const submit=form.querySelector('[type=submit]');submit.disabled=true;
+    const previous=local;
+    try {
+      await permission;if(!alive)return;
+      // Save local secrets first; roll back if the desktop write fails.
+      saveMapLocal(nextLocal);
+      try {
+        const updated=await host.saveSettings(initial.id,{title:initial.title,config:next},baseline);
+        baseline=JSON.stringify([updated.title,updated.config]);config=structuredClone(updated.config);local=nextLocal;
+      } catch(error){saveMapLocal(previous);throw error;}
+      if(alive){closeSettings();feedback(t('地图设置已保存。'));host.refreshCards();await loadMap();}
+    } catch(error){if(alive)find('[data-map-settings-status]').textContent=error.message;}
+    finally {busy=false;if(alive)submit.disabled=false;}
+  }
+  async function searchPlaces(form) {
+    cancelSearch();const token=searchVersion,query=form.elements.query.value.trim();
+    if(!query){tab='places';renderList();return;}
+    let point;
+    try{point=parseMapCoordinates(query,form.elements.coordinateSystem.value);}catch(error){find('[data-map-search-status]').textContent=error.message;return;}
+    if(point){await selectPlace({...point,name:t('坐标地点'),address:'',region:regionAt(point)},15);return;}
+    if(form.elements.searchSource.value==='local'){tab='places';renderList();return;}
+    if(draft.data.region!=='CN'){find('[data-map-search-status]').textContent=t('高德地点搜索用于中国大陆；其他地区可搜索内置地点或输入坐标。');return;}
+    if(!local.amapKey){find('[data-map-search-status]').textContent=t('请先在地图源设置中填写 {name} Key。',{name:t('高德地图')});return;}
+    const request=search=new AbortController();form.querySelector('[type=submit]').disabled=true;
+    find('[data-map-search-status]').textContent=t('正在搜索地点…');find('[data-map-results]').replaceChildren();results=[];
+    try {
+      await requestMapPermission(MAP_SOURCES[0],'street',local);
+      if(!alive||token!==searchVersion)return;
+      const found=await searchAmapPlaces(query,local,{signal:request.signal});
+      if(!alive||token!==searchVersion)return;
+      results=found;tab='places';root.querySelectorAll('[data-map-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mapTab===tab)));
+      find('[data-map-results]').innerHTML=mapPlaceRows(results);find('[data-map-search-status]').textContent=found.length?t('高德搜索 · {count} 个地点',{count:found.length}):t('没有找到地点，请换一个关键词。');
+    } catch(error){if(alive&&token===searchVersion)find('[data-map-search-status]').textContent=error.message;}
+    finally {if(alive&&token===searchVersion){form.querySelector('[type=submit]').disabled=false;search=null;}}
+  }
+  async function locate() {
+    if(!navigator.geolocation){feedback(t('当前浏览器不支持定位。'));return;}
+    const control=find('[data-map-action=locate]');control.disabled=true;
+    try {
+      if(globalThis.chrome?.runtime?.id&&chrome.permissions?.request) {
+        if(!await chrome.permissions.request({permissions:['geolocation']}))throw new Error(t('未获准定位。可以搜索地点或输入坐标。'));
+      }
+      if(!alive)return;
+      const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:10000,maximumAge:60000}));
+      if(!alive)return;
+      const point={longitude:position.coords.longitude,latitude:position.coords.latitude,crs:'wgs84'};
+      // No origin prompt here: the geolocation callback has no user activation.
+      draft.data.selected={...point,name:t('我的位置'),address:t('定位精度约 {metres} 米',{metres:Math.round(position.coords.accuracy)}),region:regionAt(point)};
+      draft.data.center=point;draft.data.region=draft.data.selected.region;draft.data.zoom=15;draft.changed();renderSelection();await loadMap();
+    } catch(error){if(alive)feedback(error instanceof Error?error.message:t('定位失败。可以搜索地点或输入坐标。'));}
+    finally{if(alive)control.disabled=false;}
+  }
+  async function action(event) {
+    const target=event.target.closest('[data-map-action],[data-map-region],[data-map-result],[data-map-tab],[data-map-layer],[data-detail-action]');
+    if(!target||!root.contains(target))return;
+    event.preventDefault();event.stopPropagation();
+    const name=target.dataset.mapAction;
+    if(target.dataset.detailAction==='window-expand') {
+      expanded=!expanded;root.closest('dialog').classList.toggle('widget-app-expanded',expanded);
+      target.setAttribute('aria-pressed',String(expanded));target.setAttribute('aria-label',t(expanded?'还原窗口':'最大化窗口'));target.title=target.getAttribute('aria-label');target.innerHTML=icon(expanded?'minimize':'maximize');return;
+    }
+    if(target.dataset.mapRegion){find('#map-search-form [name=query]').value='';await selectPlace(regionPlace(target.dataset.mapRegion),mapRegion(target.dataset.mapRegion).zoom);if(alive)renderList();return;}
+    if(target.hasAttribute('data-map-result')){const place=results[Number(target.dataset.mapResult)];if(place)await selectPlace(place);return;}
+    if(target.dataset.mapTab){cancelSearch();tab=target.dataset.mapTab;renderList();return;}
+    if(target.dataset.mapLayer){const next={...config,layer:target.dataset.mapLayer};await saveConfig(next,permissionFor(next));return;}
+    if(name==='settings')openSettings();
+    else if(name==='settings-close'&&!busy)closeSettings();
+    else if(name==='places'){sidebarOpen=!sidebarOpen;updateSidebar();if(sidebarOpen)find('#map-search-form [name=query]').focus();}
+    else if(name==='enable'){const next={...config,enabled:true};await saveConfig(next,permissionFor(next));}
+    else if(name==='retry')canvas.retry();
+    else if(name==='save-retry')await draft.flush();
+    else if(name==='zoom-in')canvas.zoom(1);
+    else if(name==='zoom-out')canvas.zoom(-1);
+    else if(name==='locate')await locate();
+    else if(name==='recenter')await selectPlace(draft.data.selected,draft.data.zoom);
+    else if(name==='favorite') {
+      const place=draft.data.selected,index=draft.data.favorites.findIndex(row=>sameMapPlace(row,place));
+      if(index>=0)draft.data.favorites.splice(index,1);
+      else if(draft.data.favorites.length>=MAP_FAVORITE_LIMIT){feedback(t('最多收藏 {count} 个地点。',{count:MAP_FAVORITE_LIMIT}));return;}
+      else draft.data.favorites.push({...place,id:host.uid()});
+      draft.changed();renderSelection();if(tab==='favorites')renderList();find('[data-map-action=favorite]').focus({preventScroll:true});
+    } else if(name==='copy') {
+      try {await navigator.clipboard.writeText(`${coordinateText(draft.data.selected)} (${draft.data.selected.crs==='gcj02'?'GCJ-02':'WGS84'})`);feedback(t('坐标已复制'));}
+      catch {feedback(t('无法访问剪贴板，请选中坐标后手动复制。'));const selection=window.getSelection(),range=document.createRange();range.selectNodeContents(find('.map-coordinate-line'));selection.removeAllRanges();selection.addRange(range);}
+    } else if(name==='add-source') {
+      if(root.querySelectorAll('[data-map-custom]').length>=8)return;
+      find('[data-map-custom-list]').insertAdjacentHTML('beforeend',customMapSourceFields({id:'custom-'+host.uid(),name:'',template:'',credit:'',crs:'wgs84',minZoom:2,maxZoom:19}));
+      updateCustomOptions();find('[data-map-custom-list]').lastElementChild.querySelector('input').focus();
+    } else if(name==='remove-source'){target.closest('[data-map-custom]').remove();updateCustomOptions();find('[data-map-action=add-source]').focus();}
+  }
+  root.addEventListener('click',event=>{void action(event).catch(error=>feedback(error.message));},options);
+  root.addEventListener('submit',event=>{event.preventDefault();event.stopPropagation();if(event.target.id==='map-search-form')void searchPlaces(event.target).catch(error=>feedback(error.message));if(event.target.id==='map-settings-form')void saveSettings(event.target);},options);
+  root.addEventListener('change',event=>{
+    if(event.target.hasAttribute('data-map-source')){if(busy)return;const next={...config,source:event.target.value};void saveConfig(next,permissionFor(next));}
+    if(event.target.name==='searchSource'){cancelSearch();find('[data-map-search-hint]').textContent=t(event.target.value==='amap'?'提交搜索时，将关键词发送给高德地图。':'常用城市、收藏与坐标可离线搜索。');renderList();}
+    if(event.target.name==='custom-name')updateCustomOptions();
+  },options);
+  root.addEventListener('input',event=>{if(event.target.name==='query'){cancelSearch();if(find('[name=searchSource]').value==='local')renderList();else{results=[];find('[data-map-results]').replaceChildren();find('[data-map-search-status]').textContent=t('按 Enter 搜索地点。');}}},options);
+  root.addEventListener('keydown',event=>{if(event.key==='Escape'&&settingsOpen){event.preventDefault();event.stopImmediatePropagation();if(!busy)closeSettings();}}, {...options,capture:true});
+  globalThis.addEventListener('pagehide',()=>{void draft.flush();},options);
+  updateSidebar();renderSelection();renderList();saveStatus();
+  if(openingRegion&&mapRegion(openingRegion)){draft.data.selected=regionPlace(openingRegion);draft.data.region=openingRegion;draft.data.center=pointOnly(draft.data.selected);draft.data.zoom=mapRegion(openingRegion).zoom;draft.changed();renderSelection();renderList();}
+  void loadMap();
+  return ()=>{
+    alive=false;loadVersion++;events.abort();cancelSearch();canvas.destroy();clearTimeout(feedbackTimer);draft.notify=null;
+    void draft.flush().then(saved=>{if(saved){if(drafts.get(initial.id)===draft&&!draft.notify)drafts.delete(initial.id);host.refreshCards();}else host.toast(t('地图尚未保存，重新打开后可重试。'));});
+  };
+}
+
+return {bindMapWorkspace};
+})();
 const __calendar = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, getLocale, formatDate } = __i18n;
@@ -6350,51 +7245,6 @@ const widgetExtensions = [];
 
 return {widgetExtensions};
 })();
-const __public_json = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-
-function publicHttpsUrl(value) {
-  let url;
-  try { url=new URL(value); } catch { throw new Error(t('请输入有效的公开 HTTPS 地址。')); }
-  url.hostname=url.hostname.replace(/\.$/,'');
-  const hostname=url.hostname.toLowerCase();
-  if(url.protocol!=='https:' || url.username || url.password || url.port && url.port!=='443' || hostname==='localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local') || !hostname.includes('.') || /^[\d.]+$/.test(hostname) || hostname.includes(':'))throw new Error(t('请输入不含账号密码的公开 HTTPS 域名地址。'));
-  return url.href;
-}
-
-async function requestPublicOrigin(value) {
-  const url=publicHttpsUrl(value), api=globalThis.chrome;
-  if(api?.runtime?.id && api.permissions){
-    const permissions={origins:[new URL(url).origin+'/*']};
-    if(!await api.permissions.contains(permissions) && !await api.permissions.request(permissions))throw new Error(t('未获准访问这个来源。'));
-  }
-  return url;
-}
-
-async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch,cache='no-cache'}={}) {
-  const url=publicHttpsUrl(value), controller=new AbortController();
-  const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
-  if(signal?.aborted)controller.abort();
-  const timer=setTimeout(abort,12000);
-  try {
-    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache,headers:{Accept:'application/json'}});
-    if(!response.ok)throw new Error(t('来源返回 HTTP {status}',{status:response.status}));
-    if(Number(response.headers.get('content-length'))>maxBytes)throw new Error(t('文件超过大小限制。'));
-    const reader=response.body?.getReader();let text='';
-    if(reader){const decoder=new TextDecoder();let bytes=0;try{while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>maxBytes){await reader.cancel();throw new Error(t('文件超过大小限制。'));}text+=decoder.decode(value,{stream:true});}text+=decoder.decode();}finally{reader.releaseLock();}}
-    else {text=await response.text();if(new TextEncoder().encode(text).length>maxBytes)throw new Error(t('文件超过大小限制。'));}
-    if(controller.signal.aborted)throw new Error(t('读取已取消或超时。'));
-    try{return JSON.parse(text.replace(/^\uFEFF/,''));}catch{throw new Error(t('来源没有返回有效 JSON。'));}
-  } catch(error) {
-    if(controller.signal.aborted)throw new Error(t('读取已取消或超时。'));
-    if(error instanceof TypeError)throw new Error(t('无法读取来源，请检查网络及服务器的跨域访问（CORS）设置，或改为导入文件。'));
-    throw error;
-  } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
-}
-
-return {publicHttpsUrl, requestPublicOrigin, fetchPublicJson};
-})();
 const __community_format = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { keys, string, array, unique, byteLength, invalid } = __validation;
@@ -6508,6 +7358,7 @@ return {HOTSEARCH_API, HOTSEARCH_CATEGORIES, HOTSEARCH_SOURCES, HOTSEARCH_DEFAUL
 })();
 const __widget_registry = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { MAP_DEFAULTS, validateMapConfig } = __map_model;
 const { POMODORO_DEFAULTS, validatePomodoroConfig } = __pomodoro;
 const { t, localizeSeed } = __i18n;
 const { WORKDAY_COLORS, WORKDAY_FONTS, validateClockCities } = __widget_life;
@@ -6520,6 +7371,7 @@ const { HOTSEARCH_DEFAULTS, validateHotsearchConfig } = __hotsearch_sources;
 
 const builtins = [
   { type: 'codec', title: '编码工具', description: 'Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道', size: '2x2', icon: 'code' },
+  { type: 'map', title: '地图', description: '探索大陆、港澳台，切换高德与多个地图源，收藏地点与打开导航', size: '4x2', icon: 'map' },
   { type: 'bookmarks', title: '书签', description: '分层整理独立收藏，授权后管理浏览器书签', size: '4x2', icon: 'bookmark' },
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
@@ -6545,6 +7397,7 @@ const builtins = [
 const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  map: MAP_DEFAULTS,
   bookmarks: { source: 'local' },
   pomodoro: POMODORO_DEFAULTS,
   hotsearch: HOTSEARCH_DEFAULTS,
@@ -6627,6 +7480,7 @@ function newWidgetConfig(type) { return registry.newConfig(type); }
 function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if (widgetType === 'map') return validateMapConfig(raw, path);
   if (widgetType === 'pomodoro') return validatePomodoroConfig(raw, path);
   if (widgetType === 'hotsearch') return validateHotsearchConfig(raw, path);
   if(widgetType==='community'){
@@ -7031,6 +7885,7 @@ return {RADIX_DIGITS, RADIX_INPUT_LIMIT, COMMON_BASES, newBaseConverterData, val
 })();
 const __widget_data = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { newMapData, validateMapData } = __map_model;
 const { newPomodoroData, validatePomodoroData } = __pomodoro;
 const { validateCountdownData } = __widget_life;
 const { t } = __i18n;
@@ -7045,6 +7900,7 @@ const dataKeys = Object.freeze({ notes: 'notes', todo: 'todos', habit: 'habits',
 const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, remaining: 1500, running: false, endAt: null } };
 
 function newWidgetData(type) {
+  if (type === 'map') return newMapData();
   if (type === 'base-converter') return newBaseConverterData();
   if (type === 'pomodoro') return newPomodoroData();
   if(type==='community')return {value:'null'};
@@ -7065,6 +7921,7 @@ function widgetContentSummary(items) {
 }
 
 function validateWidgetData(type, raw, path) {
+  if (type === 'map') return validateMapData(raw, path);
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if (type === 'pomodoro') return validatePomodoroData(raw, path);
   if(type==='countdown')return validateCountdownData(raw,path);
@@ -7112,53 +7969,6 @@ function validateWidgetData(type, raw, path) {
 }
 
 return {newWidgetData, widgetContentSummary, validateWidgetData};
-})();
-const __widget_drafts = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-// Drafts stay separate from persisted desktop state, including after a failed save.
-function createWidgetDraft(item, saveData, onChange = () => {}) {
-  let base = JSON.stringify(item.data);
-  let revision = 0, savedRevision = 0, timer, job = null;
-  const draft = {
-    data: structuredClone(item.data),
-    error: null,
-    get dirty() { return revision !== savedRevision; },
-    get saving() { return job !== null; },
-    changed() {
-      revision++;
-      draft.error = null;
-      clearTimeout(timer);
-      timer = setTimeout(draft.flush, 350);
-      onChange();
-    },
-    flush() {
-      clearTimeout(timer);
-      if (job) return job;
-      if (!draft.dirty) return Promise.resolve(true);
-      job = Promise.resolve().then(async () => {
-        while (draft.dirty) {
-          const version = revision, snapshot = structuredClone(draft.data);
-          const saved = await saveData(item.id, snapshot, base);
-          base = JSON.stringify(saved ?? snapshot);
-          savedRevision = version;
-          draft.error = null;
-        }
-        return true;
-      }).catch(error => {
-        draft.error = error;
-        return false;
-      }).finally(() => {
-        job = null;
-        onChange();
-      });
-      onChange();
-      return job;
-    },
-  };
-  return draft;
-}
-
-return {createWidgetDraft};
 })();
 const __base_converter_view = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -19711,6 +20521,7 @@ return {calendarGrid, dateToolResults, calendarDetail};
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { codecCard } = __codec_workspace;
+const { mapCard } = __map_view;
 const { baseConverterCard } = __base_converter_view;
 const { pomodoroCard } = __pomodoro_view;
 const { bindPomodoro } = __pomodoro_runtime;
@@ -20063,6 +20874,7 @@ function renderCompact(item) {
 }
 
 function renderWidgetContent(item, state) {
+  if (item.widget === 'map') return mapCard(item);
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
   if (item.widget === 'pomodoro') return pomodoroCard(item);
@@ -20078,6 +20890,7 @@ function renderWidget(item, state) {
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
+  if (type === 'map') return mapCard(item);
   if (type === 'pomodoro') return pomodoroCard(item);
   if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
   if (definition.builtin && type !== 'bookmarks' && isCompactWidget(item.size)) return renderCompact(item);
@@ -20197,7 +21010,7 @@ function bindWidgets(container, context) {
     if (target.dataset.calendarDate) { event.preventDefault(); event.stopPropagation(); context.openDialog('widget-detail',{item,date:target.dataset.calendarDate}); return; }
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
-    if (action === 'widget-open') { context.openDialog('widget-detail',{item,codecAlgorithm:target.dataset.codecAlgorithm}); return; }
+    if (action === 'widget-open') { context.openDialog('widget-detail',{item,codecAlgorithm:target.dataset.codecAlgorithm,mapRegion:target.dataset.mapRegion}); return; }
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
     const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
     if (['widget-calendar-detail','widget-weather-detail','widget-memo-open','widget-memo-new'].includes(action)) { context.openDialog('widget-detail', { item, memoId: target.dataset.memoId, newMemo: action === 'widget-memo-new' }); return; }
@@ -20454,7 +21267,7 @@ const { newWidgetData } = __widget_data;
 const { renderWidget } = __widgets;
 
 const categories = ['全部', '日常', '效率', '工具'];
-const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock', 'hotsearch']);
+const daily = new Set(['map', 'calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock', 'hotsearch']);
 const productivity = new Set(['todo', 'pomodoro', 'habit', 'countdown', 'workday', 'bookmarks']);
 const categoryOf = type => daily.has(type) ? '日常' : productivity.has(type) ? '效率' : '工具';
 
@@ -23866,6 +24679,8 @@ return {createDailyQuoteClient, createDailyQuote};
 })();
 // SPDX-License-Identifier: GPL-3.0-only
 const { codecWorkspace, bindCodecWorkspace } = __codec_workspace;
+const { mapWorkspace } = __map_view;
+const { bindMapWorkspace } = __map_workspace;
 const { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } = __pomodoro_view;
 const { configurePomodoro, validatePomodoroConfig } = __pomodoro;
 const { bindPomodoro } = __pomodoro_runtime;
@@ -24566,12 +25381,13 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
+ dialog.classList.toggle('map-app-dialog',detailWidget === 'map');
  dialog.classList.toggle('bookmarks-app-dialog',detailWidget === 'bookmarks');
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
@@ -24587,6 +25403,7 @@ function openDialog(kind,data={}) {
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
+ else if(kind==='widget-detail'&&detailWidget==='map'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="map-workspace" class="widget-app-body">${mapWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
@@ -24622,7 +25439,8 @@ function openDialog(kind,data={}) {
  if (kind==='widget-detail') {
   const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
-  if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
+  else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -24641,6 +25459,7 @@ function openDialog(kind,data={}) {
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&detailWidget==='map')$('[data-map-action=places]',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
@@ -24878,6 +25697,7 @@ function widgetConfigDialog(item) {
  const type = item.widget, c=item.config, definition=getWidgetDefinition(type);
  let content = field('title',t("卡片名称"),item.title,{required:true,maxlength:30});
  if(type==='weather') content += `<div class="detail-toolbar"><input id="city-query" class="text-input" placeholder="${t("搜索全球城市")}" aria-label="${t("搜索全球城市")}"><button type="button" class="secondary-button" data-city-search>${t("搜索城市")}</button></div><div id="city-results" role="status"></div>` + selectField('source',t("天气源"),c.source||'auto',WEATHER_SOURCES.map(source=>({value:source.id,label:t(source.name)}))) + `<label class="setting-row"><span>${t("故障时自动切换天气源")}</span><input type="checkbox" class="switch" name="fallback" ${c.fallback!==false?'checked':''}></label><p class="help-text">${t("个人密钥可在天气详情的「天气源与设置」中配置。")}</p>` + selectField('unit',t("温度单位"),c.unit,[{value:'celsius',label:t("摄氏度 °C")},{value:'fahrenheit',label:t("华氏度 °F")}]) + `<div class="two-columns">${selectField('cityPreset',t("选择城市"),'',[{value:'',label:t("选择常用城市")},{value:'香港|22.32|114.17',label:t("香港")},{value:'北京|39.9|116.4',label:t("北京")},{value:'上海|31.23|121.47',label:t("上海")},{value:'深圳|22.54|114.06',label:t("深圳")},{value:'广州|23.13|113.26',label:t("广州")},{value:'成都|30.67|104.07',label:t("成都")},{value:'台北|25.03|121.56',label:t("台北")},{value:'澳门|22.1987|113.5439',label:t("澳门")},{value:'新加坡|1.35|103.82',label:t("新加坡")},{value:'东京|35.68|139.69',label:t("东京")}])}${field('cityName',t("城市名称"),c.city.name,{required:true,maxlength:60})}</div><div class="two-columns">${field('latitude',t("纬度"),c.city.latitude,{type:'number',min:-90,max:90,required:true})}${field('longitude',t("经度"),c.city.longitude,{type:'number',min:-180,max:180,required:true})}</div><label class="setting-row"><span class="setting-copy"><strong>${t("启用天气服务")}</strong><small>${t("将城市坐标发送至所选天气源。每 30 分钟更新，离线时显示缓存或错误提示。")}</small></span><input class="switch" name="weatherEnabled" type="checkbox" ${c.enabled?'checked':''}></label>`;
+ else if(type==='map') content += `<p class="help-text">${t('地图源、个人 Key 和地区偏好可在地图工作台右上角设置。')}</p>`;
  else if(type==='calendar') content += selectField('weekStart',t("每周开始日"),c.weekStart,[{value:'1',label:t("星期一")},{value:'0',label:t("星期日")}])+selectField('holidays',t("节假日地区"),c.holidays,[{value:'none',label:t("仅周末")},{value:'CN',label:t("中国大陆 · 2026")}])+`<label class="setting-row"><span>${t("显示农历")}</span><input type="checkbox" name="showLunar" ${c.showLunar?'checked':''}></label>`;
  else if(type==='countdown') content += field('eventTitle',t("纪念日 / 倒数日名称"),c.title,{required:true,maxlength:40})+field('date',t("目标日期"),c.date,{type:'date',required:true});
  else if(type==='focus') content += field('duration',t("每次专注时长（分钟）"),item.data.focus.duration,{type:'number',min:1,max:180,required:true,help:t("保存时会停止当前计时，并开始一轮新的时长。")});

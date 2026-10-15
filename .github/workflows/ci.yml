@@ -65,6 +65,9 @@ jobs:
           python3 tests/pomodoro-e2e.py --preview
           python3 tests/codec-e2e.py
           python3 tests/codec-e2e.py --preview
+          python3 tests/map-e2e.py
+          python3 tests/map-e2e.py --preview
+          python3 tests/map-extension-e2e.py
           python3 tests/extension-e2e.py
           python3 tests/tab-favicon-e2e.py
       - name: Package extension, source and standalone preview
@@ -83,6 +86,7 @@ jobs:
           name: qiye-browser-report
           path: |
             test-results
+            output/playwright/map
             output/playwright/bookmarks
             output/playwright/hotsearch
             output/playwright/pomodoro

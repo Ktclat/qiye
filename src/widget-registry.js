@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { MAP_DEFAULTS, validateMapConfig } from './map-model.js';
 import { POMODORO_DEFAULTS, validatePomodoroConfig } from './pomodoro.js';
 import { t, localizeSeed } from './i18n.js';
 import { WORKDAY_COLORS, WORKDAY_FONTS, validateClockCities } from './widget-life.js';
@@ -11,6 +12,7 @@ import { HOTSEARCH_DEFAULTS, validateHotsearchConfig } from './hotsearch-sources
 
 const builtins = [
   { type: 'codec', title: '编码工具', description: 'Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道', size: '2x2', icon: 'code' },
+  { type: 'map', title: '地图', description: '探索大陆、港澳台，切换高德与多个地图源，收藏地点与打开导航', size: '4x2', icon: 'map' },
   { type: 'bookmarks', title: '书签', description: '分层整理独立收藏，授权后管理浏览器书签', size: '4x2', icon: 'bookmark' },
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
@@ -36,6 +38,7 @@ const builtins = [
 export const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  map: MAP_DEFAULTS,
   bookmarks: { source: 'local' },
   pomodoro: POMODORO_DEFAULTS,
   hotsearch: HOTSEARCH_DEFAULTS,
@@ -118,6 +121,7 @@ export function newWidgetConfig(type) { return registry.newConfig(type); }
 export function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if (widgetType === 'map') return validateMapConfig(raw, path);
   if (widgetType === 'pomodoro') return validatePomodoroConfig(raw, path);
   if (widgetType === 'hotsearch') return validateHotsearchConfig(raw, path);
   if(widgetType==='community'){

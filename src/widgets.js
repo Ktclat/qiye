@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { codecCard } from './codec-workspace.js';
+import { mapCard } from './map-view.js';
 import { baseConverterCard } from './base-converter-view.js';
 import { pomodoroCard } from './pomodoro-view.js';
 import { bindPomodoro } from './pomodoro-runtime.js';
@@ -352,6 +353,7 @@ function renderCompact(item) {
 }
 
 export function renderWidgetContent(item, state) {
+  if (item.widget === 'map') return mapCard(item);
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
   if (item.widget === 'pomodoro') return pomodoroCard(item);
@@ -367,6 +369,7 @@ export function renderWidget(item, state) {
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
+  if (type === 'map') return mapCard(item);
   if (type === 'pomodoro') return pomodoroCard(item);
   if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
   if (definition.builtin && type !== 'bookmarks' && isCompactWidget(item.size)) return renderCompact(item);
@@ -486,7 +489,7 @@ export function bindWidgets(container, context) {
     if (target.dataset.calendarDate) { event.preventDefault(); event.stopPropagation(); context.openDialog('widget-detail',{item,date:target.dataset.calendarDate}); return; }
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
-    if (action === 'widget-open') { context.openDialog('widget-detail',{item,codecAlgorithm:target.dataset.codecAlgorithm}); return; }
+    if (action === 'widget-open') { context.openDialog('widget-detail',{item,codecAlgorithm:target.dataset.codecAlgorithm,mapRegion:target.dataset.mapRegion}); return; }
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
     const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
     if (['widget-calendar-detail','widget-weather-detail','widget-memo-open','widget-memo-new'].includes(action)) { context.openDialog('widget-detail', { item, memoId: target.dataset.memoId, newMemo: action === 'widget-memo-new' }); return; }

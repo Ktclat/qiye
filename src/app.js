@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { codecWorkspace, bindCodecWorkspace } from './codec-workspace.js';
+import { mapWorkspace } from './map-view.js';
+import { bindMapWorkspace } from './map-workspace.js';
 import { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } from './pomodoro-view.js';
 import { configurePomodoro, validatePomodoroConfig } from './pomodoro.js';
 import { bindPomodoro } from './pomodoro-runtime.js';
@@ -700,12 +702,13 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
+ dialog.classList.toggle('map-app-dialog',detailWidget === 'map');
  dialog.classList.toggle('bookmarks-app-dialog',detailWidget === 'bookmarks');
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
@@ -721,6 +724,7 @@ function openDialog(kind,data={}) {
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
+ else if(kind==='widget-detail'&&detailWidget==='map'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="map-workspace" class="widget-app-body">${mapWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
@@ -756,7 +760,8 @@ function openDialog(kind,data={}) {
  if (kind==='widget-detail') {
   const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
-  if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
+  else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -775,6 +780,7 @@ function openDialog(kind,data={}) {
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&detailWidget==='map')$('[data-map-action=places]',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
@@ -1012,6 +1018,7 @@ function widgetConfigDialog(item) {
  const type = item.widget, c=item.config, definition=getWidgetDefinition(type);
  let content = field('title',t("卡片名称"),item.title,{required:true,maxlength:30});
  if(type==='weather') content += `<div class="detail-toolbar"><input id="city-query" class="text-input" placeholder="${t("搜索全球城市")}" aria-label="${t("搜索全球城市")}"><button type="button" class="secondary-button" data-city-search>${t("搜索城市")}</button></div><div id="city-results" role="status"></div>` + selectField('source',t("天气源"),c.source||'auto',WEATHER_SOURCES.map(source=>({value:source.id,label:t(source.name)}))) + `<label class="setting-row"><span>${t("故障时自动切换天气源")}</span><input type="checkbox" class="switch" name="fallback" ${c.fallback!==false?'checked':''}></label><p class="help-text">${t("个人密钥可在天气详情的「天气源与设置」中配置。")}</p>` + selectField('unit',t("温度单位"),c.unit,[{value:'celsius',label:t("摄氏度 °C")},{value:'fahrenheit',label:t("华氏度 °F")}]) + `<div class="two-columns">${selectField('cityPreset',t("选择城市"),'',[{value:'',label:t("选择常用城市")},{value:'香港|22.32|114.17',label:t("香港")},{value:'北京|39.9|116.4',label:t("北京")},{value:'上海|31.23|121.47',label:t("上海")},{value:'深圳|22.54|114.06',label:t("深圳")},{value:'广州|23.13|113.26',label:t("广州")},{value:'成都|30.67|104.07',label:t("成都")},{value:'台北|25.03|121.56',label:t("台北")},{value:'澳门|22.1987|113.5439',label:t("澳门")},{value:'新加坡|1.35|103.82',label:t("新加坡")},{value:'东京|35.68|139.69',label:t("东京")}])}${field('cityName',t("城市名称"),c.city.name,{required:true,maxlength:60})}</div><div class="two-columns">${field('latitude',t("纬度"),c.city.latitude,{type:'number',min:-90,max:90,required:true})}${field('longitude',t("经度"),c.city.longitude,{type:'number',min:-180,max:180,required:true})}</div><label class="setting-row"><span class="setting-copy"><strong>${t("启用天气服务")}</strong><small>${t("将城市坐标发送至所选天气源。每 30 分钟更新，离线时显示缓存或错误提示。")}</small></span><input class="switch" name="weatherEnabled" type="checkbox" ${c.enabled?'checked':''}></label>`;
+ else if(type==='map') content += `<p class="help-text">${t('地图源、个人 Key 和地区偏好可在地图工作台右上角设置。')}</p>`;
  else if(type==='calendar') content += selectField('weekStart',t("每周开始日"),c.weekStart,[{value:'1',label:t("星期一")},{value:'0',label:t("星期日")}])+selectField('holidays',t("节假日地区"),c.holidays,[{value:'none',label:t("仅周末")},{value:'CN',label:t("中国大陆 · 2026")}])+`<label class="setting-row"><span>${t("显示农历")}</span><input type="checkbox" name="showLunar" ${c.showLunar?'checked':''}></label>`;
  else if(type==='countdown') content += field('eventTitle',t("纪念日 / 倒数日名称"),c.title,{required:true,maxlength:40})+field('date',t("目标日期"),c.date,{type:'date',required:true});
  else if(type==='focus') content += field('duration',t("每次专注时长（分钟）"),item.data.focus.duration,{type:'number',min:1,max:180,required:true,help:t("保存时会停止当前计时，并开始一轮新的时长。")});

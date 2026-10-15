@@ -33,6 +33,7 @@
     "favicon"
   ],
   "optional_permissions": [
+    "geolocation",
     "bookmarks",
     "history"
   ],

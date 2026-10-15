@@ -1,5 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
+ mapPin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+ layers:'<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
+ sliders:'<path d="M4 21v-7M4 10V3M12 21v-3M12 14V3M20 21V10M20 6V3M1 10h6M9 18h6M17 6h6"/>',
+ star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',
+ arrowRight:'<path d="M4 12h16m-6-6 6 6-6 6"/>',
+ arrowUpRight:'<path d="M5 19 19 5M5 5h14v14"/>',
+ minus:'<path d="M5 12h14"/>',
  tomato:'<path d="M12 7C6 3 2 8 3 14c1 8 17 8 18 0 1-6-3-11-9-7Z"/><path d="m7 5 5 3 5-3-2 5-3-2-3 2 2-4 2-4"/>',
  pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',
  reset:'<path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/>',
