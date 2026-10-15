@@ -25,6 +25,8 @@ export function bindCitySearch(form) {
         form.elements.cityName.value = city.name;
         form.elements.latitude.value = city.latitude;
         form.elements.longitude.value = city.longitude;
+        form.dataset.weatherCountryCode=city.countryCode||'';
+        form.dataset.weatherCoordinates=`${city.latitude},${city.longitude}`;
         output.replaceChildren();
       }
       return;

@@ -31,7 +31,7 @@ const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
   hotsearch: HOTSEARCH_DEFAULTS,
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
-  weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius' },
+  weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius', source: 'auto', fallback: true },
   countdown: { title: '新年，新的期待', date: '2027-01-01' },
   workday: { endTime: '18:00', payday: 10, workdays: [1, 2, 3, 4, 5] },
   clock: { timeZone: 'Asia/Hong_Kong', label: '香港' },
@@ -122,10 +122,16 @@ function validateBuiltinConfig(widgetType, raw, path) {
     out.holidays = enumeration(v.holidays, ['none','CN'], `${path}.holidays`);
   }
   if (widgetType === 'weather') {
-    keys(v.city, ['name','latitude','longitude'], `${path}.city`);
+    keys(v.city, ['name','latitude','longitude','countryCode'], `${path}.city`);
     out.city = {name:string(v.city.name, `${path}.city.name`, 60), latitude:number(v.city.latitude, `${path}.city.latitude`, -90,90), longitude:number(v.city.longitude, `${path}.city.longitude`, -180,180)};
     out.enabled = bool(v.enabled, `${path}.enabled`);
     out.unit = enumeration(v.unit, ['celsius','fahrenheit'], `${path}.unit`);
+    out.source = enumeration(v.source ?? 'auto', ['auto','openmeteo','qweather','hko','cwa','smg'], `${path}.source`);
+    out.fallback = v.fallback === undefined ? true : bool(v.fallback, `${path}.fallback`);
+    if(v.city.countryCode !== undefined) {
+      if(!/^[A-Z]{2}$/.test(v.city.countryCode)) invalid(`${path}.city.countryCode`, t('地区代码无效。'));
+      out.city.countryCode=v.city.countryCode;
+    }
   }
   if (widgetType === 'countdown') {
     out.title = string(v.title, `${path}.title`, 120);

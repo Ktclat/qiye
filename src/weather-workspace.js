@@ -3,6 +3,7 @@ import { t } from './i18n.js';
 import { escapeText } from './html.js';
 import { icon } from './icons.js';
 import { cityKey, requestWeather, searchCities } from './weather.js';
+import { readWeatherCredentials, validateWeatherCredentials, saveWeatherCredentials, requestWeatherPermission } from './weather-sources.js';
 import { readWeatherCities, saveWeatherCities, weatherCityList } from './weather-cities.js';
 import { weatherDetail, weatherLocation, weatherSettings, weatherCityCards } from './weather-view.js';
 
@@ -13,7 +14,7 @@ export function bindWeatherWorkspace(root, initial, host) {
   const alive = () => !events.signal.aborted && root.isConnected && current();
   let baseline = JSON.stringify([initial.title,initial.config]), busy = false;
   let cities = weatherCityList(readWeatherCities(),initial.config.city), metric = 'temperature';
-  let panel = '', expanded = false, search = null, results = [], returnFocus = null;
+  let cityOpen=(root.clientWidth||window.innerWidth)>760, panel=cityOpen?'cities':'', expanded=false, search=null, results=[], returnFocus=null;
 
   function feedback(message = '') {
     if (!alive()) return;
@@ -37,7 +38,7 @@ export function bindWeatherWorkspace(root, initial, host) {
   }
   async function loadForecast(force = false) {
     if (!alive() || !current().config.enabled) return;
-    const job = requestWeather(current().config.city,force);
+    const job = requestWeather(current().config.city,force,current().config);
     renderForecast();
     await job;
     renderForecast();
@@ -48,37 +49,48 @@ export function bindWeatherWorkspace(root, initial, host) {
     try { saveWeatherCities(cities); }
     catch { feedback(t('城市列表未能保存，当前城市设置已保存。')); }
   }
-  function togglePanel(next, trigger) {
-    panel = next;
-    if (trigger) returnFocus = trigger;
-    find('#weather-city-panel').hidden = next !== 'cities';
-    find('#weather-settings-panel').hidden = next !== 'settings';
-    find('.weather-panel-shade').hidden = !next;
-    find('[data-detail-action=weather-cities]').setAttribute('aria-expanded',String(next==='cities'));
-    find('[data-detail-action=weather-settings]').setAttribute('aria-expanded',String(next==='settings'));
-    if (next) {
-      find('#weather-search-results').hidden = true;
-      find(`#weather-${next==='cities'?'city':'settings'}-panel [data-detail-action=weather-panel-close]`).focus();
-    } else returnFocus?.focus({preventScroll:true});
-    if (next === 'cities' && current().config.enabled) {
-      renderCities();
-      for (const city of cities) void requestWeather(city).then(renderCities);
-    }
+  function hideSearch() {
+    search?.abort(); search=null;
+    root.querySelectorAll('.weather-search-results').forEach(node=>node.hidden=true);
   }
-  async function save(changes) {
+  function updatePanels() {
+    find('#weather-city-panel').hidden=!cityOpen;
+    find('#weather-settings-panel').hidden=panel!=='settings';
+    find('.weather-panel-shade').hidden=!(panel==='settings'||cityOpen&&root.clientWidth<=760);
+    find('[data-detail-action=weather-cities]').setAttribute('aria-expanded',String(cityOpen));
+    root.querySelectorAll('[data-detail-action=weather-settings]').forEach(button=>button.setAttribute('aria-expanded',String(panel==='settings')));
+  }
+  function loadCities() {
+    if(!alive()||!current().config.enabled) return;
+    for(const city of cities) void requestWeather(city,false,current().config).then(renderCities);
+  }
+  function togglePanel(next,trigger) {
+    if(trigger) returnFocus=trigger;
+    if(next==='cities') cityOpen=true;
+    else if(!next&&panel!=='settings') cityOpen=false;
+    panel=next||(cityOpen?'cities':'');
+    hideSearch(); updatePanels();
+    if(next==='settings') find('#weather-settings [name=source]').focus();
+    else if(next==='cities') {find('#weather-list-query').focus();loadCities();}
+    else returnFocus?.focus({preventScroll:true});
+  }
+  async function save(changes, credentials) {
     if (busy || !alive()) return false;
     busy = true; feedback();
     find('#weather-settings [type=submit]').disabled = true;
     try {
+      const permission=requestWeatherPermission(changes.config.city,changes.config,credentials);
+      await permission;
       const updated = await host.saveSettings(initial.id,changes,baseline);
       baseline = JSON.stringify([updated.title,updated.config]);
+      if(credentials) saveWeatherCredentials(credentials);
       if (!alive()) return false;
       remember(updated.config.city);
       find('#dialog-title').textContent = updated.title;
       find('#weather-settings').outerHTML = weatherSettings(updated);
       renderForecast(true);
-      togglePanel('');
-      void loadForecast();
+      if(panel==='settings') {panel=cityOpen?'cities':'';updatePanels();returnFocus?.focus({preventScroll:true});}
+      void loadForecast();loadCities();
       return true;
     } catch (error) {
       feedback(error.message);
@@ -91,15 +103,17 @@ export function bindWeatherWorkspace(root, initial, host) {
   }
   async function selectCity(city) {
     if (!city || busy) return;
-    const clean = {name:city.name,latitude:city.latitude,longitude:city.longitude};
+    const clean = {name:city.name,latitude:city.latitude,longitude:city.longitude,...(city.countryCode?{countryCode:city.countryCode}:{})};
     if (await save({title:current().title,config:{...current().config,city:clean,enabled:true}})) {
-      find('#weather-search-results').hidden = true;
-      find('#weather-city-query').value = '';
+      hideSearch();
+      find('#weather-city-query').value=''; find('#weather-list-query').value='';
+      if(root.clientWidth<=760) {cityOpen=false;panel='';updatePanels();}
       find('[data-detail-action=weather-cities]').focus({preventScroll:true});
     }
   }
-  async function searchCity() {
-    const query = find('#weather-city-query').value.trim(), output = find('#weather-search-results');
+  async function searchCity(form) {
+    const query=form.querySelector('input').value.trim(),output=form.querySelector('.weather-search-results');
+    root.querySelectorAll('.weather-search-results').forEach(node=>node.hidden=node!==output);
     search?.abort(); results = [];
     output.hidden = false;
     if (query.length < 2) { output.textContent = t('请输入至少两个字符'); return; }
@@ -135,9 +149,9 @@ export function bindWeatherWorkspace(root, initial, host) {
     const action = target.dataset.detailAction;
     if (action === 'weather-cities' || action === 'weather-settings') {
       const next = action === 'weather-cities' ? 'cities' : 'settings';
-      togglePanel(panel===next?'':next,target);
+      togglePanel((next==='cities'?cityOpen:panel===next)?'':next,target);
     } else if (action === 'weather-panel-close') togglePanel('');
-    else if (action === 'weather-add-city') { togglePanel(''); find('#weather-city-query').focus(); }
+    else if (action === 'weather-add-city') { togglePanel('cities');find('#weather-list-query').focus(); }
     else if (action === 'weather-refresh') void loadForecast(true);
     else if (action === 'weather-enable') void save({title:current().title,config:{...current().config,enabled:true}});
     else if (action === 'window-expand') {
@@ -151,23 +165,30 @@ export function bindWeatherWorkspace(root, initial, host) {
   },options);
   root.addEventListener('submit', event => {
     event.preventDefault(); event.stopPropagation();
-    if (event.target.id === 'weather-search') { void searchCity(); return; }
+    if (event.target.matches('.weather-city-search')) { void searchCity(event.target); return; }
     if (event.target.id !== 'weather-settings') return;
     const data = new FormData(event.target);
-    void save({title:String(data.get('title')).trim(),config:{city:{name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))},unit:String(data.get('unit')),enabled:data.has('enabled')}});
+    try {
+      const previous=readWeatherCredentials(),clear=data.has('clearKeys');
+      const credentials=validateWeatherCredentials({qweatherHost:clear?'':data.get('qweatherHost'),qweatherKey:clear?'':data.get('qweatherKey')||previous.qweatherKey,cwaKey:clear?'':data.get('cwaKey')||previous.cwaKey});
+      const city={name:String(data.get('cityName')).trim(),latitude:Number(data.get('latitude')),longitude:Number(data.get('longitude'))};
+      if(cityKey(city)===cityKey(current().config.city)&&current().config.city.countryCode) city.countryCode=current().config.city.countryCode;
+      void save({title:String(data.get('title')).trim(),config:{city,source:String(data.get('source')),fallback:data.has('fallback'),unit:String(data.get('unit')),enabled:data.has('enabled')}},credentials);
+    } catch(error) {find('.weather-settings-status').textContent=error.message;}
+
   },options);
   root.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    if (panel) { event.preventDefault(); event.stopPropagation(); togglePanel(''); }
-    else if (!find('#weather-search-results').hidden) {
-      event.preventDefault(); event.stopPropagation(); search?.abort(); search=null;
-      find('#weather-search-results').hidden=true; find('#weather-city-query').focus();
-    }
+    const openSearch=root.querySelector('.weather-search-results:not([hidden])');
+    if(openSearch) {event.preventDefault();event.stopPropagation();hideSearch();openSearch.closest('form').querySelector('input').focus();}
+    else if(panel) {event.preventDefault();event.stopPropagation();togglePanel('');}
   },options);
-  root.addEventListener('pointerdown', event => {
-    if (!event.target.closest('#weather-search')) find('#weather-search-results').hidden = true;
+  root.addEventListener('pointerdown',event=>{
+    if(!event.target.closest('.weather-city-search')) hideSearch();
   },options);
+  const resize=new ResizeObserver(updatePanels);resize.observe(root);
+  updatePanels();
   renderForecast();
-  void loadForecast();
-  return () => { events.abort(); search?.abort(); };
+  void loadForecast(); loadCities();
+  return () => { events.abort(); search?.abort();resize.disconnect(); };
 }

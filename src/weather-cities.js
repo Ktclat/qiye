@@ -13,7 +13,7 @@ export function weatherCityList(cities, current) {
   return [current, ...cities].filter(city => {
     if (!validWeatherCity(city) || seen.has(cityKey(city))) return false;
     seen.add(cityKey(city)); return true;
-  }).slice(0, CITY_LIMIT).map(({name, latitude, longitude}) => ({name, latitude, longitude}));
+  }).slice(0, CITY_LIMIT).map(({name, latitude, longitude, countryCode}) => ({name, latitude, longitude,...(/^[A-Z]{2}$/.test(countryCode)?{countryCode}:{})}));
 }
 export function readWeatherCities() {
   try {

@@ -88,6 +88,8 @@ test('every widget requires current config and data, rejecting shared fields and
       const incomplete = structuredClone(state); delete incomplete.items[0][field];
       assert.throws(() => validateImport(incomplete), /数据校验失败/, entry.type);
       for (const key of Object.keys(item[field])) {
+        // Weather backups created before source selection inherit automatic mode.
+        if(entry.type==='weather'&&field==='config'&&['source','fallback'].includes(key)) continue;
         const partial = structuredClone(state); delete partial.items[0][field][key];
         assert.throws(() => validateImport(partial), /数据校验失败/, entry.type + '.' + key);
       }

@@ -5,7 +5,7 @@ import { t, setLocale, getLocale, resolveLocale, formatDate } from '../src/i18n.
 import { englishMessages } from '../src/messages-en.js';
 import { parseDate, localDateKey, daysBetween, dateStats, monthCells, countWorkdays, holidayFor } from '../src/calendar.js';
 import { newMemo, listMemos, validateMemos } from '../src/memos.js';
-import { parseWeatherResponse, requestWeather, weatherState, temperature, searchCities } from '../src/weather.js';
+import { parseWeatherResponse, requestWeather, weatherState, weatherKey, temperature, searchCities } from '../src/weather.js';
 import { memoCard } from '../src/memo-view.js';
 import { calendarDetail } from '../src/calendar-view.js';
 
@@ -100,7 +100,9 @@ test('weather rejects malformed persisted forecasts and preserves valid night ob
   const storage=globalThis.localStorage;
   const valid=parseWeatherResponse({current:{temperature_2m:15,weather_code:0,time:'2026-10-13T22:00'},hourly:{time:['2026-10-13T22:00'],is_day:[0],weather_code:[0],temperature_2m:[15]}});
   assert.equal(valid.hourly[0].isDay,false);
-  globalThis.localStorage={getItem:()=>JSON.stringify({'81.0000,12.0000':valid,'82.0000,12.0000':{...valid,hourly:[null]}})};
+  valid.sources={current:'openmeteo',hourly:'openmeteo',daily:'openmeteo'};
+  const goodKey=weatherKey({latitude:81,longitude:12}),badKey=weatherKey({latitude:82,longitude:12});
+  globalThis.localStorage={getItem:key=>key==='qiye.weather.forecasts.v3'?JSON.stringify({[goodKey]:valid,[badKey]:{...valid,hourly:[null]}}):null};
   try {
     assert.equal(weatherState({latitude:81,longitude:12}).data.hourly[0].temperature,15);
     assert.equal(weatherState({latitude:82,longitude:12}).data,null);

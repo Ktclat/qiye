@@ -13,7 +13,8 @@ import { bindHotsearchCards } from './hotsearch-workspace.js';
 import { hotsearchSource } from './hotsearch-sources.js';
 
 const DAY = 86_400_000;
-import { WEATHER_TTL, weatherState, requestWeather, cityKey, temperature, weatherDescription, weatherArt } from './weather.js';
+import { weatherSource, requestWeatherPermission } from './weather-sources.js';
+import { WEATHER_TTL, weatherState, requestWeather, cityKey, weatherKey, temperature, weatherDescription, weatherArt } from './weather.js';
 import { localDateKey, dayStamp, chineseLunarDate, dateStats } from './calendar.js';
 import { formatDate, getLocale } from './i18n.js';
 import { memoCard } from './memo-view.js';
@@ -290,14 +291,14 @@ function renderClock(item, now = new Date()) {
 function renderWeather(item, state) {
   const city = item.config.city;
   const top = header(city.name, 'pin', configButton(t("设置天气城市")));
-  if (!item.config.enabled) return `${top}<div class="w-weather-off">${weatherArt(2)}<span>${t("把天气带进新标签页")}</span><button type="button" class="w-weather-enable" data-action="widget-weather-enable">${t("启用天气")}</button></div><div class="w-weather-source">${t("发送城市坐标至 Open-Meteo")}</div>`;
-  const current = weatherState(city);
-  if (!current.data) return `${top}<div class="w-weather-unavailable">${icon('cloud')}<strong>${current.status === 'error' ? t("暂时无法获取天气") : t("正在获取天气")}</strong><span>${current.status === 'error' ? escapeHtml(current.error) : t("等待 Open-Meteo 返回数据")}</span>${current.status === 'error' ? `<button type="button" class="w-weather-enable" data-action="widget-weather-retry">${t("重新加载")}</button>` : `<span class="w-weather-loading" aria-label="${t("正在加载")}"></span>`}</div><div class="w-weather-source">Open-Meteo</div>`;
+  if (!item.config.enabled) return `${top}<div class="w-weather-off">${weatherArt(2)}<span>${t("把天气带进新标签页")}</span><button type="button" class="w-weather-enable" data-action="widget-weather-enable">${t("启用天气")}</button></div><div class="w-weather-source">${t("启用后向所选天气源发送城市坐标；每 30 分钟更新。")}</div>`;
+  const current = weatherState(city,item.config);
+  if (!current.data) return `${top}<div class="w-weather-unavailable">${icon('cloud')}<strong>${current.status === 'error' ? t("暂时无法获取天气") : t("正在获取天气")}</strong><span>${current.status === 'error' ? escapeHtml(current.error) : t("等待天气源返回数据")}</span>${current.status === 'error' ? `<button type="button" class="w-weather-enable" data-action="widget-weather-retry">${t("重新加载")}</button>` : `<span class="w-weather-loading" aria-label="${t("正在加载")}"></span>`}</div><div class="w-weather-source">${escapeHtml(t(weatherSource(item.config.source||'auto').name))}</div>`;
   const weather = current.data;
   const updated = new Date(weather.fetchedAt).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit', hour12: false });
   const stale = Date.now() - weather.fetchedAt >= WEATHER_TTL;
-  const detail = [weatherDescription(weather.code), weather.min !== null && weather.max !== null ? `${temperature(weather.min,item.config.unit).replace("°", "")}° / ${temperature(weather.max,item.config.unit).replace("°", "")}°` : ''].filter(Boolean).join(' · ');
-  return `${top}<div class="w-weather-current"><strong>${temperature(weather.temperature,item.config.unit).replace("°", "")}<sup>°</sup></strong>${weatherArt(weather.code, weather.isDay)}</div><div class="w-weather-description">${escapeHtml(detail)}</div><div class="w-weather-details">${weather.feelsLike !== null ? `<span>${t("体感 {v0}°", {v0: temperature(weather.feelsLike,item.config.unit).replace("°", "")})}</span>` : ''}${weather.humidity !== null ? `<span>${t("湿度 {v0}%", {v0: Math.round(weather.humidity)})}</span>` : ''}</div><button type="button" class="w-weather-details-button" data-action="widget-weather-detail">${t("24 小时 · 7 天预报 ↗")}</button><button type="button" class="w-weather-update${current.status === 'error' ? ' is-error' : ''}" data-action="widget-weather-retry" title="${escapeHtml(current.status === 'error' ? current.error : t("重新获取天气"))}"${current.status === 'loading' ? ' disabled' : ''}>${current.status === 'loading' ? t("正在更新…") : current.status === 'error' ? `${t("缓存 {v0} · 更新失败 ↻", {v0: updated})}` : `${stale ? t("缓存") : t("更新")} ${updated} · Open-Meteo ↻`}</button>`;
+  const detail = [weather.description||weatherDescription(weather.code), weather.min !== null && weather.max !== null ? `${temperature(weather.min,item.config.unit).replace("°", "")}° / ${temperature(weather.max,item.config.unit).replace("°", "")}°` : ''].filter(Boolean).join(' · ');
+  return `${top}<div class="w-weather-current"><strong>${temperature(weather.temperature,item.config.unit).replace("°", "")}<sup>°</sup></strong>${weatherArt(weather.code, weather.isDay)}</div><div class="w-weather-description">${escapeHtml(detail)}</div><div class="w-weather-details">${weather.feelsLike !== null ? `<span>${t("体感 {v0}°", {v0: temperature(weather.feelsLike,item.config.unit).replace("°", "")})}</span>` : ''}${weather.humidity !== null ? `<span>${t("湿度 {v0}%", {v0: Math.round(weather.humidity)})}</span>` : ''}</div><button type="button" class="w-weather-details-button" data-action="widget-weather-detail">${t("24 小时 · 7 天预报 ↗")}</button><button type="button" class="w-weather-update${current.status === 'error' ? ' is-error' : ''}" data-action="widget-weather-retry" title="${escapeHtml(current.status === 'error' ? current.error : t("重新获取天气"))}"${current.status === 'loading' ? ' disabled' : ''}>${current.status === 'loading' ? t("正在更新…") : current.status === 'error' ? `${t("缓存 {v0} · 更新失败 ↻", {v0: updated})}` : `${stale ? t("缓存") : t("更新")} ${updated} · ${escapeHtml(t(weatherSource(weather.sources?.current).name))} ↻`}</button>`;
 }
 
 function renderWallpaper(item, state) {
@@ -312,7 +313,7 @@ function compactModel(item) {
     value = String(now.getDate()); caption = formatDate(now, {weekday:'short'});
     detail = formatDate(now, {month:'short'}); meta = config.showLunar ? chineseLunarDate(now) : String(now.getFullYear());
   } else if (type === 'weather') {
-    const weather = config.enabled ? weatherState(config.city).data : null;
+    const weather = config.enabled ? weatherState(config.city,config).data : null;
     value = weather ? temperature(weather.temperature, config.unit) : '—'; caption = config.city.name;
     detail = weather ? weatherDescription(weather.code) : t('启用天气');
     meta = weather && weather.min !== null && weather.max !== null ? `${temperature(weather.min,config.unit)} / ${temperature(weather.max,config.unit)}` : '';
@@ -402,11 +403,11 @@ function ensureWeather(binding, force = false) {
   for (const root of binding.container.querySelectorAll('[data-widget=weather]')) {
     const item = findItem(root, state);
     if (!item?.config.enabled) continue;
-    const city = item.config.city, key = cityKey(city), current = weatherState(city);
+    const city = item.config.city, key = weatherKey(city,item.config), current = weatherState(city,item.config);
     if (binding.weatherPending.has(key)) continue;
     if (!force && ((current.data && Date.now()-current.data.fetchedAt<WEATHER_TTL) || Date.now()-current.lastAttempt<60000)) continue;
     binding.weatherPending.add(key);
-    const request=requestWeather(city,force); updateWeatherCards(binding);
+    const request=requestWeather(city,force,item.config); updateWeatherCards(binding);
     request.finally(()=>{binding.weatherPending.delete(key);if(binding.alive)updateWeatherCards(binding);});
   }
 }
@@ -495,8 +496,10 @@ export function bindWidgets(container, context) {
       return;
     }
     if (action === 'widget-weather-enable') {
+      target.disabled=true;
+      try {await requestWeatherPermission(item.config.city,{...item.config,enabled:true});}
+      catch(error) {context.toast?.(error.message);if(binding.alive)target.disabled=false;return;}
       item.config.enabled = true;
-      target.disabled = true;
       if (!await persist()) { item.config.enabled = false; if (binding.alive) updateWeatherCards(binding); return; }
       if (binding.alive) ensureWeather(binding, true);
       return;

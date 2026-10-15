@@ -81,3 +81,13 @@ U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
 - 封装：`src/calendar-almanac.js` 提供普通对象、语言缓存、英文名称补充，不向外暴露可变上游对象。上游未翻译的节日由 `src/messages-en.js` 补齐。
 
 用于公历转农历、节气、传统节日、生肖、星座及传统黄历资料。中国法定节假日仍使用项目单独核实的 2026 年政府安排，不用民俗节日推断放假。黄历资料属于传统文化内容。
+
+## 天气数据服务（2026-10-15 核验）
+
+- [Open-Meteo](https://open-meteo.com/en/docs)：全球模型预报与地理编码；[CAMS](https://open-meteo.com/en/docs/air-quality-api) 提供空气质量，界面明确标注美国 AQI。
+- [和风天气](https://dev.qweather.com/docs/start/)：个人 API Host / Key；接入 `/weather/v1/current`、`daily`、`hourly` 经纬度 API，不使用逐步停用的公共域名或旧 v7 接口。保留 [QWeather attribution](https://developer.qweather.com/attribution.html) 链接。
+- [香港天文台开放数据](https://www.hko.gov.hk/en/abouthko/opendata_intro.htm)：`rhrread` 实况、`fnd` 每日预报；温度按附近有效站点选择，湿度由天文台报告。定性降水概率保留原文。
+- [台湾中央气象署](https://opendata.cwa.gov.tw/devManual/description)：个人授权码；`O-A0003-001` 气象观测，选择附近有效 WGS84 站点。小时及每日预报另由 Open-Meteo 提供。
+- [澳门地球物理气象局 XML](https://xml.smg.gov.mo/)：`c_actual_brief.xml` 实况、`c_7daysforecast.xml` / `e_7daysforecast.xml` 七日预报，使用官方气象代码与测量类型定义。
+
+以上数据按各服务条件提供，接口内容和可用性由服务方维护。栖页不附带第三方账户密钥。官方实况、模型补充、空气质量分别标明来源；切换源失败可回退，界面会显示实际生效来源。iTab 的公开网页天气模块调用其自有 `/api/getWeather` 和 `/api/weather/24`，未据此推断未公开的上游供应商，也不调用其私有服务。
