@@ -1343,77 +1343,79 @@ html[data-theme=light] #dialog.widget-app-dialog {
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
-.bookmarks-app{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-.bookmarks-app [hidden]{display:none!important}.bookmarks-app .icon{width:17px;height:17px;flex:none}
-.bm-header{display:flex;align-items:center;gap:16px;height:48px;padding:7px 12px;border-bottom:1px solid var(--app-border);flex:none;position:relative;z-index:6}
-.bm-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
-.bm-header-tools{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0;flex:1}.bm-header .widget-app-controls{gap:3px}
-.bm-header details{position:relative;flex:none}.bm-header summary{display:flex;align-items:center;justify-content:center;list-style:none;cursor:pointer;border-radius:7px;height:30px;color:var(--app-muted)}
+.bookmarks-app{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;position:relative;color:var(--app-fg)}
+.bookmarks-app .icon{width:17px;height:17px;flex:none}
+.bm-header{display:flex;align-items:center;gap:8px;padding:7px 12px;height:48px;box-sizing:border-box;flex:none;border-bottom:1px solid var(--app-border);position:relative;z-index:6;min-width:0}
+.bm-visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.bm-header-tools{display:flex;align-items:center;gap:3px;min-width:0;flex:none}.bm-header .widget-app-controls{gap:2px}
+.bm-header details{position:relative;flex:none}.bm-header summary{display:flex;align-items:center;justify-content:center;list-style:none;cursor:pointer;border-radius:6px;height:30px;width:30px;color:var(--app-muted)}
 .bm-header summary::-webkit-details-marker{display:none}.bm-header summary:hover,.bm-header details[open]>summary{background:var(--app-selection);color:var(--app-fg)}
-.bm-header summary:focus-visible{outline:2px solid var(--app-blue);outline-offset:-2px}.bm-source-switch summary{gap:7px;padding:0 8px;font-size:12px;color:var(--app-fg);max-width:195px}
-.bm-source-glyph{display:flex}.bm-source-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bm-source-switch summary>.icon{width:12px;height:12px;color:var(--app-muted)}
-.bm-sources,.bm-settings-panel{position:absolute;top:calc(100% + 9px);padding:6px;border:1px solid var(--app-border);border-radius:10px;background:var(--app-pane);box-shadow:0 10px 32px #0003}
-.bm-sources{left:0;min-width:190px;display:grid;gap:3px}.bookmarks-app .bm-sources button{display:flex;align-items:center;gap:8px;background:transparent;font-size:12px;white-space:nowrap;padding:9px 10px;text-align:left;border-radius:6px}
-.bm-sources button>span{flex:1}.bm-sources button>.icon:last-child{width:14px;visibility:hidden}.bm-sources button[aria-pressed=true]>.icon:last-child{visibility:visible}
-.bookmarks-app .bm-sources button[aria-pressed=true]{background:var(--app-selection);color:var(--app-fg)}
-.bm-search{display:flex;align-items:center;gap:6px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:7px;padding-left:9px;flex:1;min-width:48px;max-width:320px;height:30px;color:var(--app-muted)}
-.bm-search>.icon{width:14px;height:14px}.bookmarks-app .bm-search input{width:100%;height:100%;background:transparent;padding:4px 6px;font-size:12px;border-radius:6px}
-.bm-settings>summary{width:30px}.bm-settings-panel{right:0;width:270px;max-width:calc(100cqw - 90px);padding:14px}.bm-settings-panel>label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}
-.bookmarks-app .bm-settings-panel select{font-size:12px;padding:6px 8px;max-width:155px;border-radius:6px}.bookmarks-app .bm-settings-panel>button{display:flex;align-items:center;gap:8px;width:100%;padding:8px;margin-top:10px;background:transparent;font-size:12px;text-align:left}
-.bm-source-note{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--app-border);font-size:11px;line-height:1.7;color:var(--app-muted)}.bm-source-note.is-browser{color:#c1904f}
+.bm-header summary:focus-visible{outline:2px solid var(--app-blue);outline-offset:-2px}.bm-source-switch summary{gap:6px;padding:0 5px;font-size:12px;color:var(--app-fg);max-width:154px;width:auto}
+.bm-source-glyph{display:flex}.bm-source-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bm-source-switch summary>.icon{width:10px;height:10px;color:var(--app-muted)}
+.bm-sources,.bm-popover{position:absolute;top:calc(100% + 9px);padding:6px;border:1px solid var(--app-border);border-radius:9px;background:var(--app-pane);box-shadow:0 10px 32px #0003;color:var(--app-fg);width:200px;max-width:calc(100cqw - 24px);max-height:calc(100cqh - 70px);overflow:auto;scrollbar-width:thin}
+.bm-sources{left:0;display:grid;gap:3px}.bm-popover{right:0}.bookmarks-app .bm-sources button,.bookmarks-app .bm-popover button{display:flex;align-items:center;gap:8px;background:transparent;font-size:12px;white-space:nowrap;width:100%;padding:8px;text-align:left;border-radius:5px}
+.bm-sources button>span,.bm-popover button>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.bm-sources button>.icon:last-child{width:14px;visibility:hidden}.bm-sources button[aria-pressed=true]>.icon:last-child{visibility:visible}
+.bookmarks-app .bm-sources button[aria-pressed=true]{background:var(--app-selection)}.bm-popover hr{border:0;border-top:1px solid var(--app-border);margin:5px 0}
+.bm-header .bm-path{flex:1;min-width:38px;border-left:1px solid var(--app-border);padding-left:7px}.bm-header .bm-path summary{width:100%;justify-content:flex-start;gap:4px;padding:0 4px;box-sizing:border-box;min-width:0}
+.bm-path-text{font-size:12px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:left}.bm-path summary>.icon{width:10px;height:10px;flex:none}.bm-path .bm-breadcrumb{left:0;right:auto;width:260px}
+.bm-breadcrumb nav{display:flex;flex-direction:column;gap:2px}.bm-breadcrumb button:last-child{color:var(--app-blue)}.bm-breadcrumb button>.icon:last-child{width:13px}
+.bm-search{display:flex;align-items:center;gap:5px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:6px;padding-left:8px;width:clamp(100px,18cqw,220px);height:30px;box-sizing:border-box;color:var(--app-muted)}
+.has-query .bm-search{color:var(--app-blue)}
+.bm-search>.icon{width:14px;height:14px}.bookmarks-app .bm-search input{width:100%;height:100%;min-width:0;background:transparent;padding:4px 6px;font-size:12px;border-radius:6px}
+.bm-popover>label{display:flex;flex-direction:column;gap:8px;padding:6px;font-size:12px}.bookmarks-app .bm-popover select{font-size:12px;padding:7px;border-radius:6px;width:100%}
+.bm-settings-panel{width:270px;max-width:calc(100cqw - 80px)}.bm-settings-panel p{margin:8px;padding:8px 0 0;border-top:1px solid var(--app-border);font-size:11px;line-height:1.7;color:var(--app-muted)}.bm-source-note.is-browser{color:#c1904f}
 html[data-theme=light] .bm-source-note.is-browser{color:#936127}
+.bookmarks-app .bm-manage{display:flex;align-items:center;justify-content:center;gap:5px;height:30px;padding:0 8px;background:transparent;color:var(--app-muted);font-size:12px;white-space:nowrap;border-radius:6px;position:relative}.bm-manage .icon{width:14px;height:14px}.bookmarks-app .bm-manage[aria-pressed=true]{background:var(--app-selection);color:var(--app-blue)}
+.bm-selection-count{font-size:10px;background:var(--app-blue);color:var(--app-bg);min-width:15px;padding:1px 3px;border-radius:5px;text-align:center}
+.bm-batch-actions{display:flex;align-items:center;gap:1px;border-left:1px solid var(--app-border);padding-left:4px}.bm-batch-actions>label{display:grid;place-items:center;width:28px;height:30px;cursor:pointer}.bookmarks-app .bm-batch-actions button{display:grid;place-items:center;width:28px;height:30px;background:transparent;padding:4px;color:var(--app-muted)}
+.bookmarks-app .bm-checkbox{appearance:auto;accent-color:var(--app-blue);width:14px;height:14px;flex:none;margin:0 3px;padding:0;cursor:pointer}
 .bm-feedback{position:absolute;bottom:12px;right:16px;z-index:4;max-width:calc(100% - 32px);margin:0;padding:8px 12px;border:1px solid var(--app-border);border-radius:8px;background:var(--app-pane);box-shadow:0 3px 15px #0002;font-size:12px;max-height:75px;overflow:auto;pointer-events:none}
-.bm-layout{display:grid;grid-template-columns:208px minmax(0,1fr);flex:1;min-height:0}
+.bm-layout{display:grid;grid-template-columns:200px minmax(0,1fr);flex:1;min-height:0}
 .bm-navigation-pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--app-pane);border-right:1px solid var(--app-border)}
-.bm-sidebar{flex:1;min-width:0;min-height:0;overflow:auto;padding:16px 10px;scrollbar-width:thin}
-.bm-sidebar-label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.08em;font-weight:600;color:var(--app-muted);padding:3px 10px 9px}.bm-sidebar-label:not(:first-child){margin-top:21px}
-.bookmarks-app .bm-recent{display:flex;align-items:center;gap:9px;width:100%;background:transparent;border-radius:8px;font-size:13px;padding:9px 10px}
-.bookmarks-app .bm-recent[aria-pressed=true]{background:var(--app-selection)}
-.bm-tree{min-width:100%;width:max-content}.bm-tree-row{display:flex;align-items:center;min-width:0;padding-left:calc(min(var(--depth,0),20) * 12px);height:37px}
-.bookmarks-app .bm-tree-row>[role=treeitem]{display:flex;align-items:center;gap:7px;flex:1;min-width:0;max-width:380px;text-align:left;background:transparent;padding:7px 8px;font-size:12px;border-radius:7px}
-.bm-tree-row>[role=treeitem]>span{min-width:0;flex:1;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bm-tree-row small{font-size:10px;color:var(--app-muted);padding-left:8px}
-.bookmarks-app .bm-tree-row>[aria-selected=true]{background:var(--app-selection);color:var(--app-fg)}.bm-tree-row .icon{width:15px;height:15px;color:#b0986a}
-.bookmarks-app .bm-tree-toggle,.bm-tree-spacer{width:17px;height:25px;flex:none;padding:2px;background:transparent}.bm-tree-toggle .icon{width:12px;color:var(--app-muted)}.bm-tree-root{padding-left:0}
-.bm-main{display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:12px 20px 0}
-.bookmarks-app .bm-main{margin:0}
-.bm-result-count{white-space:nowrap}.bookmarks-app .bm-load-more{display:block;margin:16px auto;font-size:12px}
-.bm-breadcrumb nav{display:flex;align-items:center;gap:2px;overflow:auto;white-space:nowrap;scrollbar-width:thin;min-height:25px}
-.bookmarks-app .bm-breadcrumb button{background:transparent;color:var(--app-muted);font-size:11px;padding:3px 5px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}.bm-breadcrumb .icon{width:11px;height:11px;color:var(--app-muted)}
-.bm-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0}.bm-heading{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
-.bm-heading h3{margin:0;font-size:17px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.bm-folder-actions,.bm-create{display:flex;align-items:center;gap:5px;flex:none}.bookmarks-app .bm-folder-actions button{display:grid;place-items:center;background:transparent;padding:5px;color:var(--app-muted)}
-.bookmarks-app .bm-create button{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;white-space:nowrap;padding:8px 10px}
-.bookmarks-app .bm-primary{background:#507f6f;color:#fff}.bookmarks-app .bm-primary:hover{background:#619580}
-.bm-list-tools{display:flex;align-items:center;gap:5px;padding:0 0 10px;border-bottom:1px solid var(--app-border);font-size:11px;color:var(--app-muted)}.bm-result-count{flex:1;min-width:0}
-.bm-sort-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bm-list{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;overscroll-behavior:contain;padding-bottom:18px}.bm-list ul{margin:0;padding:0;list-style:none}
-.bm-list li{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--app-border);padding:8px 2px}.bm-list li:hover{background:var(--app-pane)}
-.bookmarks-app .bm-row-open{display:flex;align-items:center;gap:13px;color:inherit;text-decoration:none;background:transparent;min-width:0;flex:1;border-radius:8px;text-align:left;padding:8px 4px}
-.bm-row-copy{display:flex;flex-direction:column;min-width:0;flex:1;gap:3px}.bm-row-copy strong{font-size:13px;font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bm-row-copy small{font-size:11px;color:var(--app-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bm-row-copy small.bm-location{font-size:10px;color:#8da898}
-.bm-site-icon,.bm-folder-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;flex:none;background:var(--app-field,var(--w-control));color:var(--app-muted,var(--w-muted));font-size:16px;font-weight:600}
-.bm-folder-icon{background:transparent;color:#b0986a}.bm-folder-icon .icon{width:26px;height:26px}
-.bm-row-actions{display:flex;align-items:center;gap:3px;flex:none}.bookmarks-app .bm-row-actions button{display:grid;place-items:center;padding:7px;background:transparent;color:var(--app-muted);border-radius:8px}
-.bookmarks-app .bm-row-actions button:hover{background:var(--app-selection);color:var(--app-fg)}.bm-readonly{font-size:10px;color:var(--app-muted);padding:0 8px}
-.bm-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:220px;height:100%;gap:12px;padding:24px;color:var(--app-muted)}.bm-empty>.icon{width:36px;height:36px;opacity:.55}
-.bm-empty strong{font-size:15px;color:var(--app-fg);font-weight:500}.bm-empty p{margin:0;max-width:300px;font-size:12px}.bm-empty button{font-size:12px}
-.bm-footer{padding:10px 15px;color:var(--app-muted);font-size:10px;flex:none;line-height:1.6}
+.bm-sidebar{flex:1;min-width:0;min-height:0;overflow:auto;padding:10px 8px;scrollbar-width:thin}
+.bm-sidebar-label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.05em;font-weight:550;color:var(--app-muted);padding:3px 8px 8px}
+.bm-tree{min-width:100%;width:max-content}.bm-tree-row{display:flex;align-items:center;min-width:0;padding-left:calc(min(var(--depth,0),20) * 11px);height:33px}
+.bookmarks-app .bm-tree-row>[role=treeitem]{display:flex;align-items:center;gap:6px;flex:1;min-width:0;max-width:350px;text-align:left;background:transparent;padding:6px 7px;font-size:12px;border-radius:6px}
+.bm-tree-row>[role=treeitem]>span{min-width:0;flex:1;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bm-tree-row small{font-size:10px;color:var(--app-muted);padding-left:6px}
+.bookmarks-app .bm-tree-row>[aria-selected=true]{background:var(--app-selection);color:var(--app-fg)}.bm-tree-row .icon{width:14px;height:14px;color:#b0986a}
+.bookmarks-app .bm-tree-toggle,.bm-tree-spacer{width:16px;height:25px;flex:none;padding:2px;background:transparent}.bm-tree-toggle .icon{width:11px;color:var(--app-muted)}.bm-tree-root{padding-left:0}
+.bookmarks-app .bm-main{display:flex;min-height:0;min-width:0;overflow:hidden;padding:0 12px;margin:0}
+.bookmarks-app .bm-load-more{display:block;margin:16px auto;font-size:12px}
+.bm-list{flex:1;min-width:0;min-height:0;overflow:auto;scrollbar-width:thin;overscroll-behavior:contain;padding-bottom:18px}.bm-list ul{margin:0;padding:0;list-style:none}
+.bm-list li{position:relative;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--app-border);padding:3px 4px;min-height:43px;box-sizing:border-box}.bm-list li:hover{background:var(--app-pane)}.bm-list li.is-selected{background:var(--app-selection)}
+.bookmarks-app .bm-row-open{display:flex;align-items:center;gap:9px;color:inherit;text-decoration:none;background:transparent;min-width:0;flex:1;border-radius:6px;text-align:left;padding:5px 0}
+.bm-row-copy{display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,1fr);align-items:center;min-width:0;flex:1;gap:2px 16px}.bm-row-copy strong{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bm-row-copy small{font-size:11px;color:var(--app-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bm-row-copy small.bm-location{font-size:10px;color:var(--app-muted);grid-column:1 / -1}
+.bm-site-icon,.bm-folder-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;flex:none;background:var(--app-field,var(--w-control));color:var(--app-muted,var(--w-muted));font-size:12px;font-weight:550}
+.bm-folder-icon{background:transparent;color:#b0986a}.bm-folder-icon .icon{width:21px;height:21px}
+.bm-row-actions{display:flex;align-items:center;gap:1px;flex:none}.bookmarks-app .bm-row-actions button{display:grid;place-items:center;padding:5px;background:transparent;color:var(--app-muted);border-radius:6px}
+.bookmarks-app .bm-row-actions button:hover{background:var(--app-selection);color:var(--app-fg)}.bm-readonly{font-size:10px;color:var(--app-muted);padding:0 5px}
+.bm-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:190px;height:100%;gap:10px;padding:24px;color:var(--app-muted)}.bm-empty>.icon{width:30px;height:30px;opacity:.55}
+.bm-empty strong{font-size:14px;color:var(--app-fg);font-weight:500}.bm-empty p{margin:0;max-width:300px;font-size:12px}.bm-empty button{font-size:12px}
+.bm-footer{padding:8px 14px;color:var(--app-muted);font-size:10px;flex:none;line-height:1.6}
+[data-bm-drag]{cursor:grab}.bm-drag-origin{opacity:.45}.bookmarks-app [data-bm-drop=inside]{background:var(--app-selection);outline:2px solid var(--app-blue);outline-offset:-2px;border-radius:5px}
+[data-bm-drop=before]::before,[data-bm-drop=after]::after{content:'';position:absolute;left:0;right:0;height:2px;background:var(--app-blue);z-index:1;pointer-events:none}[data-bm-drop=before]::before{top:0}[data-bm-drop=after]::after{bottom:0}
 .bm-editor-overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:#0007;padding:16px;backdrop-filter:blur(3px)}
-.bm-editor{width:min(470px,100%);max-height:100%;overflow:auto;background:var(--app-bg);border:1px solid var(--app-border);border-radius:18px;padding:20px;box-shadow:0 20px 70px #0004}
-.bm-editor>header{display:flex;align-items:center;gap:8px;margin-bottom:20px}.bm-editor h3{flex:1;margin:0;font-size:17px}.bm-editor>header button{display:grid;place-items:center;padding:5px;background:transparent}
+.bm-editor{width:min(470px,100%);max-height:100%;overflow:auto;background:var(--app-bg);border:1px solid var(--app-border);border-radius:14px;padding:20px;box-shadow:0 20px 70px #0004}
+.bm-editor>header{display:flex;align-items:center;gap:8px;margin-bottom:20px}.bm-editor h3{flex:1;margin:0;font-size:16px}.bm-editor>header button{display:grid;place-items:center;padding:5px;background:transparent}
 .bm-editor fieldset{border:0;padding:0;margin:0;min-width:0}.bm-editor label{display:flex;flex-direction:column;gap:8px;margin-bottom:17px;font-size:12px;color:var(--app-muted)}
 .bm-editor label input,.bm-editor label select{width:100%;color:var(--app-fg);font-size:13px;border:1px solid var(--app-border);padding:10px 12px}.bm-editor p{font-size:13px;overflow-wrap:anywhere}
 .bm-editor .bm-delete-note,.bm-editor-feedback{color:#d09072}.bm-editor footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}.bm-editor footer button{font-size:13px;min-width:75px}.bm-editor .bm-danger{background:#ac4949;color:white}.bm-moving-name{display:flex;gap:10px;align-items:center}
+.bookmarks-app .bm-primary{background:#507f6f;color:#fff}.bookmarks-app .bm-primary:hover{background:#619580}
 .bookmarks-app button:disabled{opacity:.45;cursor:default}.bookmarks-app a:focus-visible{outline:2px solid var(--app-blue);outline-offset:-2px}
-@container(max-width:800px){.bm-layout{grid-template-columns:170px minmax(0,1fr)}.bm-main{padding:10px 16px 0}.bm-toolbar{align-items:flex-start;flex-wrap:wrap;gap:8px}.bm-heading{flex-basis:100%}}
+.bookmarks-app [hidden]{display:none!important}
+@container(max-width:900px){.bm-layout{grid-template-columns:170px minmax(0,1fr)}.bm-header{gap:4px;padding-inline:8px}.bm-source-switch summary{max-width:130px}.bm-manage>span{display:none}.bookmarks-app .bm-manage{padding:0 6px}.bm-search{width:130px}.bm-row-copy{display:flex;flex-direction:column;align-items:stretch;gap:2px}}
+@container(max-width:620px){
+ .bm-source-label,.bm-source-switch summary>.icon{display:none}.bm-source-switch summary{width:28px;padding:0}.bm-header .bm-path{padding-left:4px}.bm-path-text{font-size:11px}
+ .bm-search{position:relative;width:29px;padding-left:7px;border-color:transparent;background:transparent;flex:none}.bookmarks-app .bm-search input{position:absolute;inset:0;opacity:0;cursor:text}.bm-search:focus-within{position:absolute;left:8px;right:205px;top:8px;width:auto;background:var(--app-pane);border-color:var(--app-border);z-index:3}.bookmarks-app .bm-search:focus-within input{position:static;opacity:1}
+ .bm-header summary{width:27px}.bm-header .bm-path summary{width:100%}.bm-header-tools{gap:1px}.bm-batch-actions{gap:0;padding-left:1px}.bm-batch-actions>label,.bookmarks-app .bm-batch-actions button{width:25px}.is-managing .bm-sort{display:none}
+ .bm-selection-count{position:absolute;right:-3px;top:-4px;font-size:9px;min-width:12px;padding:0 2px}.bm-path .bm-breadcrumb{width:240px}.bm-header .widget-app-controls{gap:0}
+}
 @container(max-width:520px){
- .bm-header{height:44px;padding:6px 7px;gap:7px}.bm-source-switch summary{font-size:11px;padding:0 5px;gap:5px;max-width:128px}.bm-source-switch summary .icon{width:14px;height:14px}.bm-source-switch summary>.icon{width:10px;height:10px}
- .bm-header-tools{gap:2px}.bm-header .widget-app-controls{gap:2px}.bm-settings>summary{width:27px}.bm-search{padding-left:6px;gap:3px}.bookmarks-app .bm-search input{font-size:11px;padding:4px}.bm-search>.icon{width:12px;height:12px}
- .bm-layout{grid-template-columns:112px minmax(0,1fr)}.bm-sidebar{padding:10px 3px}.bm-sidebar-label{padding-left:5px;font-size:9px}.bookmarks-app .bm-recent{font-size:11px;padding:7px 5px;gap:5px}
+ .bm-header{height:44px;padding:6px;gap:3px}.bm-search:focus-within{top:6px}.bm-layout{grid-template-columns:112px minmax(0,1fr)}.bm-sidebar{padding:9px 3px}.bm-sidebar-label{padding-left:5px;font-size:9px}
  .bm-tree-row{padding-left:calc(min(var(--depth,0),20) * 9px)}.bookmarks-app .bm-tree-row>[role=treeitem]{font-size:11px;gap:5px;padding:6px 4px}.bm-tree-row small{display:none}.bm-tree-row .icon{width:13px}.bm-tree-toggle,.bm-tree-spacer{width:12px!important}
- .bm-main{padding:9px 9px 0}.bm-toolbar{gap:8px;padding:12px 0}.bm-heading{flex-wrap:wrap;gap:3px}.bm-heading h3{font-size:17px;max-width:100%}.bm-create{flex-wrap:wrap;width:100%}.bookmarks-app .bm-create button{font-size:10px;padding:7px 5px;gap:4px;flex:1}.bm-create .icon{width:13px}
- .bm-result-count,.bm-sort-label{font-size:10px}.bm-list li{flex-wrap:wrap;gap:0;padding:6px 0}.bookmarks-app .bm-row-open{flex-basis:100%;gap:7px}.bm-row-copy strong{font-size:12px}.bm-row-copy small{font-size:10px}
- .bm-site-icon,.bm-folder-icon{width:25px;height:25px;border-radius:6px;font-size:12px}.bm-folder-icon .icon{width:21px;height:21px}.bm-row-actions{margin-left:auto}.bookmarks-app .bm-row-actions button{padding:5px}.bm-row-actions .icon{width:14px;height:14px}
+ .bookmarks-app .bm-main{padding:0 6px}.bm-list li{gap:3px;padding:3px 0}.bookmarks-app .bm-row-open{gap:6px}.bm-row-copy strong{font-size:11px}.bm-row-copy small{font-size:10px}.bookmarks-app .bm-row-actions button{padding:4px}.bm-row-actions .icon{width:14px;height:14px}
+ .bm-site-icon,.bm-folder-icon{width:22px;height:22px;border-radius:5px;font-size:11px}.bm-folder-icon .icon{width:19px;height:19px}.bookmarks-app .bm-checkbox{width:13px;height:13px;margin-inline:2px}
  .bm-empty{min-height:190px;padding:14px 5px;gap:10px}.bm-empty strong{font-size:13px}.bm-empty p{font-size:11px}.bm-footer{padding:7px 6px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bm-editor{padding:15px}.bm-editor-overlay{padding:10px}
 }
 /* The wide card mirrors the manager's folders / links split. */
@@ -1818,16 +1820,15 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
   height:min(var(--hotsearch-height,660px),var(--dialog-height));
 }
 .workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
-.context-menu { width:176px; min-width:0; padding:5px; border-radius:10px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 12px 32px #0005; backdrop-filter:blur(24px); transform-origin:top left; }
-.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px; min-height:30px; padding:5px 8px; border-radius:6px; font-size:12px; line-height:20px; }
-.context-menu>button>.icon { order:2; width:15px; height:15px; flex-shrink:0; opacity:.86; }
+.context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
+.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:18px; min-height:39px; padding:9px 10px; border-radius:9px; font-size:13px; }
+.context-menu>button>.icon { order:2; width:17px; height:17px; opacity:.86; }
 .context-menu>button:hover { background:#ffffff13; }
-.context-menu hr { margin:3px 4px; border:0; border-top:1px solid #ffffff13; }
-.context-menu .menu-label { padding:4px 8px 2px; font-size:10px; line-height:16px; }
-.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
-.context-menu .size-options button { justify-content:center; min-height:26px; padding:3px 2px; font-size:11px; line-height:18px; border-radius:5px; }
+.context-menu hr { margin:4px 6px; border:0; border-top:1px solid #ffffff13; }
+.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; }
+.context-menu .size-options button { padding:6px 2px; font-size:11px; }
 .context-menu .size-options .selected { color:var(--accent); background:var(--accent-soft); }
-html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 12px 32px #0002; }
+html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 16px 48px #0002; }
 html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 .widget-viewer { padding:20px; }
 .widget-viewer .widget-inner { height:380px; width:100%; min-height:0; container-type:inline-size; border-radius:20px; padding:22px; font-size:14px; }
@@ -2860,6 +2861,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <button class="side-button add-group" data-action="add-group" title="添加分组" data-i18n-title="添加分组" aria-label="添加分组" data-i18n-aria-label="添加分组"></button>
     <div class="sidebar-bottom">
       <button class="side-button" data-action="local-search" title="本地搜索 · Ctrl / ⌘ K" data-i18n-title="本地搜索 · Ctrl / ⌘ K" aria-label="本地搜索" data-i18n-aria-label="本地搜索"></button>
+      <button class="side-button" data-action="icon-settings" title="图标外观与提取" data-i18n-title="图标外观与提取" aria-label="图标外观与提取" data-i18n-aria-label="图标外观与提取"></button>
       <button class="side-button" data-action="settings" title="设置" data-i18n-title="设置" aria-label="设置" data-i18n-aria-label="设置"></button>
     </div>
   </aside>
@@ -3163,6 +3165,22 @@ const englishMessages = {
   "收藏文件夹": "Bookmark folders",
   "文件夹路径": "Folder path",
   "添加书签": "Add bookmark",
+  "管理": "Manage",
+  "完成管理": "Finish managing",
+  "书签操作": "Bookmark actions",
+  "按添加时间排序": "Newest first",
+  "重命名 / 编辑": "Rename / edit",
+  "全选当前列表": "Select all in this list",
+  "移动所选": "Move selected",
+  "删除所选": "Delete selected",
+  "管理此项": "Manage this item",
+  "选择“{title}”": "Select “{title}”",
+  "已选择 {count} 项": "{count} items selected",
+  "确定删除所选的 {count} 项？": "Delete the {count} selected items?",
+  "移动所选的 {count} 项": "Move {count} selected items",
+  "拖放位置已改变，请重试": "The drop location changed. Try again",
+  "拖动到文件夹以移动；在原始顺序下拖动到行间以排序。": "Drag onto a folder to move. In original order, drag between rows to reorder.",
+  "已完成 {done} 项，剩余 {left} 项未完成：{error}": "Completed {done} items; {left} remain: {error}",
   "书签排序": "Sort bookmarks",
   "原始顺序": "Original order",
   "按名称排序": "By name",
@@ -4764,6 +4782,7 @@ const englishMessages = {
   "打开设置 · 可自定义头像": "Open Settings · Customize avatar",
   "打开设置": "Open Settings",
   "本地搜索 · Ctrl / ⌘ K": "Local search · Ctrl / ⌘ K",
+  "图标外观与提取": "Icon appearance and extraction",
   "展开分组导航": "Expand group navigation",
   "快捷键说明": "Keyboard shortcut help",
   "切换搜索引擎": "Switch search engine",
@@ -7576,6 +7595,39 @@ function bookmarkDescendants(nodes, nodeId) {
   return result;
 }
 
+// A selected folder owns its selected descendants for a single operation.
+function bookmarkSelection(nodes, ids) {
+  const selected = new Set(ids), byId = new Map(nodes.map(node => [node.id,node]));
+  return nodes.filter(node => {
+    if (!selected.has(node.id)) return false;
+    const seen = new Set([node.id]);
+    let parent = byId.get(node.parentId);
+    while (parent && !seen.has(parent.id)) {
+      if (selected.has(parent.id)) return false;
+      seen.add(parent.id); parent = byId.get(parent.parentId);
+    }
+    return true;
+  });
+}
+
+function bookmarkChanges(nodes, ids, type, destination = {}) {
+  return bookmarkSelection(nodes, ids).map(node => {
+    const subtree = type === 'delete' && node.url === null ? bookmarkDescendants(nodes,node.id) : null;
+    return {type, id:node.id, ...destination,
+      expectedNode:JSON.stringify({title:node.title,url:node.url,parentId:node.parentId}),
+      ...(subtree ? {expectedSubtree:JSON.stringify(nodes.filter(entry => subtree.has(entry.id)))} : {}),
+    };
+  });
+}
+
+function moveIndex(nodes, change) {
+  const siblings = nodes.filter(node => node.parentId === change.parentId);
+  if (change.beforeId === undefined) return siblings.length;
+  const index = siblings.findIndex(node => node.id === change.beforeId);
+  if (index < 0 || change.beforeId === change.id) throw new Error(t('拖放位置已改变，请重试'));
+  return index;
+}
+
 function validateBookmarks(raw, path = 'bookmarks') {
   keys(raw, ['nodes'], path);
   const nodes = array(raw.nodes, path + '.nodes', BOOKMARK_LIMIT).map((node, i) => {
@@ -7615,6 +7667,7 @@ function checkBookmarkChange(nodes, change, source = 'local') {
     if (change.parentId !== '' && (!parent || parent.url !== null)) throw new Error(t('目标文件夹不存在'));
     if (parent?.readonly || source === 'browser' && change.parentId === '') throw new Error(t('请选择可写入的文件夹'));
     if (node && bookmarkDescendants(nodes, node.id).has(change.parentId)) throw new Error(t('不能将文件夹移入自身或子文件夹'));
+    if (change.type === 'move') moveIndex(nodes, change);
   }
   if (change.type === 'create' || change.type === 'update') {
     string(change.title, 'bookmark.title', 300);
@@ -7638,9 +7691,19 @@ function changeLocalBookmarks(data, change) {
   const node = checkBookmarkChange(nodes, change);
   if (change.type === 'create') nodes.push({id:change.id, parentId:change.parentId, title:change.title.trim(), url:change.url === null ? null : bookmarkUrl(change.url), dateAdded:change.dateAdded});
   if (change.type === 'update') { node.title = change.title.trim(); node.url = change.url === null ? null : bookmarkUrl(change.url); }
-  if (change.type === 'move') { nodes.splice(nodes.indexOf(node), 1); node.parentId = change.parentId; nodes.push(node); }
+  if (change.type === 'move') {
+    nodes.splice(nodes.indexOf(node), 1); node.parentId = change.parentId;
+    const siblings = nodes.filter(entry => entry.parentId === change.parentId), index = moveIndex(nodes, change);
+    const at = siblings[index] ? nodes.indexOf(siblings[index]) : siblings.length ? nodes.indexOf(siblings.at(-1)) + 1 : nodes.length;
+    nodes.splice(at, 0, node);
+  }
   const deleted = change.type === 'delete' ? bookmarkDescendants(nodes, node.id) : new Set();
   return validateBookmarks({nodes:nodes.filter(entry => !deleted.has(entry.id))});
+}
+
+// Validate the complete batch before the caller performs one persistent write.
+function changeLocalBookmarkBatch(data, changes) {
+  return changes.reduce((next, change) => changeLocalBookmarks(next, change), data);
 }
 
 function listBookmarks(nodes, {folder = '', query = '', sort = 'manual', scope = 'folder'} = {}) {
@@ -7650,7 +7713,7 @@ function listBookmarks(nodes, {folder = '', query = '', sort = 'manual', scope =
   return result.sort((a, b) => {
     if (sort === 'recent' || scope === 'recent' && sort === 'manual' && !terms.length) return b.dateAdded - a.dateAdded;
     const foldersFirst = Number(a.url !== null) - Number(b.url !== null);
-    return foldersFirst || (sort === 'title' ? a.title.localeCompare(b.title) : 0);
+    return sort === 'title' ? foldersFirst || a.title.localeCompare(b.title) : 0;
   });
 }
 
@@ -7695,7 +7758,8 @@ function createBrowserBookmarkClient(api = globalThis.chrome) {
       if (node && change.expectedNode && JSON.stringify({title:node.title,url:node.url,parentId:node.parentId}) !== change.expectedNode) throw new Error(t('这条收藏已改变，请关闭编辑后重试'));
       if (change.type === 'create') return api.bookmarks.create({parentId:change.parentId, title:change.title.trim(), ...(change.url === null ? {} : {url:bookmarkUrl(change.url)})});
       if (change.type === 'update') return api.bookmarks.update(change.id, {title:change.title.trim(), ...(node.url === null ? {} : {url:bookmarkUrl(change.url) || change.url})});
-      if (change.type === 'move') return api.bookmarks.move(change.id, {parentId:change.parentId});
+      if (change.type === 'move') return api.bookmarks.move(change.id, {parentId:change.parentId,
+        ...(change.beforeId === undefined ? {} : {index:moveIndex(latest.nodes,change)})});
       // Empty-folder deletion must fail if a child arrived after confirmation.
       if (node.url === null && change.expectedSubtree) {
         const ids = bookmarkDescendants(latest.nodes, node.id);
@@ -7724,7 +7788,7 @@ function createBrowserBookmarkClient(api = globalThis.chrome) {
 
 const browserBookmarkClient = createBrowserBookmarkClient();
 
-return {BOOKMARK_LIMIT, BOOKMARK_DEPTH, bookmarkUrl, bookmarkIndex, bookmarkPath, bookmarkDescendants, validateBookmarks, checkBookmarkChange, changeLocalBookmarks, listBookmarks, flattenBrowserBookmarks, createBrowserBookmarkClient, browserBookmarkClient};
+return {BOOKMARK_LIMIT, BOOKMARK_DEPTH, bookmarkUrl, bookmarkIndex, bookmarkPath, bookmarkDescendants, bookmarkSelection, bookmarkChanges, validateBookmarks, checkBookmarkChange, changeLocalBookmarks, changeLocalBookmarkBatch, listBookmarks, flattenBrowserBookmarks, createBrowserBookmarkClient, browserBookmarkClient};
 })();
 const __memos = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -8214,7 +8278,7 @@ const { t } = __i18n;
 const { escapeText: esc } = __html;
 const { icon } = __icons;
 const { windowControls } = __widget_app_controls;
-const { bookmarkUrl, bookmarkIndex, bookmarkPath, bookmarkDescendants, listBookmarks, browserBookmarkClient } = __bookmarks;
+const { bookmarkUrl, bookmarkIndex, bookmarkPath, bookmarkDescendants, bookmarkSelection, listBookmarks, browserBookmarkClient } = __bookmarks;
 
 const button = (action, label, glyph, id = '') => `<button type="button" data-bm-action="${action}" data-id="${esc(id)}" title="${esc(label)}" aria-label="${esc(label)}">${icon(glyph)}</button>`;
 const sourceLabel = source => t(source === 'browser' ? '浏览器收藏' : '独立收藏');
@@ -8222,14 +8286,23 @@ function bookmarkLocation(nodes, folderId) { return [t('全部收藏'), ...bookm
 function bookmarkCounts(nodes) { return {links:nodes.filter(node => node.url !== null).length, folders:nodes.filter(node => node.url === null).length}; }
 function address(url) { try { return new URL(url).hostname || new URL(url).protocol; } catch { return url; } }
 function mark(node) { return node.url === null ? `<span class="bm-folder-icon">${icon('folder')}</span>` : `<span class="bm-site-icon" aria-hidden="true">${esc((address(node.url).replace(/^www\./, '') || '?').slice(0, 1).toUpperCase())}</span>`; }
+const mutable = node => !node.readonly && !node.protected;
+const checkbox = (node, view) => view.managing ? `<input class="bm-checkbox" type="checkbox" data-bm-select="${esc(node.id)}" aria-label="${esc(t('选择“{title}”', {title:node.title}))}" ${view.selected?.has(node.id) ? 'checked' : ''} ${mutable(node) ? '' : 'disabled'}>` : '';
+const drag = node => mutable(node) ? `draggable="true" data-bm-drag="${esc(node.id)}"` : '';
 
 function bookmarkWorkspace(item) {
   return `<section class="bookmarks-app">
     <header class="bm-header"><h2 id="dialog-title" class="bm-visually-hidden">${esc(item.title)}</h2>
       <details class="bm-source-switch" data-bm-menu><summary aria-label="${t('切换收藏来源')}" title="${t('切换收藏来源')}"><span class="bm-source-glyph">${icon('bookmark')}</span><span class="bm-source-label">${t('独立收藏')}</span>${icon('chevron')}</summary><div class="bm-sources" role="group" aria-label="${t('收藏来源')}"><button type="button" data-bm-source="local" aria-pressed="true">${icon('bookmark')}<span>${t('独立收藏')}</span>${icon('check')}</button><button type="button" data-bm-source="browser" aria-pressed="false" title="${t('连接浏览器书签')}">${icon('globe')}<span>${t('浏览器收藏')}</span>${icon('check')}</button></div></details>
-      <div class="bm-header-tools"><label class="bm-search">${icon('search')}<input type="search" data-bm-query placeholder="${t('搜索书签')}" aria-label="${t('搜索所有文件夹、标题或网址')}"></label><details class="bm-settings" data-bm-menu><summary title="${t('书签设置')}" aria-label="${t('书签设置')}">${icon('settings')}</summary><div class="bm-settings-panel" role="region" aria-label="${t('书签设置')}"><label><span>${t('书签排序')}</span><select data-bm-sort><option value="manual">${t('原始顺序')}</option><option value="title">${t('按名称排序')}</option><option value="recent">${t('最近添加')}</option></select></label><button type="button" data-bm-action="refresh">${icon('refresh')}${t('刷新收藏')}</button><p class="bm-source-note"></p></div></details>${windowControls()}</div>
+      <details class="bm-path" data-bm-menu><summary title="${t('文件夹路径')}" aria-label="${t('文件夹路径')}"><span class="bm-path-text"></span>${icon('chevron')}</summary><div class="bm-breadcrumb bm-popover" aria-label="${t('文件夹路径')}"></div></details>
+      <div class="bm-header-tools"><label class="bm-search">${icon('search')}<input type="search" data-bm-query placeholder="${t('搜索书签')}" aria-label="${t('搜索所有文件夹、标题或网址')}"></label>
+        <details class="bm-sort" data-bm-menu><summary title="${t('书签排序')}" aria-label="${t('书签排序')}">${icon('list')}</summary><div class="bm-popover"><label><span>${t('书签排序')}</span><select data-bm-sort><option value="manual">${t('原始顺序')}</option><option value="title">${t('按名称排序')}</option><option value="recent">${t('按添加时间排序')}</option></select></label></div></details>
+        <details class="bm-commands" data-bm-menu><summary title="${t('书签操作')}" aria-label="${t('书签操作')}">${icon('plus')}</summary><div class="bm-popover"><button type="button" data-bm-action="new-bookmark">${icon('plus')}<span>${t('添加书签')}</span></button><button type="button" data-bm-action="new-folder">${icon('folder')}<span>${t('新建文件夹')}</span></button><hr><button type="button" data-bm-action="edit">${icon('edit')}<span>${t('重命名 / 编辑')}</span></button><button type="button" data-bm-action="move">${icon('move')}<span>${t('移动到文件夹')}</span></button><button type="button" data-bm-action="delete">${icon('trash')}<span>${t('删除')}</span></button></div></details>
+        <div class="bm-batch-actions" hidden><label title="${t('全选当前列表')}"><input class="bm-checkbox" type="checkbox" data-bm-select-all aria-label="${t('全选当前列表')}"></label>${button('batch-move',t('移动所选'),'move')}${button('batch-delete',t('删除所选'),'trash')}</div>
+        <button type="button" class="bm-manage" data-bm-action="manage" aria-pressed="false" title="${t('管理收藏')}">${icon('check')}<span>${t('管理')}</span><small class="bm-selection-count" hidden></small></button>
+        <details class="bm-settings" data-bm-menu><summary title="${t('书签设置')}" aria-label="${t('书签设置')}">${icon('settings')}</summary><div class="bm-settings-panel bm-popover" role="region" aria-label="${t('书签设置')}"><button type="button" data-bm-action="refresh">${icon('refresh')}${t('刷新收藏')}</button><p>${t('拖动到文件夹以移动；在原始顺序下拖动到行间以排序。')}</p><p class="bm-source-note"></p></div></details>${windowControls()}</div>
     </header>
-    <div class="bm-layout"><aside class="bm-navigation-pane" aria-label="${t('收藏文件夹')}"><nav class="bm-sidebar"></nav><footer class="bm-footer"></footer></aside><main class="bm-main"><div class="bm-breadcrumb" aria-label="${t('文件夹路径')}"></div><div class="bm-toolbar"><div class="bm-heading"></div><div class="bm-create"><button type="button" data-bm-action="new-folder">${icon('folder')}<span>${t('新建文件夹')}</span></button><button type="button" data-bm-action="new-bookmark" class="bm-primary">${icon('plus')}<span>${t('添加书签')}</span></button></div></div><div class="bm-list-tools"><span class="bm-result-count"></span><span class="bm-sort-label"></span></div><div class="bm-list" aria-label="${t('收藏列表')}"></div></main></div>
+    <div class="bm-layout"><aside class="bm-navigation-pane" aria-label="${t('收藏文件夹')}"><nav class="bm-sidebar"></nav><footer class="bm-footer"></footer></aside><main class="bm-main"><div class="bm-list" aria-label="${t('收藏列表')}"></div></main></div>
     <p class="bm-feedback" role="status" hidden></p><div class="bm-editor-overlay" hidden><section class="bm-editor" role="dialog" aria-modal="true" aria-labelledby="bm-editor-title" tabindex="-1"></section></div>
   </section>`;
 }
@@ -8240,10 +8313,10 @@ function bookmarkSidebar(nodes, view) {
   while (stack.length) {
     const {node, depth} = stack.pop(), folders = (children.get(node.id) || []).filter(child => child.url === null);
     const open = view.expanded.has(node.id), selected = view.scope === 'folder' && view.folder === node.id;
-    rows.push(`<div class="bm-tree-row" role="none" style="--depth:${depth}">${folders.length ? `<button type="button" class="bm-tree-toggle" data-bm-toggle="${esc(node.id)}" tabindex="-1" aria-label="${esc(t(open ? '收起文件夹' : '展开文件夹'))}">${icon(open ? 'chevron' : 'right')}</button>` : '<span class="bm-tree-spacer"></span>'}<button type="button" role="treeitem" data-bm-folder="${esc(node.id)}" aria-level="${depth + 1}" aria-selected="${selected}" ${folders.length ? `aria-expanded="${open}"` : ''} title="${esc(node.title)}">${icon('folder')}<span>${esc(node.title)}</span>${node.readonly ? icon('shield') : ''}<small>${(children.get(node.id) || []).length}</small></button></div>`);
+    rows.push(`<div class="bm-tree-row" role="none" style="--depth:${depth}" ${drag(node)}>${folders.length ? `<button type="button" class="bm-tree-toggle" data-bm-toggle="${esc(node.id)}" tabindex="-1" aria-label="${esc(t(open ? '收起文件夹' : '展开文件夹'))}">${icon(open ? 'chevron' : 'right')}</button>` : '<span class="bm-tree-spacer"></span>'}${checkbox(node,view)}<button type="button" role="treeitem" data-bm-folder="${esc(node.id)}" aria-level="${depth + 1}" aria-selected="${selected}" ${folders.length ? `aria-expanded="${open}"` : ''} title="${esc(node.title)}">${icon('folder')}<span>${esc(node.title)}</span>${node.readonly ? icon('shield') : ''}<small>${(children.get(node.id) || []).length}</small></button></div>`);
     if (open) for (const child of [...folders].reverse()) stack.push({node:child, depth:depth + 1});
   }
-  return `<div class="bm-sidebar-label">${t('收藏库')}</div><button type="button" class="bm-recent" data-bm-action="recent" aria-pressed="${view.scope === 'recent'}">${icon('history')}<span>${t('最近添加')}</span></button><div class="bm-sidebar-label">${t('文件夹')}<span>${counts.folders}</span></div><div class="bm-tree" role="tree" aria-label="${t('收藏文件夹')}"><div class="bm-tree-row bm-tree-root" role="none"><button type="button" role="treeitem" aria-level="1" data-bm-folder="" aria-selected="${view.scope === 'folder' && view.folder === ''}">${icon('bookmark')}<span>${t('全部收藏')}</span><small>${counts.links}</small></button></div>${rows.join('')}</div>`;
+  return `<div class="bm-sidebar-label">${t('文件夹')}<span>${counts.folders}</span></div><div class="bm-tree" role="tree" aria-label="${t('收藏文件夹')}"><div class="bm-tree-row bm-tree-root" role="none"><button type="button" role="treeitem" aria-level="1" data-bm-folder="" aria-selected="${view.folder === ''}">${icon('bookmark')}<span>${t('全部收藏')}</span><small>${counts.links}</small></button></div>${rows.join('')}</div>`;
 }
 
 function bookmarkRows(nodes, view, state) {
@@ -8256,36 +8329,31 @@ function bookmarkRows(nodes, view, state) {
     const subtitle = node.url === null ? t('{count} 个项目', {count:(children.get(node.id) || []).length}) : node.url;
     const text = `${mark(node)}<span class="bm-row-copy"><strong>${esc(node.title)}</strong><small title="${esc(subtitle)}">${esc(subtitle)}</small>${location ? `<small class="bm-location">${esc(location)}</small>` : ''}</span>`;
     const link = node.url === null ? `<button type="button" class="bm-row-open" data-bm-folder="${esc(node.id)}">${text}</button>`
-      : url ? `<a class="bm-row-open" href="${esc(url)}" ${state.settings?.openNewTab !== false ? 'target="_blank"' : ''} rel="noopener noreferrer" title="${esc(node.url)}">${text}</a>`
+      : url ? `<a class="bm-row-open" draggable="false" href="${esc(url)}" ${state.settings?.openNewTab !== false ? 'target="_blank"' : ''} rel="noopener noreferrer" title="${esc(node.url)}">${text}</a>`
       : `<div class="bm-row-open" title="${t('此地址只能在浏览器收藏夹中打开')}">${text}<span class="bm-readonly">${t('特殊地址')}</span></div>`;
-    return `<li data-bm-row="${esc(node.id)}">${link}<div class="bm-row-actions">${location ? button('locate',t('在文件夹中显示'),'folder',node.id) : ''}${node.protected || node.readonly ? `<span class="bm-readonly" title="${t('浏览器系统文件夹或只读收藏无法修改')}">${icon('shield')}</span>` : button('edit',t('编辑'),'edit',node.id) + button('move',t('移动到文件夹'),'move',node.id) + button('delete',t('删除'),'trash',node.id)}</div></li>`;
+    return `<li data-bm-row="${esc(node.id)}" ${drag(node)} class="${view.selected?.has(node.id) ? 'is-selected' : ''}">${checkbox(node,view)}${link}<div class="bm-row-actions">${location ? button('locate',t('在文件夹中显示'),'folder',node.id) : ''}${mutable(node) ? button('select-item',t('管理此项'),'more',node.id) : `<span class="bm-readonly" title="${t('浏览器系统文件夹或只读收藏无法修改')}">${icon('shield')}</span>`}</div></li>`;
   }).join('')}</ul>${rows.length > (view.limit || 100) ? `<button type="button" class="bm-load-more" data-bm-action="more">${t('显示更多收藏')}</button>` : ''}`;
 }
 
 function bookmarkBreadcrumb(nodes, view) {
   const path = bookmarkPath(nodes, view.folder);
-  return `<nav>${[{id:'', title:sourceLabel(view.source)}, ...path].map((node, index) => `${index ? icon('right') : ''}<button type="button" data-bm-folder="${esc(node.id)}" title="${esc(node.title)}">${esc(node.title)}</button>`).join('')}</nav>`;
-}
-
-function bookmarkHeading(nodes, view) {
-  const node = nodes.find(node => node.id === view.folder);
-  const title = view.query ? t('搜索结果') : view.scope === 'recent' ? t('最近添加') : node?.title || t('全部收藏');
-  return `<h3 title="${esc(title)}">${esc(title)}</h3>${node && !node.protected && !node.readonly && !view.query && view.scope === 'folder' ? `<div class="bm-folder-actions">${button('edit',t('重命名文件夹'),'edit',node.id)}${button('move',t('移动到文件夹'),'move',node.id)}${button('delete',t('删除文件夹'),'trash',node.id)}</div>` : ''}`;
+  return `<nav>${[{id:'', title:t('全部收藏')}, ...path].map((node, index) => `<button type="button" data-bm-folder="${esc(node.id)}" title="${esc(bookmarkLocation(nodes,node.id))}">${icon(index ? 'folder' : 'bookmark')}<span>${esc(node.title)}</span>${index === path.length ? icon('check') : ''}</button>`).join('')}</nav>`;
 }
 
 function bookmarkEditor(nodes, view, editor) {
-  const node = nodes.find(entry => entry.id === editor.id);
+  const selectedNodes = bookmarkSelection(nodes, editor.ids || [editor.id]), batch = !!editor.ids;
+  const node = selectedNodes[0];
   const move = editor.type === 'move', remove = editor.type === 'delete', create = editor.type === 'create';
   const folder = create ? editor.folder : node?.url === null;
   const title = remove ? t('删除收藏') : move ? t('移动到文件夹') : create ? t(folder ? '新建文件夹' : '添加书签') : t(folder ? '重命名文件夹' : '编辑书签');
-  const excluded = node ? bookmarkDescendants(nodes, node.id) : new Set();
+  const excluded = new Set(selectedNodes.flatMap(entry => [...bookmarkDescendants(nodes,entry.id)]));
   const folders = nodes.filter(entry => entry.url === null && !entry.readonly && !excluded.has(entry.id));
   const options = (view.source === 'local' ? [{id:'',title:t('全部收藏')}] : []).concat(folders.map(entry => ({id:entry.id,title:bookmarkLocation(nodes, entry.id)})));
   const selected = editor.parentId;
   const affected = remove ? nodes.filter(entry => excluded.has(entry.id)) : [];
   return `<header><h3 id="bm-editor-title">${title}</h3>${button('cancel',t('取消'),'close')}</header><form id="bm-editor-form"><fieldset>
-    ${remove ? `<p>${esc(t('确定删除“{title}”？', {title:node?.title}))}</p>${folder ? `<p>${esc(t('包含 {links} 个书签和 {folders} 个文件夹，将一并删除。', {links:bookmarkCounts(affected).links, folders:Math.max(0,bookmarkCounts(affected).folders - 1)}))}</p>` : ''}<p class="bm-delete-note">${t(view.source === 'browser' ? '这会直接删除浏览器中的原始收藏，无法在此撤销。' : '删除后无法撤销，请确认已不再需要。')}</p>`
-    : `${move ? `<p class="bm-moving-name">${icon(folder ? 'folder' : 'bookmark')}${esc(node?.title)}</p>` : `<label><span>${t('名称')}</span><input name="title" required maxlength="300" value="${esc(node?.title || '')}" autocomplete="off" placeholder="${t(folder ? '例如：设计灵感' : '例如：常用文档')}"></label>${folder ? '' : `<label><span>${t('网址')}</span><input name="url" required maxlength="4096" value="${esc(node?.url || '')}" placeholder="https://" inputmode="url" autocomplete="off" spellcheck="false"></label>`}`}
+    ${remove ? `<p>${esc(batch ? t('确定删除所选的 {count} 项？', {count:selectedNodes.length}) : t('确定删除“{title}”？', {title:node?.title}))}</p>${batch || folder ? `<p>${esc(t('包含 {links} 个书签和 {folders} 个文件夹，将一并删除。', {links:bookmarkCounts(affected).links, folders:Math.max(0,bookmarkCounts(affected).folders - (batch ? 0 : 1))}))}</p>` : ''}<p class="bm-delete-note">${t(view.source === 'browser' ? '这会直接删除浏览器中的原始收藏，无法在此撤销。' : '删除后无法撤销，请确认已不再需要。')}</p>`
+    : `${move ? `<p class="bm-moving-name">${icon(folder ? 'folder' : 'bookmark')}${esc(batch ? t('移动所选的 {count} 项', {count:selectedNodes.length}) : node?.title)}</p>` : `<label><span>${t('名称')}</span><input name="title" required maxlength="300" value="${esc(node?.title || '')}" autocomplete="off" placeholder="${t(folder ? '例如：设计灵感' : '例如：常用文档')}"></label>${folder ? '' : `<label><span>${t('网址')}</span><input name="url" required maxlength="4096" value="${esc(node?.url || '')}" placeholder="https://" inputmode="url" autocomplete="off" spellcheck="false"></label>`}`}
     ${create || move ? `<label><span>${t('保存到文件夹')}</span><select name="parentId">${options.map(entry => `<option value="${esc(entry.id)}" ${entry.id === selected ? 'selected' : ''}>${esc(entry.title)}</option>`).join('')}</select></label>` : ''}`}
     <p class="bm-editor-feedback" role="alert" hidden></p><footer><button type="button" data-bm-action="cancel">${t('取消')}</button><button type="submit" class="${remove ? 'bm-danger' : 'bm-primary'}" ${!remove && (create || move) && !options.length ? 'disabled' : ''}>${t(remove ? '确认删除' : move ? '移动' : '保存')}</button></footer></fieldset></form>`;
 }
@@ -8303,41 +8371,44 @@ function bookmarkCard(item, state, folder = '') {
   return `<header class="bm-card-header"><button type="button" data-action="widget-open">${icon('bookmark')}<strong>${t('书签')}</strong><small>${counts.links}</small></button><button type="button" data-action="widget-open" title="${t('打开书签管理')}" aria-label="${t('打开书签管理')}">${icon('right')}</button></header><div class="bm-card-layout"><div class="bm-card-folders">${folder ? `<button type="button" data-bm-card-folder="${esc(byId.get(folder)?.parentId || '')}" title="${t('上一级文件夹')}">${icon('chevronLeft')}<span>${t('上一级')}</span></button>` : `<span class="bm-card-root">${icon('folder')}${t('文件夹')}</span>`}${folders.slice(0, 12).map(node => `<button type="button" data-bm-card-folder="${esc(node.id)}" title="${esc(node.title)}">${icon('folder')}<span>${esc(node.title)}</span></button>`).join('')}${!folders.length ? `<span class="bm-card-muted">${t('暂无子文件夹')}</span>` : ''}</div><div class="bm-card-links">${links.slice(0,8).map(node => bookmarkUrl(node.url) ? `<a href="${esc(bookmarkUrl(node.url))}" ${state.settings?.openNewTab !== false ? 'target="_blank"' : ''} rel="noopener noreferrer" title="${esc(node.title + ' · ' + node.url)}">${mark(node)}<span>${esc(node.title)}</span></a>` : '').join('')}${!links.length ? `<button type="button" class="bm-card-empty" data-action="widget-open">${icon('bookmark')}<span>${t(folders.length ? '选择文件夹浏览收藏' : '收藏下一个灵感')}</span></button>` : ''}</div></div><footer class="bm-card-footer"><span>${esc(byId.get(folder)?.title || source)}</span><button type="button" data-action="widget-open">${t('管理收藏')}</button></footer>`;
 }
 
-return {bookmarkLocation, bookmarkCounts, bookmarkWorkspace, bookmarkSidebar, bookmarkRows, bookmarkBreadcrumb, bookmarkHeading, bookmarkEditor, bookmarkCard};
+return {bookmarkLocation, bookmarkCounts, bookmarkWorkspace, bookmarkSidebar, bookmarkRows, bookmarkBreadcrumb, bookmarkEditor, bookmarkCard};
 })();
 const __bookmarks_workspace = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
 const { icon } = __icons;
-const { bookmarkPath, bookmarkDescendants, changeLocalBookmarks, listBookmarks, browserBookmarkClient } = __bookmarks;
-const { bookmarkSidebar, bookmarkRows, bookmarkBreadcrumb, bookmarkHeading, bookmarkEditor, bookmarkCounts, bookmarkCard } = __bookmarks_view;
+const { bookmarkPath, bookmarkDescendants, bookmarkSelection, bookmarkChanges, checkBookmarkChange, changeLocalBookmarkBatch, listBookmarks, browserBookmarkClient } = __bookmarks;
+const { bookmarkSidebar, bookmarkRows, bookmarkBreadcrumb, bookmarkLocation, bookmarkEditor, bookmarkCounts, bookmarkCard } = __bookmarks_view;
 
 function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClient) {
   const controller = new AbortController(), options = {signal:controller.signal};
   const find = selector => root.querySelector(selector);
   const current = () => host.getState().items.find(item => item.id === initial.id);
   const alive = () => !controller.signal.aborted && root.isConnected && !!current();
-  const view = {source:'local', folder:'', scope:'folder', query:'', sort:'manual', expanded:new Set(), loading:false, limit:100};
-  let granted = false, browserNodes = [], editor = null, saving = false, switching = false, sequence = 0, timer, expanded = false;
+  const view = {source:'local', folder:'', scope:'folder', query:'', sort:'manual', expanded:new Set(), selected:new Set(), managing:false, loading:false, limit:100};
+  let granted = false, browserNodes = [], editor = null, saving = false, switching = false, sequence = 0, timer, expanded = false, dragging = null, pendingReload = false;
   const nodes = () => view.source === 'browser' ? browserNodes : current()?.data.nodes || [];
   const feedback = message => { if (alive()) { find('.bm-feedback').textContent = message; find('.bm-feedback').hidden = !message; } };
 
   function render() {
     if (!alive()) return;
     const entries = nodes();
+    view.selected = new Set([...view.selected].filter(id => entries.some(node => node.id === id && !node.readonly && !node.protected)));
     if (view.folder && !entries.some(node => node.id === view.folder && node.url === null)) view.folder = '';
     const sidebar = find('.bm-sidebar'), scroll = sidebar.scrollTop;
     sidebar.innerHTML = bookmarkSidebar(entries, view); sidebar.scrollTop = scroll;
     find('.bm-breadcrumb').innerHTML = bookmarkBreadcrumb(entries, view);
-    find('.bm-heading').innerHTML = bookmarkHeading(entries, view);
-    find('.bm-list').innerHTML = bookmarkRows(entries, view, host.getState());
-    find('.bm-result-count').textContent = t('{count} 个项目', {count:listBookmarks(entries,view).length});
+    const list = find('.bm-list'), listScroll = list.scrollTop;
+    list.innerHTML = bookmarkRows(entries, view, host.getState()); list.scrollTop = listScroll;
+    const location = bookmarkLocation(entries,view.folder);
+    find('.bm-path-text').textContent = view.query ? t('搜索结果') : location;
+    find('.bm-path summary').title = location;
     const counts = bookmarkCounts(entries);
     find('.bm-footer').textContent = t('{links} 个书签 · {folders} 个文件夹', counts);
     find('.bm-footer').title = find('.bm-footer').textContent;
     find('.bm-source-label').textContent = t(view.source === 'browser' ? '浏览器收藏' : '独立收藏');
     find('.bm-source-glyph').innerHTML = icon(view.source === 'browser' ? 'globe' : 'bookmark');
-    find('.bm-sort-label').textContent = find('[data-bm-sort]').selectedOptions[0].textContent;
+    find('.bm-sort summary').title = t('书签排序') + ' · ' + find('[data-bm-sort]').selectedOptions[0].textContent;
     find('.bm-source-note').textContent = t(view.source === 'browser' ? '正在管理浏览器原始收藏，修改会直接生效。' : client.supported() ? '独立收藏随此组件保存；连接浏览器后可直接管理原始收藏，两者各自保留。' : '独立收藏随此组件保存。安装栖页扩展后可连接浏览器书签。');
     find('.bm-source-note').classList.toggle('is-browser', view.source === 'browser');
     for (const source of root.querySelectorAll('[data-bm-source]')) {
@@ -8346,11 +8417,36 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
       if (source.dataset.bmSource === 'browser') source.title = t(!client.supported() ? '独立收藏随此组件保存。安装栖页扩展后可连接浏览器书签。' : granted ? '浏览器收藏' : '连接浏览器书签');
     }
     const writable = view.source === 'local' || entries.some(node => node.url === null && !node.readonly);
-    for (const action of ['new-folder','new-bookmark']) find(`[data-bm-action=${action}]`).disabled = !writable || view.loading || switching;
-    find('[data-bm-action=refresh]').disabled = view.loading;
+    const busy = saving || switching || view.loading;
+    for (const action of ['new-folder','new-bookmark']) find(`[data-bm-action=${action}]`).disabled = !writable || busy;
+    find('[data-bm-action=refresh]').disabled = busy;
+    const selected = [...view.selected], activeId = selected.length === 1 ? selected[0] : selected.length ? '' : view.folder;
+    const active = entries.find(node => node.id === activeId);
+    for (const action of ['edit','move','delete']) {
+      const control = find(`.bm-commands [data-bm-action=${action}]`);
+      control.dataset.id = activeId; control.disabled = busy || !active || active.readonly || active.protected;
+    }
+    find('[data-bm-action=manage]').setAttribute('aria-pressed',String(view.managing));
+    find('[data-bm-action=manage]').setAttribute('aria-label',t(view.managing ? '完成管理' : '管理收藏'));
+    find('[data-bm-action=manage] span').textContent = t(view.managing ? '完成' : '管理');
+    find('[data-bm-action=manage]').disabled = busy;
+    find('.bm-selection-count').textContent = selected.length;
+    find('.bm-selection-count').hidden = !selected.length;
+    find('.bm-selection-count').title = t('已选择 {count} 项', {count:selected.length});
+    find('.bm-batch-actions').hidden = !view.managing;
+    root.classList.toggle('is-managing',view.managing);
+    root.classList.toggle('has-query',!!view.query);
+    for (const action of ['batch-move','batch-delete']) find(`[data-bm-action=${action}]`).disabled = busy || !selected.length;
+    const selectable = listBookmarks(entries,view).filter(node => !node.readonly && !node.protected);
+    const all = find('[data-bm-select-all]'), total = selectable.filter(node => view.selected.has(node.id)).length;
+    all.checked = !!selectable.length && total === selectable.length; all.indeterminate = total > 0 && total < selectable.length;
+    all.disabled = busy || !selectable.length;
+    for (const input of root.querySelectorAll('[data-bm-select]')) input.disabled ||= busy;
   }
 
   function navigate(folder) {
+    if (saving) return;
+    closeMenus();
     view.folder = folder; view.scope = 'folder'; view.query = ''; view.limit = 100; find('[data-bm-query]').value = '';
     for (const node of bookmarkPath(nodes(), folder)) view.expanded.add(node.id);
     render(); find('.bm-list').scrollTop = 0;
@@ -8360,17 +8456,18 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
     if (saving && !force) return;
     editor = null; find('.bm-editor-overlay').hidden = true;
     for (const selector of ['.bm-header','.bm-layout']) find(selector).inert = false;
-    find('[data-bm-action=new-bookmark]').focus({preventScroll:true});
+    find('.bm-commands summary').focus({preventScroll:true});
   }
 
-  function openEditor(type, id = '', folder = false) {
+  function openEditor(type, id = '', folder = false, ids = null) {
     if (saving || switching || view.loading) return;
     closeMenus();
-    const entries = nodes(), node = entries.find(entry => entry.id === id);
+    const entries = nodes(), selected = ids ? bookmarkSelection(entries,ids) : [], node = ids ? selected[0] : entries.find(entry => entry.id === id);
     if (type !== 'create' && (!node || node.readonly || node.protected)) return;
     let parentId = type === 'move' ? node.parentId : view.folder;
     if (view.source === 'browser' && (!parentId || entries.find(entry => entry.id === parentId)?.readonly)) parentId = entries.find(entry => entry.url === null && !entry.readonly)?.id;
     editor = {type,id,folder,parentId,source:view.source,baseline:JSON.stringify(current().data)};
+    if (ids) { editor.ids = selected.map(entry => entry.id); editor.changes = bookmarkChanges(entries,editor.ids,type); }
     if (node) editor.expectedNode = JSON.stringify({title:node.title,url:node.url,parentId:node.parentId});
     if (type === 'delete' && node.url === null) {
       const ids = bookmarkDescendants(entries,id);
@@ -8383,6 +8480,7 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
   }
 
   async function reload({initialLoad = false, showLoading = false} = {}) {
+    pendingReload = false;
     const ticket = ++sequence;
     if (showLoading) { view.loading = true; render(); }
     try {
@@ -8391,7 +8489,7 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
       granted = snapshot.granted; browserNodes = snapshot.nodes;
       if (initialLoad && initial.config.source === 'browser' && granted) view.source = 'browser';
       if (!granted && view.source === 'browser') {
-        view.source = 'local'; view.folder = ''; view.expanded.clear(); closeEditor(true);
+        view.source = 'local'; view.folder = ''; view.expanded.clear(); view.selected.clear(); closeEditor(true);
         feedback(t('书签授权已失效，已返回独立收藏'));
       }
     } catch (error) { if (alive() && ticket === sequence) feedback(error.message || t('读取收藏失败，请重试')); }
@@ -8415,9 +8513,31 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
       await host.saveSettings(item.id, {title:item.title, config:{...item.config,source}}, JSON.stringify([item.title,item.config]));
       if (!alive()) return;
       if (source === 'browser' && !granted) return;
-      view.source = source; view.folder = ''; view.scope = 'folder'; view.expanded.clear(); view.query = ''; find('[data-bm-query]').value = '';
+      view.source = source; view.folder = ''; view.scope = 'folder'; view.expanded.clear(); view.selected.clear(); view.query = ''; find('[data-bm-query]').value = '';
     } catch (error) { feedback(error.message || t('保存失败，请重试')); }
     finally { switching = false; render(); }
+  }
+
+  async function persistChanges(session, changes) {
+    const before = nodes(), completed = [];
+    try {
+      if (session.source === 'local') {
+        const next = changeLocalBookmarkBatch(JSON.parse(session.baseline),changes);
+        await host.saveData(initial.id,next,session.baseline);
+        completed.push(...changes.map(change => change.id));
+      } else {
+        // Native writes are sequential, and each mutation rechecks permission and
+        // the reviewed node/subtree. Completed writes cannot be rolled back safely.
+        for (const change of changes) { await client.mutate(change); completed.push(change.id); }
+      }
+    } catch (error) {
+      error.completed = completed.length;
+      throw error;
+    } finally {
+      for (const id of completed) for (const child of bookmarkDescendants(before,id)) view.selected.delete(child);
+      if (session.source === 'browser') await reload();
+      if (completed.length) host.refreshCards?.();
+    }
   }
 
   async function submit(event) {
@@ -8436,22 +8556,19 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
     saving = true; form.querySelector('fieldset').disabled = true;
     const errorNode = form.querySelector('.bm-editor-feedback'); errorNode.hidden = true;
     try {
-      if (session.source === 'browser') {
-        await client.mutate(change);
-        await reload();
-      } else {
-        const next = changeLocalBookmarks(JSON.parse(session.baseline), change);
-        await host.saveData(initial.id,next,session.baseline);
-      }
-      host.refreshCards?.();
+      const changes = session.ids ? session.changes.map(entry => ({...entry,...(session.type === 'move' ? {parentId:change.parentId} : {})})) : [change];
+      await persistChanges(session,changes);
       if (!alive()) return;
       closeEditor(true); feedback(t('收藏已保存'));
+      saving = false;
       if (session.type === 'create' || session.type === 'move') navigate(change.parentId);
       else render();
     } catch (error) {
       if (!alive()) return;
-      errorNode.textContent = error.message || t('保存失败，请重试'); errorNode.hidden = false;
-      if (session.source === 'browser') await reload();
+      if (error.completed) {
+        closeEditor(true);
+        feedback(t('已完成 {done} 项，剩余 {left} 项未完成：{error}', {done:error.completed,left:session.changes.length - error.completed,error:error.message}));
+      } else { errorNode.textContent = error.message || t('保存失败，请重试'); errorNode.hidden = false; }
     } finally {
       saving = false;
       if (alive()) {
@@ -8481,6 +8598,10 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
   }, options);
 
   root.addEventListener('click', event => {
+    if (view.managing && event.target.closest('a.bm-row-open')) {
+      event.preventDefault();
+      toggleSelection(event.target.closest('[data-bm-row]').dataset.bmRow); return;
+    }
     const target = event.target.closest('button');
     if (!target || target.hasAttribute('data-close')) return;
     if (target.dataset.detailAction === 'window-expand') {
@@ -8496,18 +8617,47 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
       render(); focusFolder(id); return;
     }
     const action = target.dataset.bmAction, id = target.dataset.id;
+    if (action === 'manage') {
+      closeMenus(); view.managing = !view.managing; view.selected.clear(); render(); return;
+    }
+    if (action === 'select-item') {
+      if (saving || switching || view.loading) return;
+      view.managing = true; view.selected = new Set([id]); render();
+      find('.bm-commands').open = true; find('.bm-commands [data-bm-action=edit]').focus(); return;
+    }
+    if (action === 'batch-move' || action === 'batch-delete') openEditor(action === 'batch-move' ? 'move' : 'delete','',false,[...view.selected]);
     if (action === 'new-folder' || action === 'new-bookmark') openEditor('create','',action === 'new-folder');
     if (action === 'edit') openEditor('update',id);
     if (action === 'move' || action === 'delete') openEditor(action,id);
     if (action === 'cancel') closeEditor();
     if (action === 'locate') navigate(nodes().find(node => node.id === id)?.parentId || '');
-    if (action === 'recent') { view.scope = 'recent'; view.query = ''; find('[data-bm-query]').value = ''; render(); }
     if (action === 'clear-search') { view.query = ''; find('[data-bm-query]').value = ''; render(); find('[data-bm-query]').focus(); }
     if (action === 'more') { view.limit += 100; const scroll = find('.bm-list').scrollTop; render(); find('.bm-list').scrollTop = scroll; }
     if (action === 'refresh') { closeMenus(true); feedback(''); void reload({showLoading:true}); }
   }, options);
   root.addEventListener('input', event => { if (event.target.matches('[data-bm-query]')) { view.query = event.target.value.trim(); view.limit = 100; render(); } }, options);
-  root.addEventListener('change', event => { if (event.target.matches('[data-bm-sort]')) { view.sort = event.target.value; render(); } }, options);
+  function toggleSelection(id) {
+    if (saving || switching || view.loading) return;
+    const node = nodes().find(entry => entry.id === id);
+    if (!node || node.readonly || node.protected) return;
+    if (view.selected.has(id)) view.selected.delete(id); else view.selected.add(id);
+    const scroll = find('.bm-list').scrollTop;
+    render(); find('.bm-list').scrollTop = scroll;
+  }
+  root.addEventListener('change', event => {
+    if (event.target.matches('[data-bm-sort]')) { view.sort = event.target.value; render(); }
+    if (event.target.matches('[data-bm-select]')) {
+      const id = event.target.dataset.bmSelect, inTree = !!event.target.closest('.bm-sidebar');
+      toggleSelection(id);
+      [...root.querySelectorAll(`${inTree ? '.bm-sidebar' : '.bm-list'} [data-bm-select]`)].find(input => input.dataset.bmSelect === id)?.focus({preventScroll:true});
+    }
+    if (event.target.matches('[data-bm-select-all]')) {
+      for (const node of listBookmarks(nodes(),view).filter(node => !node.readonly && !node.protected)) {
+        if (event.target.checked) view.selected.add(node.id); else view.selected.delete(node.id);
+      }
+      render();
+    }
+  }, options);
   root.addEventListener('submit', event => { void submit(event); }, options);
   root.closest('dialog').addEventListener('cancel', event => {
     if (editor) { event.preventDefault(); event.stopImmediatePropagation(); closeEditor(); }
@@ -8515,13 +8665,88 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
   }, {capture:true, signal:controller.signal});
 
   function focusFolder(id) { [...root.querySelectorAll('[role=treeitem]')].find(button => button.dataset.bmFolder === id)?.focus({preventScroll:true}); }
+
+  function clearDrop() { for (const target of root.querySelectorAll('[data-bm-drop]')) target.removeAttribute('data-bm-drop'); }
+  function dropTarget(event) {
+    if (!dragging || saving || editor || dragging.source !== view.source) return null;
+    const entries = nodes(), row = event.target.closest('[data-bm-row]'), folder = event.target.closest('[data-bm-folder]');
+    let parentId, beforeId, element, position = 'inside';
+    if (row) {
+      const node = entries.find(entry => entry.id === row.dataset.bmRow);
+      if (!node) return null;
+      const rect = row.getBoundingClientRect(), fraction = (event.clientY - rect.top) / rect.height;
+      if (node.url === null && fraction > .24 && fraction < .76) { parentId = node.id; element = row; }
+      else {
+        if (view.sort !== 'manual' || view.query) return null;
+        parentId = node.parentId; element = row; position = fraction < .5 ? 'before' : 'after';
+        const siblings = entries.filter(entry => entry.parentId === parentId && !dragging.ids.includes(entry.id));
+        const at = siblings.findIndex(entry => entry.id === node.id);
+        if (at < 0) return null;
+        beforeId = position === 'before' ? node.id : siblings[at + 1]?.id;
+      }
+    } else if (folder) { parentId = folder.dataset.bmFolder; element = folder; }
+    else if (event.target.closest('.bm-list') && !view.query) { parentId = view.folder; element = find('.bm-list'); }
+    else return null;
+    const destination = {parentId,...(beforeId !== undefined ? {beforeId} : {})};
+    if ((view.sort !== 'manual' || view.query) && dragging.ids.every(id => entries.find(node => node.id === id)?.parentId === parentId)) return null;
+    try { for (const id of dragging.ids) checkBookmarkChange(entries,{type:'move',id,...destination},view.source); }
+    catch { return null; }
+    return {destination,element,position};
+  }
+  root.addEventListener('dragstart', event => {
+    const row = event.target.closest('[data-bm-drag]');
+    if (!row || editor || saving || switching || view.loading || event.target.matches('input')) { event.preventDefault(); return; }
+    event.stopPropagation(); closeMenus();
+    const id = row.dataset.bmDrag, ids = view.selected.has(id) ? [...view.selected] : [id];
+    dragging = {source:view.source,baseline:JSON.stringify(current().data),ids:bookmarkSelection(nodes(),ids).map(node => node.id)};
+    dragging.changes = bookmarkChanges(nodes(),dragging.ids,'move');
+    event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('application/x-qiye-bookmarks',dragging.ids.join(','));
+    root.classList.add('is-dragging'); row.classList.add('bm-drag-origin');
+  }, options);
+  root.addEventListener('dragover', event => {
+    if (!dragging) return;
+    event.stopPropagation(); clearDrop();
+    if (event.target.closest('.bm-path summary')) find('.bm-path').open = true;
+    const target = dropTarget(event);
+    event.dataTransfer.dropEffect = target ? 'move' : 'none';
+    if (target) { event.preventDefault(); target.element.dataset.bmDrop = target.position; }
+    // Keep long lists and folder trees reachable during a native drag.
+    const scroll = event.target.closest('.bm-sidebar,.bm-list');
+    if (scroll) { const rect = scroll.getBoundingClientRect(); if (event.clientY < rect.top + 28) scroll.scrollTop -= 12; else if (event.clientY > rect.bottom - 28) scroll.scrollTop += 12; }
+  }, options);
+  root.addEventListener('dragleave', event => { if (!root.contains(event.relatedTarget)) clearDrop(); }, options);
+  root.addEventListener('drop', event => {
+    if (!dragging) return;
+    event.preventDefault(); event.stopPropagation();
+    const target = dropTarget(event), session = dragging;
+    dragging = null; clearDrop(); closeMenus(); root.classList.remove('is-dragging');
+    if (!target) { if (pendingReload) void reload(); else render(); return; }
+    saving = true; feedback(''); render();
+    void (async () => {
+      try { await persistChanges(session,session.changes.map(change => ({...change,...target.destination}))); feedback(t('收藏已保存')); }
+      catch (error) { feedback(error.completed ? t('已完成 {done} 项，剩余 {left} 项未完成：{error}',{done:error.completed,left:session.ids.length-error.completed,error:error.message}) : error.message || t('保存失败，请重试')); }
+      finally { saving = false; render(); }
+    })();
+  }, options);
+  root.addEventListener('dragend', () => {
+    dragging = null; clearDrop(); closeMenus(); root.classList.remove('is-dragging');
+    if (!saving) { if (pendingReload) void reload(); else render(); }
+  }, options);
+
   root.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && ['f','k'].includes(event.key.toLowerCase())) {
       event.preventDefault(); event.stopPropagation();
       if (!editor) { closeMenus(); find('[data-bm-query]').focus(); }
       return;
     }
+    if (!editor && !event.target.matches('input,select,textarea') && view.managing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
+      event.preventDefault(); event.stopPropagation();
+      for (const node of listBookmarks(nodes(),view).filter(node => !node.readonly && !node.protected)) view.selected.add(node.id);
+      render(); return;
+    }
     if (!editor && event.key === 'Escape' && closeMenus(true)) { event.preventDefault(); event.stopPropagation(); return; }
+    if (!editor && event.key === 'Escape' && find('[data-bm-query]') === event.target) { event.preventDefault(); event.stopPropagation(); event.target.blur(); return; }
+    if (!editor && event.key === 'Escape' && view.managing) { event.preventDefault(); event.stopPropagation(); view.managing = false; view.selected.clear(); render(); return; }
     if (editor) {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeEditor(); }
       if (event.key === 'Tab') {
@@ -8548,9 +8773,9 @@ function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClie
     if (!alive()) return;
     if (reason === 'revoked') {
       sequence++; granted = false; browserNodes = []; view.loading = false;
-      if (view.source === 'browser') { view.source = 'local'; view.folder = ''; view.expanded.clear(); closeEditor(true); feedback(t('书签授权已失效，已返回独立收藏')); }
+      if (view.source === 'browser') { dragging = null; view.source = 'local'; view.folder = ''; view.expanded.clear(); view.selected.clear(); closeEditor(true); feedback(t('书签授权已失效，已返回独立收藏')); }
       render();
-    } else { clearTimeout(timer); timer = setTimeout(() => { void reload(); },80); }
+    } else { pendingReload = true; clearTimeout(timer); timer = setTimeout(() => { if (!dragging && !saving) void reload(); },80); }
   });
   render(); void reload({initialLoad:true});
   return () => { controller.abort(); sequence++; clearTimeout(timer); unsubscribe(); };
@@ -25861,6 +26086,7 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='icon-settings')return openDialog('settings',{tab:'icons'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
@@ -26101,6 +26327,7 @@ async function init() {
  await faviconCacheReady;
  $$('[data-action=add-group]').forEach(e=>e.innerHTML=icon('plus'));
  $$('.sidebar-bottom [data-action=local-search]').forEach(e=>e.innerHTML=icon('search'));
+ $$('.sidebar-bottom [data-action=icon-settings]').forEach(e=>e.innerHTML=icon('grid'));
  $$('.sidebar-bottom [data-action=settings]').forEach(e=>e.innerHTML=icon('settings'));
  $$('.top-tools [data-action=wallpaper]').forEach(e=>e.innerHTML=icon('wallpaper'));
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));
