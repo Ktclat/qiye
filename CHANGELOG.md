@@ -17,6 +17,8 @@ This is the canonical version history, moved from the original README. Historica
 - 移除旧“专注计时”入口，已有卡片自动迁移为番茄钟并保留计时进度；番茄钟采用 48px 单行标题栏，专注、短休、长休可在计时盘上方直接输入并应用。
 - Retired the old Focus timer with automatic progress-preserving migration to Pomodoro. Added a compact 48px header and directly editable focus, short-break and long-break durations above the dial.
 
+- 进制转换新增 8 / 16 / 32 / 64 / 128 位有符号与无符号模式、数值 / 位模式输入、补码与范围校验；并列显示两种解释和位视图，压缩结果行并保留 44px 标题栏。
+- Base converter now supports signed / unsigned 8–128-bit integers, explicit numeric / bit-pattern input, two’s-complement decoding, range errors and compact results with both interpretations and a bit view.
 - 新增“进制转换”：2–36 进制多结果实时展示，支持精确大整数、负数、小数及循环节，提供精度、分组、前缀、逐项 / 全部复制和独立保存；适配五种卡片尺寸、中英文、深浅主题与窄屏。
 - Added a Base converter with simultaneous outputs for bases 2–36, exact large integers and fractions, recurring notation, precision and formatting controls, copy actions, independent saved state and responsive layouts.
 

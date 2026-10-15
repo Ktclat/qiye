@@ -344,7 +344,12 @@ function compactModel(item) {
   else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
   else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
   else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
-  else if (type === 'base-converter') { value = '2↔16'; caption = t('进制转换'); detail = 'BIN · OCT · DEC · HEX'; meta = t('支持 2–36 进制'); }
+  else if (type === 'base-converter') {
+    const integer = data.mode === 'signed' || data.mode === 'unsigned', bits = data.bits || 32;
+    value = integer ? `${data.mode === 'signed' ? 'i' : 'u'}${bits}` : '2↔16';
+    caption = t('进制转换'); detail = 'BIN · OCT · DEC · HEX';
+    meta = integer ? `${t(data.mode === 'signed' ? '有符号' : '无符号')} · ${t('{bits} 位', {bits})}` : t('支持 2–36 进制');
+  }
   else if (type === 'codec') { caption = t('编码工具'); detail = 'Base64 · URL'; meta = t('编码 · 解码 · 哈希'); }
   return {value, caption, detail, meta, unit};
 }

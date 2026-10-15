@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { newBaseConverterData, validateBaseConverterData, parseRadix, formatRadix, convertRadix, prefixedBase } from '../src/base-converter.js';
+import { newBaseConverterData, validateBaseConverterData, parseRadix, formatRadix, convertRadix, prefixedBase, RADIX_WORD_BITS, RADIX_INTEGER_DEFAULTS, radixIntegerRange, formatRadixResult, changeRadixMode, changeRadixInputKind } from '../src/base-converter.js';
 import { baseConverterWorkspace } from '../src/base-converter-view.js';
 import { newWidgetConfig } from '../src/widget-registry.js';
 import { newWidgetData } from '../src/widget-data.js';
@@ -8,6 +8,7 @@ import { renderWidget } from '../src/widgets.js';
 import { DEFAULT_STATE, validateImport, exportState } from '../src/core.js';
 import { TILE_SIZES } from '../src/widget-sizes.js';
 import { setLocale } from '../src/i18n.js';
+import { createWidgetDraft } from '../src/widget-drafts.js';
 
 const convert = (input, from, to, options = {}) => formatRadix(parseRadix(input, from), to, options);
 
@@ -95,7 +96,7 @@ test('widget data validates limits, stays independent and survives desktop backu
   for (const changes of [{ targets: [] }, { targets: [2, 2] }, { targets: [37] }, { input: '1'.repeat(513) }, { base: 1 }, { base: '10' }, { precision: 0 }, { precision: 129 }, { uppercase: 1 }, { groupDigits: 'yes' }, { surprise: true }]) {
     assert.throws(() => validateBaseConverterData({ ...data, ...changes }));
   }
-  for (const key of Object.keys(data)) { const incomplete = { ...data }; delete incomplete[key]; assert.throws(() => validateBaseConverterData(incomplete)); }
+  for (const key of Object.keys(data).filter(key => !(key in RADIX_INTEGER_DEFAULTS))) { const incomplete = { ...data }; delete incomplete[key]; assert.throws(() => validateBaseConverterData(incomplete)); }
 });
 
 test('all five card sizes expose the converter and escape user content', () => {
@@ -105,6 +106,10 @@ test('all five card sizes expose the converter and escape user content', () => {
     assert.match(html, /data-action="widget-open"/);
     assert.match(html, /&lt;img src=x&gt;/);
     assert.doesNotMatch(html, /<img src=x>/);
+    for (const mode of ['signed', 'unsigned']) {
+      const integerHtml = renderWidget({ ...item, size, data: { ...item.data, mode, bits: 64 } }, DEFAULT_STATE);
+      assert.match(integerHtml, new RegExp(`${mode === 'signed' ? 'i' : 'u'}64`));
+    }
   }
   const html = baseConverterWorkspace({ ...item, data: { ...item.data, input: '</textarea><script>alert(1)</script>' } });
   assert.doesNotMatch(html, /<script>/);
@@ -120,5 +125,147 @@ test('converter labels and validation errors follow the English locale', () => {
     assert.match(html, /Hexadecimal/);
     assert.doesNotMatch(html, /[\u4e00-\u9fff]/);
     assert.throws(() => parseRadix('8', 8), /not a base 8 digit/);
+    for (const mode of ['signed', 'unsigned']) {
+      const integerHtml = baseConverterWorkspace({ id: 'word-en', title: 'Base converter', data: { ...newBaseConverterData(), mode, bits: 8, input: 'FF', base: 16, inputKind: 'bits' } });
+      assert.doesNotMatch(integerHtml, /[\u4e00-\u9fff]/);
+      assert.match(integerHtml, /One bit pattern, two interpretations/);
+    }
   } finally { setLocale('zh-CN'); }
+});
+
+const wordData = changes => ({ ...newBaseConverterData(), mode: 'signed', bits: 8, input: '-1', ...changes });
+
+test('consecutive draft saves keep the persisted comparison stable across integer switches', async () => {
+  let current = newBaseConverterData();
+  const draft = createWidgetDraft({ id: 'radix-save', data: current }, async (id, data, expected) => {
+    assert.equal(JSON.stringify(current), expected, 'the application compares the in-memory data with the last normalized save');
+    current = structuredClone(data);
+    return validateBaseConverterData(data);
+  });
+  draft.data = validateBaseConverterData(draft.data);
+  for (const edit of [
+    data => ({ ...data, input: '-1' }),
+    data => changeRadixMode(data, 'signed'),
+    data => changeRadixInputKind(data, 'bits'),
+    data => changeRadixMode(data, 'unsigned'),
+    data => ({ ...data, bits: 64, prefixes: true }),
+    data => changeRadixMode(data, 'number'),
+  ]) {
+    draft.data = edit(draft.data); draft.changed();
+    assert.equal(await draft.flush(), true);
+    assert.equal(draft.error, null);
+  }
+});
+
+test('signed and unsigned bounds remain exact for every supported width', () => {
+  for (const bits of RADIX_WORD_BITS) {
+    const half = 1n << BigInt(bits - 1), mask = (half << 1n) - 1n;
+    for (const mode of ['signed', 'unsigned']) {
+      const { min, max } = radixIntegerRange(mode, bits);
+      assert.equal(min, mode === 'signed' ? -half : 0n);
+      assert.equal(max, mode === 'signed' ? half - 1n : mask);
+      for (const value of [min, 0n, 1n, max, ...(mode === 'signed' ? [-1n] : [])]) {
+        const result = convertRadix(wordData({ mode, bits, input: String(value) }));
+        assert.equal(result.error, '');
+        assert.equal(result.value.numerator, value);
+        assert.equal(result.word.unsigned, BigInt.asUintN(bits, value));
+        assert.equal(result.word.signed, BigInt.asIntN(bits, value));
+        assert.equal(result.results.find(row => row.base === 2).text.length, bits);
+        assert.equal(result.results.find(row => row.base === 8).text.length, Math.ceil(bits / 3));
+        assert.equal(result.results.find(row => row.base === 16).text.length, bits / 4);
+      }
+      for (const input of [String(min - 1n), String(max + 1n), '0.5', '0.(3)']) {
+        const result = convertRadix(wordData({ mode, bits, input }));
+        assert.ok(result.error, `${mode}/${bits}/${input}`);
+        assert.equal(result.word, null);
+        assert.equal(result.value, null);
+        assert.deepEqual(result.results, []);
+      }
+    }
+  }
+});
+
+test('every 8-bit pattern decodes to the same signed and unsigned interpretations in every base', () => {
+  for (let value = 0n; value < 256n; value++) {
+    for (let base = 2; base <= 36; base++) {
+      const result = convertRadix(wordData({ input: value.toString(base), base, inputKind: 'bits' }));
+      assert.equal(result.error, '');
+      assert.equal(result.word.unsigned, value);
+      assert.equal(result.word.signed, BigInt.asIntN(8, value));
+    }
+  }
+});
+
+test('bit patterns reject overflows and negative values without wrapping', () => {
+  for (const bits of RADIX_WORD_BITS) {
+    const modulus = 1n << BigInt(bits);
+    for (const input of ['-1', String(modulus), String(modulus * 10n), '0.1']) {
+      const result = convertRadix(wordData({ bits, input, inputKind: 'bits' }));
+      assert.ok(result.error);
+      assert.deepEqual(result.results, []);
+    }
+  }
+  assert.ok(convertRadix(wordData({ input: 'FF', base: 16, inputKind: 'value' })).error);
+  assert.equal(convertRadix(wordData({ input: 'FF', base: 16, inputKind: 'bits' })).word.signed, -1n);
+  assert.equal(convertRadix(wordData({ input: '0.0', inputKind: 'bits' })).word.unsigned, 0n);
+});
+
+test('all result bases round trip by carrying their input interpretation', () => {
+  for (const bits of RADIX_WORD_BITS) for (const mode of ['signed', 'unsigned']) {
+    for (const input of [mode === 'signed' ? '-1' : String((1n << BigInt(bits)) - 1n), '0', '17']) {
+      const data = wordData({ bits, mode, input }), conversion = convertRadix(data);
+      for (let base = 2; base <= 36; base++) {
+        const row = formatRadixResult(conversion, base, data);
+        const reused = convertRadix({ ...data, base, input: row.text, inputKind: row.inputKind });
+        assert.equal(reused.value.numerator, conversion.value.numerator);
+        assert.equal(reused.word.unsigned, conversion.word.unsigned);
+      }
+    }
+  }
+});
+
+test('mode and input-kind switches preserve the valid bit pattern or numeric value', () => {
+  for (const base of [2, 8, 10, 16, 36]) {
+    const signed = wordData({ base, input: '-1' });
+    const unsigned = changeRadixMode(signed, 'unsigned');
+    assert.equal(convertRadix(unsigned).word.unsigned, 255n);
+    assert.equal(convertRadix(changeRadixMode(unsigned, 'signed')).value.numerator, -1n);
+    const raw = changeRadixInputKind(signed, 'bits');
+    assert.equal(raw.inputKind, 'bits');
+    assert.equal(convertRadix(raw).word.unsigned, 255n);
+    assert.equal(changeRadixInputKind(raw, 'value').input, '-1');
+    const general = changeRadixMode(raw, 'number');
+    assert.equal(general.inputKind, 'value');
+    assert.equal(convertRadix(general).value.numerator, -1n);
+    assert.equal(convertRadix(general).word, null);
+  }
+  const wider = convertRadix(wordData({ input: 'FF', base: 16, inputKind: 'bits', bits: 16 }));
+  assert.equal(wider.word.signed, 255n, 'width changes reinterpret the original input');
+  assert.equal(convertRadix(changeRadixInputKind(wordData({ input: '255' }), 'bits')).word.signed, -1n, 'an invalid numeric value can be explicitly interpreted as bits');
+});
+
+test('word formatting pads only binary, octal and hex and keeps copied values reusable', () => {
+  const data = wordData({ bits: 16, input: '15', groupDigits: true, prefixes: true, uppercase: false });
+  const conversion = convertRadix(data);
+  assert.deepEqual(conversion.results.map(row => row.text), ['0b0000 0000 0000 1111', '0o000 017', '15', '0x000f']);
+  assert.equal(formatRadixResult(conversion, 16, { ...data, padBits: false }).text, '0xf');
+  const negative = convertRadix(wordData({ input: '-1' }));
+  assert.deepEqual(negative.results.map(row => row.text), ['11111111', '377', '-1', 'FF']);
+  assert.equal(formatRadixResult(negative, 3).text, '100110');
+  const precise64 = convertRadix(wordData({ mode: 'unsigned', bits: 64, input: '18446744073709551615' }));
+  assert.equal(precise64.results.find(row => row.base === 16).text, 'FFFFFFFFFFFFFFFF');
+});
+
+test('legacy backups gain safe defaults while new integer settings are strictly validated and persisted', () => {
+  const legacy = newBaseConverterData();
+  for (const key of Object.keys(RADIX_INTEGER_DEFAULTS)) delete legacy[key];
+  assert.deepEqual(validateBaseConverterData(legacy), newBaseConverterData());
+  for (const patch of [{ mode: 'float' }, { mode: null }, { bits: 0 }, { bits: 256 }, { bits: '8' }, { inputKind: 'auto' }, { padBits: 'true' }]) {
+    assert.throws(() => validateBaseConverterData({ ...wordData({}), ...patch }));
+  }
+  const state = structuredClone(DEFAULT_STATE), data = wordData({ bits: 128, input: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', base: 16, inputKind: 'bits', padBits: false });
+  state.items.push({ id: 'word-backup', type: 'widget', widget: 'base-converter', title: '进制转换', groupId: 'home', size: '4x2', config: {}, data });
+  const restored = validateImport(exportState(state)).items.find(item => item.id === 'word-backup');
+  assert.deepEqual(restored.data, data);
+  assert.equal(convertRadix(restored.data).word.signed, -1n);
 });

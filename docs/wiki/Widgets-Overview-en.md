@@ -61,9 +61,19 @@ The 44px single-line title bar contains a small icon, the title and window contr
 Add **Widgets → Tools → Base converter**. Binary, octal, decimal and hexadecimal appear together by default; add or remove any output base from 2 to 36. The 2×2 / 4×2 desktop cards show the first four results, and all five sizes open the dedicated workspace. Narrow windows stack input and results and initially collapse formatting options.
 
 - Input is limited to 512 characters. Exact rational arithmetic preserves large integers and fractions beyond JavaScript's safe integer range. Accepts negatives, case-insensitive letters, space / underscore groups and recurring notation such as `0.(3)`. Pasting a complete `0b`, `0o` or `0x` number detects its input base.
-- Choose 1–128 maximum fractional digits. Parentheses mark recurring digits; longer expansions are truncated, not rounded, and show `≈` and `…`. Negatives retain a minus sign; two's complement and scientific notation are not supported.
+- Choose 1–128 maximum fractional digits. Parentheses mark recurring digits; longer expansions are truncated, not rounded, and show `≈` and `…`. General mode retains a minus sign for negatives. Scientific notation is not supported.
 - Copy individual results or all results. Individual copies omit grouping spaces and announce truncation when applicable; copying all preserves base labels and approximation markers. Only exact results within the input limit can be reused as input.
 - Each instance independently saves its input, output bases and formatting in desktop data, JSON backups and WebDAV. Public layout sharing resets these to defaults. Conversion needs no network access; failed saves retain session drafts and offer retry.
+
+Switch between **General / Signed / Unsigned** above the workspace. Integer modes offer 8, 16, 32, 64 and 128 bits. Compact aligned result rows sit below side-by-side signed and unsigned decimal interpretations. The bit view groups four digits, labels bit indices and highlights the highest bit (the sign bit in Signed mode). Integer formatting starts collapsed; minimum / maximum and zero, highest-bit-only and all-ones shortcuts fill the input.
+
+- **General** preserves arbitrary-precision signed numbers and fractions and is the migration default for older data.
+- **Numeric value** reads a mathematical value in the selected base and validates the range. Signed 8-bit values span −128 to 127; unsigned span 0 to 255. All widths, including 64 and 128 bits, use exact integer arithmetic.
+- **Bit pattern** reads a nonnegative raw pattern in the selected base. For example, 8-bit hexadecimal `FF` means signed −1 or unsigned 255. Decimal results show the selected interpretation; other bases show the raw pattern. Binary, octal and hexadecimal pad to the word width by default; formatting can disable this.
+- Switching Signed / Unsigned preserves valid bits. Switching input interpretation and reusing a result preserves the corresponding value or pattern. Changing width or input base reinterprets the input: widening raw `FF` from 8 to 16 bits produces 255. Returning to General keeps the currently interpreted mathematical value.
+- Out-of-range values, invalid digits and noninteger fractions clear results and show an error, without truncation or wrapping. Mode, width, input interpretation and padding persist per widget. Copy all includes width and both decimal interpretations.
+
+The multi-base programmer workflow references [Microsoft Calculator](https://github.com/microsoft/calculator). Two's-complement and unsigned semantics follow [MDN BigInt.asIntN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt/asIntN) and [BigInt.asUintN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt/asUintN). This widget validates ranges before conversion to avoid silently dropping high bits. Separate numeric and bit-pattern inputs distinguish the mathematical value of `FF` from its signed interpretation.
 
 ## Bookmark manager
 

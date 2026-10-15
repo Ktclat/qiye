@@ -92,6 +92,8 @@ test('every widget requires current config and data, rejecting shared fields and
       for (const key of Object.keys(item[field])) {
         // Weather backups created before source selection inherit automatic mode.
         if(entry.type==='weather'&&field==='config'&&['source','fallback'].includes(key)) continue;
+        // Older radix backups inherit General mode and default integer settings.
+        if(entry.type==='base-converter'&&field==='data'&&['mode','bits','inputKind','padBits'].includes(key)) continue;
         const partial = structuredClone(state); delete partial.items[0][field][key];
         assert.throws(() => validateImport(partial), /数据校验失败/, entry.type + '.' + key);
       }

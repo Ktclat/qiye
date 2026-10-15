@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { t } from './i18n.js';
-import { keys, string, number, array, unique, bool } from './validation.js';
+import { keys, string, number, array, unique, bool, enumeration } from './validation.js';
 
 export const RADIX_DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 export const RADIX_INPUT_LIMIT = 512;
 export const COMMON_BASES = Object.freeze([2, 8, 10, 16]);
+export const RADIX_WORD_BITS = Object.freeze([8, 16, 32, 64, 128]);
+export const RADIX_INTEGER_DEFAULTS = Object.freeze({ mode: 'number', bits: 32, inputKind: 'value', padBits: true });
 const prefixes = { 2: '0b', 8: '0o', 16: '0x' };
 
 export function newBaseConverterData() {
-  return { input: '255', base: 10, targets: [...COMMON_BASES], precision: 32, uppercase: true, groupDigits: false, prefixes: false };
+  return { input: '255', base: 10, targets: [...COMMON_BASES], precision: 32, uppercase: true, groupDigits: false, prefixes: false, ...RADIX_INTEGER_DEFAULTS };
 }
 
 export function validateBaseConverterData(raw, path = 'data') {
-  keys(raw, ['input', 'base', 'targets', 'precision', 'uppercase', 'groupDigits', 'prefixes'], path);
+  keys(raw, ['input', 'base', 'targets', 'precision', 'uppercase', 'groupDigits', 'prefixes', 'mode', 'bits', 'inputKind', 'padBits'], path);
   const targets = array(raw.targets, `${path}.targets`, 35, 1).map(base => number(base, `${path}.targets`, 2, 36, true));
   unique(targets, `${path}.targets`);
   return {
@@ -22,6 +24,10 @@ export function validateBaseConverterData(raw, path = 'data') {
     uppercase: bool(raw.uppercase, `${path}.uppercase`),
     groupDigits: bool(raw.groupDigits, `${path}.groupDigits`),
     prefixes: bool(raw.prefixes, `${path}.prefixes`),
+    mode: enumeration(raw.mode === undefined ? 'number' : raw.mode, ['number', 'signed', 'unsigned'], `${path}.mode`),
+    bits: enumeration(raw.bits === undefined ? 32 : raw.bits, RADIX_WORD_BITS, `${path}.bits`),
+    inputKind: enumeration(raw.inputKind === undefined ? 'value' : raw.inputKind, ['value', 'bits'], `${path}.inputKind`),
+    padBits: bool(raw.padBits === undefined ? true : raw.padBits, `${path}.padBits`),
   };
 }
 
@@ -84,7 +90,7 @@ export function formatRadix(value, base, options = {}) {
   if (!Number.isInteger(base) || base < 2 || base > 36) throw new Error(t('进制必须是 2–36 之间的整数。'));
   const precision = Math.max(1, Math.min(128, Math.trunc(options.precision) || 32));
   const negative = value.numerator < 0n, magnitude = negative ? -value.numerator : value.numerator;
-  const radix = BigInt(base), whole = (magnitude / value.denominator).toString(base);
+  const radix = BigInt(base), whole = (magnitude / value.denominator).toString(base).padStart(options.integerDigits || 0, '0');
   let remainder = magnitude % value.denominator, fraction = '', repeatAt = -1;
   const seen = new Map();
   while (remainder) {
@@ -108,9 +114,71 @@ export function formatRadix(value, base, options = {}) {
   return { base, text, display: text + (truncated ? '…' : ''), exact: !truncated, recurring: repeatAt >= 0, fractionDigits: fraction.length };
 }
 
-export function convertRadix(data) {
+export function radixIntegerRange(mode, bits) {
+  enumeration(mode, ['signed', 'unsigned'], 'mode');
+  enumeration(bits, RADIX_WORD_BITS, 'bits');
+  const modulus = 1n << BigInt(bits), half = modulus >> 1n;
+  return { min: mode === 'signed' ? -half : 0n, max: mode === 'signed' ? half - 1n : modulus - 1n, modulus, half };
+}
+
+function integerWord(value, data) {
+  const { mode, bits, inputKind } = data;
+  const range = radixIntegerRange(mode, bits);
+  if (value.denominator !== 1n) throw new Error(t('整数模式不接受小数，请切换到“常规数值”。'));
+  enumeration(inputKind, ['value', 'bits'], 'inputKind');
+  const input = value.numerator, rawBits = inputKind === 'bits';
+  const min = rawBits ? 0n : range.min, max = rawBits ? range.modulus - 1n : range.max;
+  if (input < min || input > max) {
+    throw new Error(t('超出 {bits} 位{kind}范围：{min} 至 {max}。不会自动截断。', {
+      bits, kind: t(rawBits ? '位模式' : mode === 'signed' ? '有符号整数' : '无符号整数'), min: String(min), max: String(max),
+    }));
+  }
+  const unsigned = input < 0n ? input + range.modulus : input;
+  const signed = unsigned >= range.half ? unsigned - range.modulus : unsigned;
+  return { bits, signed, unsigned, value: mode === 'signed' ? signed : unsigned, signBit: unsigned >= range.half ? 1 : 0 };
+}
+
+// Decimal displays the selected interpretation; other bases display the same
+// unsigned bit pattern. A result carries its input kind for exact reuse.
+export function formatRadixResult(conversion, base, options = {}) {
+  const bitPattern = Boolean(conversion.word && base !== 10);
+  const value = bitPattern ? { numerator: conversion.word.unsigned, denominator: 1n } : conversion.value;
+  const groupBits = { 2: 1, 8: 3, 16: 4 }[base];
+  const integerDigits = bitPattern && options.padBits !== false && groupBits ? Math.ceil(conversion.word.bits / groupBits) : 0;
+  return { ...formatRadix(value, base, { ...options, integerDigits }), inputKind: bitPattern ? 'bits' : 'value' };
+}
+
+export function convertRadix(raw) {
+  const data = { ...RADIX_INTEGER_DEFAULTS, ...raw };
   try {
-    const value = parseRadix(data.input, data.base);
-    return { value, results: value ? data.targets.map(base => formatRadix(value, base, data)) : [], error: '' };
-  } catch (error) { return { value: null, results: [], error: error.message }; }
+    const parsed = parseRadix(data.input, data.base);
+    const word = parsed && data.mode !== 'number' ? integerWord(parsed, data) : null;
+    const value = word ? { numerator: word.value, denominator: 1n } : parsed;
+    const conversion = { value, word, results: [], error: '' };
+    if (value) conversion.results = data.targets.map(base => formatRadixResult(conversion, base, data));
+    return conversion;
+  } catch (error) { return { value: null, word: null, results: [], error: error.message }; }
+}
+
+export function changeRadixMode(raw, mode) {
+  enumeration(mode, ['number', 'signed', 'unsigned'], 'mode');
+  const data = validateBaseConverterData(raw), conversion = convertRadix(data);
+  const next = { ...data, mode };
+  if (mode === 'number' || data.mode === 'number') next.inputKind = 'value';
+  if (conversion.word && next.inputKind === 'value') {
+    const value = mode === 'number' ? conversion.word.value : conversion.word[mode];
+    next.input = formatRadix({ numerator: value, denominator: 1n }, data.base, { uppercase: data.uppercase }).text;
+  }
+  return next;
+}
+
+export function changeRadixInputKind(raw, inputKind) {
+  enumeration(inputKind, ['value', 'bits'], 'inputKind');
+  const data = validateBaseConverterData(raw), conversion = convertRadix(data);
+  const next = { ...data, inputKind };
+  if (conversion.word) {
+    const value = inputKind === 'bits' ? conversion.word.unsigned : conversion.word.value;
+    next.input = formatRadix({ numerator: value, denominator: 1n }, data.base, { uppercase: data.uppercase }).text;
+  }
+  return next;
 }
