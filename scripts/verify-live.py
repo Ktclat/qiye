@@ -108,7 +108,7 @@ try:
             check('Published weather opens its dedicated canvas',page.locator('.weather-app').count()==1 and page.locator('.utility-layout').count()==0)
             page.locator('[data-detail-action=weather-cities]').click()
             check('Published weather city list shows current city',page.locator('.weather-city-card.active').count()==1)
-            page.keyboard.press('Escape');page.locator('[data-detail-action=weather-settings]').click()
+            page.keyboard.press('Escape');page.locator('[data-detail-action=weather-settings]').first.click()
             check('Published weather settings are in a separate drawer',page.locator('#weather-settings-panel').is_visible() and page.locator('#weather-settings [name=unit] option').count()==2)
             page.keyboard.press('Escape');page.locator('[data-detail-action=weather-enable]').click()
             page.wait_for_function('()=>document.querySelector(".weather-temperature") || (document.querySelector("[data-detail-action=weather-refresh]")&&!document.querySelector("[data-detail-action=weather-refresh]").disabled)',timeout=25000)
