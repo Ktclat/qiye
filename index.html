@@ -878,7 +878,17 @@ html.hide-content-scrollbar,html.hide-content-scrollbar body{scrollbar-width:non
 html.hide-content-scrollbar::-webkit-scrollbar,html.hide-content-scrollbar body::-webkit-scrollbar{display:none;width:0;height:0}
 /* Stable quote position and enough bottom space for the last row to clear it. */
 main{padding-bottom:112px}
-.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:64px;overflow:hidden;line-height:1.5;text-wrap:balance}
+.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));display:flex;gap:10px;margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:80px;overflow:hidden;line-height:1.5;text-wrap:balance}
+.daily-quote>span:first-child{min-width:0}
+.daily-quote>span:first-child:before,.daily-quote>span:first-child:after{content:none}
+.daily-quote [data-quote-refresh]{pointer-events:auto;padding:0;max-width:100%;line-height:inherit;letter-spacing:inherit;text-shadow:inherit;vertical-align:bottom;text-wrap:balance;overflow-wrap:anywhere}
+.daily-quote [data-quote-refresh]:before{content:'「 ';opacity:.7}
+.daily-quote [data-quote-refresh]:after{content:' 」';opacity:.7}
+.daily-quote [data-quote-refresh]:hover{color:#fff}
+.daily-quote [data-quote-refresh]:disabled{opacity:1}
+.daily-quote-source{pointer-events:auto;flex-shrink:0;font-size:.8em;opacity:.65;white-space:nowrap}
+.daily-quote-source:not([href]){pointer-events:none}
+.daily-quote-source[href]:hover,.daily-quote-source:focus-visible{opacity:1;text-decoration:underline}
 html[data-sidebar-position=right] .daily-quote{left:24px;right:calc(var(--sidebar-width) + 24px)}
 html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .daily-quote,.minimal .daily-quote{left:24px;right:24px}
 .wallpaper-credit{max-width:33vw;bottom:8px;z-index:10}
@@ -2295,7 +2305,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div id="desktop" class="desktop"></div>
     </section>
     </div>
-    <footer id="daily-quote" class="daily-quote"><span><span data-i18n="把日子过成自己喜欢的样子。">把日子过成自己喜欢的样子。</span></span></footer>
+    <footer id="daily-quote" class="daily-quote" aria-live="polite"><span><button type="button" data-quote-refresh><span data-quote-text>正在获取一言…</span></button></span><a class="daily-quote-source" data-quote-source target="_blank" rel="noopener noreferrer" hidden></a></footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
   <div id="context-menu" class="context-menu" role="menu" hidden></div>
@@ -3832,7 +3842,17 @@ const englishMessages = {
   "城市列表未能保存，当前城市设置已保存。": "Could not save the city list. Your current city was saved.",
   "请输入至少两个字符": "Enter at least two characters",
   "选择城市查看天气": "Select a city to view its weather",
-  "城市列表未能保存，请重试。": "Could not save the city list. Please try again."
+  "城市列表未能保存，请重试。": "Could not save the city list. Please try again.",
+  "正在获取一言…": "Loading a quote…",
+  "固定在底部；每次打开或刷新时获取一言，点击短句可换一句。": "Fixed at the bottom. Fetches a new Hitokoto quote on each visit or reload; click the text for another.",
+  "本地短句": "Local quote",
+  "换一句：{text}": "Another quote: {text}",
+  "点击换一句": "Click for another quote",
+  "一言暂时无法连接，显示本地短句，点击重试。": "Hitokoto is unavailable. Showing a local quote; click to retry.",
+  "当前为缓存的一言，点击重试。": "Showing a cached Hitokoto quote; click to retry.",
+  "一言 · 缓存": "Hitokoto · Cached",
+  "一言": "Hitokoto",
+  "查看一言来源": "View the quote on Hitokoto"
 };
 
 return {englishMessages};
@@ -3993,13 +4013,13 @@ async function requestPublicOrigin(value) {
   return url;
 }
 
-async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch}={}) {
+async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch,cache='no-cache'}={}) {
   const url=publicHttpsUrl(value), controller=new AbortController();
   const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
   if(signal?.aborted)controller.abort();
   const timer=setTimeout(abort,12000);
   try {
-    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache:'no-cache',headers:{Accept:'application/json'}});
+    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache,headers:{Accept:'application/json'}});
     if(!response.ok)throw new Error(t('来源返回 HTTP {status}',{status:response.status}));
     if(Number(response.headers.get('content-length'))>maxBytes)throw new Error(t('文件超过大小限制。'));
     const reader=response.body?.getReader();let text='';
@@ -19865,6 +19885,141 @@ function reconcileKeyedChildren(root, entries) {
 
 return {reconcileKeyedChildren};
 })();
+const __daily_quote = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { fetchPublicJson } = __public_json;
+
+const CACHE_KEY = 'qiye.daily-quote.v1';
+const API_URL = 'https://v1.hitokoto.cn/';
+const LOCAL_QUOTES = [
+  '把今天过得慢一点，认真看一朵云，认真完成一件小事。',
+  '让注意力回到手边，下一步就会慢慢清楚。',
+  '生活留一点空白，好让新的风景走进来。',
+];
+const clean = (value, limit) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
+function normalizeQuote(value) {
+  if (!value || typeof value.text !== 'string' || !value.text.trim() || value.text.length > 140) return null;
+  return {text: value.text.trim(), author: clean(value.author, 120), from: clean(value.from, 120),
+    uuid: typeof value.uuid === 'string' && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(value.uuid) ? value.uuid : ''};
+}
+function localStorageOrNull() {
+  try { return globalThis.localStorage; } catch { return null; }
+}
+function pause(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const abort = () => { clearTimeout(timer); signal.removeEventListener('abort', abort); reject(signal.reason); };
+    const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, ms);
+    signal.addEventListener('abort', abort, {once: true});
+    if (signal.aborted) abort();
+  });
+}
+
+function createDailyQuoteClient({fetcher = globalThis.fetch, storage = localStorageOrNull()} = {}) {
+  let lastText = '', recent = [], lastAttempt = 0;
+  function readCache() {
+    try {
+      const raw = storage?.getItem(CACHE_KEY);
+      if (!raw || raw.length > 20000) return;
+      const cached = JSON.parse(raw);
+      lastText = clean(cached.lastText, 140);
+      recent = Array.isArray(cached.quotes) ? cached.quotes.slice(0, 12).map(normalizeQuote).filter(Boolean) : [];
+    } catch { /* Storage is optional; live quotes still work in private mode. */ }
+  }
+  function remember(quote, live) {
+    lastText = quote.text;
+    if (live) recent = [quote, ...recent.filter(entry => entry.text !== quote.text)].slice(0, 12);
+    try { storage?.setItem(CACHE_KEY, JSON.stringify({lastText, quotes: recent})); } catch { /* Keep the in-memory copy. */ }
+  }
+  async function next({signal} = {}) {
+    // Read again so sequential new tabs also avoid the last displayed sentence.
+    const previousText = lastText;
+    readCache();
+    const excluded = new Set([previousText, lastText]);
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener('abort', abort, {once: true});
+    if (signal?.aborted) abort();
+    const timer = setTimeout(abort, 8000);
+    try {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        // The public endpoint permits two requests per second.
+        await pause(Math.max(0, 650 - (Date.now() - lastAttempt)), controller.signal);
+        lastAttempt = Date.now();
+        const url = new URL(API_URL);
+        url.search = new URLSearchParams({encode: 'json', min_length: '8', max_length: '45', _: `${Date.now()}-${Math.random().toString(36).slice(2)}`});
+        const data = await fetchPublicJson(url.href, {fetcher, signal: controller.signal, maxBytes: 16384, cache: 'no-store'});
+        const quote = normalizeQuote({text: data?.hitokoto, author: data?.from_who, from: data?.from, uuid: data?.uuid});
+        if (!quote) throw new Error('Invalid Hitokoto response');
+        if (excluded.has(quote.text)) continue;
+        remember(quote, true);
+        return {quote, status: 'live'};
+      }
+    } catch (error) {
+      if (signal?.aborted) throw error;
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abort);
+    }
+    if (signal?.aborted) throw signal.reason;
+    const cached = recent.filter(quote => !excluded.has(quote.text));
+    const candidates = cached.length ? cached : LOCAL_QUOTES.filter(text => !excluded.has(text)).map(text => ({text, author: '', from: '', uuid: ''}));
+    const quote = candidates[Math.floor(Math.random() * candidates.length)];
+    remember(quote, false);
+    return {quote, status: cached.length ? 'cached' : 'local'};
+  }
+  return {next};
+}
+
+function createDailyQuote(root, options) {
+  const client = createDailyQuoteClient(options);
+  const button = root.querySelector('[data-quote-refresh]');
+  const text = root.querySelector('[data-quote-text]');
+  const source = root.querySelector('[data-quote-source]');
+  let enabled = false, result = null, request = null;
+  function render() {
+    const quote = result?.quote;
+    text.textContent = quote ? (result.status === 'local' ? t(quote.text) : quote.text) : t('正在获取一言…');
+    root.dataset.quoteStatus = request ? 'loading' : result?.status || 'idle';
+    root.setAttribute('aria-busy', String(!!request));
+    button.disabled = !!request;
+    button.setAttribute('aria-label', t('换一句：{text}', {text: text.textContent}));
+    const hint = request ? t('正在获取一言…') : result?.status === 'local' ? t('一言暂时无法连接，显示本地短句，点击重试。') : result?.status === 'cached' ? t('当前为缓存的一言，点击重试。') : t('点击换一句');
+    button.title = [quote?.author, quote?.from, hint].filter(Boolean).join(' · ');
+    source.hidden = !quote;
+    source.textContent = result?.status === 'local' ? t('本地短句') : result?.status === 'cached' ? t('一言 · 缓存') : t('一言');
+    source.title = result?.status === 'local' ? hint : t('查看一言来源');
+    if (quote && result.status !== 'local') source.href = quote.uuid ? `https://hitokoto.cn/?uuid=${quote.uuid}` : 'https://hitokoto.cn/';
+    else source.removeAttribute('href');
+  }
+  function refresh() {
+    if (!enabled || request) return;
+    const current = new AbortController();
+    request = current;
+    render();
+    client.next({signal: current.signal}).then(value => {
+      if (!current.signal.aborted) result = value;
+    }).catch(() => { /* Disabling the footer cancels its outstanding request. */ }).finally(() => {
+      if (request !== current) return;
+      request = null;
+      render();
+    });
+  }
+  button.addEventListener('click', refresh);
+  return {
+    update(visible) {
+      root.hidden = !visible;
+      const start = visible && !enabled;
+      enabled = visible;
+      if (!visible) { request?.abort(); request = null; }
+      render();
+      if (start) refresh();
+    },
+  };
+}
+
+return {createDailyQuoteClient, createDailyQuote};
+})();
 // SPDX-License-Identifier: GPL-3.0-only
 const { renderCatalog, filterCatalog, changeCatalogSize } = __widget_catalog;
 const { TILE_SIZES, sizeLabel, gridMetrics } = __widget_sizes;
@@ -19901,6 +20056,7 @@ const { normalizeAvatarFile } = __avatar;
 const { readSearchHistory, rememberSearch, clearSearchHistory } = __search_history;
 const { createDesktopDragController, reorderById } = __drag;
 const { reconcileKeyedChildren } = __keyed_view;
+const { createDailyQuote } = __daily_quote;
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -19916,6 +20072,7 @@ const WALLPAPERS = [
  {id:'midnight',name:'静夜',tag:'为专注留白',background:'radial-gradient(ellipse 75% 60% at 75% 0%,#28495a 0%,transparent 75%),radial-gradient(ellipse 75% 70% at 0% 100%,#1a3546 0%,transparent 80%),linear-gradient(130deg,#101b29,#101820 65%,#09131e)'}
 ];
 const dialog = $('#dialog');
+const dailyQuote = createDailyQuote($('#daily-quote'));
 const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
 let cleanupCitySearch = () => {};
 let state = clone(DEFAULT_STATE);
@@ -20415,7 +20572,7 @@ function applySettings() {
  $('#date').hidden = !s.showDate;
  $('.search-wrapper').hidden = !s.showSearch;
  if (!s.showSearch) hideSearchMenus();
- $('#daily-quote').hidden = !s.quote;
+ dailyQuote.update(s.quote);
  positionHeaderRegions(); renderAvatar(); updateToolbar();
  let wallpaper = WALLPAPERS.find(w=>w.id === s.wallpaper) || WALLPAPERS[0];
  const remote = s.wallpaperApiEnabled && normalizeWallpaperPhoto(s.remoteWallpaper);
@@ -20783,7 +20940,7 @@ function settingsDialog(tab) {
   <div class="section-label">${t("桌面布局")}</div>
   ${settingSwitch('minimal',t("极简模式"),t("只显示时间、搜索与壁纸；按 Esc 可恢复桌面。"))}
   ${settingSwitch('showWallpaperCredit',t("显示壁纸作者"),t("图片来源和许可仍可在壁纸预览中查看。"))}
-  ${settingSwitch('quote',t("显示页底短句"),t("固定在视口底部，不随组件数量移动。"))}
+  ${settingSwitch('quote',t("显示页底短句"),t("固定在底部；每次打开或刷新时获取一言，点击短句可换一句。"))}
   ${settingSwitch('hideScrollbar',t("隐藏内容区滚动条"),t("只隐藏轨道，滚轮、触屏、Page Down 和空格仍可滚动。"))}
   ${settingSwitch('hideEditorScrollbar',t("隐藏网站编辑窗口滚动条"),t("同时用于添加网站表单；仅隐藏轨道，内容仍可滚动，与桌面滚动条独立。"))}
   ${settingSwitch('animateGroups',t("分组切换动画"),t("图标从下方向上轻滑入场。遵循系统的减少动态效果设置。"))}
