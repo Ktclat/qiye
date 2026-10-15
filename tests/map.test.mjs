@@ -83,6 +83,14 @@ test('multiple custom sources validate independently and reject unsafe templates
   assert.throws(()=>validateMapLocal({...local,preferences:{...local.preferences,CN:'hk'}}));
   assert.equal(mapTileUrls({...custom,layers:['street']},'street',local,8,23,44)[0],'https://tiles.example.com/8/23/44.png');
 });
+test('source notice preferences migrate old settings and stay local',()=>{
+  const legacy={amapKey:'',tiandituKey:'',preferences:{CN:'amap',HK:'hk',MO:'tianditu',TW:'nlsc'},custom:[]};
+  assert.equal(validateMapLocal(legacy).showSourceNotices,true);
+  assert.equal(validateMapLocal({...legacy,showSourceNotices:false}).showSourceNotices,false);
+  assert.throws(()=>validateMapLocal({...legacy,showSourceNotices:'false'}));
+  const state=structuredClone(DEFAULT_STATE);state.items.push(item());
+  assert.doesNotMatch(exportState(state),/showSourceNotices/);
+});
 test('official map URLs preserve row/column order, labels, credentials and static limits',()=>{
   const local={...defaultMapLocal(),amapKey:'demo',tiandituKey:'tdt-demo'};
   const tw=MAP_SOURCES.find(s=>s.id==='nlsc'),hk=MAP_SOURCES.find(s=>s.id==='hk'),tdt=MAP_SOURCES.find(s=>s.id==='tianditu');

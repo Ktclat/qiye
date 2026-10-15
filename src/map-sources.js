@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { t, getLocale } from './i18n.js';
-import { keys, string, number, array, unique, enumeration } from './validation.js';
+import { keys, string, number, bool, array, unique, enumeration } from './validation.js';
 import { publicHttpsUrl, fetchPublicJson } from './public-json.js';
 import { MAP_REGIONS, MAP_SOURCE_IDS, convertMapPoint, validateMapPlace } from './map-model.js';
 
@@ -12,7 +12,7 @@ export const MAP_SOURCES=Object.freeze([
   {id:'nlsc',name:'台湾通用电子地图',note:'台湾街道 · 正射影像',crs:'wgs84',minZoom:7,maxZoom:19,layers:['street','satellite'],regions:['TW'],url:'https://maps.nlsc.gov.tw/S09SOA/pro/Wmts_ajax_main.jsp',credit:'© 內政部國土測繪中心'},
   {id:'osm',name:'OpenStreetMap',note:'全球街道 · 无需 Key',crs:'wgs84',minZoom:2,maxZoom:19,layers:['street'],url:'https://www.openstreetmap.org/copyright',credit:'© OpenStreetMap contributors'},
 ]);
-export const defaultMapLocal = () => ({amapKey:'',tiandituKey:'',preferences:{CN:'amap',HK:'hk',MO:'tianditu',TW:'nlsc'},custom:[]});
+export const defaultMapLocal = () => ({amapKey:'',tiandituKey:'',showSourceNotices:true,preferences:{CN:'amap',HK:'hk',MO:'tianditu',TW:'nlsc'},custom:[]});
 export function validateTileTemplate(value) {
   const url=string(value,'tile.url',2048);
   if(!['{z}','{x}','{y}'].every(key=>url.includes(key)) || /\{(?![zxy]\})/.test(url))throw new Error(t('瓦片地址须包含 {z}、{x}、{y}，并使用公开 HTTPS 域名。'));
@@ -21,8 +21,9 @@ export function validateTileTemplate(value) {
   return url;
 }
 export function validateMapLocal(raw) {
-  keys(raw,['amapKey','tiandituKey','preferences','custom'],'map.sources');
+  keys(raw,['amapKey','tiandituKey','preferences','custom','showSourceNotices'],'map.sources');
   const clean=defaultMapLocal();
+  clean.showSourceNotices=bool(raw.showSourceNotices??true,'map.showSourceNotices');
   for(const name of ['amapKey','tiandituKey']) {
     const key=string(raw[name]??'','map.'+name,128,true).trim();
     if(key&&!/^[a-zA-Z0-9_-]+$/.test(key))throw new Error(t('API Key 格式无效。'));

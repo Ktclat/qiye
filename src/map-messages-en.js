@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 export const mapEnglishMessages = {
+  '显示地图源提示':'Show map source notices',
+  '提示首选源未配置或图层不可用；关闭后仍可查看实际地图源。':'Show notices about missing keys or unavailable layers. The active source stays visible when notices are off.',
+  '搜索选项':'Search options', '清除搜索与选点':'Clear search and selection',
+  '地图源与图层':'Map source and layers', '实际使用':'Active source', '当前视野':'Map center',
+  '搜索结果':'Search results', '地点详情':'Place details', '关闭地点面板':'Close place panel', '关闭地图源提示':'Dismiss source notices',
   '地图':'Maps',
   '探索大陆、港澳台，切换高德与多个地图源，收藏地点与打开导航':'Explore mainland China, Hong Kong, Macao and Taiwan with multiple map sources, saved places and directions',
   '中国大陆':'Mainland China', '中国香港':'Hong Kong, China', '中国澳门':'Macao, China', '中国台湾':'Taiwan, China', '大陆':'Mainland', '台湾':'Taiwan', '世界':'World',

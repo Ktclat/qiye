@@ -787,7 +787,7 @@ function openDialog(kind,data={}) {
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='map')$('[data-map-action=places]',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&detailWidget==='map')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='converter')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});

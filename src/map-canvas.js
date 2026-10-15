@@ -21,12 +21,16 @@ export function createMapCanvas(element, {onMove,onPick,onStatus}) {
   function clear() {generation++;for(const record of nodes.values())release(record);nodes.clear();plane.replaceChildren();marker.hidden=true;}
   function positionMarker() {
     if(!state)return;
-    const {width,height}=dimensions(),center=centerPixel(),point=project(convertMapPoint(state.selected,state.source.crs,state.selected.region),state.zoom),world=256*2**state.zoom;
-    let dx=point.x-center.x;if(dx>world/2)dx-=world;if(dx<-world/2)dx+=world;
-    const x=width/2+dx*scale,y=height/2+(point.y-center.y)*scale;
-    marker.hidden=x<0||x>width||y<0||y>height;
-    marker.style.left=`${x}px`;marker.style.top=`${y}px`;
-    marker.setAttribute('aria-label',state.selected.name);
+    const {width,height}=dimensions(),center=centerPixel(),world=256*2**state.zoom;
+    marker.hidden=true;
+    if(state.selected){
+      const point=project(convertMapPoint(state.selected,state.source.crs,state.selected.region),state.zoom);
+      let dx=point.x-center.x;if(dx>world/2)dx-=world;if(dx<-world/2)dx+=world;
+      const x=width/2+dx*scale,y=height/2+(point.y-center.y)*scale;
+      marker.hidden=x<0||x>width||y<0||y>height;
+      marker.style.left=`${x}px`;marker.style.top=`${y}px`;
+      marker.setAttribute('aria-label',state.selected.name);
+    }
     const metres=156543.03392*Math.cos(centerPoint().latitude*Math.PI/180)/2**state.zoom/scale*90;
     const power=10**Math.floor(Math.log10(metres)),value=[1,2,5,10].map(n=>n*power).filter(n=>n<=metres).at(-1)||power;
     const bar=element.querySelector('.map-scale');
