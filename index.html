@@ -2754,6 +2754,76 @@ html[data-theme=dark] .codec-app{--codec-accent:#8eb8ff;--codec-soft:#8eb8ff15;-
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
+.w-converter{display:flex;flex-direction:column;overflow:hidden}
+.cv-card-face{display:flex;flex:1;min-height:0;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:none;border:0;color:inherit;cursor:pointer;padding:0;width:100%}
+.cv-card-equation{display:flex;align-items:center;justify-content:center;gap:13px;width:100%;font-variant-numeric:tabular-nums}
+.cv-card-equation b{font-size:28px;font-weight:550;letter-spacing:-1px;white-space:nowrap}.cv-card-equation b span{font-size:11px;margin-left:4px;font-weight:450;letter-spacing:0;color:var(--w-muted)}
+.cv-card-equation i{font-style:normal;font-size:21px;color:var(--w-muted);font-weight:300}.cv-card-caption{font-size:10px;color:var(--w-muted)}
+.cv-card-tags{display:flex;justify-content:center;gap:7px;margin:0 0 10px}.cv-card-tags span{display:grid;place-items:center;min-width:28px;height:25px;padding:0 6px;border-radius:7px;background:var(--w-field,#ffffff0b);color:var(--w-muted);font-size:10px}
+.cv-card-bottom{display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--w-muted)}.cv-card-bottom .icon{width:12px;height:12px}
+.w-converter[data-display-size="4x2"] .cv-card-equation b{font-size:36px}.compact-converter .compact-value{font-size:28px}
+#dialog.converter-app-dialog{width:min(960px,var(--dialog-width));height:min(710px,var(--dialog-height));border-radius:18px}
+#dialog.converter-app-dialog.widget-app-expanded{width:var(--dialog-width);height:var(--dialog-height)}
+.cv-app{--cv-accent:#76cdb5;--cv-soft:#76cdb512;--cv-line:#76cdb540;display:flex;flex-direction:column;height:100%;color:var(--app-fg);background:var(--app-bg);font-size:13px}
+html[data-theme=light] .cv-app{--cv-accent:#23765f;--cv-soft:#23765f09;--cv-line:#23765f36;--app-bg:#fdfdfb;--app-pane:#f5f6f3;--app-field:#eef0ec;--app-border:#e4e7e1;--app-fg:#29352f;--app-muted:#747d76;--app-selection:#e8ede7}
+.cv-app [hidden]{display:none!important}.cv-app .icon{width:16px;height:16px;flex:none}
+.cv-app button{border-radius:7px}.cv-app :is(input,select){border-radius:7px}
+.cv-app :is(button,input,select):focus:not(:focus-visible){outline:none;box-shadow:none}
+.cv-app :is(button,input,select):focus-visible{outline:2px solid var(--cv-accent);outline-offset:2px}
+.cv-app a{color:var(--cv-accent);text-underline-offset:3px}
+.cv-header{height:46px;min-height:46px;flex:none;padding:0 13px 0 18px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--app-border)}
+.cv-brand{display:flex;align-items:center;gap:8px;min-width:0}.cv-brand>.icon{color:var(--cv-accent);width:17px;height:17px}
+.cv-header h2{margin:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;outline:none}
+.cv-search{display:flex;align-items:center;gap:7px;margin-left:auto;color:var(--app-muted);width:180px;min-width:65px}
+.cv-search .icon{width:13px;height:13px}.cv-app .cv-search input{background:transparent;border-radius:0;font-size:11px;min-width:0;width:100%;padding:5px 0}
+.cv-header .widget-app-button{width:29px;height:29px;border-radius:6px;padding:6px}.cv-header .widget-app-controls{gap:3px}
+.cv-settings{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 20px;border-bottom:1px solid var(--app-border);background:var(--app-pane);flex:none;font-size:11px}
+.cv-settings label{display:flex;gap:9px;align-items:center}.cv-settings select{padding:4px 8px}.cv-settings input[type=checkbox]{accent-color:var(--cv-accent)}.cv-settings p{margin:0;color:var(--app-muted);font-size:10px}
+.cv-layout{display:grid;grid-template-columns:166px minmax(0,1fr);flex:1;min-height:0}
+.cv-nav{overflow:auto;padding:13px 10px 16px;border-right:1px solid var(--app-border);background:var(--app-pane);scrollbar-width:thin}
+.cv-nav section+section{margin-top:15px}.cv-nav h3{font-size:10px;color:var(--app-muted);font-weight:500;margin:0 0 7px;padding-left:12px;letter-spacing:.06em}
+.cv-app .cv-nav button{display:flex;align-items:center;gap:11px;background:transparent;padding:7px 10px;margin:2px 0;width:100%;text-align:left;font-size:12px;line-height:18px;border:1px solid transparent;white-space:nowrap}
+.cv-app .cv-nav button:hover{background:var(--app-selection)}.cv-app .cv-nav button[aria-pressed=true]{color:var(--cv-accent);background:var(--cv-soft);border-color:var(--cv-line);font-weight:550}
+.cv-nav-mark{width:20px;text-align:center;font:15px/1.2 ui-monospace,Consolas,monospace;flex:none;color:var(--app-muted)}.cv-nav button[aria-pressed=true] .cv-nav-mark{color:inherit}
+.cv-nav-empty{font-size:11px;color:var(--app-muted);padding:12px;line-height:1.7}
+.cv-main{margin:0;min-height:0;max-width:none;width:auto;position:static;padding:26px 30px 16px;min-width:0;overflow:auto;scrollbar-width:thin}.cv-mobile-category{display:none}
+.cv-section-title{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:0 0 6px}.cv-eyebrow{font:9px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.13em;color:var(--app-muted)}
+.cv-section-title h3{font-size:23px;letter-spacing:-.03em;font-weight:550;margin:5px 0 0}.cv-mode-tag{font-size:10px;color:var(--cv-accent);white-space:nowrap;border:1px solid var(--cv-line);border-radius:30px;padding:4px 9px;background:var(--cv-soft)}
+.cv-intro{font-size:11px;color:var(--app-muted);margin:8px 0 25px;line-height:1.6}
+.cv-conversion{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.cv-amount{padding:16px 17px 13px;border:1px solid var(--app-border);border-radius:12px;background:var(--app-pane);min-width:0}
+.cv-amount label{display:flex;flex-direction:column;gap:9px;font-size:10px;color:var(--app-muted)}
+.cv-app .cv-amount select{background:transparent;color:var(--app-fg);border-bottom:1px solid var(--app-border);border-radius:0;padding:0 18px 10px 0;font-size:12px;width:100%;text-overflow:ellipsis;cursor:pointer}
+.cv-app .cv-amount input{display:block;width:100%;padding:20px 0 2px;background:transparent;font:500 34px/1.3 "Inter",sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--app-fg);border-radius:2px}
+.cv-app .cv-amount input:focus-visible{outline-offset:3px}.cv-unit-symbol{display:block;color:var(--app-muted);font-size:11px;padding-top:5px}
+.cv-target{border-color:var(--cv-line);background:var(--cv-soft)}.cv-app .cv-target input{color:var(--cv-accent)}
+.cv-app .cv-swap{position:absolute;z-index:1;left:50%;top:53%;transform:translate(-50%,-50%);display:grid;place-items:center;padding:7px;width:32px;height:32px;background:var(--app-bg);border:1px solid var(--app-border);border-radius:50%;color:var(--app-muted)}
+.cv-swap .icon{width:14px;height:14px}.cv-result-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 27px;font-size:11px;min-height:28px}.cv-result-bar>span{color:var(--app-muted);overflow-wrap:anywhere}
+.cv-result-bar button{display:flex;align-items:center;gap:5px;flex:none;font-size:10px;padding:6px 8px;background:transparent}.cv-result-bar .icon{width:12px;height:12px}
+.cv-app button:disabled{opacity:.4;cursor:default}.cv-more-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.cv-more-heading h4{font-size:12px;font-weight:500;margin:0}.cv-more-heading>span{font-size:10px;color:var(--app-muted)}
+.cv-equivalents{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px}.cv-equivalents>div{display:flex;flex-direction:column;gap:7px;padding:12px 0;border-bottom:1px solid var(--app-border);min-width:0}
+.cv-equivalents span{font-size:10px;color:var(--app-muted)}.cv-equivalents strong{font-size:17px;font-weight:500;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.cv-equivalents small{font-size:10px;font-weight:400;color:var(--app-muted)}
+.cv-footnote{font-size:10px;line-height:1.8;color:var(--app-muted);margin:17px 0 0}.cv-status{font-size:11px;color:#d48b69;line-height:1.6;margin:12px 0 0;min-height:18px}
+html[data-theme=light] .cv-status{color:#a54f36}.cv-footer{flex:none;display:flex;align-items:center;gap:12px;min-height:33px;border-top:1px solid var(--app-border);padding:6px 18px;font-size:9px;color:var(--app-muted)}
+.cv-footer>span:first-child{display:flex;align-items:center;gap:6px;white-space:nowrap}.cv-footer .icon{width:11px;height:11px}.cv-footer [data-cv-save]{margin-left:auto;white-space:nowrap}.cv-footer [data-cv-feedback]{color:var(--cv-accent);overflow-wrap:anywhere}.cv-footer button{padding:2px 6px;font-size:10px}
+.cv-rate-info{background:var(--app-pane);border:1px solid var(--app-border);border-radius:10px;padding:15px 18px;font-size:11px}.cv-rate-info>div:first-child{display:flex;align-items:center;gap:7px}.cv-rate-dot{width:5px;height:5px;border-radius:50%;background:var(--cv-accent);flex:none}.cv-rate-info p{font-size:10px;color:var(--app-muted);line-height:1.8;margin:8px 0 0}.cv-rate-actions{display:flex;align-items:center;gap:16px;margin-top:13px}.cv-rate-actions button{display:flex;align-items:center;gap:6px;background:var(--cv-soft);border:1px solid var(--cv-line);color:var(--cv-accent);font-size:11px}.cv-rate-actions a{margin-left:auto;font-size:10px}
+.cv-calculator-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(130px,1fr);gap:23px}.cv-calculator{min-width:0}.cv-calc-screen{padding:16px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:11px;margin-bottom:12px;text-align:right}
+.cv-app #cv-expression{width:100%;background:transparent;border:0;padding:0;text-align:right;font-size:17px;border-radius:0;font-variant-numeric:tabular-nums}.cv-calc-screen output{display:block;font-size:33px;font-weight:500;letter-spacing:-.04em;padding-top:12px;overflow-wrap:anywhere;color:var(--cv-accent);min-height:56px}
+.cv-calc-keys{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.cv-app .cv-calc-keys button{border:1px solid var(--app-border);background:var(--app-pane);height:47px;font-size:17px;padding:3px}.cv-app .cv-calc-keys button:hover{background:var(--app-selection)}.cv-app .cv-calc-keys .cv-operator{color:var(--cv-accent);background:var(--cv-soft)}.cv-app .cv-calc-keys .cv-equal{background:var(--cv-accent);color:var(--app-bg);border-color:var(--cv-accent)}
+.cv-history{border-left:1px solid var(--app-border);padding-left:20px;min-width:0;display:flex;flex-direction:column}.cv-history>div{display:flex;justify-content:space-between;align-items:center}.cv-history h4{font-size:11px;font-weight:500;margin:0}.cv-history>div button{font-size:10px;padding:4px 0;background:transparent;color:var(--app-muted)}.cv-history ol{list-style:none;padding:0;margin:12px 0;max-height:330px;overflow:auto;scrollbar-width:thin}.cv-history li+li{border-top:1px solid var(--app-border)}.cv-history li button{display:flex;flex-direction:column;gap:5px;text-align:right;padding:10px 0;width:100%;background:none;overflow-wrap:anywhere;border-radius:0;font-variant-numeric:tabular-nums}.cv-history li span{font-size:10px;color:var(--app-muted);width:100%}.cv-history strong{font-size:16px;font-weight:500;width:100%}.cv-history>p{color:var(--app-muted);font-size:11px;line-height:1.8;margin:26px 0}.cv-history>span{font-size:9px;color:var(--app-muted);margin-top:auto}
+.cv-field{display:flex;flex-direction:column;gap:9px;min-width:0;font-size:11px}.cv-field>span{color:var(--app-muted)}.cv-field small{font-size:10px}.cv-app .cv-field input{background:var(--app-pane);border:1px solid var(--app-border);padding:12px;font-size:17px;line-height:1.4;width:100%;font-variant-numeric:tabular-nums;min-height:46px}
+.cv-bmi-inputs{display:grid;grid-template-columns:1fr 1fr;gap:17px}.cv-system{grid-column:1/-1;display:flex;align-items:center;gap:12px;font-size:11px}.cv-system select{font-size:11px;padding:6px 10px}.cv-bmi-result{text-align:center;padding:28px 22px 18px;margin-top:23px;border:1px solid var(--cv-line);border-radius:12px;background:var(--cv-soft)}.cv-bmi-result>span{font:9px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:var(--app-muted)}.cv-bmi-result output{display:block;font-size:64px;font-weight:450;line-height:1.4;letter-spacing:-.04em;color:var(--cv-accent)}.cv-bmi-result strong{font-size:12px;font-weight:500}.cv-bmi-scale{display:grid;grid-template-columns:repeat(4,1fr);height:5px;gap:3px;margin-top:24px}.cv-bmi-scale span{background:#7ea8bf;border-radius:4px}.cv-bmi-scale span:nth-child(2){background:#75a58c}.cv-bmi-scale span:nth-child(3){background:#c5aa70}.cv-bmi-scale span:nth-child(4){background:#c18a79}.cv-bmi-ticks{display:grid;grid-template-columns:repeat(4,1fr);font-size:9px;color:var(--app-muted);margin-top:6px;gap:3px}.cv-bmi-range{text-align:center;font-size:11px;line-height:1.8;color:var(--app-muted);min-height:20px}
+.cv-segments{display:flex;gap:3px;padding:3px;background:var(--app-pane);border:1px solid var(--app-border);width:max-content;border-radius:8px;margin-bottom:23px}.cv-segments button{font-size:11px;background:transparent;padding:6px 14px}.cv-segments button[aria-pressed=true]{color:var(--cv-accent);background:var(--cv-soft);box-shadow:0 0 0 1px var(--cv-line)}
+.cv-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}.cv-app .cv-date-fields input{font-size:14px}.cv-inclusive{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--app-muted);margin:15px 0;cursor:pointer}.cv-inclusive input{accent-color:var(--cv-accent)}.cv-offsets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.cv-date-result{text-align:center;padding:26px 16px;margin-top:24px;background:var(--cv-soft);border:1px solid var(--cv-line);border-radius:12px}.cv-date-result>span{font-size:11px;color:var(--app-muted)}.cv-date-result>span:first-child{display:block}.cv-date-result output{font-size:42px;letter-spacing:-.03em;color:var(--cv-accent);line-height:1.8;margin-right:7px;font-variant-numeric:tabular-nums}.cv-date-result p{margin:5px 0 0;font-size:11px;color:var(--app-muted)}
+.cv-time-settings{display:flex;align-items:end;gap:14px;margin-bottom:24px;flex-wrap:wrap}.cv-time-settings label{display:flex;flex-direction:column;gap:7px;font-size:10px;color:var(--app-muted);min-width:0}.cv-time-settings select{font-size:11px;max-width:210px;padding:7px 9px}.cv-time-settings button{margin-left:auto;font-size:11px}.cv-iso-field{margin-top:19px}.cv-app .cv-iso-field input{font-size:15px}.cv-time-result{display:flex;flex-direction:column;gap:14px;margin-top:26px;background:var(--cv-soft);border:1px solid var(--cv-line);padding:20px;border-radius:10px}.cv-time-result span{font-size:10px;color:var(--app-muted)}.cv-time-result output{font-size:20px;color:var(--cv-accent);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+@container(max-width:760px){.cv-layout{grid-template-columns:145px minmax(0,1fr)}.cv-main{padding:23px 20px 14px}.cv-nav{padding-inline:7px}.cv-app .cv-nav button{gap:7px;padding-inline:7px;font-size:11px}.cv-calculator-layout{grid-template-columns:minmax(0,1fr)}.cv-history{border-left:0;border-top:1px solid var(--app-border);padding:15px 0 0;margin-top:3px}.cv-history>p{margin:10px 0}.cv-history>span{display:none}.cv-history ol:empty{display:none}.cv-calc-keys button{height:42px}.cv-app .cv-amount input{font-size:27px}.cv-amount{padding:13px}.cv-equivalents{column-gap:16px}}
+@container(max-width:540px){.cv-layout{display:block;overflow:auto}.cv-nav{display:none}.cv-main{overflow:visible;padding:16px}.cv-mobile-category{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:var(--app-muted);border-bottom:1px solid var(--app-border);padding-bottom:13px;margin-bottom:16px}.cv-mobile-category select{font-size:12px;padding:6px 9px;max-width:75%;background:var(--app-pane)}.cv-header{padding-inline:11px;gap:4px}.cv-header h2{max-width:86px;font-size:12px}.cv-brand{gap:5px}.cv-brand>.icon{width:15px}.cv-search{width:120px;flex:1;max-width:170px;margin-left:auto}.cv-search .icon{display:none}.cv-app .cv-search input{font-size:10px}.cv-header .widget-app-button{width:26px;height:26px}.cv-section-title h3{font-size:21px}.cv-intro{margin-bottom:18px}.cv-conversion{gap:12px}.cv-amount{padding:13px 10px}.cv-app .cv-amount select{font-size:10px}.cv-app .cv-amount input{font-size:25px;padding-top:22px}.cv-mode-tag{font-size:9px}.cv-footer{padding-inline:11px;gap:8px;font-size:8px}.cv-footer>span:first-child{font-size:8px}.cv-footer [data-cv-feedback]:empty{display:none}.cv-settings{padding:12px;font-size:10px}.cv-date-fields{gap:10px}.cv-app .cv-date-fields input{font-size:12px;padding:10px 6px}.cv-time-settings{gap:10px}.cv-time-settings select{max-width:185px}.cv-date-result output{font-size:32px}.cv-result-bar{margin-bottom:19px}}
+@container(max-width:330px){.cv-conversion{grid-template-columns:1fr}.cv-swap{top:50%!important}.cv-amount{padding:10px 13px}.cv-app .cv-amount input{padding-top:9px}.cv-search{width:60px}.cv-brand>.icon{display:none}.cv-date-fields{grid-template-columns:1fr}.cv-bmi-inputs{gap:10px}.cv-footer>span:first-child{display:none}}
+@media(forced-colors:active){.cv-app .cv-nav button[aria-pressed=true],.cv-target,.cv-app .cv-equal{border:1px solid Highlight}.cv-bmi-scale span{border:1px solid CanvasText}}
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
 .widget-inner.w-map{--w-bg:#e2eae1;--w-fg:#234a3f;position:relative;padding:0;overflow:hidden;isolation:isolate}
 html[data-theme=dark] .widget-inner.w-map{--w-bg:#223a33;--w-fg:#e2f1e5}
 .map-card-grid{position:absolute;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(110deg,transparent 48%,#91b8c65c 48%,#91b8c65c 64%,transparent 64%),repeating-linear-gradient(22deg,transparent 0 34px,#fff6 35px 38px,transparent 39px 74px)}
@@ -3004,6 +3074,123 @@ const baseConverterEnglishMessages = {
 
 return {baseConverterEnglishMessages};
 })();
+const __converter_messages_en = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const converterEnglishMessages = {
+  '换算器':'Converter',
+  '计算器、货币汇率、BMI、日期与时间，以及长度、面积、质量、体积、温度、角度、力等常用单位换算':'Calculator, currency, BMI, dates, time, length, area, mass, volume, temperature, angles, force and more',
+  '19 类常用换算':'19 everyday tools',
+  '计算 · 单位 · 汇率':'Math · Units · Currency',
+  '打开换算器':'Open converter',
+  '万物有尺度，换算很简单':'A little clarity in every conversion',
+  '搜索换算…':'Find a conversion…',
+  '搜索换算类型或单位':'Search categories or units',
+  '换算设置':'Converter settings',
+  '换算分类':'Conversion category',
+  '允许联网更新汇率':'Allow online exchange rates',
+  '只发送币种，不发送金额。其余计算均在本机完成。':'Only currency codes are sent, never amounts. All other calculations stay on this device.',
+  '日常计算':'EVERYDAY',
+  '度量换算':'MEASUREMENT',
+  '科学与数字':'SCIENCE & DATA',
+  '没有匹配的换算':'No matching conversions',
+  '栖页 · 随手换算':'Qiye · Everyday conversions',
+  '偏好已保存':'Preferences saved',
+  '输入任意一侧，即时换算':'Type on either side to convert instantly',
+  '每日参考汇率':'Daily reference rate',
+  '从':'From',
+  '换算为':'To',
+  '来源单位':'Source unit',
+  '目标单位':'Target unit',
+  '来源数值':'Source value',
+  '目标数值':'Target value',
+  '交换单位':'Swap units',
+  '复制结果':'Copy result',
+  '同时换算':'Also equals',
+  '按当前输入':'Based on your input',
+  '绝对温度换算；最低为 0 K（−273.15 °C）。':'Absolute temperatures; the minimum is 0 K (−273.15 °C).',
+  '天按 24 小时、周按 7 天；月份和年份请使用日期计算。':'A day is 24 hours and a week is 7 days. Use Date for months and years.',
+  'kB / MB 使用 1000 进位，KiB / MiB 使用 1024 进位。':'kB / MB use powers of 1000; KiB / MiB use powers of 1024.',
+  '市斤为 500 克，市两为 50 克；金衡盎司与常衡盎司分别计算。':'Chinese jin = 500 g, liang = 50 g. Troy and avoirdupois ounces are separate units.',
+  '美制、英制容量分别标注，烹饪单位采用美制。':'US and imperial volumes are labelled separately. Cooking units use US measures.',
+  '结果按所选小数位显示；极大或极小值使用科学计数法。':'Results use your decimal-place setting. Very large or small values use scientific notation.',
+  '键盘输入算式，Enter 计算，Esc 清空':'Type an expression. Enter calculates; Esc clears.',
+  '平方根':'Square root',
+  '平方':'Square',
+  '倒数':'Reciprocal',
+  '切换正负号':'Change sign',
+  '百分号按 ÷100 计算，例如 200 × 10% = 20。':'Percent means ÷100. For example, 200 × 10% = 20.',
+  '算过的答案，会留在这里。':'Your calculations will appear here.',
+  '关闭窗口后清空':'Cleared when this window closes',
+  '了解身高与体重的比例':'See how your height and weight relate',
+  '单位制':'Units',
+  '公制 · cm / kg':'Metric · cm / kg',
+  '英制 · in / lb':'Imperial · in / lb',
+  '身高':'Height',
+  '体重':'Weight',
+  '输入身高和体重':'Enter height and weight',
+  '偏低':'Underweight',
+  '健康范围':'Healthy range',
+  '超重':'Overweight',
+  '肥胖':'Obesity',
+  '此身高对应 BMI 健康范围：{low} 至小于 {high} {unit}':'BMI healthy range at this height: {low} to below {high} {unit}',
+  '采用 CDC 成人（20 岁及以上）分级；BMI 是筛查指标，不作诊断，不适用于儿童或孕期评估。':'Uses CDC categories for adults aged 20+. BMI is a screening measure, not a diagnosis; not for children or pregnancy.',
+  '两个日期的距离，或某一天之后':'The distance between dates, or a date further along',
+  '日期计算方式':'Date calculation mode',
+  '日期间隔':'Date difference',
+  '日期加减':'Add or subtract',
+  '包含开始当天':'Include the first day',
+  '相隔':'Difference',
+  '年':'Years',
+  '月':'Months',
+  '计算后的日期':'Resulting date',
+  '{weeks} 周 {days} 天 · {weekdays} 个平日':'{weeks} weeks {days} days · {weekdays} weekdays',
+  '按公历日期计算，不受夏令时影响；平日仅扣除周六、周日，不含法定节假日调休。':'Calendar days are unaffected by daylight saving. Weekdays exclude weekends only, without public-holiday adjustments.',
+  '可输入负数往前推算；先加减年月并收敛到月底，再加减天数。':'Use negative offsets to go back. Years and months clamp to month end, then days are added.',
+  'Unix 时间戳与带时区的 ISO 时间互转':'Convert Unix timestamps and ISO times with a time zone',
+  '时间戳单位':'Timestamp unit',
+  '秒':'Seconds',
+  '毫秒':'Milliseconds',
+  '显示时区':'Display time zone',
+  'Unix 时间戳':'Unix timestamp',
+  'ISO 日期时间（含时区）':'ISO date and time (with zone)',
+  '所选时区时间':'Time in the selected zone',
+  'Z 表示 UTC；也可输入 +08:00 等偏移。时区显示自动处理夏令时。':'Z means UTC; offsets such as +08:00 also work. The display handles daylight saving automatically.',
+  '换算单位设置无效。':'Invalid conversion units.',
+  '请输入有效数字，支持小数与科学计数法。':'Enter a valid number. Decimals and scientific notation are supported.',
+  '数值超出可计算范围。':'This value is outside the supported range.',
+  '温度不能低于绝对零度。':'Temperature cannot be below absolute zero.',
+  '身高和体重必须大于 0。':'Height and weight must be greater than zero.',
+  '请选择有效日期。':'Choose a valid date.',
+  '日期偏移必须是范围内的整数。':'Date offsets must be whole numbers within the supported range.',
+  '结果超出 0001–9999 年范围。':'The result falls outside years 0001–9999.',
+  '时间戳需精确到整数毫秒。':'Timestamps must resolve to whole milliseconds.',
+  '请输入带 Z 或时区偏移的 ISO 时间。':'Enter an ISO time ending in Z or a time-zone offset.',
+  '请输入有效时间。':'Enter a valid time.',
+  '当前数值不支持此运算。':'This operation is not defined for the current value.',
+  '汇率来源返回了无效数据。':'The exchange-rate source returned invalid data.',
+  '汇率日期无效。':'Invalid exchange-rate date.',
+  '汇率暂时不可用，请稍后重试。':'Exchange rates are unavailable. Try again later.',
+  '正在更新汇率…':'Updating exchange rates…',
+  '相同币种，无需联网':'Same currency; no network needed',
+  '缓存汇率已超过 24 小时':'Cached rate is over 24 hours old',
+  '已获取参考汇率':'Reference rate available',
+  '正在使用缓存汇率':'Using a cached reference rate',
+  '启用后获取每日参考汇率':'Enable daily reference rates',
+  '启用并更新汇率':'Enable and update rates',
+  '更新汇率':'Update rates',
+  '汇率日期':'Rate date',
+  '获取时间':'Retrieved',
+  '每日参考汇率，不含银行手续费；节假日沿用最近公布值。':'Daily reference rates exclude bank fees. Holidays use the latest published rate.',
+  '请点击更新汇率，授予访问权限。':'Click Update rates to grant access.',
+  '更新失败，继续使用标注日期的缓存汇率。':'Update failed. Using the cached rate with its original date.',
+  '汇率获取失败，请检查网络后重试。':'Could not fetch rates. Check your connection and retry.',
+  '未获准访问汇率来源。':'Permission to access the rate source was not granted.',
+  '已复制':'Copied',
+  '复制失败，请选择结果手动复制。':'Copy failed. Select the result and copy it manually.',
+};
+
+return {converterEnglishMessages};
+})();
 const __map_messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const mapEnglishMessages = {
@@ -3051,10 +3238,12 @@ return {mapEnglishMessages};
 const __messages_en = (() => {
 const { baseConverterEnglishMessages } = __base_converter_messages_en;
 // SPDX-License-Identifier: GPL-3.0-only
+const { converterEnglishMessages } = __converter_messages_en;
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const { mapEnglishMessages } = __map_messages_en;
 const englishMessages = {
   ...baseConverterEnglishMessages,
+  ...converterEnglishMessages,
   ...mapEnglishMessages,
   "编码工具": "Encoding tools",
   "Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道": "Base64, URL, Unicode, MD2 / MD4 / MD5 and SHA, plus Buddha, Beast and Bear codecs",
@@ -5116,6 +5305,7 @@ return {escapeText};
 const __icons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
+ converter:'<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>',
  mapPin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
  layers:'<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
  sliders:'<path d="M4 21v-7M4 10V3M12 21v-3M12 14V3M20 21V10M20 6V3M1 10h6M9 18h6M17 6h6"/>',
@@ -5218,6 +5408,728 @@ function windowControls(expanded = false) {
 }
 
 return {appButton, windowControls};
+})();
+const __widget_drafts = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Drafts stay separate from persisted desktop state, including after a failed save.
+function createWidgetDraft(item, saveData, onChange = () => {}) {
+  let base = JSON.stringify(item.data);
+  let revision = 0, savedRevision = 0, timer, job = null;
+  const draft = {
+    data: structuredClone(item.data),
+    error: null,
+    get dirty() { return revision !== savedRevision; },
+    get saving() { return job !== null; },
+    changed() {
+      revision++;
+      draft.error = null;
+      clearTimeout(timer);
+      timer = setTimeout(draft.flush, 350);
+      onChange();
+    },
+    flush() {
+      clearTimeout(timer);
+      if (job) return job;
+      if (!draft.dirty) return Promise.resolve(true);
+      job = Promise.resolve().then(async () => {
+        while (draft.dirty) {
+          const version = revision, snapshot = structuredClone(draft.data);
+          const saved = await saveData(item.id, snapshot, base);
+          base = JSON.stringify(saved ?? snapshot);
+          savedRevision = version;
+          draft.error = null;
+        }
+        return true;
+      }).catch(error => {
+        draft.error = error;
+        return false;
+      }).finally(() => {
+        job = null;
+        onChange();
+      });
+      onChange();
+      return job;
+    },
+  };
+  return draft;
+}
+
+return {createWidgetDraft};
+})();
+const __arithmetic = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+
+/** A deliberately small arithmetic parser: no eval, Function, or executable input. */
+function calculateArithmetic(source) {
+  const text = String(source).replace(/[×x]/g, '*').replace(/[÷]/g, '/').replace(/[−]/g, '-').replace(/\s+/g, '');
+  if (!text || text.length > 256 || /[^\d.eE+\-*/()%]/.test(text)) throw new Error(t("请输入有效算式"));
+  let position = 0;
+  let depth = 0;
+  function number() {
+    const match = /^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/.exec(text.slice(position));
+    if (!match) throw new Error(t("算式还没有写完整"));
+    position += match[0].length;
+    return Number(match[0]);
+  }
+  function primary() {
+    if (++depth > 48) throw new Error(t("括号层数过多"));
+    let value;
+    if (text[position] === '(') {
+      position += 1;
+      value = expression();
+      if (text[position] !== ')') throw new Error(t("请检查括号"));
+      position += 1;
+    } else value = number();
+    depth -= 1;
+    while (text[position] === '%') { value /= 100; position += 1; }
+    return value;
+  }
+  function unary() {
+    let sign = 1;
+    while (text[position] === '+' || text[position] === '-') { if (text[position] === '-') sign *= -1; position += 1; }
+    return sign * primary();
+  }
+  function term() {
+    let value = unary();
+    while (text[position] === '*' || text[position] === '/') {
+      const operator = text[position++];
+      const right = unary();
+      if (operator === '/' && right === 0) throw new Error(t("不能除以 0"));
+      value = operator === '*' ? value * right : value / right;
+    }
+    return value;
+  }
+  function expression() {
+    let value = term();
+    while (text[position] === '+' || text[position] === '-') {
+      const operator = text[position++];
+      const right = term();
+      value = operator === '+' ? value + right : value - right;
+    }
+    return value;
+  }
+  const value = expression();
+  if (position !== text.length) throw new Error(t("请检查算式"));
+  if (!Number.isFinite(value)) throw new Error(t("结果超出计算范围"));
+  return Number(value.toPrecision(12));
+}
+
+
+return {calculateArithmetic};
+})();
+const __validation = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+function invalid(path, reason) { throw new Error(`${t("数据校验失败：{v0}{v1}", {v0: path, v1: reason ? ` ${reason}` : ''})}`); }
+function plain(value, path) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) invalid(path, t("必须是对象"));
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) invalid(path, t("不能包含特殊对象"));
+  return value;
+}
+function keys(value, allowed, path) {
+  plain(value, path);
+  for (const key of Object.keys(value)) {
+    if (FORBIDDEN_KEYS.has(key)) invalid(path, t("包含不安全字段"));
+    if (!allowed.includes(key)) invalid(`${path}.${key}`, t("不是支持的字段"));
+  }
+  return value;
+}
+function string(value, path, max = 120, allowEmpty = false) {
+  if (typeof value !== 'string' || value.length > max || (!allowEmpty && !value.trim())) invalid(path, `${t("必须是{v0}文本，最多 {v1} 个字符", {v0: allowEmpty ? '' : t("非空"), v1: max})}`);
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) invalid(path, t("包含控制字符"));
+  return value;
+}
+function id(value, path) {
+  if (typeof value !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(value)) invalid(path, t("标识格式不正确"));
+  return value;
+}
+function number(value, path, min, max, integer = false) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value))) invalid(path, `${t("必须是 {v0}–{v1} 范围内的{v2}", {v0: min, v1: max, v2: integer ? t("整数") : t("数字")})}`);
+  return value;
+}
+function bool(value, path) { if (typeof value !== 'boolean') invalid(path, t("必须是布尔值")); return value; }
+function enumeration(value, values, path) { if (!values.includes(value)) invalid(path, t("包含不支持的值")); return value; }
+function array(value, path, max, min = 0) { if (!Array.isArray(value) || value.length < min || value.length > max) invalid(path, `${t("必须是 {v0}–{v1} 项的数组", {v0: min, v1: max})}`); return value; }
+function color(value, path) { if (typeof value !== 'string' || !/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)) invalid(path, t("必须是十六进制颜色")); return value; }
+function opaqueColor(value, path) { if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value)) invalid(path, t("必须是六位十六进制颜色")); return value; }
+function date(value, path) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) invalid(path, t("日期格式须为 YYYY-MM-DD"));
+  const [year, month, day] = value.split('-').map(Number);
+  const check = new Date(`${value}T12:00:00Z`);
+  if (year < 1900 || year > 2200 || check.getUTCFullYear() !== year || check.getUTCMonth() + 1 !== month || check.getUTCDate() !== day) invalid(path, t("不是有效日期"));
+  return value;
+}
+function time(value, path) { if (typeof value !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)) invalid(path, t("时间格式须为 HH:MM")); return value; }
+function unique(values, path) { if (new Set(values).size !== values.length) invalid(path, t("存在重复标识")); }
+function byteLength(value) { return new TextEncoder().encode(value).byteLength; }
+
+
+return {invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, date, time, unique, byteLength};
+})();
+const __converter = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, getLocale } = __i18n;
+const { keys, number, bool, enumeration } = __validation;
+
+const unit = (id, name, en, symbol, factor, offset = 0) => ({ id, name, en, symbol, factor, offset });
+const category = (id, name, en, mark, group, units = []) => ({ id, name, en, mark, group, units });
+// SI factors, international avoirdupois/length, US liquid and imperial volumes.
+// Offset is in base units (kelvin for absolute temperatures).
+const CONVERTER_CATEGORIES = Object.freeze([
+  category('calculator', '计算器', 'Calculator', '±', 'daily'),
+  category('currency', '货币汇率', 'Currency', '¥', 'daily'),
+  category('bmi', 'BMI 计算', 'BMI', '♡', 'daily'),
+  category('date', '日期计算', 'Date', '31', 'daily'),
+  category('length', '长度', 'Length', '↔', 'measure', [
+    unit('m','米','Metre','m',1), unit('cm','厘米','Centimetre','cm',.01), unit('mm','毫米','Millimetre','mm',.001), unit('km','千米','Kilometre','km',1000), unit('um','微米','Micrometre','μm',1e-6), unit('nm','纳米','Nanometre','nm',1e-9), unit('in','英寸','Inch','in',.0254), unit('ft','英尺','Foot','ft',.3048), unit('yd','码','Yard','yd',.9144), unit('mi','英里','Mile','mi',1609.344), unit('nmi','海里','Nautical mile','nmi',1852), unit('chi','市尺','Chinese chi','尺',1/3), unit('cun','市寸','Chinese cun','寸',1/30), unit('li','市里','Chinese li','里',500),
+  ]),
+  category('area', '面积', 'Area', '□', 'measure', [
+    unit('m2','平方米','Square metre','m²',1), unit('km2','平方千米','Square kilometre','km²',1e6), unit('cm2','平方厘米','Square centimetre','cm²',1e-4), unit('mm2','平方毫米','Square millimetre','mm²',1e-6), unit('ha','公顷','Hectare','ha',10000), unit('mu','市亩','Chinese mu','亩',2000/3), unit('ft2','平方英尺','Square foot','ft²',.09290304), unit('in2','平方英寸','Square inch','in²',.00064516), unit('acre','英亩','Acre','ac',4046.8564224), unit('mi2','平方英里','Square mile','mi²',2589988.110336),
+  ]),
+  category('mass', '质量', 'Mass', '㎏', 'measure', [
+    unit('kg','千克','Kilogram','kg',1), unit('g','克','Gram','g',.001), unit('mg','毫克','Milligram','mg',1e-6), unit('ug','微克','Microgram','μg',1e-9), unit('t','吨','Tonne','t',1000), unit('jin','市斤（500 克）','Chinese jin (500 g)','斤',.5), unit('liang','市两（50 克）','Chinese liang (50 g)','两',.05), unit('lb','磅','Pound','lb',.45359237), unit('oz','盎司（常衡）','Ounce (avoirdupois)','oz',.028349523125), unit('ozt','金衡盎司','Troy ounce','oz t',.0311034768), unit('st','英石','Stone','st',6.35029318), unit('ct','克拉','Carat','ct',.0002),
+  ]),
+  category('volume', '体积', 'Volume', '◈', 'measure', [
+    unit('l','升','Litre','L',1), unit('ml','毫升','Millilitre','mL',.001), unit('m3','立方米','Cubic metre','m³',1000), unit('cm3','立方厘米','Cubic centimetre','cm³',.001), unit('ft3','立方英尺','Cubic foot','ft³',28.316846592), unit('in3','立方英寸','Cubic inch','in³',.016387064), unit('usgal','美制加仑','US gallon','gal US',3.785411784), unit('impgal','英制加仑','Imperial gallon','gal imp',4.54609), unit('usqt','美制夸脱','US quart','qt US',.946352946), unit('uspt','美制品脱','US pint','pt US',.473176473), unit('usfloz','美制液盎司','US fluid ounce','fl oz US',.0295735295625), unit('impfloz','英制液盎司','Imperial fluid ounce','fl oz imp',.0284130625), unit('uscup','美制杯','US cup','cup US',.2365882365), unit('ustbsp','美制汤匙','US tablespoon','tbsp US',.01478676478125), unit('ustsp','美制茶匙','US teaspoon','tsp US',.00492892159375),
+  ]),
+  category('temperature', '温度', 'Temperature', '°', 'measure', [unit('c','摄氏度','Celsius','°C',1,273.15), unit('f','华氏度','Fahrenheit','°F',5/9,459.67*5/9), unit('k','开尔文','Kelvin','K',1), unit('r','兰氏度','Rankine','°R',5/9)]),
+  category('time', '时间', 'Time', '◷', 'measure', [unit('s','秒','Second','s',1), unit('min','分钟','Minute','min',60), unit('h','小时','Hour','h',3600), unit('d','天（24 小时）','Day (24 hours)','d',86400), unit('wk','周（7 天）','Week (7 days)','wk',604800), unit('ms','毫秒','Millisecond','ms',.001), unit('us','微秒','Microsecond','μs',1e-6), unit('ns','纳秒','Nanosecond','ns',1e-9)]),
+  category('speed', '速度', 'Speed', '»', 'measure', [unit('kmh','千米 / 小时','Kilometres per hour','km/h',1/3.6), unit('ms','米 / 秒','Metres per second','m/s',1), unit('mph','英里 / 小时','Miles per hour','mph',.44704), unit('kn','节','Knot','kn',1852/3600), unit('fts','英尺 / 秒','Feet per second','ft/s',.3048)]),
+  category('angle', '角度', 'Angle', '∠', 'measure', [unit('deg','度','Degree','°',Math.PI/180), unit('rad','弧度','Radian','rad',1), unit('grad','百分度','Gradian','gon',Math.PI/200), unit('turn','周','Turn','turn',2*Math.PI), unit('arcmin','角分','Arcminute','′',Math.PI/10800), unit('arcsec','角秒','Arcsecond','″',Math.PI/648000)]),
+  category('force', '力', 'Force', 'F', 'science', [unit('n','牛顿','Newton','N',1), unit('kn','千牛','Kilonewton','kN',1000), unit('kgf','千克力','Kilogram-force','kgf',9.80665), unit('lbf','磅力','Pound-force','lbf',4.4482216152605), unit('dyn','达因','Dyne','dyn',1e-5)]),
+  category('pressure', '压力', 'Pressure', 'P', 'science', [unit('pa','帕斯卡','Pascal','Pa',1), unit('kpa','千帕','Kilopascal','kPa',1000), unit('mpa','兆帕','Megapascal','MPa',1e6), unit('bar','巴','Bar','bar',100000), unit('mbar','毫巴 / 百帕','Millibar / hectopascal','hPa',100), unit('atm','标准大气压','Standard atmosphere','atm',101325), unit('psi','磅 / 平方英寸','Pounds per square inch','psi',6894.757293168), unit('mmhg','毫米汞柱（约定值）','Millimetre of mercury (conventional)','mmHg',133.322387415), unit('torr','托','Torr','Torr',101325/760)]),
+  category('energy', '能量', 'Energy', 'E', 'science', [unit('j','焦耳','Joule','J',1), unit('kj','千焦','Kilojoule','kJ',1000), unit('cal','卡（热化学）','Calorie (thermochemical)','cal',4.184), unit('kcal','千卡（热化学）','Kilocalorie (thermochemical)','kcal',4184), unit('wh','瓦时','Watt-hour','Wh',3600), unit('kwh','千瓦时（度电）','Kilowatt-hour','kWh',3600000), unit('btu','英热单位（IT）','British thermal unit (IT)','Btu IT',1055.05585262), unit('ev','电子伏特','Electronvolt','eV',1.602176634e-19)]),
+  category('power', '功率', 'Power', 'W', 'science', [unit('w','瓦特','Watt','W',1), unit('kw','千瓦','Kilowatt','kW',1000), unit('mw','兆瓦','Megawatt','MW',1e6), unit('hp','机械马力','Mechanical horsepower','hp',745.699871582), unit('ps','公制马力','Metric horsepower','PS',735.49875), unit('btuh','英热单位 / 小时（IT）','Btu per hour (IT)','Btu/h',1055.05585262/3600)]),
+  category('data', '数据存储', 'Data storage', 'B', 'science', [unit('b','字节','Byte','B',1), unit('kb','千字节（十进制）','Kilobyte (decimal)','kB',1e3), unit('mb','兆字节（十进制）','Megabyte (decimal)','MB',1e6), unit('gb','吉字节（十进制）','Gigabyte (decimal)','GB',1e9), unit('tb','太字节（十进制）','Terabyte (decimal)','TB',1e12), unit('kib','千字节（二进制）','Kibibyte (binary)','KiB',1024), unit('mib','兆字节（二进制）','Mebibyte (binary)','MiB',1024**2), unit('gib','吉字节（二进制）','Gibibyte (binary)','GiB',1024**3), unit('tib','太字节（二进制）','Tebibyte (binary)','TiB',1024**4), unit('bit','比特','Bit','bit',1/8)]),
+  category('frequency', '频率', 'Frequency', 'Hz', 'science', [unit('hz','赫兹','Hertz','Hz',1), unit('khz','千赫','Kilohertz','kHz',1000), unit('mhz','兆赫','Megahertz','MHz',1e6), unit('ghz','吉赫','Gigahertz','GHz',1e9), unit('rpm','转 / 分钟','Revolutions per minute','rpm',1/60)]),
+  category('timestamp', '时间戳', 'Timestamp', '#', 'science'),
+]);
+const CURRENCY_CODES = Object.freeze(['CNY','USD','EUR','HKD','TWD','MOP','GBP','JPY','KRW','AUD','CAD','CHF','SGD','NZD','THB','MYR','IDR','PHP','VND','INR','AED','SAR','TRY','RUB','BRL','MXN','ZAR','SEK','NOK','DKK','PLN','CZK','HUF','ISK','ILS','RON','BGN','PKR','BDT','EGP']);
+const converterCategory = id => CONVERTER_CATEGORIES.find(entry => entry.id === id);
+const converterLabel = entry => getLocale() === 'en' ? entry.en : entry.name;
+
+function newConverterData() {
+  return { category: 'calculator', precision: 6, online: false, pairs: Object.fromEntries(CONVERTER_CATEGORIES.filter(c => c.units.length).map(c => [c.id, [c.units[0].id, c.units[1].id]]).concat([['currency',['CNY','USD']]])) };
+}
+
+function validateConverterData(raw, path = 'data') {
+  keys(raw, ['category','precision','online','pairs'], path);
+  const defaults = newConverterData();
+  keys(raw.pairs, Object.keys(defaults.pairs), `${path}.pairs`);
+  const pairs = {};
+  for (const id of Object.keys(defaults.pairs)) {
+    const pair = raw.pairs[id], choices = id === 'currency' ? CURRENCY_CODES : converterCategory(id).units.map(u => u.id);
+    if (!Array.isArray(pair) || pair.length !== 2) throw new Error(t('换算单位设置无效。'));
+    pairs[id] = pair.map(value => enumeration(value, choices, `${path}.pairs.${id}`));
+  }
+  return { category: enumeration(raw.category, CONVERTER_CATEGORIES.map(c => c.id), `${path}.category`), precision: number(raw.precision, `${path}.precision`, 0, 12, true), online: bool(raw.online, `${path}.online`), pairs };
+}
+
+function parseConverterNumber(raw) {
+  const text = String(raw).trim();
+  if (!text) return null;
+  if (text.length > 100 || !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(text) || !Number.isFinite(Number(text))) throw new Error(t('请输入有效数字，支持小数与科学计数法。'));
+  const value = Number(text);
+  if (value === 0 && /[1-9]/.test(text.split(/[eE]/)[0])) throw new Error(t('数值超出可计算范围。'));
+  return value;
+}
+
+function convertUnit(categoryId, raw, fromId, toId) {
+  const value = parseConverterNumber(raw);
+  if (value === null) return null;
+  const units = converterCategory(categoryId)?.units || [], from = units.find(u => u.id === fromId), to = units.find(u => u.id === toId);
+  if (!from || !to) throw new Error(t('换算单位设置无效。'));
+  const base = value * from.factor + from.offset;
+  if (categoryId === 'temperature' && base < -1e-10) throw new Error(t('温度不能低于绝对零度。'));
+  // Keep identity conversions and zero stable, including offset temperatures.
+  const result = fromId === toId ? value : (base - to.offset) / to.factor;
+  if (!Number.isFinite(result) || (value !== 0 && result === 0 && from.offset === 0 && to.offset === 0)) throw new Error(t('数值超出可计算范围。'));
+  return Math.abs(result) < 1e-12 && categoryId === 'temperature' ? 0 : result;
+}
+
+function formatConversion(value, precision = 6) {
+  if (value === null || !Number.isFinite(value)) return '';
+  if (value === 0 || Object.is(value, -0)) return '0';
+  const magnitude = Math.abs(value);
+  // Do not turn a meaningful tiny value into zero just to honor decimal places.
+  if (magnitude >= 1e12 || magnitude < 10 ** -Math.max(precision, 1)) return value.toExponential(Math.max(precision, 2)).replace(/(\.\d*?[1-9])0+e/, '$1e').replace(/\.0+e/, 'e');
+  return String(Number(value.toFixed(precision)));
+}
+
+function calculateBMI(height, weight, system = 'metric') {
+  let h = parseConverterNumber(height), w = parseConverterNumber(weight);
+  if (h === null || w === null) return null;
+  if (h <= 0 || w <= 0) throw new Error(t('身高和体重必须大于 0。'));
+  h *= system === 'imperial' ? .0254 : .01;
+  w *= system === 'imperial' ? .45359237 : 1;
+  const value = w / h ** 2;
+  if (!Number.isFinite(value)) throw new Error(t('数值超出可计算范围。'));
+  return { value, category: value < 18.5 ? '偏低' : value < 25 ? '健康范围' : value < 30 ? '超重' : '肥胖', low: 18.5 * h ** 2, high: 25 * h ** 2 };
+}
+
+const DAY = 86400000;
+function calendarStamp(text) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) throw new Error(t('请选择有效日期。'));
+  const [year, month, day] = text.split('-').map(Number), date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  if (year < 1 || year > 9999 || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) throw new Error(t('请选择有效日期。'));
+  return date.getTime();
+}
+
+function dateDifference(start, end, inclusive = false) {
+  const a = calendarStamp(start), b = calendarStamp(end);
+  const delta = Math.round((b - a) / DAY), sign = delta < 0 ? -1 : 1;
+  const count = Math.abs(delta) + (inclusive ? 1 : 0);
+  // Count weekdays in (start, end], or [start, end] when inclusive; reversed dates are signed.
+  const lower = Math.min(a,b), first = new Date(lower).getUTCDay() + (inclusive ? 0 : 1);
+  let weekdays = Math.floor(count / 7) * 5;
+  for (let i = 0; i < count % 7; i++) if (![0,6].includes((first + i) % 7)) weekdays++;
+  return { days: count * sign, weeks: Math.floor(count / 7), remainder: count % 7, weekdays: weekdays * sign };
+}
+
+function addCalendarDate(start, years = 0, months = 0, days = 0) {
+  const date = new Date(calendarStamp(start));
+  if (![years, months, days].every(n => Number.isSafeInteger(n) && Math.abs(n) <= 3650000)) throw new Error(t('日期偏移必须是范围内的整数。'));
+  const day = date.getUTCDate();
+  date.setUTCDate(1);
+  date.setUTCFullYear(date.getUTCFullYear() + years, date.getUTCMonth() + months);
+  const next = new Date(date); next.setUTCMonth(next.getUTCMonth() + 1, 0);
+  date.setUTCDate(Math.min(day, next.getUTCDate()) + days);
+  if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() < 1 || date.getUTCFullYear() > 9999) throw new Error(t('结果超出 0001–9999 年范围。'));
+  return date.toISOString().slice(0,10);
+}
+
+function timestampToDate(raw, unit = 's') {
+  const value = parseConverterNumber(raw);
+  if (value === null) return null;
+  // Decimal scaling avoids 1.001 seconds becoming 1000.9999999999999 ms.
+  const [mantissa, exponent = '0'] = String(raw).trim().toLowerCase().split('e');
+  const decimals = mantissa.split('.')[1]?.length || 0;
+  const digits = BigInt(mantissa.replace('.', ''));
+  const scale = Number(exponent) - decimals + (unit === 's' ? 3 : 0);
+  let milliseconds = 0n;
+  if (digits !== 0n) {
+    if (scale >= 0) milliseconds = digits * 10n ** BigInt(scale);
+    else {
+      const divisor = 10n ** BigInt(-scale);
+      if (digits % divisor !== 0n) throw new Error(t('时间戳需精确到整数毫秒。'));
+      milliseconds = digits / divisor;
+    }
+  }
+  const ms = Number(milliseconds);
+  if (!Number.isSafeInteger(ms)) throw new Error(t('结果超出 0001–9999 年范围。'));
+  const date = new Date(ms);
+  if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() < 1 || date.getUTCFullYear() > 9999) throw new Error(t('结果超出 0001–9999 年范围。'));
+  return date;
+}
+
+function isoToTimestamp(raw, unit = 's') {
+  const value = String(raw).trim();
+  if (!value) return null;
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) throw new Error(t('请输入带 Z 或时区偏移的 ISO 时间。'));
+  calendarStamp(value.slice(0,10));
+  if (Number(value.slice(11,13)) > 23 || Number(value.slice(14,16)) > 59 || Number(value.slice(17,19)) > 59) throw new Error(t('请输入有效时间。'));
+  const ms = Date.parse(value);
+  if (!Number.isFinite(ms)) throw new Error(t('请输入有效时间。'));
+  timestampToDate(ms,'ms');
+  return ms / (unit === 's' ? 1000 : 1);
+}
+
+return {CONVERTER_CATEGORIES, CURRENCY_CODES, converterCategory, converterLabel, newConverterData, validateConverterData, parseConverterNumber, convertUnit, formatConversion, calculateBMI, calendarStamp, dateDifference, addCalendarDate, timestampToDate, isoToTimestamp};
+})();
+const __converter_rates = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, getLocale } = __i18n;
+const { CURRENCY_CODES, calendarStamp } = __converter;
+
+const CACHE_KEY = 'qiye.converter.rates.v1';
+const ORIGIN = 'https://api.frankfurter.dev/*';
+const RATE_MAX_AGE = 86400000;
+
+function currencyName(code) {
+  try { return new Intl.DisplayNames([getLocale()], {type:'currency'}).of(code); } catch { return code; }
+}
+
+function validateRate(raw, base, quote) {
+  if (!raw || raw.base !== base || raw.quote !== quote || !CURRENCY_CODES.includes(base) || !CURRENCY_CODES.includes(quote)
+      || typeof raw.rate !== 'number' || !Number.isFinite(raw.rate) || raw.rate <= 0 || typeof raw.date !== 'string') throw new Error(t('汇率来源返回了无效数据。'));
+  const stamp = calendarStamp(raw.date);
+  if (stamp > Date.now() + RATE_MAX_AGE) throw new Error(t('汇率日期无效。'));
+  return {base, quote, rate:raw.rate, date:raw.date};
+}
+
+function readCachedRate(base, quote, storage = globalThis.localStorage) {
+  if (base === quote) return {base, quote, rate:1, date:'', fetchedAt:Date.now(), identity:true};
+  try {
+    const raw = JSON.parse(storage.getItem(CACHE_KEY) || '{}')[`${base}/${quote}`];
+    if (!raw || !Number.isFinite(raw.fetchedAt) || raw.fetchedAt > Date.now() + 60000 || raw.fetchedAt < 0) return null;
+    return {...validateRate(raw, base, quote), fetchedAt:raw.fetchedAt};
+  } catch { return null; }
+}
+
+function cacheRate(rate, storage = globalThis.localStorage) {
+  const record = {...rate, fetchedAt:Date.now()};
+  try {
+    const raw = JSON.parse(storage.getItem(CACHE_KEY) || '{}');
+    const entries = raw && typeof raw === 'object' && !Array.isArray(raw) ? Object.entries(raw) : [];
+    const recent = entries.filter(([key, value]) => key !== `${rate.base}/${rate.quote}` && Number.isFinite(value?.fetchedAt)).sort((a,b) => b[1].fetchedAt - a[1].fetchedAt).slice(0,63);
+    storage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries([...recent, [`${rate.base}/${rate.quote}`, record]])));
+  } catch { /* Conversion still works when browser storage is unavailable. */ }
+  return record;
+}
+
+function requestCurrencyPermission() {
+  if (!globalThis.chrome?.runtime?.id) return Promise.resolve(true);
+  // Call directly from the enable/refresh click, retaining the browser user gesture.
+  return chrome.permissions.request({origins:[ORIGIN]});
+}
+
+async function currencyPermissionGranted() {
+  if (!globalThis.chrome?.runtime?.id) return true;
+  return chrome.permissions.contains({origins:[ORIGIN]});
+}
+
+async function fetchCurrencyRate(base, quote, signal) {
+  if (!CURRENCY_CODES.includes(base) || !CURRENCY_CODES.includes(quote) || base === quote) throw new Error(t('换算单位设置无效。'));
+  const response = await fetch(`https://api.frankfurter.dev/v2/rate/${base}/${quote}`, {signal, credentials:'omit', referrerPolicy:'no-referrer', cache:'no-store', headers:{Accept:'application/json'}});
+  if (!response.ok) throw new Error(t('汇率暂时不可用，请稍后重试。'));
+  const text = await response.text();
+  if (text.length > 16000) throw new Error(t('汇率来源返回了无效数据。'));
+  return validateRate(JSON.parse(text), base, quote);
+}
+
+return {RATE_MAX_AGE, currencyName, validateRate, readCachedRate, cacheRate, requestCurrencyPermission, currencyPermissionGranted, fetchCurrencyRate};
+})();
+const __converter_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, getLocale } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { createWidgetDraft } = __widget_drafts;
+const { calculateArithmetic } = __arithmetic;
+const { CONVERTER_CATEGORIES, CURRENCY_CODES, converterCategory, converterLabel, convertUnit, formatConversion, parseConverterNumber, calculateBMI, dateDifference, addCalendarDate, timestampToDate, isoToTimestamp } = __converter;
+const { currencyName, readCachedRate, cacheRate, fetchCurrencyRate, requestCurrencyPermission, currencyPermissionGranted, RATE_MAX_AGE } = __converter_rates;
+
+const drafts = new Map();
+const groups = {daily:'日常计算', measure:'度量换算', science:'科学与数字'};
+const btn = (action, text, glyph = '') => `<button type="button" data-cv-action="${action}">${glyph ? icon(glyph) : ''}${e(t(text))}</button>`;
+const numberField = (id, label, value = '', suffix = '') => `<label class="cv-field"><span>${e(t(label))}${suffix ? ` <small>${e(suffix)}</small>` : ''}</span><input id="${id}" inputmode="decimal" autocomplete="off" maxlength="100" value="${e(value)}" aria-describedby="cv-status"></label>`;
+
+function converterCard(item) {
+  return `<div class="widget-heading"><button type="button" class="widget-title" data-action="widget-open">${icon('converter')}${e(item.title)}</button><button type="button" class="widget-icon-button" data-action="widget-config" aria-label="${t('设置组件')}">${icon('more')}</button></div>
+    <button type="button" class="cv-card-face" data-action="widget-open" aria-label="${t('打开换算器')}"><span class="cv-card-equation"><b>1<span>m</span></b><i aria-hidden="true">⇄</i><b>100<span>cm</span></b></span><span class="cv-card-caption">${t('万物有尺度，换算很简单')}</span></button>
+    <div class="cv-card-tags" aria-hidden="true"><span>±</span><span>¥</span><span>BMI</span><span>°C</span></div><div class="cv-card-bottom"><span>${t('19 类常用换算')}</span>${icon('arrowUpRight')}</div>`;
+}
+
+function converterWorkspace(item) {
+  return `<div class="cv-app"><header class="cv-header"><div class="cv-brand">${icon('converter')}<h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2></div><label class="cv-search">${icon('search')}<input type="search" data-cv-search placeholder="${t('搜索换算…')}" aria-label="${t('搜索换算类型或单位')}"></label><button class="widget-app-button" type="button" data-cv-action="settings" aria-label="${t('换算设置')}" title="${t('换算设置')}" aria-expanded="false" aria-controls="cv-settings">${icon('sliders')}</button>${windowControls()}</header>
+    <div class="cv-settings" id="cv-settings" hidden><label>${t('最大小数位数')}<select data-cv-precision>${Array.from({length:13},(_,n) => `<option value="${n}">${n}</option>`).join('')}</select></label><label><input type="checkbox" data-cv-online>${t('允许联网更新汇率')}</label><p>${t('只发送币种，不发送金额。其余计算均在本机完成。')}</p></div>
+    <div class="cv-layout"><nav class="cv-nav" aria-label="${t('换算分类')}">${Object.entries(groups).map(([group,label]) => `<section data-cv-group="${group}"><h3>${t(label)}</h3>${CONVERTER_CATEGORIES.filter(c => c.group === group).map(c => `<button type="button" data-cv-category="${c.id}" aria-pressed="false"><span class="cv-nav-mark" aria-hidden="true">${e(c.mark)}</span><span>${e(converterLabel(c))}</span></button>`).join('')}</section>`).join('')}<p class="cv-nav-empty" hidden>${t('没有匹配的换算')}</p></nav>
+    <section class="cv-main"><label class="cv-mobile-category">${t('换算分类')}<select data-cv-select>${CONVERTER_CATEGORIES.map(c => `<option value="${c.id}">${e(converterLabel(c))}</option>`).join('')}</select></label><div data-cv-panel></div><p class="cv-status" id="cv-status" role="status" aria-live="polite"></p></section></div>
+    <footer class="cv-footer"><span>${icon('shield')}${t('栖页 · 随手换算')}</span><span data-cv-save role="status"></span><button type="button" data-cv-action="retry" hidden>${t('重试保存')}</button><span data-cv-feedback role="status" aria-live="polite"></span></footer></div>`;
+}
+
+function panelHeading(c, hint = '输入任意一侧，即时换算') {
+  return `<div class="cv-section-title"><div><span class="cv-eyebrow">${e(c.en.toUpperCase())}</span><h3>${e(converterLabel(c))}</h3></div><span class="cv-mode-tag">${t(c.id === 'currency' ? '每日参考汇率' : '本地计算')}</span></div><p class="cv-intro">${t(hint)}</p>`;
+}
+
+function unitOptions(c, selected) {
+  return (c.id === 'currency' ? CURRENCY_CODES.map(id => ({id, symbol:id, name:currencyName(id)})) : c.units.map(u => ({...u, name:converterLabel(u)}))).map(u => `<option value="${u.id}" ${selected === u.id ? 'selected' : ''}>${e(u.name)} · ${e(u.symbol)}</option>`).join('');
+}
+
+function conversionPanel(c, data) {
+  const pair = data.pairs[c.id];
+  const field = side => `<section class="cv-amount ${side ? 'cv-target' : ''}"><label><span>${t(side ? '换算为' : '从')}</span><select data-cv-unit="${side}" aria-label="${t(side ? '目标单位' : '来源单位')}">${unitOptions(c, pair[side])}</select></label><input data-cv-value="${side}" aria-label="${t(side ? '目标数值' : '来源数值')}" aria-describedby="cv-status" inputmode="decimal" maxlength="100" autocomplete="off" spellcheck="false" placeholder="0"><span class="cv-unit-symbol" data-cv-symbol="${side}"></span></section>`;
+  return panelHeading(c) + `<div class="cv-conversion">${field(0)}<button type="button" class="cv-swap" data-cv-action="swap" aria-label="${t('交换单位')}" title="${t('交换单位')}">${icon('converter')}</button>${field(1)}</div><div class="cv-result-bar"><span data-cv-equation></span>${btn('copy','复制结果','copy')}</div>`
+    + (c.id === 'currency' ? `<div class="cv-rate-info"><div><span class="cv-rate-dot" aria-hidden="true"></span><span data-cv-rate-status role="status"></span></div><p data-cv-rate-date></p><div class="cv-rate-actions">${btn('rate','启用并更新汇率','refresh')}<a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer">Frankfurter ↗</a></div><p>${t('每日参考汇率，不含银行手续费；节假日沿用最近公布值。')}</p></div>`
+    : `<div class="cv-more-heading"><h4>${t('同时换算')}</h4><span>${t('按当前输入')}</span></div><div class="cv-equivalents" data-cv-equivalents></div><p class="cv-footnote">${t(c.id === 'temperature' ? '绝对温度换算；最低为 0 K（−273.15 °C）。' : c.id === 'time' ? '天按 24 小时、周按 7 天；月份和年份请使用日期计算。' : c.id === 'data' ? 'kB / MB 使用 1000 进位，KiB / MiB 使用 1024 进位。' : c.id === 'mass' ? '市斤为 500 克，市两为 50 克；金衡盎司与常衡盎司分别计算。' : c.id === 'volume' ? '美制、英制容量分别标注，烹饪单位采用美制。' : '结果按所选小数位显示；极大或极小值使用科学计数法。')}</p>`);
+}
+
+function calculatorPanel(c) {
+  const keys = ['C','(',')','%','⌫','7','8','9','÷','√','4','5','6','×','x²','1','2','3','−','1/x','0','.','±','+','='];
+  return panelHeading(c,'键盘输入算式，Enter 计算，Esc 清空') + `<div class="cv-calculator-layout"><section class="cv-calculator"><div class="cv-calc-screen"><label class="sr-only" for="cv-expression">${t('计算算式')}</label><input id="cv-expression" autocomplete="off" spellcheck="false" maxlength="256" placeholder="0" aria-describedby="cv-status"><output data-cv-calc-result aria-live="polite">0</output></div><div class="cv-calc-keys">${keys.map(key => `<button type="button" data-cv-key="${key}" class="${key === '=' ? 'cv-equal' : /[÷×−+]/.test(key) ? 'cv-operator' : ''}" aria-label="${e(t(({C:'清空','⌫':'删除一位','=':'计算结果','√':'平方根','x²':'平方','1/x':'倒数','±':'切换正负号'})[key] || key))}">${key}</button>`).join('')}</div><p class="cv-footnote">${t('百分号按 ÷100 计算，例如 200 × 10% = 20。')}</p></section><aside class="cv-history"><div><h4>${t('本次计算记录')}</h4>${btn('clear-history','清空')}</div><ol data-cv-history></ol><p data-cv-history-empty>${t('算过的答案，会留在这里。')}</p><span>${t('关闭窗口后清空')}</span></aside></div>`;
+}
+
+function bmiPanel(c) {
+  return panelHeading(c,'了解身高与体重的比例') + `<div class="cv-bmi-inputs"><label class="cv-system">${t('单位制')}<select id="cv-bmi-system"><option value="metric">${t('公制 · cm / kg')}</option><option value="imperial">${t('英制 · in / lb')}</option></select></label>${numberField('cv-height','身高','','cm')}${numberField('cv-weight','体重','','kg')}</div><div class="cv-bmi-result"><span>BODY MASS INDEX</span><output data-cv-bmi>—</output><strong data-cv-bmi-label>${t('输入身高和体重')}</strong><div class="cv-bmi-scale"><span></span><span></span><span></span><span></span></div><div class="cv-bmi-ticks"><span>&lt;18.5</span><span>18.5–24.9</span><span>25–29.9</span><span>≥30</span></div></div><p class="cv-bmi-range" data-cv-bmi-range></p><p class="cv-footnote">${t('采用 CDC 成人（20 岁及以上）分级；BMI 是筛查指标，不作诊断，不适用于儿童或孕期评估。')} <a href="https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html" target="_blank" rel="noopener noreferrer">CDC ↗</a></p>`;
+}
+
+function datePanel(c, today) {
+  return panelHeading(c,'两个日期的距离，或某一天之后') + `<div class="cv-segments" role="group" aria-label="${t('日期计算方式')}"><button type="button" data-cv-date-mode="difference" aria-pressed="true">${t('日期间隔')}</button><button type="button" data-cv-date-mode="add" aria-pressed="false">${t('日期加减')}</button></div><div class="cv-date-fields"><label class="cv-field"><span>${t('开始日期')}</span><input type="date" id="cv-date-start" min="0001-01-01" max="9999-12-31" value="${today}" aria-describedby="cv-status"></label><label class="cv-field" data-cv-date-end-field><span>${t('结束日期')}</span><input type="date" id="cv-date-end" min="0001-01-01" max="9999-12-31" value="${today}" aria-describedby="cv-status"></label></div><label class="cv-inclusive" data-cv-inclusive-field><input type="checkbox" id="cv-inclusive">${t('包含开始当天')}</label><div class="cv-offsets" data-cv-offsets hidden>${['years','months','days'].map((key,i) => numberField('cv-'+key, ['年','月','天'][i],'0')).join('')}</div><div class="cv-date-result"><span data-cv-date-label>${t('相隔')}</span><output data-cv-date-result>0</output><span data-cv-date-unit>${t('天')}</span><p data-cv-date-meta></p></div><p class="cv-footnote" data-cv-date-note>${t('按公历日期计算，不受夏令时影响；平日仅扣除周六、周日，不含法定节假日调休。')}</p>`;
+}
+
+function timestampPanel(c) {
+  return panelHeading(c,'Unix 时间戳与带时区的 ISO 时间互转') + `<div class="cv-time-settings"><label>${t('时间戳单位')}<select id="cv-timestamp-unit"><option value="s">${t('秒')}</option><option value="ms">${t('毫秒')}</option></select></label><label>${t('显示时区')}<select id="cv-timezone">${['Asia/Hong_Kong','UTC','Asia/Shanghai','Asia/Tokyo','Europe/London','America/New_York','America/Los_Angeles','Australia/Sydney'].map(zone => `<option>${zone}</option>`).join('')}</select></label>${btn('now','现在')}</div>${numberField('cv-timestamp','Unix 时间戳')}<label class="cv-field cv-iso-field"><span>${t('ISO 日期时间（含时区）')}</span><input id="cv-iso" maxlength="40" autocomplete="off" spellcheck="false" placeholder="2026-01-01T00:00:00Z" aria-describedby="cv-status"></label><div class="cv-time-result"><span>${t('所选时区时间')}</span><output data-cv-zoned>—</output></div><p class="cv-footnote">${t('Z 表示 UTC；也可输入 +08:00 等偏移。时区显示自动处理夏令时。')}</p>`;
+}
+
+function bindConverterWorkspace(root, item, host) {
+  const controller = new AbortController(), events = {signal:controller.signal};
+  const q = selector => root.querySelector(selector);
+  let active = true, noticeTimer, rateController, rateTimer, rateRevision = 0, rate = null, rateBusy = false, rateError = '', copyValue = '';
+  let draft = drafts.get(item.id);
+  const notifySave = () => {
+    if (!active) return;
+    q('[data-cv-save]').textContent = t(draft.error ? '保存失败，请重试' : draft.dirty ? '保存中…' : '偏好已保存');
+    q('[data-cv-action=retry]').hidden = !draft.error;
+  };
+  if (!draft) { draft = createWidgetDraft(item, (...args) => host.saveData(...args), () => draft.notify?.()); drafts.set(item.id,draft); }
+  draft.notify = notifySave;
+  const data = draft.data;
+  const session = {values:{}, expression:'', history:[], calculated:false, bmi:{height:'',weight:'',system:'metric'}, dateMode:'difference', dates:{}, timestamp:null};
+  const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const status = message => { q('#cv-status').textContent = message; };
+  const feedback = message => { clearTimeout(noticeTimer); q('[data-cv-feedback]').textContent = message; noticeTimer = setTimeout(() => { if(active) q('[data-cv-feedback]').textContent = ''; },3500); };
+  const format = value => formatConversion(value, data.precision);
+  const valueState = () => session.values[data.category] ||= {text:'1',side:0};
+
+  function cancelRate() { rateRevision++; rateController?.abort(); clearTimeout(rateTimer); rateBusy = false; }
+
+  function showRateStatus() {
+    if (data.category !== 'currency') return;
+    const old = rate && !rate.identity && Date.now() - rate.fetchedAt > RATE_MAX_AGE;
+    q('[data-cv-rate-status]').textContent = rateBusy ? t('正在更新汇率…') : rate?.identity ? t('相同币种，无需联网') : rateError || (rate ? t(old ? '缓存汇率已超过 24 小时' : data.online ? '已获取参考汇率' : '正在使用缓存汇率') : t('启用后获取每日参考汇率'));
+    q('[data-cv-rate-date]').textContent = rate?.date ? `${t('汇率日期')} ${rate.date} · ${t('获取时间')} ${new Date(rate.fetchedAt).toLocaleString(getLocale())}` : '';
+    const button = q('[data-cv-action=rate]');
+    button.disabled = rateBusy || !!rate?.identity;
+    button.innerHTML = icon('refresh') + e(t(data.online ? '更新汇率' : '启用并更新汇率'));
+  }
+
+  async function loadRate(force = false) {
+    cancelRate(); rateError = '';
+    const revision = rateRevision, pair = [...data.pairs.currency];
+    rate = readCachedRate(...pair);
+    updateNumbers();
+    if (!data.online || rate?.identity || (!force && rate && Date.now() - rate.fetchedAt < RATE_MAX_AGE)) return;
+    rateBusy = true; showRateStatus();
+    const request = new AbortController(); rateController = request;
+    rateTimer = setTimeout(() => request.abort(),10000);
+    try {
+      if (!await currencyPermissionGranted()) throw new Error(t('请点击更新汇率，授予访问权限。'));
+      if (!active || revision !== rateRevision) return;
+      const result = await fetchCurrencyRate(...pair, request.signal);
+      if (!active || revision !== rateRevision) return;
+      rate = cacheRate(result);
+    } catch (error) {
+      if (!active || revision !== rateRevision) return;
+      rateError = t(rate ? '更新失败，继续使用标注日期的缓存汇率。' : '汇率获取失败，请检查网络后重试。');
+      if (error.message === t('请点击更新汇率，授予访问权限。')) rateError = error.message;
+    } finally {
+      if (active && revision === rateRevision) { clearTimeout(rateTimer); rateBusy = false; updateNumbers(); }
+    }
+  }
+
+  function updateNumbers() {
+    const c = converterCategory(data.category);
+    if (!c.units.length && c.id !== 'currency') return;
+    const pair = data.pairs[c.id], current = valueState(), other = 1-current.side;
+    for (const side of [0,1]) q(`[data-cv-symbol="${side}"]`).textContent = c.id === 'currency' ? pair[side] : c.units.find(u => u.id === pair[side]).symbol;
+    const input = q(`[data-cv-value="${current.side}"]`), output = q(`[data-cv-value="${other}"]`);
+    input.value = current.text;
+    copyValue = ''; status('');
+    input.setAttribute('aria-invalid','false'); output.setAttribute('aria-invalid','false');
+    const convert = id => c.id === 'currency' ? (rate ? parseConverterNumber(current.text) * (current.side ? 1/rate.rate : rate.rate) : null) : convertUnit(c.id, current.text, pair[current.side], id);
+    try {
+      const source = parseConverterNumber(current.text), value = source === null ? null : convert(pair[other]);
+      if (value !== null && !Number.isFinite(value)) throw new Error(t('数值超出可计算范围。'));
+      output.value = format(value); copyValue = output.value;
+      const unitRate = c.id === 'currency' ? rate?.rate : convertUnit(c.id, '1', pair[0], pair[1]);
+      const symbols = [0,1].map(side => q(`[data-cv-symbol="${side}"]`).textContent);
+      q('[data-cv-equation]').textContent = unitRate == null ? '—' : `1 ${symbols[0]} ≈ ${format(unitRate)} ${symbols[1]}`;
+      if (c.id !== 'currency') q('[data-cv-equivalents]').innerHTML = c.units.filter(u => !pair.includes(u.id)).slice(0,6).map(u => `<div><span>${e(converterLabel(u))}</span><strong>${source === null ? '—' : e(format(convert(u.id)))} <small>${e(u.symbol)}</small></strong></div>`).join('');
+    } catch (error) {
+      output.value = ''; q('[data-cv-equation]').textContent = '—';
+      if (q('[data-cv-equivalents]')) q('[data-cv-equivalents]').textContent = '';
+      status(error.message); input.setAttribute('aria-invalid','true');
+    }
+    q('[data-cv-action=copy]').disabled = !copyValue;
+    showRateStatus();
+  }
+
+  function calc(commit = false) {
+    const input = q('#cv-expression'); session.expression = input.value;
+    status('');
+    try {
+      const result = calculateArithmetic(input.value || '0');
+      q('[data-cv-calc-result]').textContent = String(result);
+      if (commit && input.value.trim()) {
+        session.history.unshift({expression:input.value,result:String(result)}); session.history = session.history.slice(0,20);
+        input.value = String(result); session.expression = input.value; session.calculated = true; renderHistory();
+      }
+    } catch (error) { q('[data-cv-calc-result]').textContent = '—'; if (commit) status(error.message); }
+  }
+
+  function renderHistory() {
+    q('[data-cv-history]').innerHTML = session.history.map((row,index) => `<li><button type="button" data-cv-history="${index}" title="${t('用作输入')}"><span>${e(row.expression)} =</span><strong>${e(row.result)}</strong></button></li>`).join('');
+    q('[data-cv-history-empty]').hidden = !!session.history.length;
+  }
+
+  function calcKey(key) {
+    const input = q('#cv-expression');
+    if (key === '=') { calc(true); return; }
+    if (key === 'C') input.value = '';
+    else if (['√','x²','1/x','±'].includes(key)) {
+      try {
+        const v = calculateArithmetic(input.value || '0');
+        if ((key === '√' && v < 0) || (key === '1/x' && v === 0)) throw new Error(t('当前数值不支持此运算。'));
+        const result = key === '√' ? Math.sqrt(v) : key === 'x²' ? v*v : key === '1/x' ? 1/v : -v;
+        if (!Number.isFinite(result)) throw new Error(t('数值超出可计算范围。'));
+        input.value = String(Number(result.toPrecision(12)));
+      } catch(error) { status(error.message); return; }
+    } else {
+      if (session.calculated && /[\d.(]/.test(key)) input.value = '';
+      const start = input.selectionStart ?? input.value.length, end = input.selectionEnd ?? input.value.length;
+      if (key === '⌫') input.setRangeText('',start === end ? Math.max(0,start-1) : start,end,'end');
+      else if (input.value.length - (end-start) + key.length <= 256) input.setRangeText(key,start,end,'end');
+    }
+    session.calculated = false; calc(); input.focus({preventScroll:true});
+  }
+
+  function updateBMI() {
+    status(''); const {system} = session.bmi;
+    q('#cv-height').closest('label').querySelector('small').textContent = system === 'metric' ? 'cm' : 'in';
+    q('#cv-weight').closest('label').querySelector('small').textContent = system === 'metric' ? 'kg' : 'lb';
+    q('[data-cv-bmi]').textContent = '—'; q('[data-cv-bmi-label]').textContent = t('输入身高和体重'); q('[data-cv-bmi-range]').textContent = '';
+    try {
+      const result = calculateBMI(session.bmi.height, session.bmi.weight, system);
+      if (!result) return;
+      q('[data-cv-bmi]').textContent = result.value.toFixed(1); q('[data-cv-bmi-label]').textContent = t(result.category);
+      const factor = system === 'metric' ? 1 : 1/.45359237, unit = system === 'metric' ? 'kg' : 'lb';
+      q('[data-cv-bmi-range]').textContent = t('此身高对应 BMI 健康范围：{low} 至小于 {high} {unit}', {low:(result.low*factor).toFixed(1), high:(result.high*factor).toFixed(1),unit});
+    } catch(error) { status(error.message); }
+  }
+
+  function updateDates() {
+    status(''); const add = session.dateMode === 'add';
+    for (const b of root.querySelectorAll('[data-cv-date-mode]')) b.setAttribute('aria-pressed',String(b.dataset.cvDateMode === session.dateMode));
+    q('[data-cv-date-end-field]').hidden = add; q('[data-cv-inclusive-field]').hidden = add; q('[data-cv-offsets]').hidden = !add;
+    q('[data-cv-date-result]').textContent = '—'; q('[data-cv-date-meta]').textContent = '';
+    q('[data-cv-date-label]').textContent = t(add ? '计算后的日期' : '相隔'); q('[data-cv-date-unit]').textContent = add ? '' : t('天');
+    q('[data-cv-date-note]').textContent = t(add ? '可输入负数往前推算；先加减年月并收敛到月底，再加减天数。' : '按公历日期计算，不受夏令时影响；平日仅扣除周六、周日，不含法定节假日调休。');
+    for (const id of ['date-start','date-end','years','months','days']) session.dates[id] = q('#cv-'+id).value;
+    session.dates.inclusive = q('#cv-inclusive').checked;
+    if (!q('#cv-date-start').value || (!add && !q('#cv-date-end').value)) return;
+    try {
+      if (add) q('[data-cv-date-result]').textContent = addCalendarDate(q('#cv-date-start').value, ...['years','months','days'].map(id => parseConverterNumber(q('#cv-'+id).value) ?? 0));
+      else {
+        const result = dateDifference(q('#cv-date-start').value,q('#cv-date-end').value,q('#cv-inclusive').checked);
+        q('[data-cv-date-result]').textContent = result.days;
+        q('[data-cv-date-meta]').textContent = t('{weeks} 周 {days} 天 · {weekdays} 个平日',{weeks:result.weeks,days:result.remainder,weekdays:result.weekdays});
+      }
+    } catch(error) { status(error.message); }
+  }
+
+  function updateTimestamp(source = 'timestamp') {
+    status(''); q('[data-cv-zoned]').textContent = '—';
+    try {
+      const unit = q('#cv-timestamp-unit').value;
+      if (source === 'iso') { const value = isoToTimestamp(q('#cv-iso').value,unit); q('#cv-timestamp').value = value === null ? '' : String(value); }
+      const date = timestampToDate(q('#cv-timestamp').value,unit);
+      if (!date) { if (source !== 'iso') q('#cv-iso').value = ''; return; }
+      if (source !== 'iso') q('#cv-iso').value = date.toISOString();
+      q('[data-cv-zoned]').textContent = new Intl.DateTimeFormat(getLocale(),{timeZone:q('#cv-timezone').value,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',timeZoneName:'shortOffset'}).format(date);
+    } catch(error) { if(source === 'iso') q('#cv-timestamp').value = ''; else q('#cv-iso').value = ''; status(error.message); }
+    session.timestamp = {value:q('#cv-timestamp').value, iso:q('#cv-iso').value, unit:q('#cv-timestamp-unit').value, zone:q('#cv-timezone').value};
+  }
+
+  function showCategory(id, save = false) {
+    const c = converterCategory(id); if (!c) return;
+    cancelRate(); data.category = id; status('');
+    for (const b of root.querySelectorAll('[data-cv-category]')) b.setAttribute('aria-pressed',String(b.dataset.cvCategory === id));
+    q('[data-cv-select]').value = id;
+    q('[data-cv-panel]').innerHTML = c.units.length || id === 'currency' ? conversionPanel(c,data) : id === 'calculator' ? calculatorPanel(c) : id === 'bmi' ? bmiPanel(c) : id === 'date' ? datePanel(c,today) : timestampPanel(c);
+    if (id === 'currency') loadRate();
+    else if (c.units.length) updateNumbers();
+    else if (id === 'calculator') { q('#cv-expression').value = session.expression; calc(); renderHistory(); }
+    else if (id === 'bmi') { q('#cv-height').value = session.bmi.height; q('#cv-weight').value = session.bmi.weight; q('#cv-bmi-system').value = session.bmi.system; updateBMI(); }
+    else if (id === 'date') { for (const [key,value] of Object.entries(session.dates)) { if(key === 'inclusive') q('#cv-inclusive').checked = value; else q('#cv-'+key).value = value; } updateDates(); }
+    else if (id === 'timestamp') {
+      q('#cv-timestamp').value = session.timestamp?.value ?? String(Math.floor(Date.now()/1000));
+      q('#cv-timestamp-unit').value = session.timestamp?.unit || 's'; q('#cv-timezone').value = session.timestamp?.zone || 'Asia/Hong_Kong'; updateTimestamp();
+    }
+    if (save) draft.changed();
+    q('.cv-main').scrollTop = 0;
+  }
+
+  async function enableRates() {
+    try {
+      if (!await requestCurrencyPermission()) throw new Error(t('未获准访问汇率来源。'));
+      if (!active) return;
+      data.online = true; q('[data-cv-online]').checked = true; draft.changed();
+      if (data.category === 'currency') await loadRate(true);
+    } catch(error) { if(active) { q('[data-cv-online]').checked = data.online; feedback(error.message); } }
+  }
+
+  root.addEventListener('click', async event => {
+    const b = event.target.closest('button'); if (!b) return;
+    if (b.dataset.cvCategory) { showCategory(b.dataset.cvCategory,true); return; }
+    if (b.dataset.cvKey) { calcKey(b.dataset.cvKey); return; }
+    if (b.dataset.cvHistory !== undefined) { q('#cv-expression').value = session.history[Number(b.dataset.cvHistory)].result; session.calculated = true; calc(); return; }
+    if (b.dataset.cvDateMode) { session.dateMode = b.dataset.cvDateMode; updateDates(); return; }
+    const action = b.dataset.cvAction;
+    if (action === 'settings') { const open = q('#cv-settings').hidden; q('#cv-settings').hidden = !open; b.setAttribute('aria-expanded',String(open)); }
+    else if (action === 'retry') await draft.flush();
+    else if (action === 'swap') { data.pairs[data.category].reverse(); valueState().side = 1-valueState().side; draft.changed(); showCategory(data.category); }
+    else if (action === 'copy' && copyValue) { try { await navigator.clipboard.writeText(copyValue); if(active) feedback(t('已复制')); } catch { if(active) feedback(t('复制失败，请选择结果手动复制。')); } }
+    else if (action === 'rate') await enableRates();
+    else if (action === 'clear-history') { session.history = []; renderHistory(); }
+    else if (action === 'now') { q('#cv-timestamp').value = String(q('#cv-timestamp-unit').value === 's' ? Math.floor(Date.now()/1000) : Date.now()); updateTimestamp(); }
+  }, events);
+
+  root.addEventListener('input', event => {
+    const target = event.target;
+    if (target.matches('[data-cv-search]')) {
+      const text = target.value.trim().toLocaleLowerCase(); let count = 0;
+      for (const c of CONVERTER_CATEGORIES) {
+        const matches = `${c.name} ${c.en} ${c.units.map(u => `${u.name} ${u.en} ${u.symbol}`).join(' ')}`.toLocaleLowerCase().includes(text);
+        q(`[data-cv-category="${c.id}"]`).hidden = !matches; q(`[data-cv-select] option[value="${c.id}"]`).hidden = !matches; if(matches) count++;
+      }
+      for (const section of root.querySelectorAll('[data-cv-group]')) section.hidden = !section.querySelector('button:not([hidden])');
+      q('.cv-nav-empty').hidden = !!count;
+    } else if (target.dataset.cvValue !== undefined) { session.values[data.category] = {text:target.value,side:Number(target.dataset.cvValue)}; updateNumbers(); }
+    else if (target.id === 'cv-expression') { session.calculated = false; calc(); }
+    else if (target.id === 'cv-height' || target.id === 'cv-weight') { session.bmi[target.id === 'cv-height' ? 'height' : 'weight'] = target.value; updateBMI(); }
+    else if (['cv-date-start','cv-date-end','cv-years','cv-months','cv-days'].includes(target.id)) updateDates();
+    else if (target.id === 'cv-timestamp' || target.id === 'cv-iso') updateTimestamp(target.id === 'cv-iso' ? 'iso' : 'timestamp');
+  }, events);
+
+  root.addEventListener('change', event => {
+    const target = event.target;
+    if (target.matches('[data-cv-select]')) showCategory(target.value,true);
+    else if (target.dataset.cvUnit !== undefined) { data.pairs[data.category][Number(target.dataset.cvUnit)] = target.value; draft.changed(); if(data.category === 'currency') loadRate(); else updateNumbers(); }
+    else if (target.matches('[data-cv-precision]')) { data.precision = Number(target.value); draft.changed(); updateNumbers(); }
+    else if (target.matches('[data-cv-online]')) {
+      if(target.checked) enableRates();
+      else { data.online = false; cancelRate(); draft.changed(); showRateStatus(); }
+    } else if (target.id === 'cv-bmi-system') {
+      const old = session.bmi.system; session.bmi.system = target.value;
+      try {
+        for (const key of ['height','weight']) { const value = parseConverterNumber(session.bmi[key]); if(value !== null) session.bmi[key] = String(Number((value * (key === 'height' ? old === 'metric' ? 1/2.54 : 2.54 : old === 'metric' ? 1/.45359237 : .45359237)).toPrecision(12))); }
+      } catch { /* Invalid text remains editable. */ }
+      q('#cv-height').value = session.bmi.height; q('#cv-weight').value = session.bmi.weight; updateBMI();
+    } else if (target.id === 'cv-inclusive') updateDates();
+    else if (target.id === 'cv-timestamp-unit') {
+      try { const date = timestampToDate(q('#cv-timestamp').value,target.value === 'ms' ? 's' : 'ms'); if(date) q('#cv-timestamp').value = String(date.getTime() / (target.value === 'ms' ? 1 : 1000)); } catch { /* Show validation below. */ }
+      updateTimestamp();
+    } else if (target.id === 'cv-timezone') updateTimestamp();
+  }, events);
+
+  root.addEventListener('keydown', event => {
+    if (event.target.id === 'cv-expression' && ['Enter','=','Escape'].includes(event.key)) { event.preventDefault(); event.stopPropagation(); calcKey(event.key === 'Escape' ? 'C' : '='); }
+    if (event.target.matches('[data-cv-search]') && event.key === 'Enter') { const b = root.querySelector('[data-cv-category]:not([hidden])'); if(b) { showCategory(b.dataset.cvCategory,true); q('#cv-expression,[data-cv-value],#cv-height,#cv-date-start,#cv-timestamp')?.focus(); } }
+  }, events);
+  q('[data-cv-precision]').value = String(data.precision); q('[data-cv-online]').checked = data.online;
+  notifySave(); showCategory(data.category);
+  return () => {
+    active = false; controller.abort(); cancelRate(); clearTimeout(noticeTimer); draft.notify = null;
+    draft.flush().then(saved => { if(saved && !draft.dirty && !draft.notify) drafts.delete(item.id); host.refreshCards(); });
+  };
+}
+
+return {converterCard, converterWorkspace, bindConverterWorkspace};
 })();
 const __codec_hashes = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -5823,57 +6735,6 @@ function bindCodecWorkspace(root, initialAlgorithm = 'base64') {
 
 return {codecCard, codecWorkspace, bindCodecWorkspace};
 })();
-const __validation = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
-function invalid(path, reason) { throw new Error(`${t("数据校验失败：{v0}{v1}", {v0: path, v1: reason ? ` ${reason}` : ''})}`); }
-function plain(value, path) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) invalid(path, t("必须是对象"));
-  const prototype = Object.getPrototypeOf(value);
-  if (prototype !== Object.prototype && prototype !== null) invalid(path, t("不能包含特殊对象"));
-  return value;
-}
-function keys(value, allowed, path) {
-  plain(value, path);
-  for (const key of Object.keys(value)) {
-    if (FORBIDDEN_KEYS.has(key)) invalid(path, t("包含不安全字段"));
-    if (!allowed.includes(key)) invalid(`${path}.${key}`, t("不是支持的字段"));
-  }
-  return value;
-}
-function string(value, path, max = 120, allowEmpty = false) {
-  if (typeof value !== 'string' || value.length > max || (!allowEmpty && !value.trim())) invalid(path, `${t("必须是{v0}文本，最多 {v1} 个字符", {v0: allowEmpty ? '' : t("非空"), v1: max})}`);
-  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) invalid(path, t("包含控制字符"));
-  return value;
-}
-function id(value, path) {
-  if (typeof value !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(value)) invalid(path, t("标识格式不正确"));
-  return value;
-}
-function number(value, path, min, max, integer = false) {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value))) invalid(path, `${t("必须是 {v0}–{v1} 范围内的{v2}", {v0: min, v1: max, v2: integer ? t("整数") : t("数字")})}`);
-  return value;
-}
-function bool(value, path) { if (typeof value !== 'boolean') invalid(path, t("必须是布尔值")); return value; }
-function enumeration(value, values, path) { if (!values.includes(value)) invalid(path, t("包含不支持的值")); return value; }
-function array(value, path, max, min = 0) { if (!Array.isArray(value) || value.length < min || value.length > max) invalid(path, `${t("必须是 {v0}–{v1} 项的数组", {v0: min, v1: max})}`); return value; }
-function color(value, path) { if (typeof value !== 'string' || !/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)) invalid(path, t("必须是十六进制颜色")); return value; }
-function opaqueColor(value, path) { if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value)) invalid(path, t("必须是六位十六进制颜色")); return value; }
-function date(value, path) {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) invalid(path, t("日期格式须为 YYYY-MM-DD"));
-  const [year, month, day] = value.split('-').map(Number);
-  const check = new Date(`${value}T12:00:00Z`);
-  if (year < 1900 || year > 2200 || check.getUTCFullYear() !== year || check.getUTCMonth() + 1 !== month || check.getUTCDate() !== day) invalid(path, t("不是有效日期"));
-  return value;
-}
-function time(value, path) { if (typeof value !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)) invalid(path, t("时间格式须为 HH:MM")); return value; }
-function unique(values, path) { if (new Set(values).size !== values.length) invalid(path, t("存在重复标识")); }
-function byteLength(value) { return new TextEncoder().encode(value).byteLength; }
-
-
-return {invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, date, time, unique, byteLength};
-})();
 const __map_model = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
@@ -6230,53 +7091,6 @@ function mapWorkspace(item) {
 }
 
 return {mapCard, mapSourceOptions, mapPlaceRows, mapSelection, mapAttribution, customMapSourceFields, mapSettings, mapWorkspace};
-})();
-const __widget_drafts = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-// Drafts stay separate from persisted desktop state, including after a failed save.
-function createWidgetDraft(item, saveData, onChange = () => {}) {
-  let base = JSON.stringify(item.data);
-  let revision = 0, savedRevision = 0, timer, job = null;
-  const draft = {
-    data: structuredClone(item.data),
-    error: null,
-    get dirty() { return revision !== savedRevision; },
-    get saving() { return job !== null; },
-    changed() {
-      revision++;
-      draft.error = null;
-      clearTimeout(timer);
-      timer = setTimeout(draft.flush, 350);
-      onChange();
-    },
-    flush() {
-      clearTimeout(timer);
-      if (job) return job;
-      if (!draft.dirty) return Promise.resolve(true);
-      job = Promise.resolve().then(async () => {
-        while (draft.dirty) {
-          const version = revision, snapshot = structuredClone(draft.data);
-          const saved = await saveData(item.id, snapshot, base);
-          base = JSON.stringify(saved ?? snapshot);
-          savedRevision = version;
-          draft.error = null;
-        }
-        return true;
-      }).catch(error => {
-        draft.error = error;
-        return false;
-      }).finally(() => {
-        job = null;
-        onChange();
-      });
-      onChange();
-      return job;
-    },
-  };
-  return draft;
-}
-
-return {createWidgetDraft};
 })();
 const __map_canvas = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -7481,7 +8295,8 @@ const builtins = [
   // Kept for validating old desktops and backups; the catalog offers its replacement.
   { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending', internal: true },
   { type: 'hotsearch', title: '热搜榜', description: '订阅全网热榜，分类浏览与实时更新', size: '4x2', icon: 'trending' },
-  { type: 'calculator', title: '计算器', description: '加减乘除、括号和百分比计算', size: '2x2', icon: 'calculator' },
+  { type: 'calculator', title: '计算器', description: '加减乘除、括号和百分比计算', size: '2x2', icon: 'calculator', internal: true },
+  { type: 'converter', title: '换算器', description: '计算器、货币汇率、BMI、日期与时间，以及长度、面积、质量、体积、温度、角度、力等常用单位换算', size: '2x2', icon: 'converter' },
   { type: 'base-converter', title: '进制转换', description: '2–36 进制实时互转，同时查看多个结果，支持大整数与小数', size: '4x2', icon: 'code' },
   { type: 'habit', title: '习惯打卡', description: '每日打卡和连续天数', size: '2x2', icon: 'sparkles' },
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
@@ -8091,6 +8906,7 @@ return {RADIX_DIGITS, RADIX_INPUT_LIMIT, COMMON_BASES, RADIX_WORD_BITS, RADIX_IN
 })();
 const __widget_data = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { newConverterData, validateConverterData } = __converter;
 const { newMapData, validateMapData } = __map_model;
 const { newPomodoroData, validatePomodoroData } = __pomodoro;
 const { validateCountdownData } = __widget_life;
@@ -8106,6 +8922,7 @@ const dataKeys = Object.freeze({ notes: 'notes', todo: 'todos', habit: 'habits',
 const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, remaining: 1500, running: false, endAt: null } };
 
 function newWidgetData(type) {
+  if (type === 'converter') return newConverterData();
   if (type === 'map') return newMapData();
   if (type === 'base-converter') return newBaseConverterData();
   if (type === 'pomodoro') return newPomodoroData();
@@ -8127,6 +8944,7 @@ function widgetContentSummary(items) {
 }
 
 function validateWidgetData(type, raw, path) {
+  if (type === 'converter') return validateConverterData(raw, path);
   if (type === 'map') return validateMapData(raw, path);
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if (type === 'pomodoro') return validatePomodoroData(raw, path);
@@ -20947,6 +21765,8 @@ return {calendarGrid, dateToolResults, calendarDetail};
 })();
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { calculateArithmetic } = __arithmetic;
+const { converterCard } = __converter_view;
 const { codecCard } = __codec_workspace;
 const { mapCard } = __map_view;
 const { baseConverterCard } = __base_converter_view;
@@ -21017,6 +21837,7 @@ const icons = {
   briefcase: '<rect x="3" y="6" width="18" height="15" rx="3"/><path d="M8 6V3h8v3M3 11a20 20 0 0 0 18 0m-9 1v3"/>',
   quote: '<path d="M10 6H4v7h4c0 3-2 5-4 5m16-12h-6v7h4c0 3-2 5-4 5"/>',
   trending: '<path d="m3 17 6-6 4 4 8-10m-6 0h6v6"/>',
+  converter: '<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>',
   calculator: '<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 10h1m6 0h1m-8 4h1m6 0h1m-8 4h1m6 0h1"/>',
   sparkles: '<path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7ZM19 2v4m-2-2h4"/>',
   globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
@@ -21137,65 +21958,7 @@ function renderHotlinks(state) {
   return `${header(t("热门 · 快捷入口"), 'trending', `<span class="w-hotlinks-tag">${t("直达平台")}</span>`)}<div class="w-hotlinks-grid">${hotlinks.map((link) => `<a href="${link.url}"${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer" class="w-hotlink"><span class="w-hotlink-logo" style="--platform-color:${link.color}">${link.letter}</span><span>${t(link.name)}</span>${icon('arrow')}</a>`).join('')}</div><div class="w-hotlinks-footer">${t("打开平台，查看实时榜单")}</div>`;
 }
 
-/** A deliberately small arithmetic parser: no eval, Function, or executable input. */
-function calculateExpression(source) {
-  const text = String(source).replace(/[×x]/g, '*').replace(/[÷]/g, '/').replace(/[−]/g, '-').replace(/\s+/g, '');
-  if (!text || text.length > 256 || /[^\d.+\-*/()%]/.test(text)) throw new Error(t("请输入有效算式"));
-  let position = 0;
-  let depth = 0;
-  function number() {
-    const match = /^(?:\d+(?:\.\d*)?|\.\d+)/.exec(text.slice(position));
-    if (!match) throw new Error(t("算式还没有写完整"));
-    position += match[0].length;
-    return Number(match[0]);
-  }
-  function primary() {
-    if (++depth > 48) throw new Error(t("括号层数过多"));
-    let value;
-    if (text[position] === '(') {
-      position += 1;
-      value = expression();
-      if (text[position] !== ')') throw new Error(t("请检查括号"));
-      position += 1;
-    } else value = number();
-    depth -= 1;
-    while (text[position] === '%') { value /= 100; position += 1; }
-    return value;
-  }
-  function unary() {
-    let sign = 1;
-    while (text[position] === '+' || text[position] === '-') { if (text[position] === '-') sign *= -1; position += 1; }
-    return sign * primary();
-  }
-  function term() {
-    let value = unary();
-    while (text[position] === '*' || text[position] === '/') {
-      const operator = text[position++];
-      const right = unary();
-      if (operator === '/' && right === 0) throw new Error(t("不能除以 0"));
-      value = operator === '*' ? value * right : value / right;
-    }
-    return value;
-  }
-  function expression() {
-    let value = term();
-    while (text[position] === '+' || text[position] === '-') {
-      const operator = text[position++];
-      const right = term();
-      value = operator === '+' ? value + right : value - right;
-    }
-    return value;
-  }
-  const value = expression();
-  if (position !== text.length) throw new Error(t("请检查算式"));
-  if (!Number.isFinite(value)) throw new Error(t("结果超出计算范围"));
-  return Number(value.toPrecision(12));
-}
-
-function renderCalculator() {
-  const keys = ['C', '(', ')', '÷', '7', '8', '9', '×', '4', '5', '6', '−', '1', '2', '3', '+', '0', '.', '⌫', '='];
-  return `<div class="w-calculator-screen"><input class="w-calculator-input" data-widget-input="calculator" inputmode="decimal" maxlength="256" autocomplete="off" aria-label="${t("计算算式")}" placeholder="0"><span class="w-calculator-error" data-live="calculator-error" role="status"></span></div><div class="w-calculator-keys">${keys.map((key) => `<button type="button" data-action="widget-calc" data-value="${key}" class="w-calculator-key${key === '=' ? ' is-equal' : ['÷', '×', '−', '+', 'C'].includes(key) ? ' is-operator' : ''}" aria-label="${({ C: t("清空"), '⌫': t("删除一位"), '=': t("计算结果"), '÷': t("除以"), '×': t("乘以"), '−': t("减去"), '+': t("加上") })[key] || key}">${key}</button>`).join('')}</div>`;
-}
+const calculateExpression = calculateArithmetic;
 
 function habitStreak(dates, now = new Date()) {
   const records = new Set(Array.isArray(dates) ? dates : []);
@@ -21291,7 +22054,7 @@ function compactModel(item) {
   } else if (type === 'wallpaper') { caption = t('壁纸'); detail = t('换一片风景'); meta = t('打开壁纸中心'); }
   else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
   else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
-  else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
+  else if (type === 'calculator' || type === 'converter') { value = '⇄'; caption = t('换算器'); detail = t('计算 · 单位 · 汇率'); meta = t('19 类常用换算'); }
   else if (type === 'base-converter') {
     const integer = data.mode === 'signed' || data.mode === 'unsigned', bits = data.bits || 32;
     value = integer ? `${data.mode === 'signed' ? 'i' : 'u'}${bits}` : '2↔16';
@@ -21306,6 +22069,7 @@ function renderCompact(item) {
 }
 
 function renderWidgetContent(item, state) {
+  if (item.widget === 'converter') return converterCard(item);
   if (item.widget === 'map') return mapCard(item);
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
@@ -21313,7 +22077,7 @@ function renderWidgetContent(item, state) {
   if (item.widget === 'codec') return codecCard(item);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
-  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
+  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   return renderers[item.widget]();
 }
 
@@ -21390,28 +22154,6 @@ function updateHabitCards(binding) {
     setText(root,'habit-summary',`${t('今天')} ${item.data.habits.filter(h=>h.dates.includes(localDateKey())).length}/${item.data.habits.length}`);
     root.dataset.widgetDay = localDateKey();
   }
-}
-
-function calculatorAction(root, key) {
-  const input = root.querySelector('[data-widget-input="calculator"]');
-  if (!input) return;
-  setText(root, 'calculator-error', '');
-  if (key === 'C') { input.value = ''; input.dataset.result = ''; }
-  else if (key === '⌫') { input.value = input.value.slice(0, -1); input.dataset.result = ''; }
-  else if (key === '=') {
-    try { input.value = String(calculateExpression(input.value)); input.dataset.result = 'true'; }
-    catch (error) { setText(root, 'calculator-error', error.message); }
-  } else if (input.value.length < 256) {
-    if (input.dataset.result === 'true' && /[\d.(]/.test(key)) input.value = '';
-    if (input.dataset.result === 'true' && /[eE]/.test(input.value)) {
-      const expanded = Number(input.value).toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
-      input.value = expanded;
-    }
-    input.value += key;
-    input.dataset.result = '';
-  }
-  input.focus({ preventScroll: true });
-  input.setSelectionRange(input.value.length, input.value.length);
 }
 
 function bindWidgets(container, context) {
@@ -21493,7 +22235,6 @@ function bindWidgets(container, context) {
       await persist();
       return;
     }
-    if (action === 'widget-calc') { calculatorAction(root, target.dataset.value); return; }
     if (action === 'widget-habit-toggle') {
       const habit = data.habits.find((entry) => entry.id === target.dataset.habitId);
       if (habit) {
@@ -21529,7 +22270,6 @@ function bindWidgets(container, context) {
         if (binding.alive) for (const root of widgetRoots(container, 'notes')) setText(root, 'notes-status', saved ? t("已保存在本机") : t("保存失败，请重试"));
       }, 400);
     }
-    if (target.dataset.widgetInput === 'calculator') { target.dataset.result = ''; setText(target.closest('[data-widget]'), 'calculator-error', ''); }
   }
 
   async function submit(event) {
@@ -21558,14 +22298,6 @@ function bindWidgets(container, context) {
     await persist();
   }
 
-  function keydown(event) {
-    if (event.target.dataset.widgetInput === 'calculator') {
-      event.stopPropagation();
-      if (event.key === 'Enter' || event.key === '=') { event.preventDefault(); calculatorAction(event.target.closest('[data-widget]'), '='); }
-      if (event.key === 'Escape') { event.preventDefault(); calculatorAction(event.target.closest('[data-widget]'), 'C'); }
-    }
-  }
-
   function flushNotes() {
     if (!binding.notePending) return;
     clearTimeout(binding.noteTimer);
@@ -21576,7 +22308,6 @@ function bindWidgets(container, context) {
   container.addEventListener('click', click);
   container.addEventListener('input', input);
   container.addEventListener('submit', submit);
-  container.addEventListener('keydown', keydown);
   globalThis.addEventListener?.('pagehide', flushNotes);
   const cleanup = () => {
     if (!binding.alive) return;
@@ -21590,7 +22321,6 @@ function bindWidgets(container, context) {
     container.removeEventListener('click', click);
     container.removeEventListener('input', input);
     container.removeEventListener('submit', submit);
-    container.removeEventListener('keydown', keydown);
     globalThis.removeEventListener?.('pagehide', flushNotes);
     if (bindings.get(container) === binding) bindings.delete(container);
   };
@@ -21932,7 +22662,7 @@ const DEFAULT_STATE = deepFreeze({
       { id: 'habit-read', name: '读十分钟书', dates: [] }
     ] }),
     widget('quote-life', 'quote', '留一点空白', '2x2', {}, 'life'),
-    widget('calculator-life', 'calculator', '随手算', '2x2', {}, 'life')
+    widget('calculator-life', 'converter', '换算器', '2x2', {}, 'life')
   ]
 });
 
@@ -22117,6 +22847,12 @@ function validateImport(raw) {
         Object.assign(checked, { widget: 'pomodoro' }, migrateFocusTimer(checked.data.focus));
         if (checked.title === '专注计时') checked.title = '番茄钟';
         else if (checked.title === 'Focus timer') checked.title = 'Pomodoro';
+      }
+      if (checked.widget === 'calculator') {
+        checked.widget = 'converter';
+        checked.data = newWidgetData('converter');
+        if (['计算器','随手算'].includes(checked.title)) checked.title = '换算器';
+        else if (['Calculator','Quick math','Quick calculations'].includes(checked.title)) checked.title = 'Converter';
       }
       if (checked.widget === 'hotlinks') {
         checked.widget = 'hotsearch';
@@ -23261,8 +23997,8 @@ const { parseDate, localDateKey } = __calendar;
 const { LIFE_WIDGETS, lifeWorkspace } = __widget_life_view;
 const { bindLifeWorkspace } = __widget_life_workspace;
 
-const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks'];
-const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',calculator:'calculator',hotlinks:'trending'};
+const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','hotlinks'];
+const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',hotlinks:'trending'};
 const input = (name,label,value,type='text',attributes='') => `<label class="utility-field"><span>${e(label)}</span><input name="${name}" type="${type}" value="${e(value)}" ${attributes}></label>`;
 const zones = ['Asia/Hong_Kong','Asia/Shanghai','Asia/Tokyo','Asia/Singapore','Asia/Kolkata','Australia/Sydney','Europe/London','Europe/Paris','America/New_York','America/Los_Angeles','UTC'];
 const week = () => [t('日'),t('一'),t('二'),t('三'),t('四'),t('五'),t('六')];
@@ -23310,7 +24046,6 @@ function clockComparison(item) {
 function tools(item) {
   if(item.widget==='notes')return `<div class="utility-toolbar"><span data-utility-count>${t('{count} 字符',{count:item.data.notes.length})}</span><button type="button" data-utility-export>${t('导出 TXT')}</button></div>`;
   if(item.widget==='todo')return `<div class="utility-toolbar"><label>${t('显示任务')}<select data-todo-filter><option value="all">${t('全部')}</option><option value="active">${t('未完成')}</option><option value="done">${t('已完成')}</option></select></label><button type="button" data-clear-done>${t('清除已完成')}</button></div>`;
-  if(item.widget==='calculator')return `<div class="utility-help">${t('支持括号、百分比和键盘输入；Enter 计算，Esc 清空。')}</div><div class="calculator-history" aria-live="polite"><h3>${t('本次计算记录')}</h3><ol></ol></div>`;
   if(item.widget==='habit')return `<section class="utility-habit-week"><h3>${t('最近七天')}</h3><div data-habit-week></div></section>`;
   if(item.widget==='clock')return `<section class="utility-world-list" data-world-list>${clockComparison(item)}</section>`;
   if(item.widget==='hotlinks')return `<label class="utility-field"><span>${t('筛选平台')}</span><input type="search" data-platform-filter></label>`;
@@ -23360,14 +24095,6 @@ function bindUtilityWorkspace(root,item,host) {
     if(event.target.matches('[data-widget-input=notes]'))root.querySelector('[data-utility-count]').textContent=t('{count} 字符',{count:event.target.value.length});
     if(event.target.hasAttribute('data-platform-filter'))for(const link of root.querySelectorAll('.w-hotlink'))link.hidden=!link.textContent.toLocaleLowerCase().includes(event.target.value.trim().toLocaleLowerCase());
   },options);
-  const record=event=>{
-    if(item.widget!=='calculator')return;
-    const control=event.target.closest('[data-value="="],[data-widget-input=calculator]');
-    if(!control||event.type==='keydown'&&!['Enter','='].includes(event.key))return;
-    const expression=root.querySelector('[data-widget-input=calculator]').value;
-    setTimeout(()=>{if(!root.isConnected)return;const result=root.querySelector('[data-widget-input=calculator]').value;const list=root.querySelector('.calculator-history ol');if(expression&&result!==expression){const row=document.createElement('li');row.textContent=expression+' = '+result;list.prepend(row);while(list.children.length>20)list.lastElementChild.remove();}},0);
-  };
-  root.addEventListener('click',record,{...options,capture:true});root.addEventListener('keydown',record,{...options,capture:true});
   return ()=>{controller.abort();clearInterval(timer);cleanup();};
 }
 
@@ -25115,6 +25842,7 @@ function createDailyQuote(root, options) {
 return {createDailyQuoteClient, createDailyQuote};
 })();
 // SPDX-License-Identifier: GPL-3.0-only
+const { converterWorkspace, bindConverterWorkspace } = __converter_view;
 const { codecWorkspace, bindCodecWorkspace } = __codec_workspace;
 const { mapWorkspace } = __map_view;
 const { bindMapWorkspace } = __map_workspace;
@@ -25818,7 +26546,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
@@ -25828,6 +26556,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('bookmarks-app-dialog',detailWidget === 'bookmarks');
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
+ dialog.classList.toggle('converter-app-dialog',detailWidget === 'converter');
  dialog.classList.toggle('pomodoro-app-dialog',detailWidget === 'pomodoro');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
@@ -25841,6 +26570,7 @@ function openDialog(kind,data={}) {
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='map'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="map-workspace" class="widget-app-body">${mapWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="converter-workspace" class="widget-app-body">${converterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
@@ -25879,6 +26609,7 @@ function openDialog(kind,data={}) {
   if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
   else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
+  else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -25897,6 +26628,7 @@ function openDialog(kind,data={}) {
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='map')$('[data-map-action=places]',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&detailWidget==='converter')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
