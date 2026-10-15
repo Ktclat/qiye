@@ -24,7 +24,7 @@ server=ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
 threading.Thread(target=server.serve_forever,daemon=True).start()
 base=f'http://127.0.0.1:{server.server_port}/'+('Qiye-preview.html' if args.preview else '')
 with sync_playwright() as p:
-    browser=p.chromium.launch(executable_path=os.environ['CHROMIUM_PATH'])
+    browser=p.chromium.launch(**({'executable_path':os.environ['CHROMIUM_PATH']} if os.environ.get('CHROMIUM_PATH') else {}))
     context=browser.new_context(viewport={'width':1440,'height':950}); page=context.new_page(); page.set_default_timeout(8000)
     errors=[]; page.on('pageerror',lambda e:errors.append(str(e)))
     page.route('https://**/*',lambda route:route.abort())
