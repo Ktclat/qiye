@@ -41,6 +41,8 @@ The registry provides the user-facing built-in widgets below. `community` is a s
 
 ## Base converter
 
+The 44px single-line title bar contains a small icon, the title and window controls, without a subtitle. Long titles truncate with an ellipsis while keeping a full-title tooltip and keyboard access. The layout follows [Windows title bar design](https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design) and [MDN text-overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-overflow); 44px is this widget's compact layout choice.
+
 Add **Widgets → Tools → Base converter**. Binary, octal, decimal and hexadecimal appear together by default; add or remove any output base from 2 to 36. The 2×2 / 4×2 desktop cards show the first four results, and all five sizes open the dedicated workspace. Narrow windows stack input and results and initially collapse formatting options.
 
 - Input is limited to 512 characters. Exact rational arithmetic preserves large integers and fractions beyond JavaScript's safe integer range. Accepts negatives, case-insensitive letters, space / underscore groups and recurring notation such as `0.(3)`. Pasting a complete `0b`, `0o` or `0x` number detects its input base.

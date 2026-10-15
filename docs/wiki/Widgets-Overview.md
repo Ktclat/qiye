@@ -41,6 +41,8 @@
 
 ## 进制转换
 
+标题栏采用 44px 单行布局：小图标、名称与右侧窗口按钮，省去副标题；窄屏和长名称使用省略号，保留完整标题提示与键盘操作。布局参考 [Windows 标题栏设计](https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design)，文字溢出按 [MDN text-overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-overflow) 处理；高度为本组件的紧凑布局选择。
+
 从“添加 → 小组件 → 工具 → 进制转换”添加。默认同时展示二、八、十、十六进制，可增减 2–36 进制的任意结果。桌面 2×2 / 4×2 卡片显示前四项结果，五种尺寸都能打开专用转换窗口。宽屏按输入与结果分栏，窄屏上下排列并默认折叠格式选项。
 
 - 最多输入 512 个字符；大整数与小数通过精确分数运算转换，不受 JavaScript 安全整数范围限制。支持负数、大小写字母、空格 / 下划线分组，以及 `0.(3)` 这样的循环小数。粘贴完整的 `0b` / `0o` / `0x` 数值可自动选择进制。

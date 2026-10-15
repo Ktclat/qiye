@@ -42,7 +42,7 @@ function formatToggle(key, label, checked) {
 export function baseConverterWorkspace(item) {
   const data = drafts.get(item.id)?.data || item.data;
   return `<div class="radix-app">
-    <header class="radix-header"><div class="radix-app-mark" aria-hidden="true">${icon('code')}</div><div><h2 id="dialog-title">${e(item.title)}</h2><p>${t('一个数值，多种表达。')}</p></div>${windowControls()}</header>
+    <header class="radix-header"><div class="radix-app-mark" aria-hidden="true">${icon('code')}</div><h2 id="dialog-title" title="${e(item.title)}">${e(item.title)}</h2>${windowControls()}</header>
     <div class="radix-layout">
       <section class="radix-source" aria-label="${t('转换输入')}">
         <div class="radix-section-heading"><h3>${t('输入数值')}</h3><span class="radix-local">${t('本地计算')}</span></div>
