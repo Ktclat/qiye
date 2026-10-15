@@ -1514,6 +1514,11 @@ html[data-theme=dark] .w-hotsearch{--w-bg:#292322;--w-heading:#ff9e7d;--w-fg:#f4
 .hotsearch-card-content{flex:1;min-height:0;overflow:auto;scrollbar-width:thin}.hotsearch-card-content .hotsearch-rows a,.hotsearch-card-content .hotsearch-unlinked{padding:4px 1px;gap:7px}.hotsearch-card-content .hotsearch-title{font-size:11px}.hotsearch-card-content .hotsearch-rank{width:18px;height:19px;font-size:10px;border-radius:5px}.hotsearch-card-content .hotsearch-heat{font-size:9px;max-width:55px}
 .hotsearch-card-empty{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;font:inherit;border:0;background:transparent;color:var(--w-fg);cursor:pointer;padding:6px}.hotsearch-card-empty>.icon{color:var(--w-heading);width:26px;height:26px;opacity:.8}.hotsearch-card-empty strong{font-size:12px}.hotsearch-card-empty span{font-size:10px;color:var(--w-muted)}
 .hotsearch-card-footer{font-size:8px;color:var(--w-muted);text-align:right;flex:none;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.w-hotsearch[data-display-size="2x2"] .hotsearch-heat{display:none}
+.widget-inner.w-hotsearch:not(.widget-compact){position:relative;gap:0;background:#373c47;color:#edf0f5;--w-muted:#afb4bf;--w-fg:#edf0f5;--w-heading:#fff;--w-hover:#ffffff18}
+.w-hotsearch:not(.widget-compact) .hotsearch-card-header{position:absolute;right:9px;top:11px;z-index:1}.w-hotsearch:not(.widget-compact) .hotsearch-card-header>button:last-child{width:20px;height:20px;justify-content:center;color:var(--w-muted)}
+.w-hotsearch:not(.widget-compact) .hotsearch-card-tabs{margin:0 20px 7px 0;gap:3px}.w-hotsearch:not(.widget-compact) .hotsearch-card-tabs button{padding:3px 5px;font-size:10px}.w-hotsearch:not(.widget-compact) .hotsearch-card-picker{margin:0 24px 5px 0;width:calc(100% - 24px);height:23px;padding:2px 5px}
+.w-hotsearch:not(.widget-compact) .hotsearch-card-content .hotsearch-rank{background:transparent;color:#d6dae3;font-size:11px;font-weight:600;width:14px;height:18px}.w-hotsearch:not(.widget-compact) .hotsearch-card-content .hotsearch-rows a{min-height:25px;padding:3px 0;gap:6px}.w-hotsearch:not(.widget-compact) .hotsearch-card-footer{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%)}
+html[data-theme=light] .widget-inner.w-hotsearch:not(.widget-compact){background:#edf0f5;color:#303642;--w-fg:#303642;--w-muted:#727985;--w-heading:#252b35;--w-hover:#0000000c}html[data-theme=light] .w-hotsearch:not(.widget-compact) .hotsearch-card-content .hotsearch-rank{color:#616b7b}
 @container(max-width:760px){.hotsearch-layout{grid-template-columns:170px minmax(0,1fr);gap:8px}.hotsearch-boards.is-grid{grid-template-columns:minmax(0,1fr)}.hotsearch-board>header{padding:11px}.hotsearch-board h3{font-size:15px}.hotsearch-board h3 span{font-size:12px}.hotsearch-board-content{padding:4px 7px}.hotsearch-title{font-size:14px}.hotsearch-heat{max-width:70px}.hotsearch-provider{display:none}.hotsearch-manager-sources{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container(max-width:520px){.hotsearch-app-header{gap:7px;padding:10px}.hotsearch-app-header h2{font-size:18px}.hotsearch-app-header .hotsearch-emblem{width:34px;height:34px;border-radius:12px}.hotsearch-header-actions{border:0;padding:0;gap:0}.hotsearch-header-actions button{padding:5px;min-width:28px}.hotsearch-header-actions button span{display:none}.hotsearch-app-header .widget-app-controls{gap:0}.hotsearch-layout{display:flex;flex-direction:column;padding:0 8px;gap:8px}.hotsearch-sidebar{display:flex;overflow:auto;min-height:52px;flex:none;border-radius:12px;padding:4px;gap:4px}.hotsearch-source-row{margin:0;flex:none}.hotsearch-source-row .hotsearch-source{padding:6px 8px;font-size:12px;gap:6px}.hotsearch-source-row .hotsearch-grip{display:none}.hotsearch-source-row:has([aria-pressed=true]):before{display:none}.hotsearch-source-row .hotsearch-logo{width:24px;height:24px;font-size:13px}.hotsearch-main{flex:1}.hotsearch-toolbar{padding:8px}.hotsearch-categories button{padding:6px 13px;font-size:12px}.hotsearch-toolbar>input{max-width:42%;font-size:12px}.hotsearch-toolbar>button{width:32px;height:32px}.hotsearch-board{border-radius:14px}.hotsearch-board-content .hotsearch-rows a{gap:8px;padding:10px 2px}.hotsearch-heat{max-width:60px;font-size:10px}.hotsearch-title{font-size:13px}.hotsearch-rank{width:23px;height:24px;font-size:12px}.hotsearch-board footer{font-size:10px;padding:8px 10px}.hotsearch-app-footer{font-size:9px;padding:5px}.hotsearch-manager{padding:16px 12px}.hotsearch-manager-overlay{padding:5px}.hotsearch-manager h3{font-size:19px}.hotsearch-manager-sources button{gap:6px}.hotsearch-manager-sources .hotsearch-logo{width:26px;height:26px;font-size:14px}.hotsearch-layout.is-grid>.hotsearch-main{min-height:0}}
 @media(prefers-reduced-motion:reduce){.hotsearch-header-actions button.is-loading .icon{animation:none}}
@@ -2081,6 +2086,58 @@ html[data-theme=light] .sidebar { background:rgb(247 249 252 / max(.78,var(--sid
 html[data-accent=custom] .calendar-cell.selected { background:var(--accent); color:var(--accent-ink); }
 html[data-accent=custom] .calendar-tool-nav button[aria-current=page] { color:var(--accent); }
 html[data-accent=custom] .calendar-tool-nav button[aria-current=page]::before { background:var(--accent); }
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* iTab's compact surfaces, with a separate working layout for each tool. */
+.life-app{position:relative;--life-accent:#2096ff;--life-green:#8ac8a4;--life-line:var(--app-border)}
+.life-app .utility-app-header{padding:12px 18px}.life-app .utility-app-header h2{font-size:20px;outline:none}.life-app .utility-app-header h2>.icon{width:34px;height:34px;border-radius:11px}
+.life-content{flex:1;min-height:0;overflow:auto}.life-app button{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px}.life-app button>.icon{width:17px;height:17px;flex:none}
+.life-app button:disabled{opacity:.35;cursor:default}.life-app .life-primary{background:var(--life-accent);color:white;border-radius:18px;padding:7px 13px;white-space:nowrap}.life-app .life-primary:hover{filter:brightness(1.08);background:var(--life-accent)}
+.life-app :is(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--app-muted);outline-offset:2px}.life-app :is(input,select,textarea):focus:not(:focus-visible){outline:none}
+.life-app h3{margin:0;font-size:16px;overflow-wrap:anywhere}.life-app p{margin:0}.life-feedback{flex:none;padding:9px 20px;background:var(--app-field);font-size:13px}.life-feedback[hidden]{display:none}.life-feedback button{margin-left:12px;color:var(--life-accent)}
+.life-segments{display:flex;padding:3px;border-radius:18px;background:var(--app-field);width:max-content;max-width:100%;gap:2px}.life-segments button{background:transparent;padding:4px 11px;border-radius:16px;color:var(--app-muted);white-space:nowrap}.life-segments button[aria-pressed=true]{background:var(--app-bg);color:var(--life-accent)}
+.life-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;min-height:220px;color:var(--app-muted);font-size:13px;padding:25px}.life-empty>.icon{width:38px;height:38px;opacity:.5}.life-empty p{line-height:1.8}
+.life-field{display:flex;flex-direction:column;min-width:0;gap:7px;font-size:13px}.life-field>span{color:var(--app-muted)}.life-field :is(input,select){width:100%;min-height:36px}.life-field-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}.life-help{color:var(--app-muted);font-size:11px;line-height:1.7}
+.life-form-error{color:#ff8a80;font-size:12px;overflow-wrap:anywhere}.life-form-error:empty{display:none}.life-check{display:flex;align-items:center;gap:8px;font-size:13px}.life-app input[type=checkbox]{width:16px;height:16px;accent-color:var(--life-accent)}
+.tone-blue{--event-color:#58a9ff;--event-shade:#182d43}.tone-rose{--event-color:#fb8f9e;--event-shade:#43232e}.tone-amber{--event-color:#ffb442;--event-shade:#3f311f}.tone-mint{--event-color:#85d1b1;--event-shade:#1e3933}.tone-violet{--event-color:#bc9af0;--event-shade:#352740}
+.countdown-browser{display:grid;grid-template-columns:174px minmax(0,1fr) 260px;gap:9px;padding:9px;height:100%;min-height:420px}.countdown-categories,.countdown-events,.countdown-detail{border:1px solid var(--app-border);background:var(--app-pane);border-radius:19px;min-width:0;min-height:0}
+.countdown-categories{padding:8px;display:flex;flex-direction:column;gap:3px}.countdown-categories button{width:100%;justify-content:flex-start;text-align:left;gap:11px;padding:11px 10px;background:transparent;border-radius:12px;font-size:14px}.countdown-categories button>.icon{color:var(--category-color);width:20px;height:20px}.countdown-categories button small{margin-left:auto;color:var(--app-muted);font-size:11px}.countdown-categories button[aria-pressed=true]{background:var(--app-field);color:var(--life-accent)}
+.countdown-events{display:flex;flex-direction:column;padding:12px;gap:14px}.countdown-events>header{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap}.countdown-events .life-segments button{font-size:12px;padding:4px 9px}.countdown-events>header>.life-primary{font-size:12px;padding:6px 10px}.countdown-event-list{overflow:auto;min-height:0;display:flex;flex-direction:column;gap:11px;padding:2px}
+.countdown-event-list .countdown-event{position:relative;display:flex;flex:none;align-items:center;gap:12px;text-align:left;padding:13px 12px;min-height:74px;border:1px solid var(--app-border);border-radius:14px;background:transparent;width:100%;color:var(--app-fg)}.countdown-event-icon{display:grid;place-items:center;color:var(--category-color);background:color-mix(in srgb,var(--category-color) 12%,transparent);width:42px;height:42px;border-radius:12px;flex:none}.countdown-event-icon .icon{width:23px;height:23px}.countdown-event-name{min-width:0;display:flex;flex-direction:column;gap:3px}.countdown-event-name strong{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.countdown-event-name small{font-size:11px;color:var(--app-muted)}.countdown-event-days{margin-left:auto;display:flex;gap:3px;align-items:baseline;white-space:nowrap;color:var(--app-muted);font-size:12px}.countdown-event-days strong{font-size:28px;font-weight:650;color:var(--life-accent);font-variant-numeric:tabular-nums}.countdown-event-days small{font-size:10px}.countdown-pin{position:absolute;right:10px;top:7px;opacity:.55}.countdown-pin .icon{width:11px;height:11px}
+.countdown-event-list .countdown-event.is-featured{min-height:145px;display:grid;grid-template-columns:1fr auto;background:radial-gradient(ellipse at 85% 0%,color-mix(in srgb,var(--event-color) 22%,transparent),transparent 65%),var(--event-shade);border-color:color-mix(in srgb,var(--event-color) 24%,transparent);padding:16px;color:#f4f6fa;overflow:hidden}.countdown-event.is-featured .countdown-event-icon{display:none}.countdown-event.is-featured .countdown-event-name{grid-column:1/-1}.countdown-event.is-featured .countdown-event-name small{color:#bac9d7}.countdown-event.is-featured .countdown-event-days{grid-column:1/-1;margin-left:0;color:#bccad9}.countdown-event.is-featured .countdown-event-days strong{font-size:48px;line-height:1;color:#fff;margin:0 4px}.countdown-event.is-featured .countdown-event-days small{font-size:12px}
+.countdown-detail{display:flex;flex-direction:column;overflow:auto}.countdown-scene{position:relative;height:130px;min-height:110px;overflow:hidden;background:radial-gradient(ellipse at 35% 90%,#5f92bb44,transparent 55%),linear-gradient(135deg,#061019,var(--event-shade));flex:none}.countdown-scene i{display:block;width:84px;height:84px;border-radius:50%;position:absolute;left:55%;top:20px;background:radial-gradient(circle at 30% 25%,#bad5e7,#5e87a3 40%,#1a344a 66%,#0c1925 85%);box-shadow:0 0 35px #8fbde425}.countdown-scene b{position:absolute;inset:60% -20% -40%;filter:blur(15px);background:linear-gradient(10deg,#061019 45%,#335b7499 70%,transparent);transform:rotate(-10deg)}
+.countdown-detail-body{padding:18px 16px}.countdown-detail-body h3{font-size:17px}.countdown-detail-body h3 small{font-size:11px;color:var(--app-muted);font-weight:400;margin-left:6px}.countdown-detail-number{display:flex;align-items:baseline;gap:9px;font-size:60px;line-height:1.2;font-weight:650;color:#ffb028;font-variant-numeric:tabular-nums;margin:4px 0}.countdown-detail-number span{font-size:21px}.countdown-detail-body>p{font-size:11px;color:var(--app-muted)}.countdown-detail dl{margin:20px 0 0}.countdown-detail dl>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:13px 0;border-bottom:1px solid var(--app-border);font-size:12px}.countdown-detail dt{color:var(--app-muted)}.countdown-detail dd{margin:0;text-align:right}.countdown-detail footer{margin-top:auto;border-top:1px solid var(--app-border);padding:12px;display:flex;gap:10px}.countdown-detail footer>button:first-child{flex:1;color:var(--life-accent);border:1px solid #2096ff55;background:#2096ff08}.countdown-detail .life-danger{color:#ff776d;background:#ff776d0a;border:1px solid #ff776d40}.life-app .life-switch{width:38px;height:21px;padding:3px;border-radius:12px;background:#555;display:block}.life-switch i{display:block;width:15px;height:15px;background:white;border-radius:50%}.life-app .life-switch[aria-checked=true]{background:var(--life-accent)}.life-switch[aria-checked=true] i{transform:translateX(17px)}
+.life-overlay{position:absolute;inset:0;z-index:8;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}.life-editor{width:430px;max-width:100%;max-height:100%;overflow:auto;padding:21px;border:1px solid var(--app-border);border-radius:19px;background:var(--app-pane);box-shadow:0 20px 80px #0006}.life-editor>header{display:flex;justify-content:space-between;align-items:center;margin-bottom:21px}.life-editor>header button{width:28px;height:28px;padding:5px;background:transparent}.life-editor>header button span{display:none}.life-editor form{display:flex;flex-direction:column;gap:17px}.life-editor form>footer{display:flex;justify-content:flex-end;gap:10px;margin-top:5px}.life-editor>input{width:100%}.life-swatches{padding:0;border:0;margin:0;display:flex;gap:12px}.life-swatches legend{font-size:13px;color:var(--app-muted);margin-bottom:10px}.life-swatches label{position:relative}.life-swatches input{position:absolute;opacity:0;width:28px;height:28px;margin:0}.life-swatches span{display:block;width:28px;height:28px;border-radius:50%;background:var(--event-color)}.life-swatches input:checked+span{outline:2px solid var(--app-fg);outline-offset:3px}.life-swatches input:focus-visible+span{box-shadow:0 0 0 6px var(--app-muted)}
+.workday-studio{display:grid;grid-template-columns:39% minmax(0,1fr);height:100%;min-height:480px}.workday-preview-column{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:var(--app-pane);padding:30px 18px}.workday-preview-column>p{font-size:13px;color:var(--app-muted)}.workday-preview{width:210px;max-width:100%;height:235px;filter:drop-shadow(0 12px 22px #0002)}.workday-face{height:100%;display:flex;flex-direction:column;gap:12px;border-radius:21px;background:var(--workday-color);padding:19px;color:#f4f5f7;overflow:hidden}.workday-face[style*="#ece8df"]{color:#39372e}.workday-face-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;opacity:.85}.workday-face-top>.icon{width:16px;height:16px}.workday-face-core{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:0}.workday-face-core>small{font-size:10px;opacity:.65;margin-bottom:8px}.workday-face-core>strong{font-size:30px;font-weight:500;letter-spacing:-.7px;font-variant-numeric:tabular-nums;white-space:nowrap}.workday-progress-track{height:3px;background:#ffffff20;border-radius:4px;width:100%;overflow:hidden;margin-top:18px}.workday-progress-track i{height:100%;display:block;background:currentColor;opacity:.7}.workday-shift{display:flex;justify-content:space-between;width:100%;font-size:9px;opacity:.6;margin-top:5px}.workday-facts{display:flex;flex-direction:column;gap:5px;font-size:9px;opacity:.75}.workday-facts>span{display:flex;justify-content:space-between;gap:8px}.workday-facts b{font-weight:500}.workday-style-simple .workday-progress-track,.workday-style-simple .workday-shift{display:none}.workday-style-simple .workday-face-core>strong{font-size:34px}.workday-style-simple .workday-face-core>small{order:1;margin:8px 0 0}.workday-ring{width:88px;height:88px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#b8ded0 var(--workday-progress),#ffffff15 0);position:relative;margin-top:8px;flex:none}.workday-ring:before{content:"";position:absolute;inset:4px;background:var(--workday-color);border-radius:50%}.workday-ring>span{z-index:1;font-size:24px}.workday-ring small{font-size:11px}.workday-style-ring .workday-face-core>strong{font-size:18px}.workday-style-ring .workday-progress-track,.workday-style-ring .workday-shift{display:none}.workday-style-ring .workday-face-core>small{margin-bottom:3px}.font-mono .workday-face{font-family:Consolas,monospace}.font-serif .workday-face{font-family:Georgia,"Noto Serif SC",serif}
+.workday-style-picker{display:flex;gap:12px}.workday-style-picker label{position:relative;font-size:12px;color:var(--app-muted)}.workday-style-picker input{position:absolute;opacity:0;width:100%;height:100%;margin:0}.workday-style-picker span{display:block;padding:5px 11px;border-radius:15px}.workday-style-picker input:checked+span{background:var(--app-field);color:var(--app-fg)}.workday-style-picker input:focus-visible+span{outline:2px solid var(--app-muted)}
+.workday-options{display:flex;flex-direction:column;gap:17px;padding:25px 24px;overflow:auto;min-height:0}.workday-options :is(fieldset,legend){padding:0;border:0;margin:0}.workday-options fieldset legend{color:var(--app-muted);font-size:12px;margin-bottom:9px}.workday-week>div{display:flex;gap:6px;flex-wrap:wrap}.workday-week label{position:relative;font-size:11px}.workday-week input{position:absolute;opacity:0;width:100%;height:100%;margin:0}.workday-week span{display:block;padding:7px 8px;border-radius:8px;background:var(--app-field);color:var(--app-muted)}.workday-week input:checked+span{background:#2096ff22;color:#66b5ff}.workday-week input:focus-visible+span{outline:2px solid var(--app-muted)}.workday-week>div>button{font-size:11px;padding:6px 9px;background:transparent;border:1px solid var(--app-border)}.workday-colors{display:flex;gap:15px;flex-wrap:wrap}.workday-colors label{position:relative}.workday-colors input{position:absolute;opacity:0;width:24px;height:24px;margin:0}.workday-colors label>span{display:block;width:24px;height:24px;background:var(--swatch);border-radius:50%;border:1px solid #ffffff30}.workday-colors input:checked+span{outline:2px solid var(--app-muted);outline-offset:3px}.workday-colors input:focus-visible+span{box-shadow:0 0 0 6px var(--app-field)}.workday-extras{display:flex;gap:13px;flex-wrap:wrap}.workday-extras label{display:flex;align-items:center;gap:5px;font-size:12px}.workday-save{margin-top:auto;min-height:34px;width:100%}
+.life-notes .life-content{padding:17px;background:var(--app-pane)}.notes-desk{--paper:#ede7d3;--paper-ink:#494236;--paper-muted:#7d7463;height:100%;min-height:280px;display:flex;flex-direction:column;background:var(--paper);color:var(--paper-ink);border-radius:12px;box-shadow:0 6px 24px #0001;overflow:hidden}.notes-paper-pink{--paper:#ecdee0;--paper-ink:#503c40;--paper-muted:#886a70}.notes-paper-mint{--paper:#dbe8df;--paper-ink:#354d40;--paper-muted:#687d70}.notes-toolbar{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid #00000010}.notes-toolbar input[name=noteTitle]{font-size:17px;font-weight:600;flex:1;width:90px;background:transparent;padding:6px 0;color:var(--paper-ink)}.notes-toolbar button[data-life-action=notes-export]{background:transparent;color:var(--paper-muted);font-size:12px}.notes-colors{display:flex;gap:9px}.notes-colors button{width:19px;height:19px;padding:0;border-radius:50%;border:1px solid #0002}.notes-colors .notes-color-yellow{background:#e4cf87}.notes-colors .notes-color-pink{background:#dfa7b0}.notes-colors .notes-color-mint{background:#a6c8af}.notes-colors button[aria-pressed=true]{outline:1px solid var(--paper-muted);outline-offset:3px}.notes-writing{min-height:0;flex:1;display:flex;flex-direction:column;padding:8px 24px 15px}.life-app .notes-writing .w-notes-input{width:100%;flex:1;min-height:180px;resize:none;padding:15px 0;border-radius:0;font-size:16px!important;line-height:1.9!important;background:transparent;color:var(--paper-ink);outline:none;border:none;box-shadow:none}.notes-writing .w-notes-input::placeholder{color:var(--paper-muted)}.notes-writing footer{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--paper-muted)}
+.world-clock-desk{display:flex;flex-direction:column;gap:20px;padding:22px 25px;min-height:100%}.world-clock-toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px}.world-clock-toolbar>div{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px}.world-clock-toolbar small,.world-clock-toolbar>div>span{font-size:12px;color:var(--app-muted)}.world-clock-toolbar strong{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}.world-clock-cities{display:grid;grid-template-columns:1fr 1fr;gap:14px}.world-city{padding:16px 19px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:17px;min-width:0}.world-city>header{display:flex;justify-content:space-between;gap:8px}.world-city h3{font-size:16px;font-weight:550}.world-city header>div>span{font-size:10px;color:var(--app-muted)}.world-city-actions{display:flex;gap:2px;align-items:flex-start}.world-city-actions button{padding:4px;background:transparent;width:25px;height:25px;color:var(--app-muted)}.world-city-actions button span{display:none}.world-primary{padding:3px 6px;background:var(--app-field);border-radius:5px;white-space:nowrap;font-size:9px}.world-city-time{display:flex;align-items:center;gap:24px;padding:19px 0}.world-city-time>div{display:flex;flex-direction:column;gap:4px}.world-city-time strong{font-size:40px;font-weight:350;letter-spacing:-1px;line-height:1.15;font-variant-numeric:tabular-nums}.world-city-time>div>span{font-size:11px;color:var(--app-muted)}.world-city footer{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:var(--app-muted)}.world-city footer>span:first-child{display:flex;gap:5px;align-items:center}.world-city footer .icon{height:12px;width:12px}
+.world-dial{position:relative;display:block;width:72px;height:72px;border-radius:50%;background:#31363e;color:#eceef5;flex:none;box-shadow:inset 0 0 0 1px #ffffff0d}.world-dial.is-day{background:#eee9df;color:#393a3d;box-shadow:inset 0 0 0 1px #0001}.world-dial:before{content:"";position:absolute;inset:6px;border-radius:50%;background:repeating-conic-gradient(currentColor 0deg 1deg,transparent 1deg 30deg);mask:radial-gradient(transparent 65%,#000 66%);opacity:.65}.world-dial>i{position:absolute;left:calc(50% - 1px);bottom:50%;width:2px;transform-origin:50% 100%;border-radius:2px;background:currentColor}.world-dial .dial-hour{height:21%;width:3px;left:calc(50% - 1.5px)}.world-dial .dial-minute{height:33%}.world-dial .dial-second{height:36%;width:1px;background:#e6975d;left:calc(50% - .5px)}.world-dial>b{position:absolute;inset:calc(50% - 2px);border-radius:50%;background:#e6975d}.world-time-compare{margin-top:auto;padding:16px 18px;border-radius:13px;background:var(--app-pane)}.world-time-compare>div:first-child{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--app-muted)}.world-time-compare button{padding:3px 8px;font-size:11px;background:transparent}.world-time-compare input{display:block;width:100%;height:24px;padding:0;margin:10px 0 0;accent-color:var(--life-accent)}.world-time-scale{display:flex;justify-content:space-between;font-size:9px;color:var(--app-muted)}.clock-city-results{margin:14px 0;max-height:260px;overflow:auto}.clock-city-results button{width:100%;justify-content:space-between;background:transparent;padding:11px 9px;text-align:left;border-bottom:1px solid var(--app-border);border-radius:0}.clock-city-results small{display:block;color:var(--app-muted);font-size:10px;margin-top:2px}.clock-custom summary{font-size:12px;cursor:pointer;color:var(--app-muted);padding:8px 0}.clock-custom form{padding-top:12px}
+.habit-desk{padding:19px 20px;min-height:100%;display:flex;flex-direction:column;gap:20px}.habit-today{display:flex;align-items:center;gap:15px;padding:0 2px}.habit-today>button{margin-left:auto}.habit-today h3{font-size:18px;font-weight:550}.habit-today p{font-size:12px;color:var(--app-muted);margin-top:4px}.habit-today-progress{position:relative;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--life-green) var(--habit-progress),var(--app-field) 0);flex:none}.habit-today-progress:before{position:absolute;content:"";inset:4px;background:var(--app-bg);border-radius:50%}.habit-today-progress strong{z-index:1;font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}.habit-today-progress small{font-size:11px;color:var(--app-muted);margin-left:2px}.habit-layout{display:grid;grid-template-columns:minmax(0,1fr) 274px;gap:16px;flex:1;align-items:start}.habit-tracker{padding:15px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:17px;min-width:0}.habit-list-toolbar{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:21px}.habit-list-toolbar .life-segments button{font-size:11px;padding:4px 9px}.habit-week-nav{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--app-muted)}.habit-week-nav button,.habit-month-nav button{background:transparent;padding:3px;width:24px;height:24px}.habit-week-nav button>span,.habit-month-nav button>span{display:none}.habit-week-heading,.habit-tracker-row{display:grid;grid-template-columns:minmax(95px,1fr) repeat(7,30px);gap:6px;align-items:center}.habit-week-heading{margin:8px 0 13px;color:var(--app-muted);font-size:11px}.habit-week-heading>span:not(:first-child){text-align:center;display:flex;flex-direction:column;gap:3px}.habit-week-heading small{font-size:9px}.habit-week-heading b{font-weight:400;font-size:11px}.habit-week-heading .is-today{color:var(--life-green)}.habit-tracker-row{padding:12px 0;border-top:1px solid var(--app-border)}.habit-name{display:flex;flex-direction:column;align-items:flex-start!important;text-align:left;background:transparent!important;padding:3px 0!important;min-width:0}.habit-name span{font-size:13px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.habit-name small{font-size:9px;color:var(--app-muted)}.habit-tracker-row.is-selected .habit-name span{color:var(--life-green)}.life-app .habit-day{width:30px;height:30px;padding:6px;border-radius:9px;background:var(--app-field);color:#234230}.habit-day i{width:4px;height:4px;background:var(--app-muted);border-radius:50%;opacity:.4}.life-app .habit-day.is-checked{background:var(--life-green)}.habit-tracker-list .life-empty{min-height:225px}.habit-suggestions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.habit-suggestions button{font-size:11px;padding:5px 9px}.habit-add-form{display:flex;gap:8px;margin-bottom:17px}.habit-add-form input{flex:1;width:0;font-size:13px}.habit-add-form button{font-size:12px}
+.habit-detail{background:var(--app-pane);border:1px solid var(--app-border);border-radius:17px;padding:16px;min-width:0}.habit-detail>header{display:flex;justify-content:space-between;align-items:flex-start;gap:5px}.habit-detail>header h3{font-size:15px}.habit-detail>header button{padding:3px;background:transparent;width:25px;height:25px;color:var(--app-muted);flex:none}.habit-detail>header button>span{display:none}.habit-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:20px 0}.habit-stats>div{display:flex;flex-direction:column;gap:3px;text-align:center}.habit-stats strong{font-size:24px;font-weight:500;color:var(--life-green)}.habit-stats span{font-size:10px;color:var(--app-muted)}.habit-month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.habit-month-nav strong{font-size:12px;font-weight:500}.habit-calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.habit-calendar-weekday{text-align:center;font-size:10px;color:var(--app-muted);padding-bottom:5px}.life-app .habit-calendar button{height:29px;padding:0;border-radius:8px;font-size:11px;background:var(--app-field);font-variant-numeric:tabular-nums}.habit-calendar button.is-other-month{opacity:.2}.habit-calendar button.is-today{box-shadow:inset 0 0 0 1px var(--app-muted)}.life-app .habit-calendar button.is-checked{background:var(--life-green);color:#234230}.habit-calendar-help{margin-top:12px!important;font-size:10px;color:var(--app-muted);text-align:center}.habit-rename{margin-top:18px;border-top:1px solid var(--app-border);padding-top:12px;font-size:11px;color:var(--app-muted)}.habit-rename summary{cursor:pointer}.habit-rename form{display:flex;gap:8px;align-items:flex-end;margin-top:12px}.habit-rename .life-field{flex:1}.habit-rename button{height:36px;font-size:11px}.habit-undo{font-size:12px;color:var(--app-muted)}.habit-undo button{background:transparent;color:var(--life-accent);margin-left:10px}
+/* Small desktop surfaces have their own information density. */
+.widget-inner.w-countdown:not(.widget-compact){padding:10px 12px;gap:2px}.countdown-card-face,.countdown-card-empty{background:transparent!important;color:inherit;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;width:100%;height:100%;min-height:0;text-align:center;cursor:pointer}.countdown-card-name{font-size:12px;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.countdown-card-caption{font-size:9px;color:var(--w-muted)}.countdown-card-days{display:flex;align-items:baseline;gap:5px}.countdown-card-days strong{font-size:38px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.15;color:var(--event-color)}.countdown-card-days small{font-size:11px}.countdown-card-date{font-size:9px;color:var(--w-muted);margin-top:3px}.countdown-card-empty>.icon{width:26px;height:26px}.countdown-card-empty>span{font-size:11px}.widget-inner.w-countdown[data-display-size="4x2"] .countdown-card-face{align-items:flex-start;padding-left:12px;position:relative}.w-countdown[data-display-size="4x2"] .countdown-card-face:after{content:"";width:72px;height:72px;border-radius:50%;position:absolute;right:12px;background:radial-gradient(circle at 30% 25%,#b8c9db,#47667e 50%,#172e4055 73%);opacity:.65}.w-countdown[data-display-size="4x2"] .countdown-card-name{text-align:left;max-width:75%}
+.widget-inner.w-workday:not(.widget-compact){display:block;padding:0}.workday-card-wrap{position:relative;height:100%;width:100%}.workday-card-wrap>.workday-face{padding:12px 14px;border-radius:inherit;gap:6px}.workday-card-wrap .workday-face-core>strong{font-size:25px}.workday-card-wrap .workday-face-core>small{font-size:9px;margin-bottom:4px}.workday-card-wrap .workday-face-top{font-size:10px;padding-right:20px}.workday-card-wrap .workday-progress-track{margin-top:9px}.workday-card-wrap .workday-face-top>.icon{display:none}.workday-card-wrap .workday-facts{font-size:8px;gap:3px}.workday-card-wrap .workday-ring{width:58px;height:58px;margin-top:3px}.workday-card-wrap .workday-ring>span{font-size:17px}.workday-card-wrap .workday-style-ring .workday-face-core>strong{font-size:15px}.workday-card-wrap>.widget-config{position:absolute;right:8px;top:8px;z-index:2;color:inherit}.workday-card-wrap>.workday-open{position:absolute;inset:32px 0 0;background:transparent;border:0;cursor:pointer;color:transparent}.workday-card-wrap>.workday-open:focus-visible{outline:2px solid var(--w-muted);outline-offset:-3px}.w-workday[data-display-size="4x2"] .workday-face{display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:auto 1fr;gap:5px 20px}.w-workday[data-display-size="4x2"] .workday-face-top{grid-column:1/-1}.w-workday[data-display-size="4x2"] .workday-facts{gap:13px;font-size:10px;justify-content:center;border-left:1px solid #ffffff20;padding-left:18px}.w-workday[data-display-size="4x2"] .workday-face-core>strong{font-size:28px}
+.widget-inner.w-clock:not(.widget-compact){display:flex;gap:0}.world-clock-card{display:flex;flex-direction:column;justify-content:space-around;align-items:stretch;flex:1;min-height:0;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}.world-clock-card-name{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-size:12px}.world-clock-card-name small{font-size:8px;color:var(--w-muted)}.world-clock-card-face{display:flex;gap:10px;align-items:center;justify-content:center}.world-clock-card-face strong{font-size:25px;letter-spacing:-.8px;font-weight:400;font-variant-numeric:tabular-nums}.world-clock-card .world-dial{width:48px;height:48px}.world-clock-card-date{font-size:9px;color:var(--w-muted);text-align:center}.w-clock[data-display-size="4x2"] .world-clock-card{display:grid;grid-template-columns:1fr 1.5fr;grid-template-rows:1fr 1fr;gap:0 18px;padding:8px}.w-clock[data-display-size="4x2"] .world-clock-card-name{flex-direction:column;justify-content:end;gap:4px}.w-clock[data-display-size="4x2"] .world-clock-card-face{grid-column:2;grid-row:1/3}.w-clock[data-display-size="4x2"] .world-clock-card .world-dial{width:64px;height:64px}.w-clock[data-display-size="4x2"] .world-clock-card-date{text-align:left;margin-top:8px}.w-clock[data-display-size="4x2"] .world-clock-card-face strong{font-size:29px}
+.widget-inner.w-notes:not(.widget-compact){gap:5px;background:#e6ddbd;color:#514a37;--w-fg:#514a37;--w-heading:#756b50;--w-muted:#8a7e61;--w-accent:#756b50}.widget-inner.w-notes.w-notes-pink{background:#e5cbd0;--w-fg:#594047;--w-heading:#785560;--w-muted:#936c77;color:var(--w-fg)}.widget-inner.w-notes.w-notes-mint{background:#ccddcb;--w-fg:#3f563f;--w-heading:#597459;--w-muted:#768e74;color:var(--w-fg)}.w-notes:not(.widget-compact) .w-notes-input{font-size:12px!important;line-height:1.8!important;padding:3px 0!important;background:transparent!important;outline:none;box-shadow:none}.w-notes:not(.widget-compact) .w-notes-footer{border-top:1px solid #0001;padding-top:5px;font-size:8px}.w-habit:not(.widget-compact) .w-habit-row{min-height:29px}.w-habit .w-habit-check{border-radius:7px}.w-habit .w-habit-check[aria-pressed=true]{background:#8ac8a4;color:#234230}.habit-card-summary{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--w-muted)}.habit-card-summary strong{font-weight:500;color:var(--w-fg)}
+.memo-workspace #dialog-title{outline:none}.widget-app-body #memo-sort:focus:not(:focus-visible){outline:none}.widget-app-body .memo-list-item[aria-selected=true]{box-shadow:none}
+@container(max-width:850px){.countdown-browser{grid-template-columns:135px minmax(0,1fr) 210px}.countdown-categories button{font-size:12px;gap:8px;padding:10px 7px}.countdown-detail-number{font-size:46px}.countdown-event-name strong{font-size:14px}.countdown-event-icon{width:34px;height:34px}.habit-layout{grid-template-columns:minmax(0,1fr) 240px;gap:10px}.habit-desk{padding:15px 12px}.habit-tracker{padding:11px}.habit-week-heading,.habit-tracker-row{grid-template-columns:minmax(70px,1fr) repeat(7,25px);gap:4px}.life-app .habit-day{width:25px;height:27px}.habit-detail{padding:12px}.world-city-time{gap:15px}.world-city-time strong{font-size:35px}}
+@container(max-width:680px){.countdown-browser{grid-template-columns:1fr;height:auto;min-height:100%;align-content:start}.countdown-categories{flex-direction:row;overflow:auto;padding:5px;border-radius:13px}.countdown-categories button{width:auto;white-space:nowrap;padding:8px;flex:none}.countdown-categories button small{display:none}.countdown-events{min-height:230px}.countdown-detail{display:grid;grid-template-columns:110px minmax(0,1fr)}.countdown-scene{height:100%;min-height:180px}.countdown-scene i{left:15px;top:30px;width:65px;height:65px}.countdown-detail-body{padding:15px}.countdown-detail-body dl{margin-top:12px}.countdown-detail dl>div{padding:8px 0}.countdown-detail footer{grid-column:1/-1}.countdown-detail-number{font-size:43px}.workday-studio{grid-template-columns:1fr;height:auto}.workday-preview-column{padding:23px;gap:14px}.workday-preview{height:210px;width:210px}.workday-options{overflow:visible;padding:22px}.world-clock-desk{padding:18px 15px}.world-clock-cities{gap:10px}.world-city{padding:13px}.world-city-time{flex-direction:column;gap:12px;padding:18px 0}.world-city-time>div{text-align:center}.world-city-time strong{font-size:33px}.world-city footer{flex-direction:column;align-items:flex-start;gap:5px}.world-primary{display:none}.world-clock-toolbar>div{gap:5px 8px}.world-clock-toolbar>div>span{width:100%}.habit-layout{grid-template-columns:1fr}.habit-detail{padding:18px}.habit-calendar button{height:34px!important}.habit-today h3{font-size:16px}.habit-today>button{font-size:11px;padding:6px 10px}.habit-tracker{padding:14px}.habit-week-heading,.habit-tracker-row{grid-template-columns:minmax(72px,1fr) repeat(7,minmax(22px,1fr));gap:4px}.life-app .habit-day{width:100%;max-width:34px;justify-self:center;height:30px}.notes-toolbar{padding:10px 14px;gap:12px;flex-wrap:wrap}.notes-toolbar button[data-life-action=notes-export]>span{display:none}.notes-writing{padding:4px 17px 13px}.life-notes .life-content{padding:10px}.life-app .notes-writing .w-notes-input{font-size:15px!important}.life-editor{padding:18px}.life-field-pair{gap:10px}.utility-app-header h2{font-size:18px}}
+
+.countdown-card-surface,.world-clock-card-surface{flex:1;min-height:0;display:flex;flex-direction:column}
+.workday-card-wrap>.workday-face{position:relative;z-index:0}.workday-card-wrap>.workday-open{z-index:1}.workday-card-wrap>.widget-config{z-index:2}
+.workday-options{gap:12px;padding:20px 24px}.workday-options>.life-field{flex-direction:row;align-items:center;gap:12px}.workday-options>.life-field>span{width:66px;flex:none}.workday-options>.life-field>input,.workday-options>.life-field>select{flex:1}.workday-options>.life-field-pair .life-field{gap:5px}.workday-options fieldset legend{margin-bottom:7px}.workday-options .life-help{font-size:10px}
+
+.memo-workspace #memo-sort:focus:not(:focus-visible){outline:none}.memo-workspace .memo-entry.selected strong{color:var(--app-fg)}
+.world-city{position:relative}.world-city>header{display:block;min-height:38px}.world-city h3{padding-right:46px}.world-city-actions{position:absolute;right:12px;top:14px}.world-city header>div>span{white-space:nowrap}
+html .widget-inner.w-countdown{background:#24262c;color:#f0f1f5;--w-bg:#24262c;--w-fg:#f0f1f5;--w-heading:#c5c9d0;--w-muted:#a4aab5;--w-accent:#9ac8ff}
+html[data-theme=light] .widget-inner.w-countdown{background:#edf0f5;color:#283544;--w-bg:#edf0f5;--w-fg:#283544;--w-heading:#566477;--w-muted:#69798b;--w-accent:#3575b7}
+html[data-theme=light] .countdown-card-face .countdown-card-days strong{color:#3575b7}
+
+.life-editor-feedback{color:#ff8a80;font-size:12px;margin-bottom:12px!important;overflow-wrap:anywhere}.life-editor-feedback:empty{display:none}
 
 </style>
   <style>
@@ -2950,6 +3007,101 @@ const englishMessages = {
   "收获一颗番茄。休息一下，下一阶段由你开启。": "One tomato earned. Take a break and start the next phase when you’re ready.",
   "休息结束，准备好再开始下一颗番茄。": "Break complete. Start your next tomato when you’re ready.",
   "未能保存，请重试。": "Could not save. Please try again.",
+  "倒数日分类": "Countdown categories",
+  "全部分类": "All categories",
+  "纪念日": "Anniversaries",
+  "节日": "Holidays",
+  "工作": "Work",
+  "目标": "Goals",
+  "其他": "Other",
+  "已经": "Elapsed",
+  "不重复": "Does not repeat",
+  "每年重复": "Every year",
+  "每月重复": "Every month",
+  "目标日": "Target date",
+  "分类": "Category",
+  "重复": "Repeat",
+  "添加一个值得期待的日子": "Add a day to look forward to",
+  "日期筛选": "Filter dates",
+  "即将到来": "Upcoming",
+  "已过去": "Past",
+  "新建倒数日": "New countdown",
+  "添加倒数日": "Add countdown",
+  "编辑倒数日": "Edit countdown",
+  "事件名称": "Event name",
+  "已置顶": "Pinned",
+  "这个分类还没有倒数日": "No countdowns in this category",
+  "卡片颜色": "Card color",
+  "蓝色": "Blue",
+  "玫瑰": "Rose",
+  "琥珀": "Amber",
+  "紫色": "Violet",
+  "置顶此事件": "Pin this event",
+  "休息时间": "Time to rest",
+  "今日工作进度": "Workday progress",
+  "次日": "Next day",
+  "距离周五": "Until Friday",
+  "今日收入": "Earned today",
+  "实时预览": "Live preview",
+  "进度": "Progress",
+  "简约": "Minimal",
+  "上班时间": "Start time",
+  "背景颜色": "Background color",
+  "配色 {count}": "Palette {count}",
+  "等宽数字": "Monospace digits",
+  "衬线字体": "Serif",
+  "显示更多": "Show more",
+  "发薪日": "Payday",
+  "今天收入": "Earnings today",
+  "每天的收入": "Daily earnings",
+  "写下一点灵感，或今天想做的小事…": "A little inspiration, or something to do today…",
+  "对比时间": "Compare times",
+  "本地时间": "Local time",
+  "昨天": "Yesterday",
+  "明天": "Tomorrow",
+  "主城市": "Primary city",
+  "设为主城市": "Set as primary",
+  "白天": "Daytime",
+  "夜间": "Nighttime",
+  "与本地时间相同": "Same as local time",
+  "比本地慢 {count} 小时": "{count} hours behind local time",
+  "比本地快 {count} 小时": "{count} hours ahead of local time",
+  "拖动对比各地时间": "Slide to compare times",
+  "回到现在": "Back to now",
+  "时间偏移（分钟）": "Time offset in minutes",
+  "现在": "Now",
+  "搜索城市或时区": "Search cities or time zones",
+  "没有找到匹配的城市": "No matching cities",
+  "自定义城市": "Custom city",
+  "IANA 时区": "IANA time zone",
+  "从一个小习惯开始": "Start with a small habit",
+  "连续天数": "Current streak",
+  "累计打卡": "Total check-ins",
+  "最长连续": "Longest streak",
+  "点击日期补记或取消打卡": "Click a date to add or undo a check-in",
+  "编辑习惯名称": "Rename habit",
+  "习惯名称": "Habit name",
+  "今天的习惯": "Today’s habits",
+  "上一周": "Previous week",
+  "下一周": "Next week",
+  "习惯": "Habit",
+  "这里没有匹配的习惯": "No matching habits",
+  "每天一点点，积累看得见": "Small steps, visible progress",
+  "喝水": "Drink water",
+  "阅读": "Read",
+  "运动": "Exercise",
+  "习惯已删除": "Habit deleted",
+  "倒数日已删除": "Countdown deleted",
+  "距离上班还有": "Until work starts",
+  "首尔": "Seoul",
+  "孟买": "Mumbai",
+  "迪拜": "Dubai",
+  "奥克兰": "Auckland",
+  "柏林": "Berlin",
+  "多伦多": "Toronto",
+  "圣保罗": "São Paulo",
+
+
   "热搜榜": "Trending",
   "订阅全网热榜，分类浏览与实时更新": "Follow trending lists, browse categories and stay up to date",
   "我的订阅": "Following",
@@ -4599,6 +4751,9 @@ const paths = {
  pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',
  reset:'<path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/>',
  skip:'<path d="m5 5 10 7-10 7ZM19 5v14"/>',
+ gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8c-10 1-7-9-3-5l3 5c10 1 7-9 3-5Z"/>',
+ target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+ left:'<path d="m15 5-7 7 7 7"/>',
  list:'<path d="M9 6h12M9 12h12M9 18h12M3 6h.01M3 12h.01M3 18h.01"/>',
  droplet:'<path d="M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13Z"/>',
  wind:'<path d="M3 8h12a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M5 16h4a3 3 0 1 1-3 3"/>',
@@ -5228,6 +5383,136 @@ function widgetDimensions(size, metrics) {
 
 return {TILE_SIZES, REQUIRED_WIDGET_SIZES, sizeLabel, isCompactWidget, gridMetrics, widgetDimensions};
 })();
+const __widget_life = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Civil dates and IANA time zones stay separate from elapsed timer durations.
+const { t } = __i18n;
+const { dayStamp, localDateKey, parseDate } = __calendar;
+const { keys, array, id, string, date, bool, enumeration, unique, invalid } = __validation;
+
+const DAY = 86400000;
+const COUNTDOWN_CATEGORIES = [
+  ['anniversary','纪念日','heart','#ff5370'], ['holiday','节日','gift','#ffb526'],
+  ['life','生活','home','#a786ff'], ['work','工作','briefcase','#479aff'],
+  ['goal','目标','target','#38c28a'], ['other','其他','flag','#8994a8'],
+];
+const LIFE_TONES = ['blue','rose','amber','mint','violet'];
+const CLOCK_CITIES = [
+  ['香港','Asia/Hong_Kong'],['北京','Asia/Shanghai'],['东京','Asia/Tokyo'],['新加坡','Asia/Singapore'],
+  ['首尔','Asia/Seoul'],['孟买','Asia/Kolkata'],['迪拜','Asia/Dubai'],['悉尼','Australia/Sydney'],
+  ['奥克兰','Pacific/Auckland'],['伦敦','Europe/London'],['巴黎','Europe/Paris'],['柏林','Europe/Berlin'],
+  ['纽约','America/New_York'],['旧金山','America/Los_Angeles'],['多伦多','America/Toronto'],['圣保罗','America/Sao_Paulo'],['UTC','UTC'],
+];
+const WORKDAY_COLORS = ['#273a52','#23272e','#3b4e40','#5d4642','#514365','#376375','#ece8df'];
+const WORKDAY_FONTS = ['system','mono','serif'];
+
+function countdownEntries(item) {
+  return item.data.events ?? [{id:'primary',title:item.config.title,date:item.config.date,category:'anniversary',repeat:'none',pinned:true,tone:'blue'}];
+}
+function validateCountdownData(raw, path) {
+  keys(raw,['events'],path);
+  if (raw.events===undefined) return {};
+  const events=array(raw.events,path+'.events',100).map((entry,index)=>{
+    const at=path+'.events['+index+']';
+    keys(entry,['id','title','date','category','repeat','pinned','tone'],at);
+    return {id:id(entry.id,at+'.id'),title:string(entry.title,at+'.title',120),date:date(entry.date,at+'.date'),
+      category:enumeration(entry.category,COUNTDOWN_CATEGORIES.map(c=>c[0]),at+'.category'),repeat:enumeration(entry.repeat,['none','yearly','monthly'],at+'.repeat'),
+      pinned:bool(entry.pinned,at+'.pinned'),tone:enumeration(entry.tone,LIFE_TONES,at+'.tone')};
+  });
+  unique(events.map(event=>event.id),path+'.events');
+  return {events};
+}
+function civilDate(year,month,day) { return new Date(year,month,Math.min(day,new Date(year,month+1,0).getDate()),12); }
+function countdownOccurrence(entry, now=new Date()) {
+  const original=parseDate(entry.date);
+  if (!original) return null;
+  let occurrence=original;
+  // Recurrence never moves an event before the date the user entered.
+  if (dayStamp(original)<dayStamp(now) && entry.repeat==='yearly') {
+    occurrence=civilDate(now.getFullYear(),original.getMonth(),original.getDate());
+    if(dayStamp(occurrence)<dayStamp(now))occurrence=civilDate(now.getFullYear()+1,original.getMonth(),original.getDate());
+  } else if(dayStamp(original)<dayStamp(now) && entry.repeat==='monthly') {
+    occurrence=civilDate(now.getFullYear(),now.getMonth(),original.getDate());
+    if(dayStamp(occurrence)<dayStamp(now))occurrence=civilDate(now.getFullYear(),now.getMonth()+1,original.getDate());
+  }
+  return {date:occurrence,key:localDateKey(occurrence),days:Math.round((dayStamp(occurrence)-dayStamp(now))/DAY)};
+}
+function orderedCountdowns(item, now=new Date()) {
+  return countdownEntries(item).map(event=>({...event,occurrence:countdownOccurrence(event,now)})).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||Math.abs(a.occurrence.days)-Math.abs(b.occurrence.days));
+}
+function countdownPrimary(item, now=new Date()) { return orderedCountdowns(item,now)[0] || null; }
+
+function workdayTimeline(config, now=new Date()) {
+  const toMinutes=value=>{const [h,m]=value.split(':').map(Number);return h*60+m;};
+  const startMinutes=toMinutes(config.startTime||'09:00'),endMinutes=toMinutes(config.endTime||'18:00');
+  const days=config.workdays||[1,2,3,4,5], overnight=endMinutes<=startMinutes;
+  const at=(base,minute)=>new Date(base.getFullYear(),base.getMonth(),base.getDate(),Math.floor(minute/60),minute%60);
+  let base=new Date(now),start=at(base,startMinutes),end=at(base,endMinutes);
+  if(overnight) {
+    if(now.getHours()*60+now.getMinutes()<endMinutes)base.setDate(base.getDate()-1);
+    start=at(base,startMinutes);end=at(base,endMinutes);end.setDate(end.getDate()+1);
+  }
+  const isWorkday=days.includes(base.getDay());
+  const phase=!isWorkday?'rest':now<start?'before':now<end?'working':'finished';
+  const seconds=Math.max(0,Math.ceil(((phase==='before'?start:end)-now)/1000));
+  const duration=Math.max(1,end-start),progress=!isWorkday?0:Math.min(1,Math.max(0,(now-start)/duration));
+  const time=[Math.floor(seconds/3600),Math.floor(seconds%3600/60),seconds%60].map(n=>String(n).padStart(2,'0')).join(':');
+  const payday=Math.min(31,Math.max(1,config.payday||10));
+  let payDate=civilDate(now.getFullYear(),now.getMonth(),payday);
+  if(dayStamp(payDate)<dayStamp(now))payDate=civilDate(now.getFullYear(),now.getMonth()+1,payday);
+  const friday=(5-now.getDay()+7)%7;
+  return {phase,isWorkday,remaining:seconds,progress,start,end,friday,earnings:(config.dailyIncome||0)*progress,
+    text:phase==='rest'?t('休息日'):phase==='finished'?t('已下班'):time,
+    caption:t(phase==='rest'?'今天，把时间留给生活':phase==='finished'?'今天辛苦了，好好休息':phase==='before'?'距离上班还有':'距离下班还有'),
+    paydays:Math.round((dayStamp(payDate)-dayStamp(now))/DAY)};
+}
+
+const zoneFormatters=new Map();
+function zoneClock(timeZone, now=new Date(), localZone=Intl.DateTimeFormat().resolvedOptions().timeZone) {
+  const partsFor=zone=>{
+    if(!zoneFormatters.has(zone)){
+      if(zoneFormatters.size>=100)zoneFormatters.delete(zoneFormatters.keys().next().value);
+      zoneFormatters.set(zone,new Intl.DateTimeFormat('en-GB-u-ca-gregory-nu-latn',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}));
+    }
+    return Object.fromEntries(zoneFormatters.get(zone).formatToParts(now).filter(p=>p.type!=='literal').map(p=>[p.type,Number(p.value)]));
+  };
+  const p=partsFor(timeZone),local=partsFor(localZone);
+  const stamp=q=>Date.UTC(q.year,q.month-1,q.day,q.hour,q.minute,q.second);
+  const offset=Math.round((stamp(p)-Math.floor(now.getTime()/1000)*1000)/60000),difference=Math.round((stamp(p)-stamp(local))/60000);
+  const dayDifference=Math.round((Date.UTC(p.year,p.month-1,p.day)-Date.UTC(local.year,local.month-1,local.day))/DAY);
+  return {...p,offset,difference,dayDifference,isDay:p.hour>=6&&p.hour<18,time:`${String(p.hour).padStart(2,'0')}:${String(p.minute).padStart(2,'0')}`,
+    secondHand:p.second*6,minuteHand:p.minute*6+p.second/10,hourHand:(p.hour%12)*30+p.minute/2};
+}
+function offsetLabel(minutes, prefix='UTC') {
+  if(!minutes)return prefix;
+  return prefix+(minutes<0?'−':'+')+String(Math.floor(Math.abs(minutes)/60)).padStart(2,'0')+':'+String(Math.abs(minutes)%60).padStart(2,'0');
+}
+function clockCities(config) {
+  return config.cities ?? [{label:config.label,timeZone:config.timeZone},...['Europe/London','America/New_York','Asia/Tokyo'].filter(zone=>zone!==config.timeZone).map(timeZone=>({label:t(CLOCK_CITIES.find(c=>c[1]===timeZone)[0]),timeZone}))];
+}
+function validateClockCities(raw,path) {
+  const cities=array(raw,path,12,1).map((city,i)=>{
+    const at=path+'['+i+']';keys(city,['label','timeZone'],at);
+    const timeZone=string(city.timeZone,at+'.timeZone',80);
+    try{new Intl.DateTimeFormat('en',{timeZone}).format();}catch{invalid(at+'.timeZone',t('不是有效时区'));}
+    return {label:string(city.label,at+'.label',60),timeZone};
+  });unique(cities.map(c=>c.timeZone),path);return cities;
+}
+function habitStats(habit, now=new Date()) {
+  const today=localDateKey(now),dates=[...new Set(habit.dates)].filter(day=>day<=today).sort(),set=new Set(dates);
+  let current=0,cursor=new Date(now),longest=0,run=0,previous=null;
+  if(!set.has(today))cursor.setDate(cursor.getDate()-1);
+  while(set.has(localDateKey(cursor))){current++;cursor.setDate(cursor.getDate()-1);}
+  for(const day of dates){const stamp=dayStamp(parseDate(day));run=previous!==null&&stamp-previous===DAY?run+1:1;longest=Math.max(longest,run);previous=stamp;}
+  return {current,longest,total:dates.length,done:set.has(today)};
+}
+function habitWeek(offset=0, now=new Date()) {
+  const monday=new Date(now);monday.setDate(monday.getDate()-(monday.getDay()+6)%7+offset*7);
+  return Array.from({length:7},(_,i)=>{const day=new Date(monday);day.setDate(day.getDate()+i);return {date:day,key:localDateKey(day),future:dayStamp(day)>dayStamp(now)};});
+}
+
+return {COUNTDOWN_CATEGORIES, LIFE_TONES, CLOCK_CITIES, WORKDAY_COLORS, WORKDAY_FONTS, countdownEntries, validateCountdownData, countdownOccurrence, orderedCountdowns, countdownPrimary, workdayTimeline, zoneClock, offsetLabel, clockCities, validateClockCities, habitStats, habitWeek};
+})();
 const __widget_extensions = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Import packaged widget definitions here. See docs/WIDGETS.md and widget-example.js.
@@ -5395,6 +5680,7 @@ const __widget_registry = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { POMODORO_DEFAULTS, validatePomodoroConfig } = __pomodoro;
 const { t, localizeSeed } = __i18n;
+const { WORKDAY_COLORS, WORKDAY_FONTS, validateClockCities } = __widget_life;
 const { keys, string, number, bool, enumeration, array, unique, date, time, invalid } = __validation;
 const { TILE_SIZES, REQUIRED_WIDGET_SIZES } = __widget_sizes;
 const { widgetExtensions } = __widget_extensions;
@@ -5515,7 +5801,8 @@ function validateBuiltinConfig(widgetType, raw, path) {
     keys(raw,['manifest','source'],path);
     return {manifest:validateCommunityManifest(raw.manifest),source:publicHttpsUrl(string(raw.source,path+'.source',2048))};
   }
-  const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
+  const optional = widgetType==='workday'?['startTime','style','background','font','showPayday','showFriday','showEarnings','dailyIncome']:widgetType==='clock'?['cities']:[];
+  const v = keys(raw, [...Object.keys(builtinConfig[widgetType] || {}),...optional], path);
   const out = {};
   if (widgetType === 'bookmarks') out.source = enumeration(v.source, ['local','browser'], `${path}.source`);
   if (widgetType === 'calendar') {
@@ -5540,12 +5827,19 @@ function validateBuiltinConfig(widgetType, raw, path) {
     out.date = date(v.date, `${path}.date`);
   }
   if (widgetType === 'workday') {
+    if(v.startTime!==undefined)out.startTime=time(v.startTime,`${path}.startTime`);
+    if(v.style!==undefined)out.style=enumeration(v.style,['digital','ring','simple'],`${path}.style`);
+    if(v.background!==undefined)out.background=enumeration(v.background,WORKDAY_COLORS,`${path}.background`);
+    if(v.font!==undefined)out.font=enumeration(v.font,WORKDAY_FONTS,`${path}.font`);
+    for(const key of ['showPayday','showFriday','showEarnings'])if(v[key]!==undefined)out[key]=bool(v[key],`${path}.${key}`);
+    if(v.dailyIncome!==undefined)out.dailyIncome=number(v.dailyIncome,`${path}.dailyIncome`,0,10000000);
     out.endTime = time(v.endTime, `${path}.endTime`);
     out.payday = number(v.payday, `${path}.payday`, 1, 31, true);
     out.workdays = array(v.workdays, `${path}.workdays`, 7).map(day => number(day, `${path}.workdays`, 0, 6, true));
     unique(out.workdays, `${path}.workdays`);
   }
   if (widgetType === 'clock') {
+    if(v.cities!==undefined)out.cities=validateClockCities(v.cities,`${path}.cities`);
     out.timeZone = string(v.timeZone, `${path}.timeZone`, 80);
     try { new Intl.DateTimeFormat('en', { timeZone: out.timeZone }).format(); } catch { invalid(`${path}.timeZone`, t("不是有效时区")); }
     out.label = string(v.label, `${path}.label`, 60);
@@ -5906,6 +6200,7 @@ return {RADIX_DIGITS, RADIX_INPUT_LIMIT, COMMON_BASES, newBaseConverterData, val
 const __widget_data = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { newPomodoroData, validatePomodoroData } = __pomodoro;
+const { validateCountdownData } = __widget_life;
 const { t } = __i18n;
 const { keys, string, array, id, bool, number, date, unique, invalid } = __validation;
 
@@ -5940,6 +6235,7 @@ function widgetContentSummary(items) {
 function validateWidgetData(type, raw, path) {
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if (type === 'pomodoro') return validatePomodoroData(raw, path);
+  if(type==='countdown')return validateCountdownData(raw,path);
   if(type==='community')return validateCommunityData(raw);
   if (type === 'bookmarks') return validateBookmarks(raw, path);
   if (type === 'memo') return validateMemos(raw, path);
@@ -6261,6 +6557,7 @@ const __widget_summary = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { escapeText: esc } = __html;
 const { t } = __i18n;
+const { WORKDAY_COLORS } = __widget_life;
 
 // Compact cards have deliberately different information hierarchies from full cards.
 function renderWidgetSummary(item, model, symbol) {
@@ -6268,10 +6565,12 @@ function renderWidgetSummary(item, model, symbol) {
   const wide = item.size === '2x1';
   const textCard = ['notes', 'quote'].includes(item.widget);
   const color = item.widget === 'notes' ? ` w-notes-${item.config.color}` : '';
+  const background=WORKDAY_COLORS.includes(item.config.background)?item.config.background:WORKDAY_COLORS[0],ink=background==='#ece8df'?'#39372e':'#f4f5f7';
+  const appearance=item.widget==='workday'?` style="--w-bg:${background};--w-fg:${ink};--w-heading:${ink};--w-muted:${ink}"`:'';
   const value = `<span class="compact-primary" style="--value-digits:${Math.max(2,model.value.length)}"><strong class="compact-value">${esc(model.value)}</strong>${model.unit ? `<small class="compact-unit">${esc(model.unit)}</small>` : ''}</span>`;
   const info = `<span class="compact-copy"><span class="compact-caption">${esc(model.caption)}</span>${portrait || wide ? `<span class="compact-detail">${esc(model.detail)}</span>` : ''}</span>`;
   const timer = item.widget === 'focus' && portrait ? `<button type="button" class="compact-quick" data-action="widget-focus-toggle"><span data-live="focus-button">${item.data.focus.running ? t('暂停') : t('开始')}</span></button>` : '';
-  return `<div class="widget-inner widget-compact w-${esc(item.widget)} compact-${esc(item.widget)}${color}${textCard ? ' compact-text-card' : ''}" data-widget="${esc(item.widget)}" data-widget-id="${esc(item.id)}" data-display-size="${item.size}" data-compact="true">
+  return `<div class="widget-inner widget-compact w-${esc(item.widget)} compact-${esc(item.widget)}${color}${textCard ? ' compact-text-card' : ''}" data-widget="${esc(item.widget)}" data-widget-id="${esc(item.id)}" data-display-size="${item.size}" data-compact="true"${appearance}>
     <button type="button" class="compact-open" data-action="widget-open" aria-label="${esc(item.title)}">
       <span class="compact-symbol" aria-hidden="true">${symbol}</span>${value}${info}
       ${portrait ? `<span class="compact-meta">${esc(model.meta)}</span>` : ''}
@@ -6630,6 +6929,91 @@ function bindBookmarkCards(container, host, client = browserBookmarkClient) {
 }
 
 return {bindBookmarkWorkspace, bindBookmarkCards};
+})();
+const __widget_life_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, formatDate } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { localDateKey, monthCells, parseDate } = __calendar;
+const { COUNTDOWN_CATEGORIES, LIFE_TONES, CLOCK_CITIES, WORKDAY_COLORS, countdownEntries, orderedCountdowns, countdownPrimary, workdayTimeline, zoneClock, offsetLabel, clockCities, habitStats, habitWeek } = __widget_life;
+
+const LIFE_WIDGETS=['countdown','workday','notes','clock','habit'];
+const labels={countdown:'倒数日',workday:'下班倒计时',notes:'随手记',clock:'世界时钟',habit:'习惯打卡'};
+const glyphs={countdown:'calendar',workday:'briefcase',notes:'note',clock:'globe',habit:'sparkles'};
+const field=(name,label,value,type='text',extra='')=>`<label class="life-field"><span>${t(label)}</span><input name="${name}" type="${type}" value="${e(value)}" ${extra}></label>`;
+const button=(action,label,glyph='',extra='')=>`<button type="button" data-life-action="${action}" ${extra}>${glyph?icon(glyph):''}<span>${t(label)}</span></button>`;
+const dateLabel=value=>formatDate(typeof value==='string'?parseDate(value):value,{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'});
+const category=entry=>COUNTDOWN_CATEGORIES.find(c=>c[0]===entry.category)||COUNTDOWN_CATEGORIES.at(-1);
+const caption=days=>t(days===0?'就是今天':days<0?'已经':'还有');
+const repeatLabel=value=>t({none:'不重复',yearly:'每年重复',monthly:'每月重复'}[value]);
+function dialogForm(title,content) {return `<div class="life-overlay"><section class="life-editor" role="dialog" aria-modal="true" aria-labelledby="life-editor-title"><header><h3 id="life-editor-title">${t(title)}</h3>${button('edit-close','关闭','close')}</header><p class="life-editor-feedback" role="alert"></p>${content}</section></div>`;}
+
+function lifeWorkspace(item,state) {
+  return `<div class="utility-app life-app life-${item.widget}" data-life-kind="${item.widget}"><header class="utility-app-header"><h2 id="dialog-title" tabindex="-1">${icon(glyphs[item.widget])}${t(labels[item.widget])}</h2>${windowControls()}</header><div class="life-feedback" role="status" hidden></div><div class="life-content" data-life-content></div><div data-life-editor></div></div>`;
+}
+
+function countdownBrowser(item,view) {
+  const events=orderedCountdowns(item),selected=events.find(event=>event.id===view.active)||events[0];
+  const filtered=events.filter(event=>(view.category==='all'||event.category===view.category)&&(view.filter==='all'||(event.occurrence.days<0)===(view.filter==='past')));
+  const detail=selected?`<div class="countdown-scene tone-${selected.tone}" aria-hidden="true"><i></i><b></b></div><div class="countdown-detail-body"><h3>${e(selected.title)} <small>${caption(selected.occurrence.days)}</small></h3><div class="countdown-detail-number">${Math.abs(selected.occurrence.days)}<span>${t('天')}</span></div><p>${e(dateLabel(selected.occurrence.date))}</p><dl><div><dt>${t('目标日')}</dt><dd>${e(selected.date)}</dd></div><div><dt>${t('分类')}</dt><dd>${t(category(selected)[1])}</dd></div><div><dt>${t('重复')}</dt><dd>${repeatLabel(selected.repeat)}</dd></div><div><dt>${t('置顶')}</dt><dd><button class="life-switch" data-life-action="countdown-pin" data-id="${selected.id}" role="switch" aria-checked="${selected.pinned}" aria-label="${t('置顶')}"><i></i></button></dd></div></dl></div><footer>${button('countdown-edit','编辑','edit',`data-id="${selected.id}"`)}${button('countdown-delete','删除','trash',`data-id="${selected.id}" class="life-danger"`)}</footer>`:`<div class="life-empty">${icon('calendar')}<p>${t('添加一个值得期待的日子')}</p></div>`;
+  return `<div class="countdown-browser"><nav class="countdown-categories" aria-label="${t('倒数日分类')}">${[['all','全部分类','grid','#469bff'],...COUNTDOWN_CATEGORIES].map(([id,label,glyph,color])=>`<button type="button" data-countdown-category="${id}" aria-pressed="${view.category===id}" style="--category-color:${color}">${icon(glyph)}<span>${t(label)}</span><small>${id==='all'?events.length:events.filter(event=>event.category===id).length}</small></button>`).join('')}</nav><section class="countdown-events"><header><nav class="life-segments" aria-label="${t('日期筛选')}">${[['all','全部'],['upcoming','即将到来'],['past','已过去']].map(([id,label])=>`<button type="button" data-countdown-filter="${id}" aria-pressed="${view.filter===id}">${t(label)}</button>`).join('')}</nav>${button('countdown-new','新建倒数日','plus','class="life-primary"')}</header><div class="countdown-event-list">${filtered.map(event=>`<button type="button" data-countdown-select="${event.id}" aria-pressed="${event.id===selected?.id}" class="countdown-event ${event.id===selected?.id?'is-featured':''} tone-${event.tone}"><span class="countdown-event-icon" style="--category-color:${category(event)[3]}">${icon(category(event)[2])}</span><span class="countdown-event-name"><strong>${e(event.title)}</strong><small>${e(dateLabel(event.occurrence.date))}</small></span><span class="countdown-event-days"><small>${caption(event.occurrence.days)}</small><strong>${Math.abs(event.occurrence.days)}</strong><span>${t('天')}</span></span>${event.pinned?`<span class="countdown-pin" title="${t('已置顶')}">${icon('pin')}</span>`:''}</button>`).join('')||`<div class="life-empty">${icon('calendar')}<p>${t('这个分类还没有倒数日')}</p>${button('countdown-new','添加倒数日','plus')}</div>`}</div></section><aside class="countdown-detail">${detail}</aside></div>`;
+}
+function countdownEditor(entry) {
+  return dialogForm(entry.id?'编辑倒数日':'新建倒数日',`<form data-life-form="countdown" data-id="${e(entry.id||'')}">${field('eventTitle','事件名称',entry.title||'','text','required maxlength="120" autocomplete="off"')}${field('date','目标日期',entry.date||localDateKey(),'date','required min="1900-01-01" max="2200-12-31"')}<div class="life-field-pair"><label class="life-field"><span>${t('分类')}</span><select name="category">${COUNTDOWN_CATEGORIES.map(([id,label])=>`<option value="${id}" ${id===(entry.category||'anniversary')?'selected':''}>${t(label)}</option>`).join('')}</select></label><label class="life-field"><span>${t('重复')}</span><select name="repeat">${['none','yearly','monthly'].map(id=>`<option value="${id}" ${id===(entry.repeat||'none')?'selected':''}>${repeatLabel(id)}</option>`).join('')}</select></label></div><fieldset class="life-swatches"><legend>${t('卡片颜色')}</legend>${LIFE_TONES.map(tone=>`<label class="tone-${tone}"><input type="radio" name="tone" value="${tone}" aria-label="${t({blue:'蓝色',rose:'玫瑰',amber:'琥珀',mint:'薄荷',violet:'紫色'}[tone])}" ${tone===(entry.tone||'blue')?'checked':''}><span></span></label>`).join('')}</fieldset><label class="life-check"><input type="checkbox" name="pinned" ${entry.pinned?'checked':''}>${t('置顶此事件')}</label><p class="life-form-error" role="alert"></p><footer>${button('edit-close','取消')}<button type="submit" class="life-primary">${t('保存')}</button></footer></form>`);
+}
+
+function workdayFace(config,now=new Date()) {
+  const status=workdayTimeline(config,now),style=config.style||'digital';
+  return `<div class="workday-face workday-style-${style}" style="--workday-color:${WORKDAY_COLORS.includes(config.background)?config.background:WORKDAY_COLORS[0]}" data-workday-phase="${status.phase}"><div class="workday-face-top"><span>${t(status.phase==='rest'||status.phase==='finished'?'休息时间':'下班倒计时')}</span>${icon(status.phase==='rest'||status.phase==='finished'?'coffee':'briefcase')}</div><div class="workday-face-core"><small>${status.caption}</small><strong>${status.text}</strong>${style==='ring'?`<div class="workday-ring" style="--workday-progress:${Math.round(status.progress*360)}deg"><span>${Math.round(status.progress*100)}<small>%</small></span></div>`:''}<div class="workday-progress-track" role="progressbar" aria-label="${t('今日工作进度')}" aria-valuenow="${Math.round(status.progress*100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${status.progress*100}%"></i></div><div class="workday-shift"><span>${e(config.startTime||'09:00')}</span><span>${e(config.endTime)}${(config.endTime<=(config.startTime||'09:00'))?' · '+t('次日'):''}</span></div></div><div class="workday-facts">${config.showPayday!==false?`<span>${t('距发薪日')}<b>${status.paydays===0?t('今天'):t('{v0} 天',{v0:status.paydays})}</b></span>`:''}${config.showFriday?`<span>${t('距离周五')}<b>${status.friday===0?t('今天'):t('{v0} 天',{v0:status.friday})}</b></span>`:''}${config.showEarnings?`<span>${t('今日收入')}<b>${status.earnings.toFixed(2)}</b></span>`:''}</div></div>`;
+}
+function workdayStudio(item) {
+  const c=item.config,week=['日','一','二','三','四','五','六'];
+  return `<form class="workday-studio" data-life-form="workday" data-utility-form><section class="workday-preview-column"><p>${t('实时预览')}</p><div class="workday-preview font-${c.font||'system'}" data-workday-preview>${workdayFace(c)}</div><div class="workday-style-picker">${[['digital','数字'],['ring','进度'],['simple','简约']].map(([id,label])=>`<label><input type="radio" name="style" value="${id}" ${(c.style||'digital')===id?'checked':''}><span>${t(label)}</span></label>`).join('')}</div></section><section class="workday-options">${field('title','卡片名称',item.title,'text','required maxlength="30"')}<fieldset class="workday-week"><legend>${t('工作日')}</legend><div>${[1,2,3,4,5,6,0].map(day=>`<label><input type="checkbox" name="workdays" value="${day}" ${c.workdays.includes(day)?'checked':''}><span>${t('周'+week[day])}</span></label>`).join('')}<button type="button" data-life-action="workday-weekdays">${t('工作日')}</button></div></fieldset><div class="life-field-pair">${field('startTime','上班时间',c.startTime||'09:00','time','required')}${field('endTime','下班时间',c.endTime,'time','required')}</div><fieldset class="workday-colors"><legend>${t('背景颜色')}</legend>${WORKDAY_COLORS.map((color,i)=>`<label style="--swatch:${color}"><input type="radio" name="background" value="${color}" aria-label="${t('配色 {count}',{count:i+1})}" ${(c.background||WORKDAY_COLORS[0])===color?'checked':''}><span></span></label>`).join('')}</fieldset><label class="life-field"><span>${t('字体')}</span><select name="font">${[['system','系统字体'],['mono','等宽数字'],['serif','衬线字体']].map(([id,label])=>`<option value="${id}" ${(c.font||'system')===id?'selected':''}>${t(label)}</option>`).join('')}</select></label><fieldset class="workday-extras"><legend>${t('显示更多')}</legend>${[['showPayday','发薪日',c.showPayday!==false],['showFriday','距离周五',c.showFriday],['showEarnings','今天收入',c.showEarnings]].map(([name,label,checked])=>`<label><input type="checkbox" name="${name}" ${checked?'checked':''}>${t(label)}</label>`).join('')}</fieldset><div class="life-field-pair">${field('payday','每月发薪日',c.payday,'number','required min="1" max="31"')}${field('dailyIncome','每天的收入',c.dailyIncome||0,'number','min="0" max="10000000" step="0.01"')}</div><p class="life-help">${t('按所选星期计算；不自动计入法定调休。月底不足发薪日期时取当月最后一天。')}</p><p class="life-form-error" role="alert"></p><button type="submit" class="life-primary workday-save">${t('完成')}</button></section></form>`;
+}
+
+function notesDesk(item) {
+  return `<section class="notes-desk notes-paper-${item.config.color}" data-note-paper><div class="notes-toolbar"><input name="noteTitle" value="${e(item.title)}" maxlength="30" aria-label="${t('卡片名称')}"><div class="notes-colors" aria-label="${t('便签颜色')}">${[['yellow','暖黄'],['pink','浅粉'],['mint','薄荷']].map(([color,label])=>`<button type="button" data-note-color="${color}" aria-label="${t(label)}" title="${t(label)}" aria-pressed="${item.config.color===color}" class="notes-color-${color}"></button>`).join('')}</div>${button('notes-export','导出 TXT','download')}</div><div class="notes-writing" data-widget="notes" data-widget-id="${e(item.id)}"><textarea class="w-notes-input" data-widget-input="notes" maxlength="100000" spellcheck="false" aria-label="${t('便签内容')}" placeholder="${t('写下一点灵感，或今天想做的小事…')}">${e(item.data.notes)}</textarea><footer><span data-live="notes-status" role="status">${t('已保存在本机')}</span><span data-note-count>${t('{count} 字符',{count:Array.from(item.data.notes).length})}</span></footer></div></section>`;
+}
+
+function clockDial(clock,small=false) {
+  return `<span class="world-dial ${clock.isDay?'is-day':'is-night'} ${small?'is-small':''}" aria-hidden="true"><i class="dial-hour" style="transform:rotate(${clock.hourHand}deg)"></i><i class="dial-minute" style="transform:rotate(${clock.minuteHand}deg)"></i><i class="dial-second" style="transform:rotate(${clock.secondHand}deg)"></i><b></b></span>`;
+}
+function worldClockDesk(item,view,now=new Date()) {
+  const preview=new Date(now.getTime()+view.offset*60000),local=Intl.DateTimeFormat().resolvedOptions().timeZone,cities=clockCities(item.config);
+  return `<section class="world-clock-desk"><header class="world-clock-toolbar"><div><small>${t(view.offset?'对比时间':'本地时间')}</small><strong>${e(formatDate(preview,{hour:'2-digit',minute:'2-digit',hour12:false}))}</strong><span>${e(formatDate(preview,{month:'long',day:'numeric',weekday:'long'}))}</span></div>${button('clock-add','添加城市','plus','class="life-primary"')}</header><div class="world-clock-cities">${cities.map((city,index)=>{
+    const clock=zoneClock(city.timeZone,preview,local),hours=Math.abs(clock.difference)/60;
+    return `<article class="world-city ${clock.isDay?'is-day':'is-night'}"><header><div><h3>${e(city.label)}</h3><span>${clock.dayDifference===0?t('今天'):clock.dayDifference<0?t('昨天'):t('明天')} · ${e(offsetLabel(clock.offset))}</span></div><div class="world-city-actions">${index?button('clock-primary','设为主城市','pin',`data-zone="${e(city.timeZone)}"`):`<span class="world-primary">${t('主城市')}</span>`}${cities.length>1?button('clock-remove','移除城市','close',`data-zone="${e(city.timeZone)}"`):''}</div></header><div class="world-city-time">${clockDial(clock)}<div><strong>${clock.time}</strong><span>${e(formatDate(preview,{timeZone:city.timeZone,month:'short',day:'numeric',weekday:'short'}))}</span></div></div><footer><span>${icon(clock.isDay?'sun':'moon')}${t(clock.isDay?'白天':'夜间')}</span><span>${clock.difference===0?t('与本地时间相同'):t(clock.difference<0?'比本地慢 {count} 小时':'比本地快 {count} 小时',{count:hours})}</span></footer></article>`;
+  }).join('')}</div><footer class="world-time-compare"><div><span>${t('拖动对比各地时间')}</span>${button('clock-now','回到现在','refresh',` ${view.offset===0?'disabled':''}`)}</div><input type="range" min="-720" max="720" step="30" value="${view.offset}" data-clock-offset aria-label="${t('时间偏移（分钟）')}"><div class="world-time-scale"><span>−12h</span><span>${t('现在')}</span><span>+12h</span></div></footer></section>`;
+}
+function clockEditor(item,query='') {
+  const existing=clockCities(item.config).map(c=>c.timeZone),matches=CLOCK_CITIES.filter(([label,zone])=>!existing.includes(zone)&&`${t(label)} ${label} ${zone}`.toLowerCase().includes(query.toLowerCase()));
+  return dialogForm('添加城市',`<input type="search" data-clock-search placeholder="${t('搜索城市或时区')}" value="${e(query)}" aria-label="${t('搜索城市或时区')}"><div class="clock-city-results">${matches.map(([label,zone])=>`<button type="button" data-clock-add-zone="${zone}"><span>${t(label)}<small>${e(zone)}</small></span>${icon('plus')}</button>`).join('')||`<p>${t('没有找到匹配的城市')}</p>`}</div><details class="clock-custom"><summary>${t('自定义城市')}</summary><form data-life-form="clock">${field('label','城市名称','','text','required maxlength="60"')}${field('timeZone','IANA 时区','','text','required maxlength="80" placeholder="Europe/London"')}<p class="life-form-error" role="alert"></p><button type="submit" class="life-primary">${t('添加城市')}</button></form></details>`);
+}
+
+function habitDesk(item,view,now=new Date()) {
+  const habits=item.data.habits,today=localDateKey(now),done=habits.filter(h=>h.dates.includes(today)).length,days=habitWeek(view.week,now);
+  const selected=habits.find(h=>h.id===view.active)||habits[0],visible=habits.filter(h=>view.filter==='all'||h.dates.includes(today)===(view.filter==='done'));
+  let detail=`<div class="life-empty">${icon('sparkles')}<p>${t('从一个小习惯开始')}</p></div>`;
+  if(selected){
+    const stats=habitStats(selected,now),month=parseDate(view.month+'-01'),cells=monthCells(month,{weekStart:1,holidays:'none'},now);
+    detail=`<header><h3>${e(selected.name)}</h3>${button('habit-delete','删除习惯','trash',`data-id="${selected.id}"`)}</header><div class="habit-stats"><div><strong>${stats.current}</strong><span>${t('连续天数')}</span></div><div><strong>${stats.total}</strong><span>${t('累计打卡')}</span></div><div><strong>${stats.longest}</strong><span>${t('最长连续')}</span></div></div><nav class="habit-month-nav">${button('habit-month-prev','上个月','left')}<strong>${e(formatDate(month,{year:'numeric',month:'long'}))}</strong>${button('habit-month-next','下个月','right',view.month>=today.slice(0,7)?'disabled':'')}</nav><div class="habit-calendar">${['一','二','三','四','五','六','日'].map(day=>`<span class="habit-calendar-weekday">${t(day)}</span>`).join('')}${cells.map(cell=>{const key=localDateKey(cell.date),checked=selected.dates.includes(key);return `<button type="button" data-habit-date="${key}" data-id="${selected.id}" aria-label="${e(dateLabel(cell.date))}" aria-pressed="${checked}" ${key>today?'disabled':''} class="${checked?'is-checked ':''}${key.slice(0,7)!==view.month?'is-other-month ':''}${key===today?'is-today':''}">${cell.date.getDate()}</button>`;}).join('')}</div><p class="habit-calendar-help">${t('点击日期补记或取消打卡')}</p><details class="habit-rename"><summary>${t('编辑习惯名称')}</summary><form data-life-form="habit-rename" data-id="${selected.id}">${field('name','习惯名称',selected.name,'text','required maxlength="120"')}<button type="submit">${t('保存')}</button></form></details>`;
+  }
+  return `<section class="habit-desk"><header class="habit-today"><div class="habit-today-progress" style="--habit-progress:${habits.length?done/habits.length*360:0}deg"><strong>${done}<small>/${habits.length}</small></strong></div><div><h3>${t('今天的习惯')}</h3><p>${e(formatDate(now,{month:'long',day:'numeric',weekday:'long'}))}</p></div>${button('habit-add','添加习惯','plus','class="life-primary"')}</header><div class="habit-layout"><section class="habit-tracker"><div class="habit-list-toolbar"><nav class="life-segments">${[['all','全部'],['active','未完成'],['done','已完成']].map(([id,label])=>`<button type="button" data-habit-filter="${id}" aria-pressed="${view.filter===id}">${t(label)}</button>`).join('')}</nav><div class="habit-week-nav">${button('habit-week-prev','上一周','left')}<span>${formatDate(days[0].date,{month:'numeric',day:'numeric'})} – ${formatDate(days[6].date,{month:'numeric',day:'numeric'})}</span>${button('habit-week-next','下一周','right',view.week===0?'disabled':'')}</div></div>${view.add||!habits.length?`<form class="habit-add-form" data-life-form="habit-add"><input name="name" required maxlength="120" placeholder="${t('添加一个好习惯')}" aria-label="${t('新习惯')}" autocomplete="off"><button type="submit" class="life-primary">${t('添加')}</button></form>`:''}<div class="habit-week-heading"><span>${t('习惯')}</span>${days.map(day=>`<span class="${day.key===today?'is-today':''}"><small>${e(formatDate(day.date,{weekday:'short'}))}</small><b>${day.date.getDate()}</b></span>`).join('')}</div><div class="habit-tracker-list">${visible.map(h=>`<div class="habit-tracker-row ${h.id===selected?.id?'is-selected':''}"><button type="button" data-habit-select="${h.id}" class="habit-name"><span>${e(h.name)}</span><small>${t('连续 {v0} 天',{v0:habitStats(h,now).current})}</small></button>${days.map(day=>`<button type="button" class="habit-day ${h.dates.includes(day.key)?'is-checked':''}" data-habit-date="${day.key}" data-id="${h.id}" aria-pressed="${h.dates.includes(day.key)}" aria-label="${e(h.name+' · '+dateLabel(day.date))}" ${day.future?'disabled':''}>${h.dates.includes(day.key)?icon('check'):'<i></i>'}</button>`).join('')}</div>`).join('')||`<div class="life-empty">${icon('sparkles')}<p>${t(habits.length?'这里没有匹配的习惯':'每天一点点，积累看得见')}</p>${!habits.length?`<div class="habit-suggestions">${['喝水','阅读','运动'].map(label=>`<button type="button" data-habit-suggestion="${t(label)}">+ ${t(label)}</button>`).join('')}</div>`:''}</div>`}</div></section><aside class="habit-detail">${detail}</aside></div>${view.deleted?`<div class="habit-undo" role="status">${t('习惯已删除')}${button('habit-undo','撤销')}</div>`:''}</section>`;
+}
+
+function countdownCardFace(item,now=new Date()) {
+  const entry=countdownPrimary(item,now);
+  if(!entry)return `<button type="button" class="countdown-card-empty" data-action="widget-open">${icon('calendar')}<span>${t('添加倒数日')}</span></button>`;
+  return `<button type="button" class="countdown-card-face tone-${entry.tone}" data-action="widget-open"><span class="countdown-card-name">${e(entry.title)}</span><span class="countdown-card-caption">${caption(entry.occurrence.days)}</span><span class="countdown-card-days"><strong data-live="countdown-number">${Math.abs(entry.occurrence.days)}</strong><small>${t('天')}</small></span><span class="countdown-card-date">${e(entry.occurrence.key.replaceAll('-','.'))}</span></button>`;
+}
+function worldClockCardFace(item,now=new Date()) {
+  const city=clockCities(item.config)[0],clock=zoneClock(city.timeZone,now);
+  return `<button type="button" class="world-clock-card" data-action="widget-open"><span class="world-clock-card-name">${e(city.label)}<small>${e(offsetLabel(clock.offset))}</small></span><span class="world-clock-card-face">${clockDial(clock,true)}<strong>${clock.time}</strong></span><span class="world-clock-card-date">${e(formatDate(now,{timeZone:city.timeZone,month:'short',day:'numeric',weekday:'short'}))}</span></button>`;
+}
+
+return {LIFE_WIDGETS, lifeWorkspace, countdownBrowser, countdownEditor, workdayFace, workdayStudio, notesDesk, clockDial, worldClockDesk, clockEditor, habitDesk, countdownCardFace, worldClockCardFace};
 })();
 const __community_widget = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -8991,10 +9375,10 @@ function hotsearchCard(item, state) {
   const sources = item.config.subscriptions.map(hotsearchSource);
   if (sources.length && !sources.some(entry=>entry.id===source.id)) sources.unshift(source);
   const content = !item.config.subscriptions.length ? `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t('还没有订阅榜单')}</strong><span>${t('管理订阅')}</span></button>`
-    : status.data?.items.length ? hotsearchRows(status.data,source,state,5)
+    : status.data?.items.length ? hotsearchRows(status.data,source,state,4)
     : `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t(status.status==='error'?'榜单暂不可用':status.data?'这个榜单暂时没有内容。':status.status==='loading'||item.config.enabled?'正在加载榜单…':'点击查看实时榜单')}</strong><span>${t('打开热搜榜')}</span></button>`;
   const picker = sources.length ? `<select class="hotsearch-card-picker" data-hot-card-select aria-label="${t('榜单平台')}">${sources.map(entry=>`<option value="${entry.id}" ${entry.id===source.id?'selected':''}>${esc(t(entry.name))}</option>`).join('')}</select>` : '';
-  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${hotsearchLogo(entry)}<span>${esc(t(entry.name))}</span></button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
+  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${hotsearchLogo(entry)}<span>${esc(t(entry.name))}</span></button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
 }
 
 function refreshHotsearchCards(container, state) {
@@ -9743,7 +10127,7 @@ function memoList(entries, active) {
 
 function memoDetail(item, view) {
   const entries = listMemos(item.data.entries, view.query, view.sort), active = item.data.entries.find(entry => entry.id === view.active);
-  return `<div class="memo-workspace ${view.mobileList ? 'show-memo-list' : ''}"><aside class="memo-sidebar"><div class="memo-sidebar-heading"><h2 id="dialog-title">${t('备忘录')}</h2><select id="memo-sort" aria-label="${t('排序')}"><option value="updated" ${view.sort === 'updated' ? 'selected' : ''}>${t('最近修改')}</option><option value="title" ${view.sort === 'title' ? 'selected' : ''}>${t('按标题')}</option></select></div><input id="memo-query" type="search" value="${e(view.query)}" placeholder="${t('搜索备忘录')}" aria-label="${t('搜索备忘录')}"><div id="memo-list">${memoList(entries, view.active)}</div><button type="button" class="memo-new-button" data-detail-action="memo-new" aria-label="${t('新建备忘录')}" title="${t('新建备忘录')}">${icon('plus')}</button></aside>
+  return `<div class="memo-workspace ${view.mobileList ? 'show-memo-list' : ''}"><aside class="memo-sidebar"><div class="memo-sidebar-heading"><h2 id="dialog-title" tabindex="-1">${t('备忘录')}</h2><select id="memo-sort" aria-label="${t('排序')}"><option value="updated" ${view.sort === 'updated' ? 'selected' : ''}>${t('最近修改')}</option><option value="title" ${view.sort === 'title' ? 'selected' : ''}>${t('按标题')}</option></select></div><input id="memo-query" type="search" value="${e(view.query)}" placeholder="${t('搜索备忘录')}" aria-label="${t('搜索备忘录')}"><div id="memo-list">${memoList(entries, view.active)}</div><button type="button" class="memo-new-button" data-detail-action="memo-new" aria-label="${t('新建备忘录')}" title="${t('新建备忘录')}">${icon('plus')}</button></aside>
     <section class="memo-editor"><header class="memo-editor-header">${appButton('memo-toggle-list', t('备忘录列表'), 'panel')}${active ? `<input id="memo-title" value="${e(active.title)}" maxlength="120" placeholder="${t('未命名备忘录')}" aria-label="${t('备忘录标题')}">` : `<span class="memo-empty-heading">${t('备忘录')}</span>`}<div class="memo-document-controls">${active ? appButton('memo-pin', t(active.pinned ? '取消置顶' : '置顶'), 'pin', `aria-pressed="${active.pinned}"`) + appButton('memo-export', t('导出文本'), 'download') + appButton('memo-delete', t('删除'), 'trash') : ''}</div>${windowControls(view.expanded)}</header>
     ${view.deleted ? `<div class="memo-deleted" role="status">${t('备忘录已删除')}<button type="button" data-detail-action="memo-undo">${t('撤销')}</button></div>` : ''}
     ${active ? `<textarea id="memo-text" data-memo-id="${e(active.id)}" maxlength="100000" placeholder="${t('开始记录…')}" aria-label="${t('备忘录内容')}">${e(active.text)}</textarea><footer class="memo-status"><div><span>${t('最后编辑')} <time id="memo-updated">${e(memoTimestamp(active.updatedAt))}</time></span><span>${t('创建时间')} ${e(memoTimestamp(active.createdAt))}</span></div><div><span id="memo-save-status" role="status">${t('已保存在本机')}</span><span id="memo-count">${t('{count} 字符', {count:active.text.length})}</span></div></footer>` : `<div class="memo-empty">${icon('note')}<p>${t('选择或新建一条备忘录')}</p><button type="button" data-detail-action="memo-new">${t('新建备忘录')}</button></div>`}</section></div>`;
@@ -18473,6 +18857,8 @@ const { bindPomodoro } = __pomodoro_runtime;
 const { renderWidgetSummary } = __widget_summary;
 const { bookmarkCard } = __bookmarks_view;
 const { bindBookmarkCards } = __bookmarks_workspace;
+const { countdownPrimary, workdayTimeline } = __widget_life;
+const { countdownCardFace, workdayFace, worldClockCardFace } = __widget_life_view;
 const { communityCard } = __community_widget;
 const { isCompactWidget } = __widget_sizes;
 const { t } = __i18n;
@@ -18599,15 +18985,12 @@ function renderTodo(state) {
 }
 
 function countdownView(item, now = new Date()) {
-  const config = item.config;
-  const days = daysUntil(config.date, now);
-  return { title: config.title, number: days === null ? '—' : Math.abs(days).toString(), caption: days === null ? t("设置一个期待的日子") : days < 0 ? t("已经过去") : days === 0 ? t("就是今天") : t("还有"), unit: days === 0 ? '♥' : t("天"), date: validDateParts(config.date) ? config.date.replaceAll('-', '.') : t("点击右上角设置") };
+  const entry=countdownPrimary(item,now),days=entry?.occurrence.days;
+  return {title:entry?.title||t('添加倒数日'),number:entry?String(Math.abs(days)):'—',caption:t(!entry?'添加一个值得期待的日子':days<0?'已经过去':days===0?'就是今天':'还有'),unit:t('天'),date:entry?entry.occurrence.key.replaceAll('-','.'):''};
 }
 
 function renderCountdown(item) {
-  const view = countdownView(item), parts = validDateParts(item.config.date);
-  const date = parts ? new Date(parts[0],parts[1]-1,parts[2]) : null;
-  return `${header(t('倒数日'), 'flag')}<div class="countdown-layout"><div class="countdown-date-sheet" aria-hidden="true"><span>${date ? escapeHtml(formatDate(date,{month:'short'})) : '—'}</span><strong>${date ? date.getDate() : '—'}</strong><small>${date ? escapeHtml(formatDate(date,{weekday:'long'})) : ''}</small></div><div class="countdown-overview"><div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div></div></div>`;
+  return `${header(t('倒数日'),'calendar')}<div class="countdown-card-surface">${countdownCardFace(item)}</div>`;
 }
 
 function focusRemaining(focus, now = Date.now()) {
@@ -18627,21 +19010,11 @@ function renderFocus(state) {
 }
 
 function workdayStatus(config, now = new Date()) {
-  const [hour, minute] = String(config.endTime || '18:00').split(':').map(Number);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0);
-  const workdays = Array.isArray(config.workdays) ? config.workdays : [1, 2, 3, 4, 5];
-  const isWorkday = workdays.includes(now.getDay());
-  const remaining = Math.max(0, Math.ceil((end - now) / 1000));
-  const payday = Math.max(1, Math.min(31, Math.trunc(Number(config.payday) || 10)));
-  let payDate = new Date(now.getFullYear(), now.getMonth(), Math.min(payday, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()));
-  if (dayStamp(payDate) < dayStamp(now)) payDate = new Date(now.getFullYear(), now.getMonth() + 1, Math.min(payday, new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate()));
-  return { remaining, isWorkday, text: !isWorkday ? t("休息日") : remaining === 0 ? t("已下班") : `${String(Math.floor(remaining / 3600)).padStart(2, '0')}:${String(Math.floor((remaining % 3600) / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`, caption: !isWorkday ? t("今天，把时间留给生活") : remaining === 0 ? t("今天辛苦了，好好休息") : t("距离下班还有"), paydays: Math.round((dayStamp(payDate) - dayStamp(now)) / DAY) };
+  return workdayTimeline(config,now);
 }
 
 function renderWorkday(item) {
-  const config = item.config;
-  const status = workdayStatus(config);
-  return `${header(t("下班倒计时"), 'briefcase')}<div class="w-workday-caption" data-live="workday-caption">${status.caption}</div><strong class="w-workday-time" data-live="workday-time">${status.text}</strong><div class="w-workday-finish">${t("每天 {v0} 准时收工", {v0: escapeHtml(config.endTime)})}</div><div class="w-workday-pay"><span>${t("距发薪日")}</span><strong data-live="workday-pay">${status.paydays === 0 ? t("就是今天") : `${t("{v0} 天", {v0: status.paydays})}`}</strong></div>`;
+  return `<div class="workday-card-wrap font-${escapeHtml(item.config.font||'system')}">${workdayFace(item.config)}${configButton()}<button class="workday-open" type="button" data-action="widget-open" aria-label="${t('下班倒计时')}"></button></div>`;
 }
 
 function getQuote(item, now = new Date()) {
@@ -18745,7 +19118,7 @@ function habitList(state, now = new Date()) {
 }
 
 function renderHabit(state) {
-  return `${header(t("习惯打卡"), 'sparkles', '<span class="w-habit-today">TODAY</span>')}<ul class="w-habit-list" data-live="habit-list">${habitList(state)}</ul><form class="w-inline-form" data-widget-form="habit"><input type="text" name="text" maxlength="60" autocomplete="off" placeholder="${t("添加一个好习惯")}" aria-label="${t("新习惯")}"><button type="submit" class="widget-icon-button" aria-label="${t("添加习惯")}">${icon('plus')}</button></form>`;
+  return `${header(t("习惯打卡"), 'sparkles', `<span class="w-habit-today" data-live="habit-summary">${t('今天')} ${state.habits.filter(h=>h.dates.includes(localDateKey())).length}/${state.habits.length}</span>`)}<ul class="w-habit-list" data-live="habit-list">${habitList(state)}</ul><form class="w-inline-form" data-widget-form="habit"><input type="text" name="text" maxlength="60" autocomplete="off" placeholder="${t("添加一个好习惯")}" aria-label="${t("新习惯")}"><button type="submit" class="widget-icon-button" aria-label="${t("添加习惯")}">${icon('plus')}</button></form>`;
 }
 
 function timeInZone(zone, now, seconds = false) {
@@ -18757,9 +19130,7 @@ function zoneDate(zone, now) {
 }
 
 function renderClock(item, now = new Date()) {
-  const zone = item.config.timeZone;
-  const label = item.config.label;
-  return `${header(label || t("世界时钟"), 'globe')}<strong class="w-clock-time" data-live="world-time">${timeInZone(zone, now, true)}</strong><div class="w-clock-date" data-live="world-date">${escapeHtml(zoneDate(zone, now))}</div><div class="w-clock-world"><span>${t("伦敦")}<strong data-live="world-london">${timeInZone('Europe/London', now)}</strong></span><span>${t("纽约")}<strong data-live="world-newyork">${timeInZone('America/New_York', now)}</strong></span></div>`;
+  return `${header(t('世界时钟'),'globe')}<div class="world-clock-card-surface">${worldClockCardFace(item,now)}</div>`;
 }
 
 function renderWeather(item, state) {
@@ -18909,6 +19280,7 @@ function updateHabitCards(binding) {
     if (!item) continue;
     const list = root.querySelector('[data-live="habit-list"]');
     if (list) list.innerHTML = habitList(item.data);
+    setText(root,'habit-summary',`${t('今天')} ${item.data.habits.filter(h=>h.dates.includes(localDateKey())).length}/${item.data.habits.length}`);
     root.dataset.widgetDay = localDateKey();
   }
 }
@@ -19157,6 +19529,8 @@ function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'workday')) {
     const item = findItem(root, state);
     if (!item) continue;
+    const face=root.querySelector('.workday-face');
+    if(face){const template=document.createElement('template');template.innerHTML=workdayFace(item.config,now);face.replaceWith(template.content.firstElementChild);}
     const status = workdayStatus(item.config, now);
     setText(root, 'workday-caption', status.caption);
     setText(root, 'workday-time', status.text);
@@ -19165,12 +19539,16 @@ function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'countdown')) {
     const item = findItem(root, state);
     if (!item) continue;
+    const surface=root.querySelector('.countdown-card-surface');
+    if(surface){const markup=countdownCardFace(item,now);if(surface.innerHTML!==markup)surface.innerHTML=markup;}
     const view = countdownView(item, now);
     for (const key of ['title', 'caption', 'number', 'unit', 'date']) setText(root, `countdown-${key}`, view[key]);
   }
   for (const root of widgetRoots(container, 'clock')) {
     const item = findItem(root, state);
     if (!item) continue;
+    const surface=root.querySelector('.world-clock-card-surface');
+    if(surface){const template=document.createElement('template');template.innerHTML=worldClockCardFace(item,now);const fresh=template.content.firstElementChild;for(const selector of ['.world-clock-card-name','.world-clock-card-face','.world-clock-card-date']){const target=surface.querySelector(selector);if(target)target.innerHTML=fresh.querySelector(selector).innerHTML;}}
     const zone = item.config.timeZone;
     setText(root, 'world-time', timeInZone(zone, now, true));
     setText(root, 'world-date', zoneDate(zone, now));
@@ -20574,6 +20952,186 @@ function bindWeatherWorkspace(root, initial, host) {
 
 return {bindWeatherWorkspace};
 })();
+const __widget_life_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { localDateKey, parseDate } = __calendar;
+const { bindWidgets } = __widgets;
+const { icon } = __icons;
+const { validateWidgetData } = __widget_data;
+const { CLOCK_CITIES, countdownEntries, clockCities, validateClockCities } = __widget_life;
+const { countdownBrowser, countdownEditor, workdayStudio, workdayFace, notesDesk, worldClockDesk, clockEditor, habitDesk } = __widget_life_view;
+
+const uid=()=>globalThis.crypto.randomUUID();
+function readWorkdayForm(form,previous) {
+  const value=name=>String(form.get(name)||'').trim();
+  return {title:value('title'),config:{...previous,startTime:value('startTime'),endTime:value('endTime'),payday:Number(value('payday')),
+    workdays:form.getAll('workdays').map(Number),style:value('style'),background:value('background'),font:value('font'),
+    showPayday:form.has('showPayday'),showFriday:form.has('showFriday'),showEarnings:form.has('showEarnings'),dailyIncome:Number(value('dailyIncome'))}};
+}
+
+function bindLifeWorkspace(root,initial,host) {
+  const controller=new AbortController(),options={signal:controller.signal},kind=initial.widget;
+  const current=()=>host.getState().items.find(item=>item.id===initial.id);
+  const alive=()=>!controller.signal.aborted&&root.isConnected&&!!current();
+  const content=root.querySelector('[data-life-content]'),editor=root.querySelector('[data-life-editor]');
+  const view={active:kind==='countdown'?countdownEntries(initial)[0]?.id:initial.data.habits?.[0]?.id,category:'all',filter:'all',week:0,month:localDateKey().slice(0,7),add:false,offset:0,deleted:null};
+  let busy=false,editing=false,returnFocus=null,lastDay=localDateKey(),cleanupNotes=()=>{};
+  const feedback=message=>{const node=root.querySelector('.life-feedback');node.textContent=message;node.hidden=!message;};
+  function draw() {
+    if(!alive())return;
+    const scroll=content.scrollTop,focused=document.activeElement;
+    const attrs=focused&&content.contains(focused)?[...focused.attributes].filter(a=>a.name.startsWith('data-')).map(a=>[a.name,a.value]):[];
+    content.innerHTML=kind==='countdown'?countdownBrowser(current(),view):kind==='workday'?workdayStudio(current()):kind==='notes'?notesDesk(current()):kind==='clock'?worldClockDesk(current(),view):habitDesk(current(),view);
+    content.scrollTop=scroll;
+    if(attrs.length){const selector=attrs.map(([name,value])=>`[${name}="${CSS.escape(value)}"]`).join('');content.querySelector(selector)?.focus({preventScroll:true});}
+  }
+  function openEditor(html) {
+    returnFocus=document.activeElement;editing=true;editor.innerHTML=html;
+    content.inert=true;root.querySelector('.utility-app-header').inert=true;
+    (editor.querySelector('input:not([type=hidden])')||editor.querySelector('button'))?.focus();
+  }
+  function closeEditor() {
+    editing=false;editor.innerHTML='';content.inert=false;root.querySelector('.utility-app-header').inert=false;
+    (returnFocus?.isConnected?returnFocus:root.querySelector('#dialog-title'))?.focus({preventScroll:true});
+  }
+  async function run(action) {
+    if(busy||!alive())return;
+    busy=true;root.setAttribute('aria-busy','true');feedback('');
+    for(const node of root.querySelectorAll('.life-form-error,.life-editor-feedback'))node.textContent='';
+    try{await action();}
+    catch(error){if(alive()){const inline=editor.querySelector('.life-editor-feedback')||content.querySelector('.life-form-error');if(inline)inline.textContent=error.message;else feedback(error.message||t('保存失败，请重试'));}}
+    finally{busy=false;if(alive())root.removeAttribute('aria-busy');}
+  }
+  async function dataSave(patch) {
+    const item=current(),safe=validateWidgetData(kind,{...item.data,...patch},'data');
+    await host.saveData(item.id,safe,JSON.stringify(item.data));
+  }
+  async function settingsSave(patch) {
+    const item=current();return host.saveSettings(item.id,{title:item.title,config:item.config,...patch},JSON.stringify([item.title,item.config]));
+  }
+  async function saveCities(cities) {
+    const safe=validateClockCities(cities,'config.cities');
+    await settingsSave({config:{...current().config,cities:safe,label:safe[0].label,timeZone:safe[0].timeZone}});
+    if(alive()){if(editing)closeEditor();draw();}
+  }
+  async function addHabit(name) {
+    if(current().data.habits.length>=100)throw new Error(t('习惯最多支持 100 项'));
+    const habit={id:uid(),name:name.trim(),dates:[]};
+    await dataSave({habits:[...current().data.habits,habit]});view.active=habit.id;view.add=false;view.filter='all';draw();
+  }
+  function updatePreview() {
+    const form=content.querySelector('[data-life-form=workday]');if(!form)return;
+    const {config}=readWorkdayForm(new FormData(form),current().config);
+    if(!/^\d\d:\d\d$/.test(config.startTime)||!/^\d\d:\d\d$/.test(config.endTime))return;
+    const preview=form.querySelector('[data-workday-preview]');preview.className='workday-preview font-'+config.font;preview.innerHTML=workdayFace(config);
+  }
+  function tick() {
+    if(!alive()||document.hidden)return;
+    if(kind==='workday')updatePreview();
+    else if(kind==='clock'&&!editing){
+      // Update time surfaces only; keep city actions and the comparison slider focused.
+      const next=document.createElement('template');next.innerHTML=worldClockDesk(current(),view);
+      const oldCards=content.querySelectorAll('.world-city'),newCards=next.content.querySelectorAll('.world-city');
+      oldCards.forEach((card,i)=>{const fresh=newCards[i];if(!fresh)return;card.className=fresh.className;for(const selector of ['.world-city-time','footer','header>div:first-child>span'])card.querySelector(selector).innerHTML=fresh.querySelector(selector).innerHTML;});
+      content.querySelector('.world-clock-toolbar>div').innerHTML=next.content.querySelector('.world-clock-toolbar>div').innerHTML;
+    }
+    const day=localDateKey();if(day!==lastDay){if(view.month===lastDay.slice(0,7))view.month=day.slice(0,7);lastDay=day;if(['habit','countdown'].includes(kind)&&!editing)draw();}
+  }
+  async function click(event) {
+    const button=event.target.closest('button');
+    if(event.target.classList.contains('life-overlay')){closeEditor();return;}
+    if(!button)return;
+    const action=button.dataset.lifeAction;
+    if(button.dataset.detailAction==='window-expand'){
+      const dialog=root.closest('dialog'),expanded=dialog.classList.toggle('widget-app-expanded');
+      button.innerHTML=icon(expanded?'minimize':'maximize');button.setAttribute('aria-pressed',String(expanded));button.setAttribute('aria-label',t(expanded?'还原窗口':'最大化窗口'));return;
+    }
+    if(action==='edit-close'){closeEditor();return;}
+    if(button.dataset.countdownSelect){view.active=button.dataset.countdownSelect;draw();return;}
+    if(button.dataset.countdownCategory){view.category=button.dataset.countdownCategory;draw();return;}
+    if(button.dataset.countdownFilter){view.filter=button.dataset.countdownFilter;draw();return;}
+    if(action==='countdown-new'||action==='countdown-edit'){
+      openEditor(countdownEditor(action==='countdown-edit'?countdownEntries(current()).find(e=>e.id===button.dataset.id):{category:view.category==='all'?'anniversary':view.category}));return;
+    }
+    if(action==='countdown-pin')return run(async()=>{await dataSave({events:countdownEntries(current()).map(entry=>entry.id===button.dataset.id?{...entry,pinned:!entry.pinned}:entry)});draw();});
+    if(action==='countdown-delete')return run(async()=>{
+      const entries=countdownEntries(current()),deleted=entries.find(e=>e.id===button.dataset.id);
+      await dataSave({events:entries.filter(e=>e.id!==button.dataset.id)});view.deleted=deleted;view.active='';draw();
+      feedback(t('倒数日已删除'));const undo=document.createElement('button');undo.type='button';undo.dataset.lifeAction='countdown-undo';undo.textContent=t('撤销');root.querySelector('.life-feedback').append(undo);
+    });
+    if(action==='countdown-undo'&&view.deleted)return run(async()=>{await dataSave({events:[...countdownEntries(current()),view.deleted]});view.active=view.deleted.id;view.deleted=null;draw();});
+    if(action==='workday-weekdays'){for(const input of content.querySelectorAll('[name=workdays]'))input.checked=Number(input.value)>=1&&Number(input.value)<=5;updatePreview();return;}
+    if(button.dataset.noteColor)return run(async()=>{await settingsSave({config:{...current().config,color:button.dataset.noteColor}});content.querySelector('[data-note-paper]').className='notes-desk notes-paper-'+button.dataset.noteColor;for(const swatch of content.querySelectorAll('[data-note-color]'))swatch.setAttribute('aria-pressed',String(swatch===button));});
+    if(action==='notes-export'){
+      const item=current(),url=URL.createObjectURL(new Blob([item.data.notes],{type:'text/plain;charset=utf-8'})),link=document.createElement('a');
+      link.href=url;link.download=item.title.replace(/[\\/:*?"<>|]/g,'_')+'.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;
+    }
+    if(action==='clock-add'){openEditor(clockEditor(current()));return;}
+    if(button.dataset.clockAddZone)return run(()=>saveCities([...clockCities(current().config),{label:t(CLOCK_CITIES.find(c=>c[1]===button.dataset.clockAddZone)[0]),timeZone:button.dataset.clockAddZone}]));
+    if(action==='clock-remove')return run(()=>saveCities(clockCities(current().config).filter(c=>c.timeZone!==button.dataset.zone)));
+    if(action==='clock-primary')return run(()=>saveCities([...clockCities(current().config)].sort((a,b)=>Number(b.timeZone===button.dataset.zone)-Number(a.timeZone===button.dataset.zone))));
+    if(action==='clock-now'){view.offset=0;draw();return;}
+    if(action==='habit-add'){view.add=!view.add;draw();content.querySelector('[data-life-form=habit-add] input')?.focus();return;}
+    if(button.dataset.habitSuggestion)return run(()=>addHabit(button.dataset.habitSuggestion));
+    if(button.dataset.habitSelect){view.active=button.dataset.habitSelect;draw();return;}
+    if(button.dataset.habitFilter){view.filter=button.dataset.habitFilter;draw();return;}
+    if(action==='habit-week-prev'||action==='habit-week-next'){view.week=Math.min(0,view.week+(action==='habit-week-prev'?-1:1));draw();return;}
+    if(action==='habit-month-prev'||action==='habit-month-next'){
+      const month=parseDate(view.month+'-01');month.setMonth(month.getMonth()+(action==='habit-month-prev'?-1:1));
+      if(month.getFullYear()>=1900&&localDateKey(month).slice(0,7)<=localDateKey().slice(0,7))view.month=localDateKey(month).slice(0,7);draw();return;
+    }
+    if(button.dataset.habitDate&&button.dataset.habitDate<=localDateKey())return run(async()=>{
+      const id=button.dataset.id,day=button.dataset.habitDate;
+      const habits=current().data.habits.map(h=>h.id===id?{...h,dates:h.dates.includes(day)?h.dates.filter(d=>d!==day):[...h.dates,day].sort()}:h);
+      await dataSave({habits});view.active=id;draw();
+    });
+    if(action==='habit-delete')return run(async()=>{const deleted=current().data.habits.find(h=>h.id===button.dataset.id);await dataSave({habits:current().data.habits.filter(h=>h.id!==button.dataset.id)});view.deleted=deleted;view.active='';draw();});
+    if(action==='habit-undo'&&view.deleted)return run(async()=>{await dataSave({habits:[...current().data.habits,view.deleted]});view.active=view.deleted.id;view.deleted=null;draw();});
+  }
+  root.addEventListener('click',event=>{void click(event).catch(error=>feedback(error.message));},options);
+  root.addEventListener('submit',event=>{
+    const form=event.target;if(!form.dataset.lifeForm)return;event.preventDefault();event.stopPropagation();
+    const values=new FormData(form),value=name=>String(values.get(name)||'').trim();
+    void run(async()=>{
+      if(form.dataset.lifeForm==='countdown'){
+        const entries=countdownEntries(current()),id=form.dataset.id||uid();
+        const entry={id,title:value('eventTitle'),date:value('date'),category:value('category'),repeat:value('repeat'),tone:value('tone'),pinned:values.has('pinned')};
+        await dataSave({events:form.dataset.id?entries.map(e=>e.id===id?entry:e):[...entries,entry]});view.active=id;view.category='all';view.filter='all';closeEditor();draw();
+      } else if(form.dataset.lifeForm==='workday'){
+        await settingsSave(readWorkdayForm(values,current().config));feedback(t('设置已保存'));updatePreview();
+      } else if(form.dataset.lifeForm==='clock')await saveCities([...clockCities(current().config),{label:value('label'),timeZone:value('timeZone')}]);
+      else if(form.dataset.lifeForm==='habit-add')await addHabit(value('name'));
+      else if(form.dataset.lifeForm==='habit-rename'){await dataSave({habits:current().data.habits.map(h=>h.id===form.dataset.id?{...h,name:value('name')}:h)});draw();}
+    });
+  },options);
+  root.addEventListener('input',event=>{
+    if(kind==='workday')updatePreview();
+    if(event.target.matches('[data-widget-input=notes]'))content.querySelector('[data-note-count]').textContent=t('{count} 字符',{count:Array.from(event.target.value).length});
+    if(event.target.hasAttribute('data-clock-offset')){view.offset=Number(event.target.value);tick();const reset=content.querySelector('[data-life-action=clock-now]');reset.disabled=view.offset===0;}
+    if(event.target.hasAttribute('data-clock-search')){
+      const query=event.target.value;editor.innerHTML=clockEditor(current(),query);const input=editor.querySelector('[data-clock-search]');input.focus();
+    }
+  },options);
+  root.addEventListener('change',event=>{
+    if(event.target.name==='noteTitle')void run(async()=>{await settingsSave({title:event.target.value.trim()});});
+  },options);
+  root.addEventListener('keydown',event=>{
+    if(editing&&event.key==='Escape'){event.preventDefault();event.stopPropagation();if(!busy)closeEditor();}
+    if(editing&&event.key==='Tab'){
+      const nodes=[...editor.querySelectorAll('button,input,select,summary')].filter(n=>!n.disabled&&n.getClientRects().length),first=nodes[0],last=nodes.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+    }
+    if(kind==='notes'&&(event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();void host.save().catch(error=>feedback(error.message));}
+  },options);
+  draw();
+  if(kind==='notes')cleanupNotes=bindWidgets(root,{...host,openDialog:()=>{}});
+  const timer=kind==='notes'?null:setInterval(tick,1000);
+  return ()=>{controller.abort();clearInterval(timer);cleanupNotes();};
+}
+
+return {readWorkdayForm, bindLifeWorkspace};
+})();
 const __widget_workspaces = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, formatDate } = __i18n;
@@ -20582,6 +21140,8 @@ const { icon } = __icons;
 const { windowControls } = __widget_app_controls;
 const { renderWidgetContent, bindWidgets, refreshLiveWidgets, daysUntil, workdayStatus } = __widgets;
 const { parseDate, localDateKey } = __calendar;
+const { LIFE_WIDGETS, lifeWorkspace } = __widget_life_view;
+const { bindLifeWorkspace } = __widget_life_workspace;
 
 const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks'];
 const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',calculator:'calculator',hotlinks:'trending'};
@@ -20640,11 +21200,13 @@ function tools(item) {
 }
 
 function utilityWorkspace(item,state) {
+  if(LIFE_WIDGETS.includes(item.widget))return lifeWorkspace(item,state);
   const content=item.widget==='countdown'?countdownContent(item):item.widget==='workday'?workdayContent(item):renderWidgetContent(item,state);
   return `<div class="utility-app" data-utility-type="${item.widget}">${workspaceHeader(item)}<div class="utility-layout"><section class="utility-main"><section class="utility-panel widget-inner w-${item.widget}" data-widget="${item.widget}" data-widget-id="${e(item.id)}" data-widget-day="${localDateKey()}">${content}</section>${tools(item)}</section>${utilitySettings(item)}</div></div>`;
 }
 
 function bindUtilityWorkspace(root,item,host) {
+  if(LIFE_WIDGETS.includes(item.widget))return bindLifeWorkspace(root,item,host);
   const controller=new AbortController(), options={signal:controller.signal};
   const initial=JSON.stringify([item.title,item.config]), form=root.querySelector('[data-utility-form]');
   const latest=()=>host.getState().items.find(entry=>entry.id===item.id);
@@ -23121,6 +23683,7 @@ function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="${t("图标颜色 {v0}", {v0: c})}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="${t("自定义图标颜色")}" value="${esc(selected || COLORS[0])}"></div>`; }
 let viewerCleanup=()=>{};
 function openDialog(kind,data={}) {
+ if(kind==='widget-config'&&['countdown','workday','notes','clock','habit'].includes(data.item?.widget))kind='widget-detail';
  if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
  viewerCleanup(); viewerCleanup=()=>{};
  if(kind!=='settings' || !dialog.open || dialogKind!=='settings')dialog.classList.toggle('settings-drawer',kind==='settings' && state.settings.settingsPresentation==='sidebar');
@@ -23207,6 +23770,7 @@ function openDialog(kind,data={}) {
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
  else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch','pomodoro','bookmarks'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
