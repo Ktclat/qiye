@@ -158,6 +158,14 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .workspace-dialog input[type=range]::-moz-range-track{height:4px;border-radius:5px;background:color-mix(in srgb,var(--muted) 23%,transparent)}
 .workspace-dialog input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--accent);border:2px solid var(--workspace-pane);border-radius:50%}
 .workspace-dialog input[type=range]:focus-visible{outline:1px solid var(--accent);outline-offset:4px;border-radius:8px}
+/* Settings use a neutral keyboard focus ring, without a persistent accent outline. */
+#dialog.settings-dialog{--settings-focus:#b8b8b8}
+html[data-theme=light] #dialog.settings-dialog{--settings-focus:#565656}
+#dialog.settings-dialog :is(input,select,textarea,button,a):focus{outline:none}
+#dialog.settings-dialog :is(input,select,textarea,button,a):focus-visible{outline:2px solid var(--settings-focus);outline-offset:3px}
+#dialog.settings-dialog.pointer-focus :is(input,select,textarea,button,a):focus{outline:none}
+#dialog.settings-dialog :is(.theme-option,.material-option).selected{border-color:var(--settings-focus)}
+@media(forced-colors:active){html[data-theme] #dialog.settings-dialog{--settings-focus:CanvasText}}
 .icon-color-field .color-input{appearance:none;-webkit-appearance:none;border:0;padding:0;background:none;overflow:hidden;cursor:pointer}
 .icon-color-field .color-input::-webkit-color-swatch-wrapper{padding:0}
 .icon-color-field .color-input::-webkit-color-swatch{border:1px solid var(--control-border);border-radius:50%}

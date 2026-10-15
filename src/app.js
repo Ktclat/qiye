@@ -1323,8 +1323,11 @@ document.addEventListener('keydown',event=>{
  if(event.key.toLowerCase()==='e'){editing=!editing;renderDesktop();}
 });
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeDialog();}});
+// Native selects can match :focus-visible even after a pointer selection.
+dialog.addEventListener('pointerdown',()=>dialog.classList.add('pointer-focus'),true);
+dialog.addEventListener('keydown',()=>dialog.classList.remove('pointer-focus'),true);
 dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
-dialog.addEventListener('close',()=>{if(dialog.open)return;cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
+dialog.addEventListener('close',()=>{if(dialog.open)return;dialog.classList.remove('pointer-focus');cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='widget-detail'){event.preventDefault();void closeDialog();}});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');
