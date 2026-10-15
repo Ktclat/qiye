@@ -8,7 +8,7 @@ import { HOTSEARCH_CATEGORIES, hotsearchSource, filterHotsearchSources } from '.
 import { hotsearchClient, hotsearchHeat, HOTSEARCH_TTL } from './hotsearch-data.js';
 
 export function hotsearchLogo(source) {
-  return `<span class="hotsearch-logo site-visual" data-favicon-site="${esc(source.url)}" data-favicon-selected="${esc(source.iconUrl)}" aria-hidden="true"><span class="site-fallback">${icon('globe')}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
+  return `<span class="hotsearch-logo site-visual${source.github?' is-monochrome':''}" data-favicon-site="${esc(source.url)}" data-favicon-selected="${esc(source.iconUrl)}" aria-hidden="true"><span class="site-fallback">${icon('globe')}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
 export function bindHotsearchLogos(root) { bindFaviconImages(root,{autoDiscover:false,targetSize:24}); }
 const linkAttrs = state => `${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer"`;

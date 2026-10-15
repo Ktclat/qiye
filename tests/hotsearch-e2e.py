@@ -91,6 +91,8 @@ with sync_playwright() as p:
             expect(page.locator('[data-hot-source=github] .hotsearch-logo.is-loaded img')).to_be_visible()
             check(language+' sidebar hydrates the selected site icon',page.locator('[data-hot-source=github] .site-favicon').get_attribute('src')==seed['icons']['github'])
             check(language+' loaded site icons have transparent backgrounds',page.locator('[data-hot-source=github] .hotsearch-logo').evaluate('n=>getComputedStyle(n).backgroundColor==="rgba(0, 0, 0, 0)"'))
+            expect(page.locator('[data-hot-source=github] .site-favicon')).to_have_css('filter','brightness(0) invert(1)' if theme=='dark' else 'none')
+            check(language+' monochrome GitHub icon follows the theme',True)
             expect(card.locator('.hotsearch-rows li')).to_have_count(4)
             check(language+' desktop tabs show platform names without icons',card.locator('.hotsearch-card-tabs img,.hotsearch-card-tabs .hotsearch-logo').count()==0 and card.locator('[data-hot-card-source=github]').inner_text()=='GitHub')
             check(language+' desktop shows read headlines while automatic updates are off',True)
