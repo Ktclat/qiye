@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icons/icon128.png" alt="栖页 Qiye" width="88" height="88">
+  <img src="icons/qiye-icon.svg" alt="栖页 Qiye" width="88" height="88">
 </p>
 
 <h1 align="center">栖页 Qiye</h1>

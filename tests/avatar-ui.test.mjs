@@ -186,7 +186,8 @@ test('resetting the avatar cancels an in-flight choice and preserves the reset a
   assert.equal(h.writes.length, 1);
   assert.equal(h.app.state.settings.avatar, null);
   assert.equal(h.editor.status.textContent, status);
-  assert.doesNotMatch(h.brand.innerHTML, /<img/);
+  assert.match(h.brand.innerHTML, /class="brand-mark" src="icons\/qiye-icon\.svg"/);
+  assert.doesNotMatch(h.brand.innerHTML, /brand-avatar/);
 });
 
 test('an earlier reset cannot replace the status of a newer avatar upload', async () => {

@@ -24,6 +24,8 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 `Qiye-preview.html` 是生成文件，**请修改源文件后重新生成**。它由 `index.html`、CSS 和 `src/` 中的生产模块构建，不单独维护第二套界面逻辑。
 
+品牌图标的唯一源图是 `icons/qiye-icon.svg`，页面与文档直接引用 SVG。修改源图后，运行 `python3 scripts/build-icons.py` 更新扩展使用的 16、32、48、128 像素 PNG，再重新生成预览。图标生成复用浏览器测试所需的 Playwright 1.56.0 和 Chromium；首次使用可运行 `python3 -m pip install playwright==1.56.0` 与 `python3 -m playwright install chromium`，已有浏览器也可通过 `CHROMIUM_PATH` 指定。独立预览会内嵌品牌图标，下载后无需附带 `icons/` 目录。
+
 网页发布同样从 `main` 中的生产源码构建，但生成文件须提交并推送到 **`gh-pages`**。仅推送 `main` 不会更新演示页面。请将 `/path/to/qiye-demo` 替换为 `gh-pages` 的独立检出目录，首次准备 worktree 或启用 Pages 的步骤见 [部署指南](DEPLOYMENT.md)。
 
 ## 源码结构

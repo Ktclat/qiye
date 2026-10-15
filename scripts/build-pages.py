@@ -21,8 +21,7 @@ html = (root / 'Qiye-preview.html').read_text(encoding='utf-8')
 html = html.replace('<title>栖页 Qiye · 交互预览</title>', '<title>栖页 · 新标签页</title>')
 output.mkdir(parents=True, exist_ok=True)
 (output / 'index.html').write_text(html, encoding='utf-8')
-(output / 'icons').mkdir(exist_ok=True)
-shutil.copyfile(root / 'icons/icon32.png', output / 'icons/icon32.png')
+shutil.copytree(root / 'icons', output / 'icons', dirs_exist_ok=True)
 (output / '.nojekyll').write_text('', encoding='utf-8')
 shutil.copyfile(root / 'LICENSE', output / 'LICENSE')
 shutil.copytree(root / 'community', output / 'community', dirs_exist_ok=True)
@@ -50,12 +49,12 @@ shutil.copytree(root / 'community', output / 'community', dirs_exist_ok=True)
 python3 scripts/build-pages.py /path/to/qiye-demo
 ```
 
-输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE`、`community/` 公共索引与示例及本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
+输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/` 品牌图标、`.nojekyll`、`LICENSE`、`community/` 公共索引与示例及本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
 
 Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分支**，GitHub Pages 会自动部署。仅推送 `main` 不会更新演示页面；请先构建，再将生成文件推送到 `gh-pages`。
 
-网页使用相对图标路径，其余样式和生产模块均已内联，无需 Node.js 或服务器构建。网站图标、壁纸与 WebDAV 等联网功能仍受相应服务和浏览器网络策略影响。
+网页的样式、生产模块、字体和栖页品牌图标均已内联，无需 Node.js 或服务器构建。网站图标、壁纸与 WebDAV 等联网功能仍受相应服务和浏览器网络策略影响。
 
 部署与数据迁移说明见 [源码仓库的部署指南](https://github.com/Ktclat/qiye/blob/main/docs/DEPLOYMENT.md)。
 ''', encoding='utf-8')
-print(f'Pages files generated in {output}: index.html, icons/icon32.png, .nojekyll, LICENSE, README.md')
+print(f'Pages files generated in {output}: index.html, icons/, .nojekyll, LICENSE, README.md')

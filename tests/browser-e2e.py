@@ -164,7 +164,7 @@ with sync_playwright() as p:
   check('right sidebar respects configured width',lambda:eq(round(page.locator('.sidebar').bounding_box()['width']),44))
   check('right sidebar is right-aligned',lambda:eq(round(page.locator('.sidebar').bounding_box()['x']),1396))
   page.locator('#brand-button').click();page.locator('[data-settings-tab="sidebar"]').click()
-  page.locator('#avatar-file').set_input_files(str(ROOT/'icons/icon128.png'));page.wait_for_function('document.querySelector("#brand-button img")!==null')
+  page.locator('#avatar-file').set_input_files(str(ROOT/'icons/icon128.png'));page.wait_for_function('document.querySelector("#brand-button .brand-avatar")!==null')
   check('local avatar decoded and committed',lambda:truth(saved(page)['settings']['avatar'].startswith('data:image/')))
   check('sidebar/position/avatar changes have no JS errors',lambda:eq(errors,[]));ctx.close()
   # v0.3.1: independently scrolling desktop and fixed header geometry.

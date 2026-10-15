@@ -80,7 +80,7 @@ html[data-navigation=sidebar] .group-button.active{background:var(--accent-soft)
 .add-content .catalog{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .add-content .catalog-card{min-width:0;padding:16px;align-items:flex-start;border-radius:14px}
 .add-content .form-preview{margin-top:0}
-.icon-settings-preview{display:flex;gap:16px;align-items:center;padding:16px 0 24px;flex-wrap:wrap}
+.icon-settings-preview{display:flex;gap:var(--gap);row-gap:calc(var(--gap) + var(--label-space,24px));align-items:center;padding:16px 0 24px;flex-wrap:wrap}
 .icon-settings-preview .tile{width:var(--cell-size);height:var(--cell-size);flex:none}
 .icon-status{font-size:11px;color:var(--muted);line-height:1.6;max-width:100%;overflow-wrap:anywhere}
 .icon-status[data-quality=low]{color:var(--w-error,#cf9352)}

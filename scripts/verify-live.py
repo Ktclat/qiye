@@ -34,7 +34,8 @@ def save_report():
 
 try:
     community_assets=sorted(path.relative_to(args.expected).as_posix() for path in (args.expected/'community').rglob('*') if path.is_file())
-    for path in ['index.html', 'icons/icon32.png', 'LICENSE', *community_assets]:
+    icon_assets=sorted(path.relative_to(args.expected).as_posix() for path in (args.expected/'icons').rglob('*') if path.is_file())
+    for path in ['index.html', *icon_assets, 'LICENSE', *community_assets]:
         request = urllib.request.Request(args.url + ('' if path == 'index.html' else path), headers={'Cache-Control':'no-cache'})
         with urllib.request.urlopen(request, timeout=30) as response:
             raw = response.read()

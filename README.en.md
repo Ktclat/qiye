@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icons/icon128.png" alt="Qiye" width="88" height="88">
+  <img src="icons/qiye-icon.svg" alt="Qiye" width="88" height="88">
 </p>
 
 <h1 align="center">Qiye</h1>

@@ -54,6 +54,10 @@ html=html.replace('</head>','<!-- Bundled Inter font: copyright and full license
 source='\n'.join(modules)+'\n'+app
 source=source.replace('</script','<\\/script')
 html=html.replace('<script type="module" src="src/app.js"></script>','<script type="module">\n'+source+'\n</script>')
+# Inline brand assets after the application, including dynamically rendered logos.
+for asset, mime in [('icons/qiye-icon.svg', 'image/svg+xml'), ('icons/icon32.png', 'image/png')]:
+ data=base64.b64encode((root/asset).read_bytes()).decode('ascii')
+ html=html.replace(asset, 'data:'+mime+';base64,'+data)
 html=html.replace('<title>栖页 · 新标签页</title>','<title>栖页 Qiye · 交互预览</title>')
 (root/'Qiye-preview.html').write_text(html,encoding='utf-8')
 print(f'Qiye-preview.html: {len(html.encode())} bytes; generated from the production modules.')

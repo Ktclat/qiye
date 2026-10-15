@@ -451,11 +451,11 @@ function updateHeaderPlacement() {
 function renderAvatar() {
  const avatar = state.settings.avatar;
  if (avatar !== renderedAvatar) {
-  $('#brand-button').innerHTML = avatar ? `<img class="brand-avatar" src="${esc(avatar)}" alt="" draggable="false">` : '<span class="brand-mark">q</span>';
+  $('#brand-button').innerHTML = avatar ? `<img class="brand-avatar" src="${esc(avatar)}" alt="" draggable="false">` : '<img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="32" height="32" draggable="false">';
   renderedAvatar = avatar;
  }
  const preview = $('#avatar-preview',dialog);
- if (preview) preview.innerHTML = avatar ? `<img class="brand-avatar" src="${esc(avatar)}" alt="${t("当前头像")}">` : '<span class="brand-mark">q</span>';
+ if (preview) preview.innerHTML = avatar ? `<img class="brand-avatar" src="${esc(avatar)}" alt="${t("当前头像")}">` : '<img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="56" height="56" draggable="false">';
 }
 async function uploadAvatar(file,panel) {
  const request = ++avatarRequestSequence, previous = state.settings.avatar, originalState = state;
@@ -856,7 +856,7 @@ function settingsDialog(tab) {
   ${field('url',t("搜索地址模板"),'',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:t("用 {q} 代表关键词。支持 http 和 https 地址。")})}
   <div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="primary-button" type="submit">${t("{v0}添加引擎", {v0: icon('plus')})}</button></div></form>`;
  else if(tab==='icons') content = `
-  <div class="icon-settings-preview" aria-label="${t("图标外观预览")}">${state.items.filter(i=>i.type==='link'&&!i.folderId).slice(0,3).map(i=>renderTile({...i,size:'1x1'})).join('')}</div>
+  <div class="icon-settings-preview" aria-label="${t("图标外观预览")}">${Array.from({length:3},()=>`<div class="tile tile-link" data-size="1x1" style="--tile-color:#102B3C"><span class="tile-body"><span class="site-visual is-loaded"><img class="site-favicon" src="icons/qiye-icon.svg" alt="" draggable="false"></span></span><span class="tile-label">${t("栖页")}</span></div>`).join('')}</div>
   <div class="section-label">${t("网站图标与卡片")}</div>
   ${settingRange('gridSize',t("图标大小"),48,120)}
   ${settingSwitch('autoExtractIcons',t("自动补充高清图标"),t("图标模糊或加载失败时，尝试获取更清晰的版本。"))}
@@ -945,7 +945,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="danger-button" data-action="reset">${t("恢复初始桌面")}</button></div>`;
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><span class="brand-mark">q</span><h3>${t("栖页")} <span style="font-weight:350">Qiye</span></h3><p>${t("让每一次打开，都有一处喜欢的风景。")}</p><span class="version-badge">${t("v{v0} · GPLv3 · 无需账号", {v0: APP_VERSION})}</span></div>
+  <div class="about-block"><img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="66" height="66" draggable="false"><h3>${t("栖页")} <span style="font-weight:350">Qiye</span></h3><p>${t("让每一次打开，都有一处喜欢的风景。")}</p><span class="version-badge">${t("v{v0} · GPLv3 · 无需账号", {v0: APP_VERSION})}</span></div>
   <div class="about-features"><div>${t("{v0}自在的桌面", {v0: icon('grid')})}</div><div>${t("{v0}轻巧的入口", {v0: icon('globe')})}</div><div>${t("{v0}本地的陪伴", {v0: icon('heart')})}</div></div>
   <p class="about-note">${t("栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。")}</p>
   <p class="about-note">${t("图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。")}</p>

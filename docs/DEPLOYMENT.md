@@ -73,8 +73,8 @@ python3 scripts/build-pages.py /path/to/qiye-demo
 
 | 生成文件 | 用途 |
 | --- | --- |
-| `index.html` | 内联样式、生产 JavaScript、本地 Inter 字体和完整字体许可的网页入口 |
-| `icons/icon32.png` | 网页标签图标，使用相对路径引用 |
+| `index.html` | 内联样式、生产 JavaScript、本地 Inter 字体、完整字体许可和栖页品牌图标的网页入口 |
+| `icons/` | 品牌 SVG 源图及各尺寸 PNG，网页入口同时内嵌所需图标 |
 | `.nojekyll` | 直接发布静态文件 |
 | `README.md` | 演示分支说明及 `main` 源码入口 |
 
@@ -93,7 +93,7 @@ python3 scripts/build-pages.py /path/to/qiye-demo
 git -C ../qiye-demo pull --ff-only origin gh-pages
 python3 scripts/build-pages.py ../qiye-demo
 git -C ../qiye-demo status --short
-git -C ../qiye-demo add index.html icons/icon32.png .nojekyll README.md
+git -C ../qiye-demo add index.html icons/ .nojekyll README.md
 git -C ../qiye-demo commit -m "Update Qiye web preview"
 git -C ../qiye-demo push origin gh-pages
 ```
