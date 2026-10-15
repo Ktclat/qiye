@@ -54,6 +54,8 @@ jobs:
           python3 tests/workspaces-e2e.py --preview
           python3 tests/weather-e2e.py
           python3 tests/weather-e2e.py --preview
+          python3 tests/hotsearch-e2e.py
+          python3 tests/hotsearch-e2e.py --preview
           python3 tests/extension-e2e.py
           python3 tests/tab-favicon-e2e.py
       - name: Package extension, source and standalone preview
@@ -70,7 +72,9 @@ jobs:
         if: always()
         with:
           name: qiye-browser-report
-          path: test-results
+          path: |
+            test-results
+            output/playwright/hotsearch
           retention-days: 14
       - name: Source archive
         run: git archive --format=zip --output="$RUNNER_TEMP/qiye-source.zip" HEAD

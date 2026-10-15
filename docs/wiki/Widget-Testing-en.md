@@ -32,6 +32,7 @@ Replace `python` with `python3` or `py -3` if needed. Register the native exampl
 | Lifecycle and saving | The same suite plus [widget-drafts.test.mjs](../../tests/widget-drafts.test.mjs); rollback, late responses and duplicate bindings |
 | Sizes, previews and themes | [presentation.test.mjs](../../tests/presentation.test.mjs), [presentation-e2e.py](../../tests/presentation-e2e.py) |
 | Calendar, memos and weather | [daily-widgets.test.mjs](../../tests/daily-widgets.test.mjs), [weather.test.mjs](../../tests/weather.test.mjs) and related E2E scripts |
+| Trending and subscriptions | [hotsearch.test.mjs](../../tests/hotsearch.test.mjs), [hotsearch-e2e.py](../../tests/hotsearch-e2e.py); parsing, persistence/order, cache, cancellation, failed saves and layout |
 | Community manifests and layout sharing | [sharing-community.test.mjs](../../tests/sharing-community.test.mjs), [workspaces-e2e.py](../../tests/workspaces-e2e.py) |
 
 Choose browser regressions that cover the change. Check both source modules and standalone HTML through `--preview` where supported:
@@ -46,6 +47,8 @@ python tests/daily-widgets-e2e.py
 python tests/daily-widgets-e2e.py --preview
 python tests/weather-e2e.py
 python tests/weather-e2e.py --preview
+python tests/hotsearch-e2e.py
+python tests/hotsearch-e2e.py --preview
 ```
 
 See [ci.yml](../../.github/workflows/ci.yml) and the [development guide (Chinese)](../DEVELOPMENT.md) for full CI and extension permission checks.

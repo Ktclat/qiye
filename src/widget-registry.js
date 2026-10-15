@@ -5,6 +5,7 @@ import { TILE_SIZES, REQUIRED_WIDGET_SIZES } from './widget-sizes.js';
 import { widgetExtensions } from './widget-extensions.js';
 import { validateCommunityManifest } from './community-format.js';
 import { publicHttpsUrl } from './public-json.js';
+import { HOTSEARCH_DEFAULTS, validateHotsearchConfig } from './hotsearch-sources.js';
 
 const builtins = [
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
@@ -17,7 +18,9 @@ const builtins = [
   { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer' },
   { type: 'workday', title: '下班倒计时', description: '工作日下班与发薪日倒计时', size: '2x2', icon: 'briefcase' },
   { type: 'quote', title: '每日一句', description: '给日常留一点思考的空白', size: '4x2', icon: 'quote' },
-  { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending' },
+  // Kept for validating old desktops and backups; the catalog offers its replacement.
+  { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending', internal: true },
+  { type: 'hotsearch', title: '热搜榜', description: '订阅全网热榜，分类浏览与实时更新', size: '4x2', icon: 'trending' },
   { type: 'calculator', title: '计算器', description: '加减乘除、括号和百分比计算', size: '2x2', icon: 'calculator' },
   { type: 'habit', title: '习惯打卡', description: '每日打卡和连续天数', size: '2x2', icon: 'sparkles' },
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
@@ -26,6 +29,7 @@ const builtins = [
 export const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  hotsearch: HOTSEARCH_DEFAULTS,
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
   weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius' },
   countdown: { title: '新年，新的期待', date: '2027-01-01' },
@@ -105,6 +109,7 @@ export function newWidgetConfig(type) { return registry.newConfig(type); }
 export function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if (widgetType === 'hotsearch') return validateHotsearchConfig(raw, path);
   if(widgetType==='community'){
     keys(raw,['manifest','source'],path);
     return {manifest:validateCommunityManifest(raw.manifest),source:publicHttpsUrl(string(raw.source,path+'.source',2048))};

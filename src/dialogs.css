@@ -162,6 +162,7 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 #dialog.settings-dialog{--settings-focus:#b8b8b8}
 html[data-theme=light] #dialog.settings-dialog{--settings-focus:#565656}
 #dialog.settings-dialog :is(input,select,textarea,button,a):focus{outline:none}
+#dialog.settings-dialog .settings-section-title:focus{outline:none}
 #dialog.settings-dialog :is(input,select,textarea,button,a):focus-visible{outline:2px solid var(--settings-focus);outline-offset:3px}
 #dialog.settings-dialog.pointer-focus :is(input,select,textarea,button,a):focus{outline:none}
 #dialog.settings-dialog :is(.theme-option,.material-option).selected{border-color:var(--settings-focus)}

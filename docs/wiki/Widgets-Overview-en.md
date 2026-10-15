@@ -17,7 +17,7 @@ Native source can access its execution environment; its API is not a permission 
 
 ## Built-in catalog
 
-The registry contains 14 user-facing built-in widget types. `community` is a separate internal type. All built-ins support the five sizes.
+The registry contains 14 user-facing built-in widget types. `community` is a separate internal type, and the legacy `hotlinks` type is retained only for compatibility with existing data. All built-ins support the five sizes.
 
 | Type | Name | Behavior and limits |
 | --- | --- | --- |
@@ -31,10 +31,20 @@ The registry contains 14 user-facing built-in widget types. `community` is a sep
 | `focus` | Focus timer | Pause/resume, restore remaining time from the end timestamp |
 | `workday` | Workday countdown | Working days, end time and payday |
 | `quote` | Quotes | Custom text/author or built-in quotes |
-| `hotlinks` | Trending links | Open platform pages; no live ranking retrieval |
+| `hotsearch` | Trending | 22 sources, categories/search, subscription ordering, single/multiple lists, refresh and local cache; opens directly to rankings |
 | `calculator` | Calculator | Arithmetic, parentheses and percentages |
 | `habit` | Habits | Daily records and streaks |
 | `clock` | World clock | IANA timezone, city label and time comparison |
+
+## Trending lists
+
+Existing Trending links cards and `hotlinks` records in older backups upgrade automatically, preserving IDs, placement, sizes and custom names. Background updates stay off by default; there is no need to delete and recreate cards.
+
+Add **Widgets → Trending**, then open the card to read ranks, titles and popularity immediately. The reading window uses a 1260 × 840 layout, shrinking on smaller screens and showing at least 13 ranks at its standard size. Automatic background updates are off by default; opening, switching or refreshing a list still loads it. Previously read headlines also appear in the desktop card. Zhihu, Weibo, 52pojie and GitHub are followed by default. Manage subscriptions supports adding/removing sources, dragging, up/down buttons and Alt + up/down arrow keys. The toolbar includes categories, platform search, single/multiple lists and maximize controls.
+
+Lists use the [UAPI hotboard endpoint](https://uapis.cn/docs/api-reference/get-misc-hotboard) by default. Source settings also accept a public HTTPS service compatible with [DailyHotApi](https://github.com/imsyy/DailyHotApi). GitHub uses its public API: repositories created in the last 7 days sorted by stars; the AI list uses the last 30 days with the `artificial-intelligence` topic. These are not GitHub's official Trending lists. Entries without article links still display their titles, with a platform link available separately.
+
+Subscriptions, order, selected platform, view and service URL are saved per instance and included in backups/WebDAV. List caches remain local, are reused for 10 minutes, and retain at most 48 lists for up to 7 days. Failed requests preserve cached content and expose retry. Closing the workspace cancels unneeded requests; multiple-list loading uses at most 3 concurrent requests. Public layout imports turn off automatic background updates. Availability and update times depend on upstream services. Serve standalone HTML over HTTP for network testing; `file://` previews may be blocked by the provider's CORS policy.
 
 ## Runtime structure
 

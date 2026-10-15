@@ -23,7 +23,7 @@ export function validateLayout(raw) {
       keys(item,['id','groupId','type','widget','title','size','config'],path);
       if(!getWidgetDefinition(item.widget))invalid(path,t('缺少组件：{name}',{name:item.widget}));
       item.data=newWidgetData(item.widget);
-      if(item.widget==='weather')item.config={...item.config,enabled:false};
+      if(['weather','hotsearch'].includes(item.widget))item.config={...item.config,enabled:false};
     } else if(item.type==='link'){
       let url;try{url=new URL(item.url);}catch{invalid(path,t('网站地址无效。'));}
       if(url.username||url.password)invalid(path,t('分享的网站地址不能包含账号密码。'));

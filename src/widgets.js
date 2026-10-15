@@ -8,6 +8,9 @@ import { t } from './i18n.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { listWidgetDefinitions, getWidgetDefinition } from './widget-registry.js';
 import { mountWidgetExtensions } from './widget-runtime.js';
+import { hotsearchCard } from './hotsearch-view.js';
+import { bindHotsearchCards } from './hotsearch-workspace.js';
+import { hotsearchSource } from './hotsearch-sources.js';
 
 const DAY = 86_400_000;
 import { WEATHER_TTL, weatherState, requestWeather, cityKey, temperature, weatherDescription, weatherArt } from './weather.js';
@@ -343,6 +346,7 @@ function compactModel(item) {
     const quote = getQuote(item); value = quote.text; caption = quote.author; detail = t('每日一句');
   } else if (type === 'wallpaper') { caption = t('壁纸'); detail = t('换一片风景'); meta = t('打开壁纸中心'); }
   else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
+  else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
   else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
   return {value, caption, detail, meta, unit};
 }
@@ -351,6 +355,7 @@ function renderCompact(item) {
 }
 
 export function renderWidgetContent(item, state) {
+  if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   return renderers[item.widget]();
@@ -617,6 +622,7 @@ export function bindWidgets(container, context) {
     flushNotes();
     binding.alive = false;
     binding.extensions?.cleanup();
+    binding.hotsearchCleanup?.();
     clearTimeout(binding.noteTimer);
     container.removeEventListener('click', click);
     container.removeEventListener('input', input);
@@ -626,6 +632,7 @@ export function bindWidgets(container, context) {
     if (bindings.get(container) === binding) bindings.delete(container);
   };
   binding.extensions = mountWidgetExtensions(container, context);
+  binding.hotsearchCleanup = bindHotsearchCards(container, context);
   binding.cleanup = cleanup;
   bindings.set(container, binding);
   refreshLiveWidgets(container, context.getState());

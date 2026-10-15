@@ -8,6 +8,13 @@ This is the canonical version history, moved from the original README. Historica
 
 发布流程与下载包结构见 [发布指南](docs/RELEASES.md)，测试结果见 [验证记录](docs/QA.md)。新增版本请在本文顶部追加变更、修复与破坏性调整；README 只维护当前功能概览和文档入口。
 
+## 未发布 / Unreleased
+
+- 已有“热搜入口”自动升级为热搜榜，保留位置、尺寸和自定义名称；添加面板只展示新版入口。Existing Trending links cards upgrade in place, and the widget catalog offers the new Trending widget.
+- 新增“热搜榜”：点击直接查看排名、标题和热度，1260 × 840 阅读窗口；支持 22 个公开来源、分类与平台搜索、订阅管理、拖动 / 键盘排序、单榜 / 多榜视图、刷新、最大化及五种桌面尺寸。自动更新开关仅控制后台刷新。
+- 默认接入 UAPI 热榜与 GitHub 新仓库榜，可配置兼容 DailyHotApi 的 HTTPS 服务。按实例保存设置，提供 10 分钟缓存、离线旧榜与失败重试，并适配中英文、深浅色和窄屏。
+- Added a Trending widget with 22 public sources, categories/search, subscription ordering, single/multiple lists, refresh, maximize, five sizes, independent settings and cached offline lists. Uses UAPI and GitHub with configurable DailyHotApi-compatible services.
+
 ## v0.9.1
 
 - 天气详情改为独立蓝灰渐变面板：当前天气、气压 / 降水 / 日出日落，以及可横向查看的 24 小时曲线、7 天高低温曲线。小时预报可切换温度、降水概率和风速。

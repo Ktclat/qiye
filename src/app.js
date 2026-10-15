@@ -8,6 +8,8 @@ import { createWidgetDetails } from './widget-details.js';
 import { bindCitySearch } from './city-search.js';
 import { weatherWorkspace } from './weather-view.js';
 import { bindWeatherWorkspace } from './weather-workspace.js';
+import { hotsearchWorkspace, refreshHotsearchCards } from './hotsearch-view.js';
+import { bindHotsearchWorkspace } from './hotsearch-workspace.js';
 import { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } from './widget-workspaces.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
 import { communityView, bindCommunity } from './community-ui.js';
@@ -687,11 +689,12 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['calendar','memo','weather','community'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['calendar','memo','weather','community','hotsearch'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
+ dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
@@ -705,6 +708,7 @@ function openDialog(kind,data={}) {
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
  else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
  else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
@@ -735,6 +739,7 @@ function openDialog(kind,data={}) {
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
+  else if(detailWidget==='hotsearch')viewerCleanup=bindHotsearchWorkspace($('#hotsearch-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>refreshHotsearchCards($('#desktop'),state)});
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
   else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
@@ -746,7 +751,8 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
- else if(kind==='widget-detail'&&(utilityWidget||['weather','community'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
+ else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -955,7 +961,7 @@ function settingsDialog(tab) {
  const current = tabs.find(item=>item.id===tab);
  return dialogCloseButton() + `
  <div class="settings-layout"><nav class="settings-nav" aria-label="${t("设置分类")}"><h2 class="workspace-title" id="workspace-title">${t("设置")}</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>${t("栖页 Qiye · {v0}", {v0: APP_VERSION})}</small></nav>
- <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}"><h3 class="settings-section-title">${current.name}</h3>${content}</section></div>`;
+ <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}"><h3 class="settings-section-title" tabindex="-1">${current.name}</h3>${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
  getState:()=>state, wallpapers:WALLPAPERS, toast,

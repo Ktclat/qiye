@@ -55,8 +55,8 @@ with sync_playwright() as p:
         page.mouse.move(r['x']+20,r['y']+20);page.mouse.down();page.wait_for_timeout(360);page.mouse.move(target['x']+target['width']-3,target['y']+target['height']/2,steps=15);page.wait_for_timeout(100);page.mouse.up()
         page.wait_for_function('(before)=>JSON.parse(localStorage.getItem("qiye.state.v5")).items.map(i=>i.id).join()!==before',arg=original)
         check('wallpaper long-press drop persists new order',not page.locator('#dialog').is_visible())
-        for kind in ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks','weather']:
-            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app').count()==1 and page.locator('.widget-viewer').count()==0)
+        for kind in ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotsearch','weather']:
+            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app,.hotsearch-app').count()==1 and page.locator('.widget-viewer').count()==0)
             if kind=='countdown':
                 page.locator('[name=eventTitle]').fill('Launch day');page.locator('[name=date]').fill('2027-03-21');page.locator('[data-utility-form] [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="countdown").config.title==="Launch day"');check('countdown settings update date and detail',page.locator('.utility-countdown h3').inner_text()=='Launch day')
                 page.screenshot(path=str(OUT/'countdown-dark.png'),animations='disabled')

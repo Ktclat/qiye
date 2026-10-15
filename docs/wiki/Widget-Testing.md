@@ -32,6 +32,7 @@ python -m playwright install chromium
 | 生命周期与保存 | 同上及 [widget-drafts.test.mjs](../../tests/widget-drafts.test.mjs)；失败回滚、卸载后回包、重复绑定 |
 | 尺寸、预览、主题 | [presentation.test.mjs](../../tests/presentation.test.mjs)、[presentation-e2e.py](../../tests/presentation-e2e.py) |
 | 日历、备忘录与天气 | [daily-widgets.test.mjs](../../tests/daily-widgets.test.mjs)、[weather.test.mjs](../../tests/weather.test.mjs)、对应 E2E |
+| 热搜榜与订阅 | [hotsearch.test.mjs](../../tests/hotsearch.test.mjs)、[hotsearch-e2e.py](../../tests/hotsearch-e2e.py)；数据解析、订阅保存 / 排序、缓存、取消、失败回滚与布局 |
 | 社区清单与排布分享 | [sharing-community.test.mjs](../../tests/sharing-community.test.mjs)、[workspaces-e2e.py](../../tests/workspaces-e2e.py) |
 
 按影响范围选择浏览器回归，运行网页源模块与 `--preview` 独立 HTML 两种模式：
@@ -46,6 +47,8 @@ python tests/daily-widgets-e2e.py
 python tests/daily-widgets-e2e.py --preview
 python tests/weather-e2e.py
 python tests/weather-e2e.py --preview
+python tests/hotsearch-e2e.py
+python tests/hotsearch-e2e.py --preview
 ```
 
 完整 CI 与扩展权限相关检查见 [ci.yml](../../.github/workflows/ci.yml) 和[开发指南](../DEVELOPMENT.md)。

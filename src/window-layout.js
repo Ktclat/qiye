@@ -9,6 +9,8 @@ export function windowMetrics(percent, width, height) {
   return { width: availableWidth, height: availableHeight,
     windowWidth: Math.min(980 * ratio, availableWidth),
     windowHeight: Math.min(640 * ratio, availableHeight),
+    hotsearchWidth: Math.min(1260 * ratio, availableWidth),
+    hotsearchHeight: Math.min(840 * ratio, availableHeight),
     settingsWidth: Math.min(880 * ratio, availableWidth),
     drawerWidth: Math.min(480 * ratio, width),
     formWidth: Math.min(640 * ratio, availableWidth),

@@ -320,7 +320,15 @@ export function validateImport(raw) {
       if (!getWidgetDefinition(item.widget)) invalid(`${path}.widget`, t("组件类型不受支持"));
       if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, t("组件不支持此尺寸"));
       if(item.widget==='community'&&!item.config?.manifest?.sizes?.includes(size))invalid(`${path}.size`,t('组件不支持此尺寸'));
-      return { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
+      const checked = { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
+      // Validate legacy records before upgrading; keep identity, placement and custom names.
+      if (checked.widget === 'hotlinks') {
+        checked.widget = 'hotsearch';
+        checked.config = newWidgetConfig('hotsearch');
+        if (checked.title === '热搜入口') checked.title = '热搜榜';
+        else if (checked.title === 'Trending links') checked.title = 'Trending';
+      }
+      return checked;
     }
     const appearance = { icon: string(item.icon, `${path}.icon`, 80), color: color(item.color, `${path}.color`), size };
     if (type === 'folder') return { ...base, ...appearance };

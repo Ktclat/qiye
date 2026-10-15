@@ -25,6 +25,10 @@
 #dialog.settings-drawer.compact-dialog .settings-content { padding:18px 12px; }
 #dialog.settings-drawer .setting-row { flex-wrap:wrap; gap:10px; }
 #dialog.widget-app-expanded,#dialog.workspace-expanded { width:var(--dialog-width); height:var(--dialog-height); }
+#dialog.hotsearch-app-dialog:not(.widget-app-expanded) {
+  width:min(var(--hotsearch-width,1260px),var(--dialog-width));
+  height:min(var(--hotsearch-height,840px),var(--dialog-height));
+}
 .workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
 .context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
 .context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:18px; min-height:39px; padding:9px 10px; border-radius:9px; font-size:13px; }
