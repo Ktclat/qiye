@@ -2651,6 +2651,69 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 @media(prefers-reduced-motion:reduce){.w-pomodoro *{transition:none!important;scroll-behavior:auto!important}}
 
 </style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+.w-codec{--w-bg:linear-gradient(140deg,#edf4fa,#e3eaf7);--w-fg:#334e6e;--w-heading:#4b6583;--w-muted:#62768c;--w-control:#ffffffb0;--w-hover:#fff;--w-border:#b3c4dd70;gap:10px}
+html[data-theme=dark] .w-codec{--w-bg:linear-gradient(140deg,#25374a,#293044);--w-fg:#d7e6fb;--w-heading:#c1d2e8;--w-muted:#a2b6cf;--w-control:#ffffff0f;--w-hover:#ffffff1a;--w-border:#a2b6cf30}
+.w-codec .widget-title>.icon{width:15px;height:15px}
+.w-codec .widget-icon-button>.icon{width:15px;height:15px}
+.w-codec:not(.widget-compact){gap:6px}
+.codec-card-hero{display:flex;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.codec-card-symbol{display:flex;align-items:center;gap:15px;line-height:1;font-family:ui-monospace,Consolas,monospace}
+.codec-card-symbol b{font-size:clamp(20px,15cqi,35px);font-weight:550;letter-spacing:-1px}
+.codec-card-symbol>span{font-size:22px;color:var(--w-muted)}
+.codec-card-hero>span:last-child{font-size:10px;color:var(--w-muted)}
+.codec-card-shortcuts{display:flex;gap:5px;flex:none}
+.widget-inner .codec-card-shortcuts button{flex:1;padding:7px 3px;border-radius:8px;border:1px solid var(--w-border);background:var(--w-control);font:10px ui-monospace,Consolas,monospace}
+.widget-inner .codec-card-shortcuts button:hover{background:var(--w-hover)}
+.codec-card-footer{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--w-muted)}
+.codec-card-footer .icon{height:13px;width:13px}
+.w-codec[data-display-size="4x2"] .codec-card-symbol{gap:28px}.w-codec[data-display-size="4x2"] .codec-card-symbol b{font-size:32px}
+@container(max-width:120px){.codec-card-shortcuts,.codec-card-footer,.codec-card-hero>span:last-child{display:none}}
+.codec-app{display:flex;flex-direction:column;height:100%;min-height:0;--codec-accent:#4b79c7;--codec-soft:#4b79c71a;--codec-error:#b83e48}
+html[data-theme=dark] .codec-app{--codec-accent:#8eb8ff;--codec-soft:#8eb8ff15;--codec-error:#ffb0b8}
+.codec-app [hidden]{display:none!important}
+.codec-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;height:46px;padding:0 16px;border-bottom:1px solid var(--app-border)}
+.codec-heading{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.codec-heading>.icon{width:18px;height:18px;color:var(--codec-accent);flex:none}
+.codec-heading h2{margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:1.4;font-weight:600}
+.codec-layout{display:grid;grid-template-columns:180px minmax(0,1fr);flex:1;min-height:0}
+.codec-nav{padding:16px 12px;overflow:auto;border-right:1px solid var(--app-border);background:var(--app-pane)}
+.codec-nav section+section{margin-top:18px}.codec-nav h3{font-size:11px;font-weight:500;color:var(--app-muted);padding:0 12px;margin:0 0 8px;letter-spacing:.04em}
+.codec-app .codec-nav button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:6px 12px;background:transparent;border-radius:7px;font-size:12px;line-height:1.3;text-align:left;margin:1px 0;gap:6px}
+.codec-app .codec-nav button[aria-pressed=true]{color:var(--codec-accent);background:var(--codec-soft);font-weight:600}
+.codec-nav small{font:10px ui-monospace,Consolas,monospace;opacity:.65}.codec-nav>p{display:flex;align-items:center;gap:6px;margin:24px 10px 0;color:var(--app-muted);font-size:10px}.codec-nav>p .icon{width:13px;height:13px;flex:none}
+.codec-main{display:flex;flex-direction:column;gap:14px;padding:24px;min-width:0;min-height:0;overflow:auto}
+.codec-method{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;flex:none}.codec-method>div:first-child{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.codec-method h3{font-size:24px;font-weight:600;letter-spacing:-.6px;margin:0}.codec-badge{font-size:10px;padding:3px 7px;border-radius:5px;color:var(--codec-accent);background:var(--codec-soft);white-space:nowrap}
+.codec-direction{display:flex;border:1px solid var(--app-border);border-radius:9px;padding:3px;gap:2px;background:var(--app-pane)}
+.codec-app .codec-direction button{padding:5px 16px;font-size:12px;border-radius:6px;background:transparent;color:var(--app-muted)}
+.codec-app .codec-direction button[aria-pressed=true]{color:var(--app-fg);background:var(--app-field);box-shadow:0 1px 3px #0001}
+.codec-hint{font-size:12px;color:var(--app-muted);line-height:1.7;margin:0;min-height:40px;flex:none;overflow-wrap:anywhere}
+.codec-options{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:29px;font-size:11px;flex:none;flex-wrap:wrap}.codec-options>span{margin-left:auto;font:10px ui-monospace,Consolas,monospace;color:var(--app-muted)}
+.codec-options label{display:flex;align-items:center;gap:8px;min-width:0}.codec-app .codec-options select{font-size:11px;padding:5px 8px;max-width:100%}
+.codec-beast-options{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;flex:none;font-size:11px}.codec-beast-options label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.codec-app .codec-beast-options input{width:100px;padding:6px 10px;font-size:14px;letter-spacing:.15em}.codec-app .codec-beast-options button{padding:5px 7px;font-size:10px;color:var(--app-muted);background:var(--app-pane);border:1px solid var(--app-border);border-radius:6px}.codec-beast-options>span{font-size:10px;color:var(--app-muted);line-height:1.6}.codec-fun-note{margin:0;padding:8px 11px;background:var(--codec-soft);border-radius:7px;color:var(--app-muted);font-size:11px;line-height:1.6;flex:none}
+.codec-app[data-codec-family=fun] .codec-editor textarea{font-family:inherit;font-size:14px;line-height:2;letter-spacing:.04em}
+.codec-app[data-codec-family=fun] .codec-main{gap:10px}.codec-app[data-codec-family=fun] .codec-hint{min-height:0}.codec-options .codec-beast-options{flex:1;gap:6px 12px}
+.codec-editors{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;flex:1;min-height:220px}
+.codec-editor{display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--app-border);border-radius:12px;overflow:hidden;background:var(--app-bg)}
+.codec-result{background:var(--app-pane)}
+.codec-editor-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--app-border);padding:10px 12px;min-height:43px;font-size:11px;flex:none}
+.codec-editor-bar>label{font-weight:600}.codec-editor-bar>div{display:flex;gap:3px}
+.codec-app .codec-editor-bar button{padding:3px 5px;display:flex;align-items:center;gap:4px;background:transparent;color:var(--app-muted);font-size:10px;white-space:nowrap}.codec-editor-bar .icon{width:13px;height:13px}
+.codec-app .codec-editor textarea{flex:1;min-height:120px;width:100%;padding:15px;border-radius:0;resize:none;background:transparent;font:13px/1.85 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;tab-size:2;overflow-wrap:anywhere}
+.codec-app .codec-editor textarea[aria-invalid=true]{outline:1px solid var(--codec-error);outline-offset:-1px}
+.codec-editor-meta{padding:8px 13px;color:var(--app-muted);font-size:10px;flex:none;font-variant-numeric:tabular-nums}
+.codec-status{min-height:18px;flex:none;margin:0;color:var(--app-muted);font-size:11px;overflow-wrap:anywhere}.codec-status.is-error{color:var(--codec-error)}
+.codec-actions{display:flex;align-items:center;gap:12px;flex:none}.codec-actions>label,.codec-options [data-codec-case]{display:flex;align-items:center;gap:7px;font-size:11px}.codec-app input[type=checkbox]{accent-color:var(--codec-accent);width:14px;height:14px;padding:0;margin:0}
+.codec-shortcut{font-size:10px;color:var(--app-muted);margin-left:auto;white-space:nowrap}
+.codec-app .codec-run{display:flex;align-items:center;justify-content:center;gap:15px;min-width:106px;padding:10px 16px;background:var(--app-blue);color:#fff;font-size:12px;border-radius:8px}.codec-run .icon{width:15px;height:15px}.codec-app .codec-run:hover{background:var(--app-blue);filter:brightness(1.1)}
+.codec-app button:disabled{cursor:default;opacity:.4}
+.codec-footer{display:flex;align-items:center;gap:6px;flex:none;border-top:1px solid var(--app-border);padding-top:12px;color:var(--app-muted);font-size:10px}.codec-footer .icon{width:13px;height:13px;flex:none}
+.codec-mobile-select{display:none}
+@container(max-width:760px){.codec-layout{grid-template-columns:145px minmax(0,1fr)}.codec-main{padding:18px;gap:12px}.codec-editors{grid-template-columns:1fr;flex:none}.codec-editor{min-height:190px}.codec-hint{min-height:0}.codec-shortcut{display:none}.codec-run{margin-left:auto}.codec-nav{padding:16px 7px}}
+@container(max-width:520px){.codec-layout{display:flex}.codec-nav{display:none}.codec-main{width:100%;padding:16px;gap:12px}.codec-mobile-select{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--app-muted)}.codec-mobile-select select{width:100%;color:var(--app-fg)}.codec-header{padding:0 12px}.codec-method h3{font-size:21px}.codec-app .codec-direction button{padding:5px 12px}.codec-editor-meta{font-size:10px}.codec-options label{flex-wrap:wrap}.codec-footer{align-items:flex-start}}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -2820,6 +2883,109 @@ const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const englishMessages = {
+  "编码工具": "Encoding tools",
+  "Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道": "Base64, URL, Unicode, MD2 / MD4 / MD5 and SHA, plus Buddha, Beast and Bear codecs",
+  "趣味编码": "Playful encodings",
+  "佛曰": "Buddha says",
+  "兽音译者": "Beast translator",
+  "熊曰 / 与熊论道": "Bear says",
+  "经典版 · 佛曰：": "Classic format",
+  "兽语 · 四字符": "Four-symbol alphabet",
+  "原版 · 熊曰：呋": "Original format",
+  "兼容经典“与佛论禅”，保留“佛曰：”前缀；不支持“佛又曰”或“新佛曰”。": "Compatible with classic TudouCode. Keep its Buddha prefix; newer Buddha variants are not supported.",
+  "把文本变成嗷呜兽语，支持中文与 emoji。解码会从首尾标记自动识别字表，请保留完整文本。": "Encode text as beast sounds, including Chinese and emoji. Keep the opening and closing markers for decoding.",
+  "兼容原版“与熊论道”，先压缩再转换字符；解码支持“熊曰：呋”或“呋”开头的文本。": "Compatible with the original Bear format. Text is compressed before character conversion; decoding accepts the full prefix or just its leading marker.",
+  "用于趣味文本分享；字符表公开，无密码保护。": "For playful text sharing. The alphabets are public and no password protects the text.",
+  "兽音字表": "Beast alphabet",
+  "恢复默认": "Reset to default",
+  "解码时自动识别字表，无需填写。": "The alphabet is detected automatically when decoding.",
+  "按顺序填写 4 个不同的字符。": "Four distinct characters, in order.",
+  "当前环境无法处理佛曰，请使用扩展、HTTPS 或 localhost。": "Buddha conversion requires the extension, HTTPS or localhost.",
+  "请输入以“佛曰：”开头的经典版密文；不支持“佛又曰”或“新佛曰”。": "Enter classic Buddha text with its original prefix. Newer Buddha variants are not supported.",
+  "佛曰密文含有无效字符或不完整的标记。": "Buddha text contains invalid characters or an incomplete marker.",
+  "佛曰密文长度不正确，请检查是否复制完整。": "Invalid Buddha text length. Check that you copied the entire text.",
+  "佛曰解码失败，密文可能损坏或使用了其他版本。": "Buddha decoding failed. The text may be damaged or use another format.",
+  "兽音字表需要 4 个不同的字符，不能包含空白或 emoji。": "The Beast alphabet needs four distinct characters, without whitespace or emoji.",
+  "兽音长度不正确，请保留完整的三个起始字符和一个结束字符。": "Invalid Beast text length. Keep all three opening characters and the closing character.",
+  "兽音密文中出现了字表以外的字符。": "Beast text contains characters outside its alphabet.",
+  "熊曰密文含有无效字符。": "Bear text contains invalid characters.",
+  "熊曰密文尾部不完整或填充无效。": "Bear text has an incomplete ending or invalid padding.",
+  "当前浏览器不支持熊曰所需的压缩格式，请升级浏览器。": "This browser does not support Bear compression. Please update your browser.",
+  "解码结果过长，最多支持 100,000 个 UTF-16 代码单元。": "The decoded result exceeds 100,000 UTF-16 code units.",
+  "请输入以“熊曰：呋”或“呋”开头的原版熊曰密文。": "Enter original Bear text with its full prefix or leading marker.",
+  "熊曰解码失败，密文可能损坏或使用了其他版本。": "Bear decoding failed. The text may be damaged or use another format.",
+  "熊曰解码后的内容不是有效的 UTF-8 文本。": "The decoded Bear content is not valid UTF-8 text.",
+  "兽音最多编码 12,499 个 UTF-16 代码单元；每个代码单元会变成 8 个字符。": "Beast encoding accepts up to 12,499 UTF-16 code units; each becomes eight characters.",
+  "转换结果过长，请缩短输入（最多 100,000 个 UTF-16 代码单元）。": "Shorten the input: the result exceeds 100,000 UTF-16 code units.",
+  "Base64、URL、Unicode 编解码与 MD2 / MD4 / MD5、SHA 哈希摘要": "Base64, URL and Unicode encoding, plus MD2 / MD4 / MD5 and SHA hashes",
+  "打开编码工具": "Open encoding tools",
+  "文本转换，一步完成": "Text transformations, one step away",
+  "打开 {name}": "Open {name}",
+  "编码 · 解码 · 哈希": "Encode · Decode · Hash",
+  "文本与编码之间，自由转换": "A workspace for text transformations",
+  "哈希摘要": "Hashes",
+  "编码 / 解码": "Encode / decode",
+  "编码算法": "Algorithm",
+  "本机处理，无需联网": "Local processing, no network",
+  "转换方向": "Direction",
+  "编码": "Encode",
+  "解码": "Decode",
+  "URL 范围": "URL scope",
+  "参数值 · encodeURIComponent": "Parameter · encodeURIComponent",
+  "完整 URL · encodeURI": "Full URL · encodeURI",
+  "表单值 · 空格转 +": "Form value · space as +",
+  "大写十六进制": "Uppercase hex",
+  "输入文本": "Input",
+  "示例": "Example",
+  "在此输入或粘贴文本…": "Type or paste text here…",
+  "输出结果": "Output",
+  "将结果放入输入框，继续转换": "Use the output as input for another conversion",
+  "转换结果将显示在这里": "Your result will appear here",
+  "实时转换": "Live conversion",
+  "内容仅留在当前窗口，关闭即清空，不写入备份或同步。": "Text stays in this window, clears on close and is excluded from backups and sync.",
+  "{chars} 字符 · {bytes} 字节": "{chars} characters · {bytes} bytes",
+  "正在转换…": "Converting…",
+  "摘要已生成": "Hash generated",
+  "转换完成": "Conversion complete",
+  "输入文本，或点击“生成摘要”计算空文本。": "Enter text, or click Generate hash to hash an empty string.",
+  "输入文本，或载入示例开始。": "Enter text or load an example to begin.",
+  "已修改，等待转换": "Edited · ready to convert",
+  "等待转换…": "Waiting to convert…",
+  "单向 · {bits} 位": "One-way · {bits} bit",
+  "可逆转换": "Reversible",
+  "生成摘要": "Generate hash",
+  "已复制结果": "Result copied",
+  "无法自动复制，结果已选中，请按 Ctrl / ⌘ + C。": "Copy unavailable. The result is selected; press Ctrl / ⌘ + C.",
+  "HTML 实体": "HTML entities",
+  "Unicode 转义": "Unicode escapes",
+  "JSON 字符串": "JSON string",
+  "将 UTF-8 文本转为 Base64；解码时允许空白和省略的填充。": "Convert UTF-8 text to Base64. Decoding accepts whitespace and omitted padding.",
+  "使用 URL 安全字符 - 和 _，编码结果不带 = 填充。": "Uses URL-safe - and _ characters, with no = padding in the encoded output.",
+  "选择编码范围；仅表单模式会将空格与 + 相互转换。": "Choose a scope. Only form mode converts between spaces and +.",
+  "转换 & < > 引号；解码支持 amp、lt、gt、quot、apos、nbsp 和数字实体。": "Escape & < > and quotes. Decode amp, lt, gt, quot, apos, nbsp and numeric entities.",
+  "使用 \\uXXXX 转义，支持中文与 emoji；解码也支持 \\u{1F600}。": "Use \\uXXXX escapes for Unicode text and emoji. Decoding also accepts \\u{1F600}.",
+  "在 UTF-8 文本与十六进制字节之间转换；解码允许字节间空白。": "Convert between UTF-8 text and hex bytes. Decoding accepts whitespace between bytes.",
+  "编码为带双引号的 JSON 字符串；解码还原换行、引号和反斜杠。": "Encode as a quoted JSON string. Decode newlines, quotes and backslashes.",
+  "单向摘要，无法解码。此算法仅用于兼容旧系统，不适合密码存储或安全签名。": "One-way hash, with no decoding. For legacy compatibility; unsuitable for password storage or secure signatures.",
+  "计算 UTF-8 文本的单向摘要，无法从摘要还原原文。": "Compute a one-way hash of UTF-8 text. The original text cannot be recovered from the hash.",
+  "文本包含不完整的 Unicode 字符。": "The text contains an unpaired Unicode surrogate.",
+  "解码后的字节不是有效的 UTF-8 文本。": "The decoded bytes are not valid UTF-8 text.",
+  "Base64 含有无效字符或填充。": "Base64 contains invalid characters or padding.",
+  "Base64 长度或填充不正确。": "Base64 length or padding is incorrect.",
+  "Base64 含有非零填充位，请检查末尾字符。": "Base64 has nonzero padding bits. Check the final characters.",
+  "Unicode 转义无效，请使用 \\uXXXX 或 \\u{XXXX}。": "Invalid Unicode escape. Use \\uXXXX or \\u{XXXX}.",
+  "Unicode 码点超出有效范围。": "Unicode code point is out of range.",
+  "HTML 数字实体包含无效的 Unicode 码点。": "An HTML numeric entity contains an invalid Unicode code point.",
+  "输入过长，最多支持 100,000 个 UTF-16 代码单元。": "Input is too long. The limit is 100,000 UTF-16 code units.",
+  "不支持的编码算法。": "Unsupported encoding algorithm.",
+  "不支持的转换方向。": "Unsupported conversion direction.",
+  "哈希摘要是单向的，无法解码。": "Hashes are one-way and cannot be decoded.",
+  "当前环境无法计算 SHA 摘要，请使用扩展、HTTPS 或 localhost。": "SHA hashing is unavailable here. Use the extension, HTTPS or localhost.",
+  "不支持的 URL 编码范围。": "Unsupported URL encoding scope.",
+  "URL 转义无效，请检查 % 后的十六进制字节和 UTF-8 序列。": "Invalid URL escape. Check hex bytes after % and UTF-8 sequences.",
+  "十六进制输入必须由成对的 0–9、A–F 字符组成。": "Hex input must contain pairs of 0–9 or A–F characters.",
+  "请输入带双引号的有效 JSON 字符串。": "Enter a valid JSON string enclosed in double quotes.",
+  "只能解码 JSON 字符串，不能解码对象、数组或数字。": "Only JSON strings can be decoded, not objects, arrays or numbers.",
   "浏览器收藏": "Browser bookmarks",
   "切换收藏来源": "Switch bookmark source",
   "搜索书签": "Search bookmarks",
@@ -4852,6 +5018,610 @@ function windowControls(expanded = false) {
 
 return {appButton, windowControls};
 })();
+const __codec_hashes = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Independent implementations of the algorithms specified in RFC 1319, 1320
+// and 1321. The MD2 permutation below is an algorithm constant, not source code.
+const MD2_PI = new Uint8Array([
+  41,46,67,201,162,216,124,1,61,54,84,161,236,240,6,19,
+  98,167,5,243,192,199,115,140,152,147,43,217,188,76,130,202,
+  30,155,87,60,253,212,224,22,103,66,111,24,138,23,229,18,
+  190,78,196,214,218,158,222,73,160,251,245,142,187,47,238,122,
+  169,104,121,145,21,178,7,63,148,194,16,137,11,34,95,33,
+  128,127,93,154,90,144,50,39,53,62,204,231,191,247,151,3,
+  255,25,48,179,72,165,181,209,215,94,146,42,172,86,170,198,
+  79,184,56,210,150,164,125,182,118,252,107,226,156,116,4,241,
+  69,157,112,89,100,113,135,32,134,91,207,101,230,45,168,2,
+  27,96,37,173,174,176,185,246,28,70,97,105,52,64,126,15,
+  85,71,163,35,221,81,175,58,195,92,249,206,186,197,234,38,
+  44,83,13,110,133,40,132,9,211,223,205,244,65,129,77,82,
+  106,220,55,200,108,193,171,250,36,225,123,8,12,189,177,74,
+  120,136,149,139,227,99,232,109,233,203,213,254,59,0,29,57,
+  242,239,183,14,102,88,208,228,166,119,114,248,235,117,75,10,
+  49,68,80,180,143,237,31,26,219,153,141,51,159,17,131,20,
+]);
+const hex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+const rotate = (value, bits) => (value << bits) | (value >>> (32 - bits));
+
+function md2(bytes) {
+  const padding = 16 - bytes.length % 16;
+  const message = new Uint8Array(bytes.length + padding + 16);
+  message.set(bytes);
+  message.fill(padding, bytes.length, bytes.length + padding);
+  const checksum = new Uint8Array(16), state = new Uint8Array(48);
+  let previous = 0;
+  for (let offset = 0; offset < message.length - 16; offset += 16) {
+    for (let j = 0; j < 16; j++) {
+      checksum[j] ^= MD2_PI[message[offset + j] ^ previous];
+      previous = checksum[j];
+    }
+  }
+  message.set(checksum, message.length - 16);
+  for (let offset = 0; offset < message.length; offset += 16) {
+    for (let j = 0; j < 16; j++) {
+      state[j + 16] = message[offset + j];
+      state[j + 32] = state[j] ^ state[j + 16];
+    }
+    let t = 0;
+    for (let round = 0; round < 18; round++) {
+      for (let j = 0; j < 48; j++) t = state[j] ^= MD2_PI[t];
+      t = (t + round) & 255;
+    }
+  }
+  return hex(state.subarray(0, 16));
+}
+
+function paddedWords(bytes) {
+  const padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+  padded.set(bytes);
+  padded[bytes.length] = 128;
+  const view = new DataView(padded.buffer);
+  view.setUint32(padded.length - 8, bytes.length * 8, true);
+  view.setUint32(padded.length - 4, Math.floor(bytes.length / 0x20000000), true);
+  return view;
+}
+
+function wordsHex(words) {
+  const bytes = new Uint8Array(16), view = new DataView(bytes.buffer);
+  words.forEach((word, index) => view.setUint32(index * 4, word, true));
+  return hex(bytes);
+}
+
+function md4(bytes) {
+  const view = paddedWords(bytes), state = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+  const shifts = [[3,7,11,19], [3,5,9,13], [3,9,11,15]];
+  const lastOrder = [0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15];
+  for (let offset = 0; offset < view.byteLength; offset += 64) {
+    const words = Array.from({length:16}, (_, i) => view.getUint32(offset + i * 4, true));
+    let [a, b, c, d] = state;
+    for (let round = 0; round < 3; round++) {
+      for (let step = 0; step < 16; step++) {
+        const index = round === 0 ? step : round === 1 ? (step % 4) * 4 + (step >> 2) : lastOrder[step];
+        const f = round === 0 ? (b & c) | (~b & d) : round === 1 ? (b & c) | (b & d) | (c & d) : b ^ c ^ d;
+        const next = rotate((a + f + words[index] + [0, 0x5a827999, 0x6ed9eba1][round]) | 0, shifts[round][step % 4]);
+        [a, b, c, d] = [d, next, b, c];
+      }
+    }
+    [a,b,c,d].forEach((value, i) => { state[i] = (state[i] + value) | 0; });
+  }
+  return wordsHex(state);
+}
+
+const MD5_CONSTANTS = Array.from({length:64}, (_, i) => Math.floor(Math.abs(Math.sin(i + 1)) * 0x100000000) | 0);
+function md5(bytes) {
+  const view = paddedWords(bytes), state = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+  const shifts = [[7,12,17,22], [5,9,14,20], [4,11,16,23], [6,10,15,21]];
+  for (let offset = 0; offset < view.byteLength; offset += 64) {
+    let [a, b, c, d] = state;
+    for (let step = 0; step < 64; step++) {
+      const round = step >> 4;
+      const f = round === 0 ? (b & c) | (~b & d) : round === 1 ? (d & b) | (~d & c) : round === 2 ? b ^ c ^ d : c ^ (b | ~d);
+      const index = round === 0 ? step : round === 1 ? (5 * step + 1) % 16 : round === 2 ? (3 * step + 5) % 16 : (7 * step) % 16;
+      const next = (b + rotate((a + f + MD5_CONSTANTS[step] + view.getUint32(offset + index * 4, true)) | 0, shifts[round][step % 4])) | 0;
+      [a, b, c, d] = [d, next, b, c];
+    }
+    [a,b,c,d].forEach((value, i) => { state[i] = (state[i] + value) | 0; });
+  }
+  return wordsHex(state);
+}
+
+return {md2, md4, md5};
+})();
+const __codec_fun = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+
+// Independent format implementations. Protocol tables, upstream references and
+// compatibility fixtures are documented in docs/THIRD_PARTY.md.
+const BUDDHA = '滅苦婆娑耶陀跋多漫都殿悉夜爍帝吉利阿無南那怛喝羯勝摩伽謹波者穆僧室藝尼瑟地彌菩提蘇醯盧呼舍佛參沙伊隸麼遮闍度蒙孕薩夷迦他姪豆特逝朋輸楞栗寫數曳諦羅曰咒即密若般故不實真訶切一除能等是上明大神知三藐耨得依諸世槃涅竟究想夢倒顛離遠怖恐有礙心所以亦智道。集盡死老至';
+const BUDDHA_MARKERS = '冥奢梵呐俱哆怯諳罰侄缽皤';
+const BEAR = '食性很雜既溫和會誘捕動物家住山洞沒有冬眠偶爾襲擊人類呱哞嗄哈嘍啽唬咯呦嗷嗡哮嗥嗒嗚吖吃嗅嘶噔咬噗嘿嚁噤囑非常喜歡堅果魚肉蜂蜜註取象發達你覺出更盜森氏我誒怎寶麼圖現破嚄告訴樣呆萌笨拙意';
+const BEAST_ALPHABET = '嗷呜啊~';
+class FunCodecError extends Error {}
+const fail = message => { throw new FunCodecError(t(message)); };
+const cleanCiphertext = text => text.replace(/\s/g, '');
+
+async function buddha(text, encode) {
+  if (!globalThis.crypto?.subtle) fail('当前环境无法处理佛曰，请使用扩展、HTTPS 或 localhost。');
+  // The classic format fixes the key and IV, including their trailing spaces.
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('XDXDtudou@KeyFansClub^_^Encode!!'.padEnd(32, ' ')), 'AES-CBC', false, [encode ? 'encrypt' : 'decrypt']);
+  const parameters = {name:'AES-CBC', iv:new TextEncoder().encode('Potato@Key@_@=_='.padEnd(16, ' '))};
+  if (encode) {
+    const bytes = new Uint8Array(text.length * 2);
+    for (let i = 0; i < text.length; i++) { bytes[i*2] = text.charCodeAt(i) & 255; bytes[i*2+1] = text.charCodeAt(i) >>> 8; }
+    const encrypted = new Uint8Array(await crypto.subtle.encrypt(parameters, key, bytes));
+    const markers = crypto.getRandomValues(new Uint8Array(Math.min(encrypted.length, 65536)));
+    let result = '佛曰：';
+    for (let i = 0; i < encrypted.length; i++) {
+      const byte = encrypted[i];
+      if (byte >= 128) result += BUDDHA_MARKERS[markers[i % markers.length] % BUDDHA_MARKERS.length];
+      result += BUDDHA[byte & 127];
+    }
+    return result;
+  }
+  const ciphertext = cleanCiphertext(text);
+  if (!/^佛曰[:：]/.test(ciphertext)) fail('请输入以“佛曰：”开头的经典版密文；不支持“佛又曰”或“新佛曰”。');
+  const body = ciphertext.slice(3), values = [];
+  for (let i = 0; i < body.length; i++) {
+    const high = BUDDHA_MARKERS.includes(body[i]);
+    const low = BUDDHA.indexOf(body[high ? ++i : i] ?? '\0');
+    if (low < 0) fail('佛曰密文含有无效字符或不完整的标记。');
+    values.push(low + (high ? 128 : 0));
+  }
+  if (!values.length || values.length % 16) fail('佛曰密文长度不正确，请检查是否复制完整。');
+  try {
+    const decrypted = await crypto.subtle.decrypt(parameters, key, new Uint8Array(values));
+    return new TextDecoder('utf-16le', {fatal:true, ignoreBOM:true}).decode(decrypted);
+  } catch { return fail('佛曰解码失败，密文可能损坏或使用了其他版本。'); }
+}
+
+function beastAlphabet(value) {
+  if (typeof value !== 'string' || value.length !== 4 || new Set(value).size !== 4 || /[\s\ud800-\udfff]/.test(value)) fail('兽音字表需要 4 个不同的字符，不能包含空白或 emoji。');
+  return value;
+}
+
+function beast(text, encode, options) {
+  if (encode) {
+    const alphabet = beastAlphabet(options.beastAlphabet ?? BEAST_ALPHABET);
+    let result = alphabet[3] + alphabet[1] + alphabet[0];
+    for (let i = 0; i < text.length; i++) {
+      const code = text.charCodeAt(i);
+      for (let nibble = 0; nibble < 4; nibble++) {
+        const value = ((code >>> (12 - nibble * 4)) + i * 4 + nibble) & 15;
+        result += alphabet[value >>> 2] + alphabet[value & 3];
+      }
+    }
+    return result + alphabet[2];
+  }
+  const body = cleanCiphertext(text);
+  if (body.length < 4 || (body.length - 4) % 8) fail('兽音长度不正确，请保留完整的三个起始字符和一个结束字符。');
+  const alphabet = beastAlphabet(body[2] + body[1] + body.at(-1) + body[0]);
+  let result = '', code = 0;
+  for (let i = 3, nibble = 0; i < body.length - 1; i += 2, nibble++) {
+    const high = alphabet.indexOf(body[i]), low = alphabet.indexOf(body[i+1]);
+    if (high < 0 || low < 0) fail('兽音密文中出现了字表以外的字符。');
+    code = (code << 4) | ((high * 4 + low - nibble) & 15);
+    if (nibble % 4 === 3) { result += String.fromCharCode(code); code = 0; }
+  }
+  return result;
+}
+
+function bearSymbols(bytes) {
+  const symbols = [];
+  let buffer = 0, bits = 0;
+  for (const byte of bytes) {
+    buffer |= byte << bits;
+    bits += 8;
+    if (bits > 13) {
+      let pair = buffer & 8191;
+      const take = pair > 88 ? 13 : 14;
+      if (take === 14) pair = buffer & 16383;
+      symbols.push(BEAR[pair % 91], BEAR[Math.floor(pair / 91)]);
+      buffer >>>= take; bits -= take;
+    }
+  }
+  if (bits) {
+    symbols.push(BEAR[buffer % 91]);
+    if (bits > 7 || buffer > 90) symbols.push(BEAR[Math.floor(buffer / 91)]);
+  }
+  return symbols.reverse().join('');
+}
+
+function bearBytes(symbols) {
+  let buffer = 0, bits = 0, first = -1;
+  const bytes = [];
+  for (let i = symbols.length - 1; i >= 0; i--) {
+    const value = BEAR.indexOf(symbols[i]);
+    if (value < 0) fail('熊曰密文含有无效字符。');
+    if (first < 0) { first = value; continue; }
+    const pair = first + value * 91;
+    buffer |= pair << bits;
+    bits += (pair & 8191) > 88 ? 13 : 14;
+    while (bits >= 8) { bytes.push(buffer & 255); buffer >>>= 8; bits -= 8; }
+    first = -1;
+  }
+  if (first >= 0) bytes.push((buffer | first << bits) & 255);
+  const result = new Uint8Array(bytes);
+  if (bearSymbols(result) !== symbols) fail('熊曰密文尾部不完整或填充无效。');
+  return result;
+}
+
+async function rawDeflate(bytes, encode, limit) {
+  let transform;
+  try { transform = encode ? new CompressionStream('deflate-raw') : new DecompressionStream('deflate-raw'); }
+  catch { return fail('当前浏览器不支持熊曰所需的压缩格式，请升级浏览器。'); }
+  // Bound each native inflate write as well as collected output: a single
+  // compressed blob chunk could otherwise enqueue a very large expansion.
+  let cursor = 0;
+  const source = new ReadableStream({pull(controller) {
+    if (cursor === bytes.length) { controller.close(); return; }
+    const end = Math.min(bytes.length, cursor + 1024);
+    controller.enqueue(bytes.subarray(cursor, end)); cursor = end;
+  }});
+  const reader = source.pipeThrough(transform).getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > limit) {
+        await reader.cancel().catch(() => {});
+        fail('解码结果过长，最多支持 100,000 个 UTF-16 代码单元。');
+      }
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const result = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.length; }
+  return result;
+}
+
+async function bear(text, encode, limit) {
+  if (encode) return '熊曰：呋' + bearSymbols(await rawDeflate(new TextEncoder().encode(text), true, limit * 4));
+  const ciphertext = cleanCiphertext(text).replace(/^熊曰[:：]/, '');
+  if (!ciphertext.startsWith('呋')) fail('请输入以“熊曰：呋”或“呋”开头的原版熊曰密文。');
+  const compressed = bearBytes(ciphertext.slice(1));
+  let bytes;
+  try { bytes = await rawDeflate(compressed, false, limit * 3); }
+  catch (error) {
+    // Preserve actionable feature/limit messages; native stream errors denote
+    // damaged, truncated or trailing compressed data.
+    if (error instanceof FunCodecError) throw error;
+    return fail('熊曰解码失败，密文可能损坏或使用了其他版本。');
+  }
+  try { return new TextDecoder('utf-8', {fatal:true, ignoreBOM:true}).decode(bytes); }
+  catch { return fail('熊曰解码后的内容不是有效的 UTF-8 文本。'); }
+}
+
+async function convertFunText(text, id, encode, options, limit) {
+  if (id === 'beast' && encode && text.length * 8 + 4 > limit) fail('兽音最多编码 12,499 个 UTF-16 代码单元；每个代码单元会变成 8 个字符。');
+  const result = id === 'buddha' ? await buddha(text, encode) : id === 'beast' ? beast(text, encode, options) : await bear(text, encode, limit);
+  if (result.length > limit) fail(encode ? '转换结果过长，请缩短输入（最多 100,000 个 UTF-16 代码单元）。' : '解码结果过长，最多支持 100,000 个 UTF-16 代码单元。');
+  return result;
+}
+
+return {BEAST_ALPHABET, convertFunText};
+})();
+const __codec = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { md2, md4, md5 } = __codec_hashes;
+const { convertFunText } = __codec_fun;
+
+const CODEC_INPUT_LIMIT = 100000;
+const CODEC_ALGORITHMS = Object.freeze([
+  {id:'base64', name:'Base64', group:'encoding', hint:'将 UTF-8 文本转为 Base64；解码时允许空白和省略的填充。'},
+  {id:'base64url', name:'Base64 URL', group:'encoding', hint:'使用 URL 安全字符 - 和 _，编码结果不带 = 填充。'},
+  {id:'url', name:'URL', group:'encoding', hint:'选择编码范围；仅表单模式会将空格与 + 相互转换。'},
+  {id:'html', name:'HTML 实体', group:'encoding', hint:'转换 & < > 引号；解码支持 amp、lt、gt、quot、apos、nbsp 和数字实体。'},
+  {id:'unicode', name:'Unicode 转义', group:'encoding', hint:'使用 \\uXXXX 转义，支持中文与 emoji；解码也支持 \\u{1F600}。'},
+  {id:'hex', name:'Hex · UTF-8', group:'encoding', hint:'在 UTF-8 文本与十六进制字节之间转换；解码允许字节间空白。'},
+  {id:'json', name:'JSON 字符串', group:'encoding', hint:'编码为带双引号的 JSON 字符串；解码还原换行、引号和反斜杠。'},
+  {id:'buddha', name:'佛曰', group:'fun', badge:'经典版 · 佛曰：', format:'UTF-16LE', hint:'兼容经典“与佛论禅”，保留“佛曰：”前缀；不支持“佛又曰”或“新佛曰”。'},
+  {id:'beast', name:'兽音译者', group:'fun', badge:'兽语 · 四字符', format:'UTF-16', hint:'把文本变成嗷呜兽语，支持中文与 emoji。解码会从首尾标记自动识别字表，请保留完整文本。'},
+  {id:'bear', name:'熊曰 / 与熊论道', group:'fun', badge:'原版 · 熊曰：呋', format:'UTF-8', hint:'兼容原版“与熊论道”，先压缩再转换字符；解码支持“熊曰：呋”或“呋”开头的文本。'},
+  ...['MD2','MD4','MD5','SHA-1','SHA-256','SHA-384','SHA-512'].map(name => ({
+    id:name.toLowerCase(), name, group:'hash', bits:name.startsWith('MD') ? 128 : name === 'SHA-1' ? 160 : Number(name.slice(4)),
+    hint:['MD2','MD4','MD5','SHA-1'].includes(name) ? '单向摘要，无法解码。此算法仅用于兼容旧系统，不适合密码存储或安全签名。' : '计算 UTF-8 文本的单向摘要，无法从摘要还原原文。',
+  })),
+].map(Object.freeze));
+
+function codecAlgorithm(id) { return CODEC_ALGORITHMS.find(algorithm => algorithm.id === id); }
+const fail = message => { throw new Error(t(message)); };
+const bytesHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+
+// TextEncoder silently replaces unpaired surrogates. Reject them to avoid
+// producing a plausible digest of different text from the user's input.
+function validUnicode(text) {
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = text.charCodeAt(++i);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) fail('文本包含不完整的 Unicode 字符。');
+    } else if (code >= 0xdc00 && code <= 0xdfff) fail('文本包含不完整的 Unicode 字符。');
+  }
+  return text;
+}
+
+function utf8Text(bytes) {
+  try { return new TextDecoder('utf-8', {fatal:true, ignoreBOM:true}).decode(bytes); }
+  catch { return fail('解码后的字节不是有效的 UTF-8 文本。'); }
+}
+
+function base64Encode(bytes) {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  return btoa(binary);
+}
+
+function base64Decode(text, urlSafe) {
+  const clean = text.replace(/[\t\n\r ]/g, '');
+  if (!(urlSafe ? /^[\w-]*={0,2}$/ : /^[A-Za-z0-9+/]*={0,2}$/).test(clean)) fail('Base64 含有无效字符或填充。');
+  const standard = clean.replace(/-/g, '+').replace(/_/g, '/');
+  const body = standard.replace(/=+$/, '');
+  if (body.length % 4 === 1 || (standard.includes('=') && standard.length % 4 !== 0)) fail('Base64 长度或填充不正确。');
+  const padded = body + '='.repeat((4 - body.length % 4) % 4);
+  let bytes;
+  try { bytes = Uint8Array.from(atob(padded), character => character.charCodeAt(0)); }
+  catch { return fail('Base64 长度或填充不正确。'); }
+  if (base64Encode(bytes) !== padded) fail('Base64 含有非零填充位，请检查末尾字符。');
+  return utf8Text(bytes);
+}
+
+function decodeUnicode(text) {
+  let result = '';
+  for (let i = 0; i < text.length;) {
+    if (text[i] !== '\\') { result += text[i++]; continue; }
+    const match = /^\\u(?:([\da-f]{4})|\{([\da-f]{1,6})\})/i.exec(text.slice(i));
+    if (!match) fail('Unicode 转义无效，请使用 \\uXXXX 或 \\u{XXXX}。');
+    const code = parseInt(match[1] || match[2], 16);
+    if (code > 0x10ffff) fail('Unicode 码点超出有效范围。');
+    result += String.fromCodePoint(code);
+    i += match[0].length;
+  }
+  return validUnicode(result);
+}
+
+function htmlDecode(text) {
+  const entities = {amp:'&', lt:'<', gt:'>', quot:'"', apos:"'", nbsp:'\u00a0'};
+  return text.replace(/&(#x[\da-f]+|#\d+|[a-z][a-z0-9]*);/gi, (match, entity) => {
+    if (Object.hasOwn(entities, entity)) return entities[entity];
+    if (!entity.startsWith('#')) return match;
+    const code = /^#x/i.test(entity) ? parseInt(entity.slice(2), 16) : Number(entity.slice(1));
+    if (code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) fail('HTML 数字实体包含无效的 Unicode 码点。');
+    return String.fromCodePoint(code);
+  });
+}
+
+async function convertText(text, id, direction = 'encode', options = {}) {
+  if (typeof text !== 'string' || text.length > CODEC_INPUT_LIMIT) fail('输入过长，最多支持 100,000 个 UTF-16 代码单元。');
+  const algorithm = codecAlgorithm(id);
+  if (!algorithm) fail('不支持的编码算法。');
+  if (!['encode','decode'].includes(direction)) fail('不支持的转换方向。');
+  validUnicode(text);
+  const encode = direction === 'encode';
+  if (algorithm.group === 'fun') return validUnicode(await convertFunText(text, id, encode, options, CODEC_INPUT_LIMIT));
+  if (algorithm.group === 'hash') {
+    if (!encode) fail('哈希摘要是单向的，无法解码。');
+    const bytes = new TextEncoder().encode(text), legacy = {md2, md4, md5};
+    let result;
+    if (Object.hasOwn(legacy, id)) result = legacy[id](bytes);
+    else {
+      if (!globalThis.crypto?.subtle) fail('当前环境无法计算 SHA 摘要，请使用扩展、HTTPS 或 localhost。');
+      result = bytesHex(new Uint8Array(await globalThis.crypto.subtle.digest(algorithm.name, bytes)));
+    }
+    return options.uppercase ? result.toUpperCase() : result;
+  }
+  if (id === 'base64' || id === 'base64url') {
+    if (!encode) return base64Decode(text, id === 'base64url');
+    const result = base64Encode(new TextEncoder().encode(text));
+    return id === 'base64url' ? result.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : result;
+  }
+  if (id === 'url') {
+    const mode = options.urlMode || 'component';
+    if (!['component','uri','form'].includes(mode)) fail('不支持的 URL 编码范围。');
+    try {
+      if (mode === 'uri') return encode ? encodeURI(text) : decodeURI(text);
+      if (mode === 'form') return encode ? encodeURIComponent(text).replace(/[!'()~]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase()).replace(/%20/g, '+') : decodeURIComponent(text.replace(/\+/g, ' '));
+      return encode ? encodeURIComponent(text) : decodeURIComponent(text);
+    } catch { return fail('URL 转义无效，请检查 % 后的十六进制字节和 UTF-8 序列。'); }
+  }
+  if (id === 'html') return encode ? text.replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c])) : htmlDecode(text);
+  if (id === 'unicode') return encode ? text.split('').map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')).join('') : decodeUnicode(text);
+  if (id === 'hex') {
+    if (encode) return bytesHex(new TextEncoder().encode(text));
+    const clean = text.replace(/\s/g, '');
+    if (!/^(?:[\da-f]{2})*$/i.test(clean)) fail('十六进制输入必须由成对的 0–9、A–F 字符组成。');
+    return utf8Text(Uint8Array.from(clean.match(/../g) || [], pair => parseInt(pair, 16)));
+  }
+  if (encode) return JSON.stringify(text);
+  let result;
+  try { result = JSON.parse(text); } catch { return fail('请输入带双引号的有效 JSON 字符串。'); }
+  if (typeof result !== 'string') fail('只能解码 JSON 字符串，不能解码对象、数组或数字。');
+  return validUnicode(result);
+}
+
+return {CODEC_INPUT_LIMIT, CODEC_ALGORITHMS, codecAlgorithm, convertText};
+})();
+const __codec_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t, formatNumber } = __i18n;
+const { escapeText: esc } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { CODEC_ALGORITHMS, CODEC_INPUT_LIMIT, codecAlgorithm, convertText } = __codec;
+const { BEAST_ALPHABET } = __codec_fun;
+
+const CODEC_GROUPS = {encoding:'编码 / 解码', fun:'趣味编码', hash:'哈希摘要'};
+
+function codecCard(item) {
+  return `<div class="widget-heading"><button type="button" class="widget-title" data-action="widget-open">${icon('code')}${esc(item.title)}</button><button type="button" class="widget-icon-button" data-action="widget-config" aria-label="${t('设置组件')}">${icon('more')}</button></div>
+    <button type="button" class="codec-card-hero" data-action="widget-open" aria-label="${t('打开编码工具')}"><span class="codec-card-symbol" aria-hidden="true"><b>Aa</b><span>⇄</span><b>64</b></span><span>${t('文本转换，一步完成')}</span></button>
+    <div class="codec-card-shortcuts">${[['base64','Base64'],['url','URL'],['md5','MD5']].map(([id,name]) => `<button type="button" data-action="widget-open" data-codec-algorithm="${id}" aria-label="${t('打开 {name}',{name})}">${name}</button>`).join('')}</div>
+    <div class="codec-card-footer"><span>${t('编码 · 解码 · 哈希')}</span>${icon('right')}</div>`;
+}
+
+function algorithmOptions() {
+  return Object.entries(CODEC_GROUPS).map(([group, label]) => `<optgroup label="${t(label)}">${CODEC_ALGORITHMS.filter(a => a.group === group).map(a => `<option value="${a.id}">${esc(t(a.name))}</option>`).join('')}</optgroup>`).join('');
+}
+
+function codecWorkspace(item) {
+  return `<div class="codec-app">
+    <header class="codec-header"><div class="codec-heading">${icon('code')}<h2 id="dialog-title" title="${esc(item.title)}">${esc(item.title)}</h2></div>${windowControls()}</header>
+    <div class="codec-layout">
+      <nav class="codec-nav" aria-label="${t('编码算法')}">${Object.entries(CODEC_GROUPS).map(([group, label]) => `<section><h3>${t(label)}</h3>${CODEC_ALGORITHMS.filter(a => a.group === group).map(a => `<button type="button" data-codec-algorithm="${a.id}" aria-pressed="false"><span>${esc(t(a.name))}</span><small>${a.bits ? a.bits : '↔'}</small></button>`).join('')}</section>`).join('')}<p>${icon('shield')}${t('本机处理，无需联网')}</p></nav>
+      <div class="codec-main">
+        <label class="codec-mobile-select">${t('编码算法')}<select data-codec-select>${algorithmOptions()}</select></label>
+        <div class="codec-method"><div><h3 data-codec-title>Base64</h3><span class="codec-badge" data-codec-badge></span></div><div class="codec-direction" role="group" aria-label="${t('转换方向')}"><button type="button" data-codec-direction="encode" aria-pressed="true">${t('编码')}</button><button type="button" data-codec-direction="decode" aria-pressed="false">${t('解码')}</button></div></div>
+        <p class="codec-hint" id="codec-hint"></p>
+        <div class="codec-options"><label data-codec-url hidden>${t('URL 范围')}<select data-codec-url-mode><option value="component">${t('参数值 · encodeURIComponent')}</option><option value="uri">${t('完整 URL · encodeURI')}</option><option value="form">${t('表单值 · 空格转 +')}</option></select></label><label data-codec-case hidden><input type="checkbox" data-codec-uppercase>${t('大写十六进制')}</label><div class="codec-beast-options" data-codec-beast hidden><label data-codec-beast-field>${t('兽音字表')}<input type="text" data-codec-beast-alphabet aria-describedby="codec-beast-help codec-status" autocomplete="off" spellcheck="false"><button type="button" data-codec-action="reset-alphabet">${t('恢复默认')}</button></label><span id="codec-beast-help"></span></div><span data-codec-format>UTF-8</span></div>
+        <p class="codec-fun-note" data-codec-fun-note hidden>${t('用于趣味文本分享；字符表公开，无密码保护。')}</p>
+        <div class="codec-editors">
+          <section class="codec-editor"><div class="codec-editor-bar"><label for="codec-input">${t('输入文本')}</label><div><button type="button" data-codec-action="example">${t('示例')}</button><button type="button" data-codec-action="clear">${t('清空')}</button></div></div><textarea id="codec-input" aria-describedby="codec-hint codec-status" placeholder="${t('在此输入或粘贴文本…')}" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea><div class="codec-editor-meta" data-codec-input-count></div></section>
+          <section class="codec-editor codec-result"><div class="codec-editor-bar"><label for="codec-output">${t('输出结果')}</label><div><button type="button" data-codec-action="reuse" disabled title="${t('将结果放入输入框，继续转换')}">${icon('refresh')}<span>${t('用作输入')}</span></button><button type="button" data-codec-action="copy" disabled>${icon('copy')}<span>${t('复制')}</span></button></div></div><textarea id="codec-output" readonly placeholder="${t('转换结果将显示在这里')}" spellcheck="false" aria-busy="false"></textarea><div class="codec-editor-meta" data-codec-output-count></div></section>
+        </div>
+        <p class="codec-status" id="codec-status" role="status" aria-live="polite"></p>
+        <div class="codec-actions"><label><input type="checkbox" data-codec-auto checked>${t('实时转换')}</label><span class="codec-shortcut">Ctrl / ⌘ + Enter</span><button type="button" class="codec-run" data-codec-action="run">${t('编码')}${icon('right')}</button></div>
+        <footer class="codec-footer">${icon('shield')}<span>${t('内容仅留在当前窗口，关闭即清空，不写入备份或同步。')}</span></footer>
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindCodecWorkspace(root, initialAlgorithm = 'base64') {
+  const controller = new AbortController(), listener = {signal:controller.signal};
+  const query = selector => root.querySelector(selector);
+  const input = query('#codec-input'), output = query('#codec-output'), status = query('#codec-status');
+  query('[data-codec-beast-alphabet]').value = BEAST_ALPHABET;
+  let algorithm = codecAlgorithm(initialAlgorithm) || codecAlgorithm('base64');
+  let direction = 'encode', revision = 0, timer, hasResult = false, composing = false;
+  const isHash = () => algorithm.group === 'hash';
+  const mode = () => isHash() ? 'encode' : direction;
+  const options = () => ({urlMode:query('[data-codec-url-mode]').value, uppercase:query('[data-codec-uppercase]').checked, beastAlphabet:query('[data-codec-beast-alphabet]').value});
+  const count = text => t('{chars} 字符 · {bytes} 字节', {chars:formatNumber(Array.from(text).length), bytes:formatNumber(new TextEncoder().encode(text).length)});
+  function resultActions() {
+    query('[data-codec-action=copy]').disabled = !hasResult;
+    query('[data-codec-action=reuse]').disabled = !hasResult || output.value.length > CODEC_INPUT_LIMIT;
+  }
+  function message(text, error = false) {
+    status.textContent = text;
+    status.classList.toggle('is-error', error);
+    input.setAttribute('aria-invalid', String(error));
+  }
+  function invalidate() {
+    revision++;
+    clearTimeout(timer);
+    hasResult = false;
+    output.value = '';
+    output.setAttribute('aria-busy', 'false');
+    query('[data-codec-input-count]').textContent = count(input.value);
+    query('[data-codec-output-count]').textContent = count('');
+    resultActions();
+  }
+  async function run() {
+    invalidate();
+    const current = revision;
+    output.setAttribute('aria-busy', 'true');
+    message(t('正在转换…'));
+    try {
+      const result = await convertText(input.value, algorithm.id, mode(), options());
+      if (controller.signal.aborted || revision !== current) return;
+      output.value = result;
+      hasResult = true;
+      query('[data-codec-output-count]').textContent = count(result);
+      message(t(isHash() ? '摘要已生成' : '转换完成'));
+    } catch (error) {
+      if (controller.signal.aborted || revision !== current) return;
+      message(error.message, true);
+    } finally {
+      if (!controller.signal.aborted && revision === current) { output.setAttribute('aria-busy', 'false'); resultActions(); }
+    }
+  }
+  function schedule() {
+    invalidate();
+    if (!input.value) { message(t(isHash() ? '输入文本，或点击“生成摘要”计算空文本。' : '输入文本，或载入示例开始。')); return; }
+    if (!query('[data-codec-auto]').checked || composing) { message(t('已修改，等待转换')); return; }
+    message(t('等待转换…'));
+    timer = setTimeout(run, 180);
+  }
+  function updateMethod() {
+    for (const button of root.querySelectorAll('[data-codec-algorithm]')) button.setAttribute('aria-pressed', String(button.dataset.codecAlgorithm === algorithm.id));
+    query('[data-codec-select]').value = algorithm.id;
+    query('[data-codec-title]').textContent = t(algorithm.name);
+    query('[data-codec-badge]').textContent = isHash() ? t('单向 · {bits} 位',{bits:algorithm.bits}) : t(algorithm.badge || '可逆转换');
+    query('.codec-app').dataset.codecFamily = algorithm.group;
+    query('#codec-hint').textContent = t(algorithm.hint);
+    query('.codec-direction').hidden = isHash();
+    for (const button of root.querySelectorAll('[data-codec-direction]')) button.setAttribute('aria-pressed', String(button.dataset.codecDirection === direction));
+    query('[data-codec-url]').hidden = algorithm.id !== 'url';
+    query('[data-codec-case]').hidden = !isHash();
+    query('[data-codec-beast]').hidden = algorithm.id !== 'beast';
+    query('[data-codec-beast-field]').hidden = direction === 'decode';
+    query('#codec-beast-help').textContent = t(direction === 'decode' ? '解码时自动识别字表，无需填写。' : '按顺序填写 4 个不同的字符。');
+    query('[data-codec-fun-note]').hidden = algorithm.group !== 'fun';
+    query('[data-codec-format]').textContent = isHash() ? 'UTF-8 → HEX' : algorithm.format || 'UTF-8';
+    query('[data-codec-action=run]').innerHTML = t(isHash() ? '生成摘要' : direction === 'encode' ? '编码' : '解码') + icon('right');
+    schedule();
+  }
+  root.addEventListener('click', async event => {
+    const button = event.target.closest('button');
+    if (!button || !root.contains(button)) return;
+    if (button.dataset.codecAlgorithm) { algorithm = codecAlgorithm(button.dataset.codecAlgorithm); updateMethod(); }
+    if (button.dataset.codecDirection) { direction = button.dataset.codecDirection; updateMethod(); }
+    if (button.dataset.detailAction === 'window-expand') {
+      const expanded = root.closest('dialog').classList.toggle('widget-app-expanded');
+      button.setAttribute('aria-pressed', String(expanded));
+      button.setAttribute('aria-label', t(expanded ? '还原窗口' : '最大化窗口'));
+      button.title = button.getAttribute('aria-label');
+      button.innerHTML = icon(expanded ? 'minimize' : 'maximize');
+    }
+    const action = button.dataset.codecAction;
+    if (action === 'reset-alphabet') { query('[data-codec-beast-alphabet]').value = BEAST_ALPHABET; schedule(); }
+    if (action === 'run') await run();
+    if (action === 'clear') { input.value = ''; schedule(); input.focus(); }
+    if (action === 'reuse' && hasResult && output.value.length <= CODEC_INPUT_LIMIT) { input.value = output.value; schedule(); input.focus(); }
+    if (action === 'example') {
+      invalidate();
+      const current = revision, example = algorithm.id === 'url' ? 'https://example.com/search?q=栖页 &lang=中文' : algorithm.id === 'html' ? '<span title="Qiye">你好 & hello</span>' : isHash() ? 'abc' : '你好，Qiye 👋';
+      try {
+        const sample = mode() === 'decode' ? await convertText(example, algorithm.id, 'encode', {...options(), beastAlphabet:BEAST_ALPHABET}) : example;
+        if (controller.signal.aborted || revision !== current) return;
+        input.value = sample; schedule(); input.focus();
+      } catch (error) {
+        if (!controller.signal.aborted && revision === current) message(error.message, true);
+      }
+    }
+    if (action === 'copy' && hasResult) {
+      const current = revision;
+      try {
+        await navigator.clipboard.writeText(output.value);
+        if (!controller.signal.aborted && revision === current) message(t('已复制结果'));
+      } catch {
+        if (controller.signal.aborted || revision !== current) return;
+        output.focus(); output.select(); message(t('无法自动复制，结果已选中，请按 Ctrl / ⌘ + C。'));
+      }
+    }
+  }, listener);
+  input.addEventListener('compositionstart', () => { composing = true; invalidate(); }, listener);
+  input.addEventListener('compositionend', () => { composing = false; schedule(); }, listener);
+  input.addEventListener('input', schedule, listener);
+  query('[data-codec-beast-alphabet]').addEventListener('input', schedule, listener);
+  root.addEventListener('change', event => {
+    if (event.target.matches('[data-codec-select]')) { algorithm = codecAlgorithm(event.target.value); updateMethod(); }
+    else if (event.target.matches('[data-codec-auto],[data-codec-url-mode],[data-codec-uppercase]')) schedule();
+  }, listener);
+  root.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !event.isComposing) { event.preventDefault(); event.stopPropagation(); void run(); }
+  }, listener);
+  updateMethod();
+  return () => { controller.abort(); revision++; clearTimeout(timer); input.value = ''; output.value = ''; query('[data-codec-beast-alphabet]').value = ''; };
+}
+
+return {codecCard, codecWorkspace, bindCodecWorkspace};
+})();
 const __validation = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
@@ -5698,6 +6468,7 @@ const { publicHttpsUrl } = __public_json;
 const { HOTSEARCH_DEFAULTS, validateHotsearchConfig } = __hotsearch_sources;
 
 const builtins = [
+  { type: 'codec', title: '编码工具', description: 'Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道', size: '2x2', icon: 'code' },
   { type: 'bookmarks', title: '书签', description: '分层整理独立收藏，授权后管理浏览器书签', size: '4x2', icon: 'bookmark' },
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
@@ -18887,6 +19658,7 @@ return {calendarGrid, dateToolResults, calendarDetail};
 })();
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { codecCard } = __codec_workspace;
 const { baseConverterCard } = __base_converter_view;
 const { pomodoroCard } = __pomodoro_view;
 const { bindPomodoro } = __pomodoro_runtime;
@@ -19231,6 +20003,7 @@ function compactModel(item) {
   else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
   else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
   else if (type === 'base-converter') { value = '2↔16'; caption = t('进制转换'); detail = 'BIN · OCT · DEC · HEX'; meta = t('支持 2–36 进制'); }
+  else if (type === 'codec') { caption = t('编码工具'); detail = 'Base64 · URL'; meta = t('编码 · 解码 · 哈希'); }
   return {value, caption, detail, meta, unit};
 }
 function renderCompact(item) {
@@ -19241,6 +20014,7 @@ function renderWidgetContent(item, state) {
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
   if (item.widget === 'pomodoro') return pomodoroCard(item);
+  if (item.widget === 'codec') return codecCard(item);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
@@ -19371,7 +20145,7 @@ function bindWidgets(container, context) {
     if (target.dataset.calendarDate) { event.preventDefault(); event.stopPropagation(); context.openDialog('widget-detail',{item,date:target.dataset.calendarDate}); return; }
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
-    if (action === 'widget-open') { context.openDialog('widget-detail',{item}); return; }
+    if (action === 'widget-open') { context.openDialog('widget-detail',{item,codecAlgorithm:target.dataset.codecAlgorithm}); return; }
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
     const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
     if (['widget-calendar-detail','widget-weather-detail','widget-memo-open','widget-memo-new'].includes(action)) { context.openDialog('widget-detail', { item, memoId: target.dataset.memoId, newMemo: action === 'widget-memo-new' }); return; }
@@ -23033,6 +23807,7 @@ function createDailyQuote(root, options) {
 return {createDailyQuoteClient, createDailyQuote};
 })();
 // SPDX-License-Identifier: GPL-3.0-only
+const { codecWorkspace, bindCodecWorkspace } = __codec_workspace;
 const { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } = __pomodoro_view;
 const { configurePomodoro, validatePomodoroConfig } = __pomodoro;
 const { bindPomodoro } = __pomodoro_runtime;
@@ -23733,8 +24508,9 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
+ dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
@@ -23755,6 +24531,7 @@ function openDialog(kind,data={}) {
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
@@ -23788,6 +24565,7 @@ function openDialog(kind,data={}) {
   const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -23804,6 +24582,7 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
+ else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
