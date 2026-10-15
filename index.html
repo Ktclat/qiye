@@ -1470,6 +1470,7 @@ html[data-theme=light] .bm-source-note.is-browser{color:#936127}
 .hotsearch-source>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hotsearch-logo.site-visual{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border-radius:6px;background:transparent;color:var(--app-muted,var(--w-muted));line-height:1}
 .hotsearch-logo.site-visual>.site-favicon{width:100%;height:100%;max-width:none;max-height:none}
+html[data-theme=dark] .hotsearch-logo.is-monochrome>.site-favicon{filter:brightness(0) invert(1)}
 .hotsearch-logo>.site-fallback{display:grid;place-items:center;width:100%;height:100%}
 .hotsearch-logo .icon{width:16px;height:16px}
 .hotsearch-app .hotsearch-grip{background:transparent;color:var(--app-muted);font-size:19px;padding:6px 3px;cursor:grab;flex:none}
@@ -12270,7 +12271,7 @@ const { HOTSEARCH_CATEGORIES, hotsearchSource, filterHotsearchSources } = __hots
 const { hotsearchClient, hotsearchHeat, HOTSEARCH_TTL } = __hotsearch_data;
 
 function hotsearchLogo(source) {
-  return `<span class="hotsearch-logo site-visual" data-favicon-site="${esc(source.url)}" data-favicon-selected="${esc(source.iconUrl)}" aria-hidden="true"><span class="site-fallback">${icon('globe')}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
+  return `<span class="hotsearch-logo site-visual${source.github?' is-monochrome':''}" data-favicon-site="${esc(source.url)}" data-favicon-selected="${esc(source.iconUrl)}" aria-hidden="true"><span class="site-fallback">${icon('globe')}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
 function bindHotsearchLogos(root) { bindFaviconImages(root,{autoDiscover:false,targetSize:24}); }
 const linkAttrs = state => `${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer"`;
