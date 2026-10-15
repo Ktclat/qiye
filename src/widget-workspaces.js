@@ -5,6 +5,8 @@ import { icon } from './icons.js';
 import { windowControls } from './widget-app-controls.js';
 import { renderWidgetContent, bindWidgets, refreshLiveWidgets, daysUntil, workdayStatus } from './widgets.js';
 import { parseDate, localDateKey } from './calendar.js';
+import { LIFE_WIDGETS, lifeWorkspace } from './widget-life-view.js';
+import { bindLifeWorkspace } from './widget-life-workspace.js';
 
 export const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks'];
 const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',calculator:'calculator',hotlinks:'trending'};
@@ -63,11 +65,13 @@ function tools(item) {
 }
 
 export function utilityWorkspace(item,state) {
+  if(LIFE_WIDGETS.includes(item.widget))return lifeWorkspace(item,state);
   const content=item.widget==='countdown'?countdownContent(item):item.widget==='workday'?workdayContent(item):renderWidgetContent(item,state);
   return `<div class="utility-app" data-utility-type="${item.widget}">${workspaceHeader(item)}<div class="utility-layout"><section class="utility-main"><section class="utility-panel widget-inner w-${item.widget}" data-widget="${item.widget}" data-widget-id="${e(item.id)}" data-widget-day="${localDateKey()}">${content}</section>${tools(item)}</section>${utilitySettings(item)}</div></div>`;
 }
 
 export function bindUtilityWorkspace(root,item,host) {
+  if(LIFE_WIDGETS.includes(item.widget))return bindLifeWorkspace(root,item,host);
   const controller=new AbortController(), options={signal:controller.signal};
   const initial=JSON.stringify([item.title,item.config]), form=root.querySelector('[data-utility-form]');
   const latest=()=>host.getState().items.find(entry=>entry.id===item.id);

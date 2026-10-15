@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { newPomodoroData, validatePomodoroData } from './pomodoro.js';
+import { validateCountdownData } from './widget-life.js';
 import { t } from './i18n.js';
 import { keys, string, array, id, bool, number, date, unique, invalid } from './validation.js';
 
@@ -34,6 +35,7 @@ export function widgetContentSummary(items) {
 export function validateWidgetData(type, raw, path) {
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if (type === 'pomodoro') return validatePomodoroData(raw, path);
+  if(type==='countdown')return validateCountdownData(raw,path);
   if(type==='community')return validateCommunityData(raw);
   if (type === 'bookmarks') return validateBookmarks(raw, path);
   if (type === 'memo') return validateMemos(raw, path);

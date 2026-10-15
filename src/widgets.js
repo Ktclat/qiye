@@ -5,6 +5,8 @@ import { bindPomodoro } from './pomodoro-runtime.js';
 import { renderWidgetSummary } from './widget-summary.js';
 import { bookmarkCard } from './bookmarks-view.js';
 import { bindBookmarkCards } from './bookmarks-workspace.js';
+import { countdownPrimary, workdayTimeline } from './widget-life.js';
+import { countdownCardFace, workdayFace, worldClockCardFace } from './widget-life-view.js';
 import { communityCard } from './community-widget.js';
 import { isCompactWidget } from './widget-sizes.js';
 import { t } from './i18n.js';
@@ -131,15 +133,12 @@ function renderTodo(state) {
 }
 
 function countdownView(item, now = new Date()) {
-  const config = item.config;
-  const days = daysUntil(config.date, now);
-  return { title: config.title, number: days === null ? '—' : Math.abs(days).toString(), caption: days === null ? t("设置一个期待的日子") : days < 0 ? t("已经过去") : days === 0 ? t("就是今天") : t("还有"), unit: days === 0 ? '♥' : t("天"), date: validDateParts(config.date) ? config.date.replaceAll('-', '.') : t("点击右上角设置") };
+  const entry=countdownPrimary(item,now),days=entry?.occurrence.days;
+  return {title:entry?.title||t('添加倒数日'),number:entry?String(Math.abs(days)):'—',caption:t(!entry?'添加一个值得期待的日子':days<0?'已经过去':days===0?'就是今天':'还有'),unit:t('天'),date:entry?entry.occurrence.key.replaceAll('-','.'):''};
 }
 
 function renderCountdown(item) {
-  const view = countdownView(item), parts = validDateParts(item.config.date);
-  const date = parts ? new Date(parts[0],parts[1]-1,parts[2]) : null;
-  return `${header(t('倒数日'), 'flag')}<div class="countdown-layout"><div class="countdown-date-sheet" aria-hidden="true"><span>${date ? escapeHtml(formatDate(date,{month:'short'})) : '—'}</span><strong>${date ? date.getDate() : '—'}</strong><small>${date ? escapeHtml(formatDate(date,{weekday:'long'})) : ''}</small></div><div class="countdown-overview"><div class="w-countdown-title" data-live="countdown-title" title="${escapeHtml(view.title)}">${escapeHtml(view.title)}</div><div class="w-countdown-caption" data-live="countdown-caption">${view.caption}</div><div class="w-countdown-number"><strong data-live="countdown-number">${view.number}</strong><span data-live="countdown-unit">${view.unit}</span></div><div class="w-countdown-date" data-live="countdown-date">${view.date}</div></div></div>`;
+  return `${header(t('倒数日'),'calendar')}<div class="countdown-card-surface">${countdownCardFace(item)}</div>`;
 }
 
 export function focusRemaining(focus, now = Date.now()) {
@@ -159,21 +158,11 @@ function renderFocus(state) {
 }
 
 export function workdayStatus(config, now = new Date()) {
-  const [hour, minute] = String(config.endTime || '18:00').split(':').map(Number);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0);
-  const workdays = Array.isArray(config.workdays) ? config.workdays : [1, 2, 3, 4, 5];
-  const isWorkday = workdays.includes(now.getDay());
-  const remaining = Math.max(0, Math.ceil((end - now) / 1000));
-  const payday = Math.max(1, Math.min(31, Math.trunc(Number(config.payday) || 10)));
-  let payDate = new Date(now.getFullYear(), now.getMonth(), Math.min(payday, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()));
-  if (dayStamp(payDate) < dayStamp(now)) payDate = new Date(now.getFullYear(), now.getMonth() + 1, Math.min(payday, new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate()));
-  return { remaining, isWorkday, text: !isWorkday ? t("休息日") : remaining === 0 ? t("已下班") : `${String(Math.floor(remaining / 3600)).padStart(2, '0')}:${String(Math.floor((remaining % 3600) / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`, caption: !isWorkday ? t("今天，把时间留给生活") : remaining === 0 ? t("今天辛苦了，好好休息") : t("距离下班还有"), paydays: Math.round((dayStamp(payDate) - dayStamp(now)) / DAY) };
+  return workdayTimeline(config,now);
 }
 
 function renderWorkday(item) {
-  const config = item.config;
-  const status = workdayStatus(config);
-  return `${header(t("下班倒计时"), 'briefcase')}<div class="w-workday-caption" data-live="workday-caption">${status.caption}</div><strong class="w-workday-time" data-live="workday-time">${status.text}</strong><div class="w-workday-finish">${t("每天 {v0} 准时收工", {v0: escapeHtml(config.endTime)})}</div><div class="w-workday-pay"><span>${t("距发薪日")}</span><strong data-live="workday-pay">${status.paydays === 0 ? t("就是今天") : `${t("{v0} 天", {v0: status.paydays})}`}</strong></div>`;
+  return `<div class="workday-card-wrap font-${escapeHtml(item.config.font||'system')}">${workdayFace(item.config)}${configButton()}<button class="workday-open" type="button" data-action="widget-open" aria-label="${t('下班倒计时')}"></button></div>`;
 }
 
 function getQuote(item, now = new Date()) {
@@ -277,7 +266,7 @@ function habitList(state, now = new Date()) {
 }
 
 function renderHabit(state) {
-  return `${header(t("习惯打卡"), 'sparkles', '<span class="w-habit-today">TODAY</span>')}<ul class="w-habit-list" data-live="habit-list">${habitList(state)}</ul><form class="w-inline-form" data-widget-form="habit"><input type="text" name="text" maxlength="60" autocomplete="off" placeholder="${t("添加一个好习惯")}" aria-label="${t("新习惯")}"><button type="submit" class="widget-icon-button" aria-label="${t("添加习惯")}">${icon('plus')}</button></form>`;
+  return `${header(t("习惯打卡"), 'sparkles', `<span class="w-habit-today" data-live="habit-summary">${t('今天')} ${state.habits.filter(h=>h.dates.includes(localDateKey())).length}/${state.habits.length}</span>`)}<ul class="w-habit-list" data-live="habit-list">${habitList(state)}</ul><form class="w-inline-form" data-widget-form="habit"><input type="text" name="text" maxlength="60" autocomplete="off" placeholder="${t("添加一个好习惯")}" aria-label="${t("新习惯")}"><button type="submit" class="widget-icon-button" aria-label="${t("添加习惯")}">${icon('plus')}</button></form>`;
 }
 
 function timeInZone(zone, now, seconds = false) {
@@ -289,9 +278,7 @@ function zoneDate(zone, now) {
 }
 
 function renderClock(item, now = new Date()) {
-  const zone = item.config.timeZone;
-  const label = item.config.label;
-  return `${header(label || t("世界时钟"), 'globe')}<strong class="w-clock-time" data-live="world-time">${timeInZone(zone, now, true)}</strong><div class="w-clock-date" data-live="world-date">${escapeHtml(zoneDate(zone, now))}</div><div class="w-clock-world"><span>${t("伦敦")}<strong data-live="world-london">${timeInZone('Europe/London', now)}</strong></span><span>${t("纽约")}<strong data-live="world-newyork">${timeInZone('America/New_York', now)}</strong></span></div>`;
+  return `${header(t('世界时钟'),'globe')}<div class="world-clock-card-surface">${worldClockCardFace(item,now)}</div>`;
 }
 
 function renderWeather(item, state) {
@@ -441,6 +428,7 @@ function updateHabitCards(binding) {
     if (!item) continue;
     const list = root.querySelector('[data-live="habit-list"]');
     if (list) list.innerHTML = habitList(item.data);
+    setText(root,'habit-summary',`${t('今天')} ${item.data.habits.filter(h=>h.dates.includes(localDateKey())).length}/${item.data.habits.length}`);
     root.dataset.widgetDay = localDateKey();
   }
 }
@@ -689,6 +677,8 @@ export function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'workday')) {
     const item = findItem(root, state);
     if (!item) continue;
+    const face=root.querySelector('.workday-face');
+    if(face){const template=document.createElement('template');template.innerHTML=workdayFace(item.config,now);face.replaceWith(template.content.firstElementChild);}
     const status = workdayStatus(item.config, now);
     setText(root, 'workday-caption', status.caption);
     setText(root, 'workday-time', status.text);
@@ -697,12 +687,16 @@ export function refreshLiveWidgets(container, state) {
   for (const root of widgetRoots(container, 'countdown')) {
     const item = findItem(root, state);
     if (!item) continue;
+    const surface=root.querySelector('.countdown-card-surface');
+    if(surface){const markup=countdownCardFace(item,now);if(surface.innerHTML!==markup)surface.innerHTML=markup;}
     const view = countdownView(item, now);
     for (const key of ['title', 'caption', 'number', 'unit', 'date']) setText(root, `countdown-${key}`, view[key]);
   }
   for (const root of widgetRoots(container, 'clock')) {
     const item = findItem(root, state);
     if (!item) continue;
+    const surface=root.querySelector('.world-clock-card-surface');
+    if(surface){const template=document.createElement('template');template.innerHTML=worldClockCardFace(item,now);const fresh=template.content.firstElementChild;for(const selector of ['.world-clock-card-name','.world-clock-card-face','.world-clock-card-date']){const target=surface.querySelector(selector);if(target)target.innerHTML=fresh.querySelector(selector).innerHTML;}}
     const zone = item.config.timeZone;
     setText(root, 'world-time', timeInZone(zone, now, true));
     setText(root, 'world-date', zoneDate(zone, now));

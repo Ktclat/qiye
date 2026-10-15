@@ -90,7 +90,7 @@ with sync_playwright() as p:
             # Exercise successful hydration with GitHub's PNG and failed images below.
             expect(page.locator('[data-hot-source=github] .hotsearch-logo.is-loaded img')).to_be_visible()
             check(language+' sidebar hydrates the selected site icon',page.locator('[data-hot-source=github] .site-favicon').get_attribute('src')==seed['icons']['github'])
-            expect(card.locator('.hotsearch-rows li')).to_have_count(5)
+            expect(card.locator('.hotsearch-rows li')).to_have_count(4)
             expect(card.locator('[data-hot-card-source=github] .hotsearch-logo.is-loaded img')).to_be_visible()
             check(language+' desktop shows read headlines while automatic updates are off',True)
             page.locator('#dialog').screenshot(path=str(OUT/f'direct-view-{language}.png'),animations='disabled')
@@ -199,7 +199,8 @@ with sync_playwright() as p:
             page.evaluate("()=>{localStorage.removeItem('qiye.hotsearch.v1');const state=JSON.parse(localStorage.getItem('qiye.state.v5'));Object.assign(state.items[0].config,{enabled:true,activeSource:'zhihu'});localStorage.setItem('qiye.state.v5',JSON.stringify(state))}")
             page.reload(wait_until='domcontentloaded')
             page.locator('[data-widget-id="hot-4x2"] [data-hot-card-source=weibo]').click()
-            expect(page.locator('[data-widget-id="hot-4x2"] .hotsearch-rows li')).to_have_count(5)
+            expect(page.locator('[data-widget-id="hot-4x2"] .hotsearch-rows li')).to_have_count(4)
+            page.locator('[data-widget-id="hot-4x2"]').screenshot(path=str(OUT/f'compact-card-{language}.png'),animations='disabled')
             check(language+' card switches immediately while previous source is pending',saved()['activeSource']=='weibo' and 'weibo' in page.locator('[data-widget-id="hot-4x2"] .hotsearch-title').first.inner_text())
             for route in held:
                 route.abort()

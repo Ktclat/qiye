@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { POMODORO_DEFAULTS, validatePomodoroConfig } from './pomodoro.js';
 import { t, localizeSeed } from './i18n.js';
+import { WORKDAY_COLORS, WORKDAY_FONTS, validateClockCities } from './widget-life.js';
 import { keys, string, number, bool, enumeration, array, unique, date, time, invalid } from './validation.js';
 import { TILE_SIZES, REQUIRED_WIDGET_SIZES } from './widget-sizes.js';
 import { widgetExtensions } from './widget-extensions.js';
@@ -121,7 +122,8 @@ function validateBuiltinConfig(widgetType, raw, path) {
     keys(raw,['manifest','source'],path);
     return {manifest:validateCommunityManifest(raw.manifest),source:publicHttpsUrl(string(raw.source,path+'.source',2048))};
   }
-  const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
+  const optional = widgetType==='workday'?['startTime','style','background','font','showPayday','showFriday','showEarnings','dailyIncome']:widgetType==='clock'?['cities']:[];
+  const v = keys(raw, [...Object.keys(builtinConfig[widgetType] || {}),...optional], path);
   const out = {};
   if (widgetType === 'bookmarks') out.source = enumeration(v.source, ['local','browser'], `${path}.source`);
   if (widgetType === 'calendar') {
@@ -146,12 +148,19 @@ function validateBuiltinConfig(widgetType, raw, path) {
     out.date = date(v.date, `${path}.date`);
   }
   if (widgetType === 'workday') {
+    if(v.startTime!==undefined)out.startTime=time(v.startTime,`${path}.startTime`);
+    if(v.style!==undefined)out.style=enumeration(v.style,['digital','ring','simple'],`${path}.style`);
+    if(v.background!==undefined)out.background=enumeration(v.background,WORKDAY_COLORS,`${path}.background`);
+    if(v.font!==undefined)out.font=enumeration(v.font,WORKDAY_FONTS,`${path}.font`);
+    for(const key of ['showPayday','showFriday','showEarnings'])if(v[key]!==undefined)out[key]=bool(v[key],`${path}.${key}`);
+    if(v.dailyIncome!==undefined)out.dailyIncome=number(v.dailyIncome,`${path}.dailyIncome`,0,10000000);
     out.endTime = time(v.endTime, `${path}.endTime`);
     out.payday = number(v.payday, `${path}.payday`, 1, 31, true);
     out.workdays = array(v.workdays, `${path}.workdays`, 7).map(day => number(day, `${path}.workdays`, 0, 6, true));
     unique(out.workdays, `${path}.workdays`);
   }
   if (widgetType === 'clock') {
+    if(v.cities!==undefined)out.cities=validateClockCities(v.cities,`${path}.cities`);
     out.timeZone = string(v.timeZone, `${path}.timeZone`, 80);
     try { new Intl.DateTimeFormat('en', { timeZone: out.timeZone }).format(); } catch { invalid(`${path}.timeZone`, t("不是有效时区")); }
     out.label = string(v.label, `${path}.label`, 60);

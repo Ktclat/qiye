@@ -20,6 +20,7 @@ args = parser.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
 version = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))['version']
 key = subprocess.check_output(['node', '--input-type=module', '-e', "import {STORAGE_KEY} from './src/core.js';console.log(STORAGE_KEY)"], cwd=ROOT, text=True).strip()
+widget_count=int(subprocess.check_output(['node','--input-type=module','-e',"import {listWidgetDefinitions} from './src/widget-registry.js';console.log(listWidgetDefinitions().length)"],cwd=ROOT,text=True).strip())
 report = {'url':args.url, 'version':version, 'api_mocks':False, 'assets':{}, 'checks':[]}
 
 
@@ -121,7 +122,7 @@ try:
                 check('Unavailable weather provider shows a retry action',page.locator('[data-detail-action=weather-refresh]').is_enabled())
             page.screenshot(path=str(args.output/'live-weather.png'),animations='disabled');close()
             page.locator('.top-tools [data-action=add]').click()
-            check('Published chooser has previews and website navigation', page.locator('[data-catalog-card]').count() == 14 and page.locator('[data-add-tab=sites]').count() == 1)
+            check('Published chooser has previews and website navigation', page.locator('[data-catalog-card]').count() == widget_count and page.locator('[data-add-tab=sites]').count() == 1)
             page.locator('[data-catalog-widget=calculator] [data-catalog-size="1x1"]').click()
             page.locator('[data-add-widget=calculator]').click()
             page.locator('#dialog').wait_for(state='hidden')
@@ -137,8 +138,16 @@ try:
             page.screenshot(path=str(args.output / 'live-icon-visit.png'), animations='disabled')
             close()
             page.locator('#desktop [data-item=countdown-home]').focus();page.keyboard.press('Enter')
-            check('Published countdown has a dedicated settings workspace',page.locator('[data-utility-form] [name=date]').count()==1 and page.locator('.utility-countdown').count()==1)
+            check('Published countdown has categories, events and details',page.locator('.countdown-categories').count()==1 and page.locator('.countdown-event').count()>=1 and page.locator('.countdown-detail').count()==1)
+            page.locator('[data-life-action=countdown-edit]').click()
+            check('Published countdown opens its event editor',page.locator('[data-life-form=countdown] [name=date]').is_visible())
+            page.keyboard.press('Escape')
             page.screenshot(path=str(args.output / 'live-countdown.png'),animations='disabled');close()
+            for kind,selector in [('clock','.world-clock-cities'),('habit','.habit-week-heading')]:
+                page.locator('.top-tools [data-action=add]').click();page.locator(f'[data-add-widget={kind}]').click();page.locator('#dialog').wait_for(state='hidden')
+                page.locator(f'#desktop [data-widget={kind}] [data-action=widget-open]').last.click()
+                check(f'Published {kind} uses its dedicated interface',page.locator(selector).is_visible())
+                close()
             page.locator('.top-tools [data-action=add]').click();page.locator('[data-add-tab=sharing]').click()
             with page.expect_download() as download:page.locator('[data-layout-export] button').click()
             layout_path=args.output/'layout.json';download.value.save_as(layout_path)

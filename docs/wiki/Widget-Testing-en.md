@@ -4,6 +4,23 @@
 
 This page describes reproducible checks, not a claim that every check passed for a particular commit. Record actual results and unverified boundaries in the PR or [QA.md (Chinese)](../QA.md). Historical reports do not replace current validation.
 
+## Research before designing a widget
+
+Before adding or changing a widget, consult public iTab examples and official technical documentation for its function. Record sources, interaction decisions and boundaries. User screenshots take precedence as the visual reference. Avoid giving every tool the same large card and settings column. Compact cards should prioritize information by size; detail windows should follow the actual workflow.
+
+References for the daily-life widgets:
+
+- [iTab changelog](https://itab.link/changelog): compact desktop cards and independent widget windows. The user’s screenshots guide countdown categories and the working-hours preview.
+- [Apple World Clock](https://support.apple.com/en-euro/guide/clock-mac/apdw7dec11e7/1.1/mac/27): city management and world clocks. This project adds local time differences and a comparison slider.
+- [Loop Habit Tracker](https://loophabits.org/): daily check-ins, history and streaks, informing the week view and calendar backfill.
+- [Apple Stickies](https://support.apple.com/en-gb/guide/stickies/stk34871/mac): lightweight text and note colors. Quick notes retain direct editing and automatic saving.
+- [MDN Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat) and [formatToParts](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/formatToParts): IANA zones handle daylight saving, fractional-hour offsets and date boundaries.
+- [MDN date input](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/date) and [focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible): countdowns use civil dates; opening memos does not highlight the sort selector, while keyboard focus stays visible.
+
+[widget-life.test.mjs](../../tests/widget-life.test.mjs) covers recurrence, overnight work, time zones and check-in history. [widget-life-e2e.py](../../tests/widget-life-e2e.py) covers editing, undo, persistence, exports, keyboard use and narrow layouts in both themes. Workdays follow the selected weekdays without statutory holiday adjustments. Clock day/night styling uses local 06:00–18:00, not astronomical sunrise and sunset.
+
+Rebuild the standalone preview and synchronize the web version for each delivered change, then verify that public content matches the release build.
+
 ## Environment and commands
 
 Run from the repository root. CI uses Node.js 22 and Python 3.13. Logic tests and builds need no npm dependencies; browser tests additionally use Python Playwright.

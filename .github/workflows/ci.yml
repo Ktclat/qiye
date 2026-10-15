@@ -52,6 +52,8 @@ jobs:
           python3 tests/search-overlays-e2e.py --preview
           python3 tests/workspaces-e2e.py
           python3 tests/workspaces-e2e.py --preview
+          python3 tests/widget-life-e2e.py
+          python3 tests/widget-life-e2e.py --preview
           python3 tests/weather-e2e.py
           python3 tests/weather-e2e.py --preview
           python3 tests/hotsearch-e2e.py

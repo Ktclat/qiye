@@ -4,6 +4,23 @@
 
 本文提供可复现的验证流程；测试清单不表示某次提交已全部通过。实际结果与未验证边界写入 PR 或 [QA.md](../QA.md)，历史报告不替代本次验收。
 
+## 先研究，再设计组件
+
+新增或修改小组件前，先查找 iTab 的公开案例和该功能的官方技术文档，记录参考链接、交互选择与边界。用户提供的截图优先作为视觉基准；不要把每一种工具都做成相同的“大卡片 + 设置栏”。桌面卡片要按尺寸保留最重要的信息，详情页则围绕实际工作流程设计。
+
+本次生活组件参考：
+
+- [iTab 更新记录](https://itab.link/changelog)：紧凑的桌面卡片、独立组件窗口、倒数日分类与工作时间预览；具体布局以用户给出的截图为准。
+- [Apple 世界时钟](https://support.apple.com/en-euro/guide/clock-mac/apdw7dec11e7/1.1/mac/27)：城市管理与世界时钟；本项目增加本地时差和时间对比滑块。
+- [Loop Habit Tracker](https://loophabits.org/)：逐日打卡、历史与连续记录；周视图和月历补记围绕这些操作设计。
+- [Apple 便笺](https://support.apple.com/en-gb/guide/stickies/stk34871/mac)：轻量文本与便签颜色；随手记保留直接编辑和自动保存。
+- [MDN Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat) 与 [formatToParts](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/formatToParts)：使用 IANA 时区处理夏令时、半小时时差与跨日。
+- [MDN 日期输入](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/date) 与 [focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible)：倒数日按日历日期计算；默认打开不强调排序框，保留键盘焦点提示。
+
+日期、跨午夜工作时段、重复日期、时区与打卡历史由 [widget-life.test.mjs](../../tests/widget-life.test.mjs) 验证；[widget-life-e2e.py](../../tests/widget-life-e2e.py) 覆盖新增、编辑、撤销、保存恢复、导出、键盘及明暗主题的窄屏布局。工作日按用户选择的星期计算，不自动套用法定调休；时钟昼夜外观按当地 06:00–18:00 区分，不表示当地实际日出日落。
+
+交付修改时同时重新构建独立预览并同步网页版，核对线上内容与发布构建一致。
+
 ## 环境与命令
 
 从仓库根目录执行。CI 使用 Node.js 22、Python 3.13；逻辑测试和构建不需要 npm 依赖。浏览器测试额外使用 Python Playwright。
