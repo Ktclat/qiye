@@ -22,10 +22,10 @@
 python3 scripts/build-pages.py /path/to/qiye-demo
 ```
 
-输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/icon32.png`、`.nojekyll`、`LICENSE`、`community/` 公共索引与示例及本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
+输出目录应为 `gh-pages` 分支的独立 checkout 或 worktree。脚本生成 `index.html`、`icons/` 品牌图标、`.nojekyll`、`LICENSE`、`community/` 公共索引与示例及本文档，保留目录中的 Git 历史与其他文件。请修改 `main` 中的源码后重新生成，不直接编辑生成的 HTML。
 
 Pages 启用后，将生成文件提交并推送到本仓库的 **`gh-pages` 分支**，GitHub Pages 会自动部署。仅推送 `main` 不会更新演示页面；请先构建，再将生成文件推送到 `gh-pages`。
 
-网页使用相对图标路径，其余样式和生产模块均已内联，无需 Node.js 或服务器构建。网站图标、壁纸与 WebDAV 等联网功能仍受相应服务和浏览器网络策略影响。
+网页的样式、生产模块、字体和栖页品牌图标均已内联，无需 Node.js 或服务器构建。网站图标、壁纸与 WebDAV 等联网功能仍受相应服务和浏览器网络策略影响。
 
 部署与数据迁移说明见 [源码仓库的部署指南](https://github.com/Ktclat/qiye/blob/main/docs/DEPLOYMENT.md)。
