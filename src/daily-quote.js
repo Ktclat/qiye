@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { t } from './i18n.js';
+import { icon } from './icons.js';
 import { fetchPublicJson } from './public-json.js';
 
 const CACHE_KEY = 'qiye.daily-quote.v1';
@@ -83,26 +84,59 @@ export function createDailyQuoteClient({fetcher = globalThis.fetch, storage = lo
   return {next};
 }
 
-export function createDailyQuote(root, options) {
+export function createDailyQuote(root, {onSearch = () => {}, onNotify = () => {}, ...options} = {}) {
   const client = createDailyQuoteClient(options);
-  const button = root.querySelector('[data-quote-refresh]');
+  const refreshButton = root.querySelector('[data-quote-refresh]');
+  const copyButtons = root.querySelectorAll('[data-quote-copy]');
+  const copyIcon = root.querySelector('.daily-quote-actions [data-quote-copy]');
+  const searchButton = root.querySelector('[data-quote-search]');
   const text = root.querySelector('[data-quote-text]');
   const source = root.querySelector('[data-quote-source]');
-  let enabled = false, result = null, request = null;
+  let enabled = false, result = null, request = null, copiedText = '', copiedTimer;
+  refreshButton.innerHTML = icon('refresh');
+  searchButton.innerHTML = icon('search');
+  source.innerHTML = icon('quote');
+  function label(element, value) {
+    element.title = value;
+    element.setAttribute('aria-label', value);
+  }
   function render() {
     const quote = result?.quote;
     text.textContent = quote ? (result.status === 'local' ? t(quote.text) : quote.text) : t('正在获取一言…');
     root.dataset.quoteStatus = request ? 'loading' : result?.status || 'idle';
     root.setAttribute('aria-busy', String(!!request));
-    button.disabled = !!request;
-    button.setAttribute('aria-label', t('换一句：{text}', {text: text.textContent}));
+    refreshButton.disabled = !!request;
+    searchButton.disabled = !quote;
+    const copied = !!quote && copiedText === text.textContent;
+    copyIcon.innerHTML = icon(copied ? 'check' : 'copy');
+    copyIcon.classList.toggle('is-copied', copied);
+    copyButtons.forEach(button => {
+      button.disabled = !quote;
+      label(button, copied ? t('已复制短句') : t('复制短句'));
+    });
+    text.parentElement.title = copied ? t('已复制短句') : t('点击复制');
+    text.parentElement.setAttribute('aria-label', t('复制短句：{text}', {text: text.textContent}));
+    root.querySelector('.daily-quote-actions').setAttribute('aria-label', t('短句操作'));
+    label(searchButton, t('搜索这句话'));
     const hint = request ? t('正在获取一言…') : result?.status === 'local' ? t('一言暂时无法连接，显示本地短句，点击重试。') : result?.status === 'cached' ? t('当前为缓存的一言，点击重试。') : t('点击换一句');
-    button.title = [quote?.author, quote?.from, hint].filter(Boolean).join(' · ');
-    source.hidden = !quote;
-    source.textContent = result?.status === 'local' ? t('本地短句') : result?.status === 'cached' ? t('一言 · 缓存') : t('一言');
-    source.title = result?.status === 'local' ? hint : t('查看一言来源');
-    if (quote && result.status !== 'local') source.href = quote.uuid ? `https://hitokoto.cn/?uuid=${quote.uuid}` : 'https://hitokoto.cn/';
-    else source.removeAttribute('href');
+    label(refreshButton, hint);
+    label(source, t('打开一言'));
+    source.href = quote?.uuid && result.status !== 'local' ? `https://hitokoto.cn/?uuid=${quote.uuid}` : 'https://hitokoto.cn/';
+  }
+  async function copy() {
+    if (!enabled || !result) return;
+    const value = text.textContent;
+    try {
+      await navigator.clipboard.writeText(value);
+      if (!enabled) return;
+      copiedText = value;
+      clearTimeout(copiedTimer);
+      copiedTimer = setTimeout(() => { copiedText = ''; render(); }, 1800);
+      render();
+      onNotify(t('已复制短句'));
+    } catch {
+      onNotify(t('复制失败，请检查浏览器的剪贴板权限。'));
+    }
   }
   function refresh() {
     if (!enabled || request) return;
@@ -117,13 +151,15 @@ export function createDailyQuote(root, options) {
       render();
     });
   }
-  button.addEventListener('click', refresh);
+  refreshButton.addEventListener('click', refresh);
+  copyButtons.forEach(button => button.addEventListener('click', copy));
+  searchButton.addEventListener('click', () => { if (enabled && result) onSearch(text.textContent); });
   return {
     update(visible) {
       root.hidden = !visible;
       const start = visible && !enabled;
       enabled = visible;
-      if (!visible) { request?.abort(); request = null; }
+      if (!visible) { request?.abort(); request = null; clearTimeout(copiedTimer); copiedText = ''; }
       render();
       if (start) refresh();
     },

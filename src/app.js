@@ -61,7 +61,10 @@ const WALLPAPERS = [
  {id:'midnight',name:'静夜',tag:'为专注留白',background:'radial-gradient(ellipse 75% 60% at 75% 0%,#28495a 0%,transparent 75%),radial-gradient(ellipse 75% 70% at 0% 100%,#1a3546 0%,transparent 80%),linear-gradient(130deg,#101b29,#101820 65%,#09131e)'}
 ];
 const dialog = $('#dialog');
-const dailyQuote = createDailyQuote($('#daily-quote'));
+const dailyQuote = createDailyQuote($('#daily-quote'), {
+ onNotify: message => toast(message),
+ onSearch: text => navigate(currentEngine().url.replace(/\{q\}/g, encodeURIComponent(text)), false, true),
+});
 const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
 let cleanupCitySearch = () => {};
 let state = clone(DEFAULT_STATE);
@@ -953,7 +956,7 @@ function settingsDialog(tab) {
   <div class="section-label">${t("桌面布局")}</div>
   ${settingSwitch('minimal',t("极简模式"),t("只显示时间、搜索与壁纸；按 Esc 可恢复桌面。"))}
   ${settingSwitch('showWallpaperCredit',t("显示壁纸作者"),t("图片来源和许可仍可在壁纸预览中查看。"))}
-  ${settingSwitch('quote',t("显示页底短句"),t("固定在底部；每次打开或刷新时获取一言，点击短句可换一句。"))}
+  ${settingSwitch('quote',t("显示页底短句"),t("固定在底部；每次打开或刷新页面时获取一言，点击句子复制，悬停可换一句或搜索。"))}
   ${settingSwitch('hideScrollbar',t("隐藏内容区滚动条"),t("只隐藏轨道，滚轮、触屏、Page Down 和空格仍可滚动。"))}
   ${settingSwitch('hideEditorScrollbar',t("隐藏网站编辑窗口滚动条"),t("同时用于添加网站表单；仅隐藏轨道，内容仍可滚动，与桌面滚动条独立。"))}
   ${settingSwitch('animateGroups',t("分组切换动画"),t("图标从下方向上轻滑入场。遵循系统的减少动态效果设置。"))}

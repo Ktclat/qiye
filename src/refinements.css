@@ -51,17 +51,24 @@ html.hide-content-scrollbar,html.hide-content-scrollbar body{scrollbar-width:non
 html.hide-content-scrollbar::-webkit-scrollbar,html.hide-content-scrollbar body::-webkit-scrollbar{display:none;width:0;height:0}
 /* Stable quote position and enough bottom space for the last row to clear it. */
 main{padding-bottom:112px}
-.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));display:flex;gap:10px;margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:80px;overflow:hidden;line-height:1.5;text-wrap:balance}
-.daily-quote>span:first-child{min-width:0}
-.daily-quote>span:first-child:before,.daily-quote>span:first-child:after{content:none}
-.daily-quote [data-quote-refresh]{pointer-events:auto;padding:0;max-width:100%;line-height:inherit;letter-spacing:inherit;text-shadow:inherit;vertical-align:bottom;text-wrap:balance;overflow-wrap:anywhere}
-.daily-quote [data-quote-refresh]:before{content:'「 ';opacity:.7}
-.daily-quote [data-quote-refresh]:after{content:' 」';opacity:.7}
-.daily-quote [data-quote-refresh]:hover{color:#fff}
-.daily-quote [data-quote-refresh]:disabled{opacity:1}
-.daily-quote-source{pointer-events:auto;flex-shrink:0;font-size:.8em;opacity:.65;white-space:nowrap}
-.daily-quote-source:not([href]){pointer-events:none}
-.daily-quote-source[href]:hover,.daily-quote-source:focus-visible{opacity:1;text-decoration:underline}
+.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;margin:0;padding:10px 16px 2px;z-index:9;text-align:center;pointer-events:none;max-height:none;overflow:visible;line-height:1.5;text-wrap:balance}
+.daily-quote-content{position:relative;min-width:0;max-width:calc(100% - 272px);pointer-events:auto}
+.daily-quote-text{padding:4px 2px;max-width:100%;line-height:inherit;letter-spacing:inherit;text-shadow:inherit;text-wrap:balance;overflow-wrap:anywhere;user-select:text}
+.daily-quote-text:before{content:'「 ';opacity:.7}
+.daily-quote-text:after{content:' 」';opacity:.7}
+.daily-quote-text:hover{color:#fff}
+.daily-quote-text:disabled{opacity:1}
+.daily-quote-actions{position:absolute;left:100%;top:50%;display:flex;align-items:center;gap:2px;padding:4px 0 4px 10px;width:max-content;opacity:0;visibility:hidden;pointer-events:none;transform:translate(4px,-50%);transition:opacity .16s,transform .16s,visibility .16s}
+.daily-quote-content:hover .daily-quote-actions,.daily-quote-content:has(:focus-visible) .daily-quote-actions{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%)}
+.daily-quote-actions>button,.daily-quote-actions>a{display:grid;place-items:center;width:28px;height:28px;padding:5px;border-radius:7px;color:inherit;background:rgba(15,23,32,.28);text-decoration:none;transition:background .16s,color .16s}
+.daily-quote-actions>button:hover,.daily-quote-actions>a:hover{background:rgba(255,255,255,.16);color:#fff}
+.daily-quote-actions .icon{width:16px;height:16px}
+.daily-quote-actions .is-copied{color:#b7e9d4}
+.daily-quote[data-quote-status=loading] [data-quote-refresh] .icon{animation:quote-spin 1s linear infinite}
+@keyframes quote-spin{to{transform:rotate(360deg)}}
+@media(hover:none){.daily-quote-actions{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%)}}
+@media(max-width:600px){.daily-quote-content{display:flex;align-items:center;gap:6px;width:100%;max-width:100%}.daily-quote-text{flex:1;min-width:0}.daily-quote-actions,.daily-quote-content:hover .daily-quote-actions,.daily-quote-content:has(:focus-visible) .daily-quote-actions{position:static;flex-shrink:0;padding:0;transform:none}.daily-quote-actions>button,.daily-quote-actions>a{width:26px;height:28px}}
+@media(prefers-reduced-motion:reduce){.daily-quote-actions,.daily-quote-actions>button,.daily-quote-actions>a{transition:none}.daily-quote[data-quote-status=loading] [data-quote-refresh] .icon{animation:none}}
 html[data-sidebar-position=right] .daily-quote{left:24px;right:calc(var(--sidebar-width) + 24px)}
 html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .daily-quote,.minimal .daily-quote{left:24px;right:24px}
 .wallpaper-credit{max-width:33vw;bottom:8px;z-index:10}

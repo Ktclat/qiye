@@ -94,7 +94,17 @@
       <div id="desktop" class="desktop"></div>
     </section>
     </div>
-    <footer id="daily-quote" class="daily-quote" aria-live="polite"><span><button type="button" data-quote-refresh><span data-quote-text>正在获取一言…</span></button></span><a class="daily-quote-source" data-quote-source target="_blank" rel="noopener noreferrer" hidden></a></footer>
+    <footer id="daily-quote" class="daily-quote">
+      <div class="daily-quote-content">
+        <button type="button" class="daily-quote-text" data-quote-copy><span data-quote-text aria-live="polite" aria-atomic="true">正在获取一言…</span></button>
+        <div class="daily-quote-actions" role="group" aria-label="短句操作">
+          <button type="button" data-quote-copy aria-label="复制短句"></button>
+          <button type="button" data-quote-refresh aria-label="换一句"></button>
+          <button type="button" data-quote-search aria-label="搜索这句话"></button>
+          <a data-quote-source href="https://hitokoto.cn/" target="_blank" rel="noopener noreferrer" aria-label="打开一言"></a>
+        </div>
+      </div>
+    </footer>
   </main>
   <a id="wallpaper-credit" class="wallpaper-credit" hidden target="_blank" rel="noopener noreferrer"></a>
   <div id="context-menu" class="context-menu" role="menu" hidden></div>

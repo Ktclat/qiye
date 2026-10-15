@@ -4,6 +4,8 @@
 
 ## Choose an integration model
 
+See [Footer quotes](#footer-quotes) for the footer interaction and API details.
+
 | Dimension | Native API v3 | Community protocol v1 |
 | --- | --- | --- |
 | Distribution | Local ES Module, reviewed and bundled | Self-hosted HTTPS webpage and JSON manifest |
@@ -190,3 +192,9 @@ City searches time out after eight seconds and newer requests cancel earlier one
 The weather window follows the supplied iTab screenshots: search and sidebars start closed, and Add city, Cities and Settings share the title bar with maximize and close. Add city opens and focuses the sidebar search. Cities and settings share a contrasting sidebar with independent scrolling, while the forecast stays visible without a scrim. The window expands to preserve the main width when space permits; narrow windows stack the panels. Switching panels retains the forecast and scroll positions; Escape closes the panel and restores focus to its trigger. The layout uses [CSS Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Basic_concepts) and keyboard focus uses [:focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible). Opening settings focuses its heading before the form controls.
 
 [Next: native widget API →](Native-Widgets-en.md) · [Community widgets →](Community-Widgets-en.md)
+
+## Footer quotes
+
+The footer shows only the quote. Clicking it copies the text. Hovering or focusing with the keyboard reveals copy, refresh, search and Hitokoto icons on the right without shifting the quote. Touch devices show the actions directly. Search uses the selected engine and search opening preference; the Hitokoto icon opens the original entry. Each visit still fetches a real random quote, and refresh requests another. Offline, cached or local quotes rotate.
+
+References checked on 2026-10-15: the user's iTab-style layout, the [official Hitokoto API and UUID link examples](https://developer.hitokoto.cn/sentence/), and [MDN's Clipboard.writeText() example](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText). The service link moves to an icon. Copy writes plain text only after a click, reports success or failure, and adds no clipboard permission. See the [privacy notes](../PRIVACY.md#页底一言) for network and cache boundaries.

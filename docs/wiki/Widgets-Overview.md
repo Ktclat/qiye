@@ -4,6 +4,8 @@
 
 ## 接入方式选择
 
+页底短句的交互与接口说明见[页底一言](#页底一言)。
+
 | 维度 | 原生组件 API v3 | 社区组件协议 v1 |
 | --- | --- | --- |
 | 交付方式 | 本地 ES Module，经源码审阅后打包 | 自托管 HTTPS 网页与 JSON 清单 |
@@ -190,3 +192,9 @@ flowchart LR
 天气窗口按用户提供的 iTab 截图调整：默认收起搜索与侧栏，添加城市、列表、设置与放大、关闭按钮共用标题栏；“＋”打开并聚焦城市搜索。列表和设置共用颜色更清晰的右侧栏，主区与侧栏分别滚动，不使用遮罩；空间充足时窗口向外扩展并保持主区宽度，窄屏改为上下排列。切换侧栏保留预报及滚动位置，Esc 收起面板并返回触发按钮。布局采用 [CSS Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Basic_concepts)；键盘焦点遵循 [:focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible)，打开设置时先聚焦面板标题，避免鼠标点击后直接突出表单控件。
 
 [下一篇：原生组件 API →](Native-Widgets.md) · [社区组件 →](Community-Widgets.md)
+
+## 页底一言
+
+页底只显示句子正文。点击正文默认复制；鼠标悬停或键盘聚焦后，右侧显示复制、刷新、搜索和一言图标，句子不会因按钮出现而移动。触摸设备直接显示操作区。搜索沿用当前搜索引擎及打开方式；一言图标打开对应条目。每次打开页面仍获取真实随机一言，刷新按钮手动换句，断网时轮换缓存或本地短句。
+
+2026-10-15 参考用户提供的 iTab 风格布局及 [一言官方接口与 UUID 链接示例](https://developer.hitokoto.cn/sentence/)，保留服务链接但移到图标；复制参考 [MDN Clipboard.writeText() 示例](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText)，仅在点击时写入纯文本，成功或失败均给出提示，不新增剪贴板权限。网络与本机缓存范围见[隐私说明](../PRIVACY.md#页底一言)。
