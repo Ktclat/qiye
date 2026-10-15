@@ -12,6 +12,7 @@ ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser();parser.add_argument('--local-document',action='store_true');parser.add_argument('--output',default='test-results');args=parser.parse_args()
 OUT=Path(args.output);OUT.mkdir(parents=True,exist_ok=True)
 fixture=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {DEFAULT_STATE} from './src/core.js';console.log(JSON.stringify(DEFAULT_STATE))"],cwd=ROOT))
+widget_types=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {listWidgetDefinitions} from './src/widget-registry.js';console.log(JSON.stringify(listWidgetDefinitions().map(widget=>widget.type)))"],cwd=ROOT))
 SVG='<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><circle cx="128" cy="128" r="105" fill="#4caaa0"/><path d="M75 131l37 38 71-85" stroke="white" stroke-width="20" fill="none"/></svg>'
 PHOTO={'id':'10','author':'Test Photographer','url':'https://unsplash.com/photos/test','download_url':'https://picsum.photos/id/10/2500/1667','width':2500,'height':1667}
 COMMONS={'query':{'pages':[{'title':'File:Landscape.jpg','imageinfo':[{'url':'https://upload.wikimedia.org/wikipedia/commons/a/ab/Landscape.jpg','thumburl':'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Landscape.jpg/640px-Landscape.jpg','descriptionurl':'https://commons.wikimedia.org/wiki/File:Landscape.jpg','width':2560,'height':1440,'mime':'image/jpeg','extmetadata':{'Artist':{'value':'<b>Test Author</b>'},'LicenseShortName':{'value':'CC BY-SA 4.0'},'LicenseUrl':{'value':'https://creativecommons.org/licenses/by-sa/4.0/'}}}]}]}}
@@ -216,6 +217,7 @@ with sync_playwright() as p:
   page.locator('[data-close]').first.click();page.locator('.top-tools').hover();page.locator('.top-tools [data-action="add"]').click()
   check('add window is a left navigation plus right content layout',lambda:eq(page.locator('.add-layout').evaluate('n=>getComputedStyle(n).display'),'grid'))
   page.locator('[data-add-tab="widgets"]').click();check('widget category includes the base converter',lambda:truth(page.locator('[data-add-widget="base-converter"]').is_visible()))
+  check('widget category renders all registered choices',lambda:eq(page.locator('[data-add-widget]').count(),len(widget_types)))
   page.locator('[data-add-tab="folder"]').click();check('folder category has its independent form',lambda:truth(page.locator('#folder-form').is_visible()))
   page.locator('[data-add-tab="link"]').click();page.screenshot(path=str(OUT/'add-dialog.png'));page.locator('[data-close]').first.click();check('new settings and chooser have no JS exceptions',lambda:eq(errors,[]));ctx.close()
 

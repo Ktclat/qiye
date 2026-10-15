@@ -1343,6 +1343,90 @@ html[data-theme=light] #dialog.widget-app-dialog {
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
+.bookmarks-app{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.bookmarks-app [hidden]{display:none!important}.bookmarks-app .icon{width:17px;height:17px;flex:none}
+.bm-header{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--app-border);flex:none}
+.bm-emblem{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#588575;color:white}
+.bm-header h2{margin:0;min-width:0;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bm-header-caption{font-size:12px;color:var(--app-muted);flex:1}.bm-header .widget-app-controls{margin-left:auto}
+.bm-topbar{display:flex;align-items:center;gap:24px;padding:16px 20px 10px;flex:none}
+.bm-sources{display:flex;flex:none;padding:4px;border-radius:12px;background:var(--app-pane);border:1px solid var(--app-border);gap:3px}
+.bookmarks-app .bm-sources button{display:flex;align-items:center;gap:7px;background:transparent;font-size:12px;white-space:nowrap;padding:7px 10px}
+.bookmarks-app .bm-sources button[aria-pressed=true]{background:var(--app-field);box-shadow:0 1px 3px #0001;color:var(--app-fg)}
+.bm-search{display:flex;align-items:center;gap:8px;background:var(--app-pane);border:1px solid var(--app-border);border-radius:11px;padding-left:12px;flex:1;min-width:0;color:var(--app-muted)}
+.bookmarks-app .bm-search input{width:100%;background:transparent;padding:10px 8px;font-size:13px}
+.bm-source-note{padding:0 22px 14px;font-size:11px;color:var(--app-muted);flex:none}.bm-source-note.is-browser{color:#c1904f}
+html[data-theme=light] .bm-source-note.is-browser{color:#936127}
+.bm-feedback{margin:0 20px 10px;padding:9px 12px;border-radius:8px;background:var(--app-pane);font-size:12px;flex:none;max-height:75px;overflow:auto}
+.bm-layout{display:grid;grid-template-columns:230px minmax(0,1fr);flex:1;min-height:0;border-top:1px solid var(--app-border)}
+.bm-sidebar{min-width:0;min-height:0;overflow:auto;background:var(--app-pane);border-right:1px solid var(--app-border);padding:16px 10px;scrollbar-width:thin}
+.bm-sidebar-label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.08em;font-weight:600;color:var(--app-muted);padding:3px 10px 9px}.bm-sidebar-label:not(:first-child){margin-top:21px}
+.bookmarks-app .bm-recent{display:flex;align-items:center;gap:9px;width:100%;background:transparent;border-radius:8px;font-size:13px;padding:9px 10px}
+.bookmarks-app .bm-recent[aria-pressed=true]{background:var(--app-selection)}
+.bm-tree{min-width:100%;width:max-content}.bm-tree-row{display:flex;align-items:center;min-width:0;padding-left:calc(min(var(--depth,0),20) * 12px);height:37px}
+.bookmarks-app .bm-tree-row>[role=treeitem]{display:flex;align-items:center;gap:7px;flex:1;min-width:0;max-width:380px;text-align:left;background:transparent;padding:7px 8px;font-size:12px;border-radius:7px}
+.bm-tree-row>[role=treeitem]>span{min-width:0;flex:1;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bm-tree-row small{font-size:10px;color:var(--app-muted);padding-left:8px}
+.bookmarks-app .bm-tree-row>[aria-selected=true]{background:var(--app-selection);color:var(--app-fg)}.bm-tree-row .icon{width:15px;height:15px;color:#b0986a}
+.bookmarks-app .bm-tree-toggle,.bm-tree-spacer{width:17px;height:25px;flex:none;padding:2px;background:transparent}.bm-tree-toggle .icon{width:12px;color:var(--app-muted)}.bm-tree-root{padding-left:0}
+.bm-main{display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:16px 24px 0}
+.bookmarks-app .bm-main{margin:0}
+.bm-list-tools .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.bm-result-count{white-space:nowrap}.bookmarks-app .bm-load-more{display:block;margin:16px auto;font-size:12px}
+.bm-breadcrumb nav{display:flex;align-items:center;gap:2px;overflow:auto;white-space:nowrap;scrollbar-width:thin;min-height:25px}
+.bookmarks-app .bm-breadcrumb button{background:transparent;color:var(--app-muted);font-size:11px;padding:3px 5px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}.bm-breadcrumb .icon{width:11px;height:11px;color:var(--app-muted)}
+.bm-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 0}.bm-heading{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.bm-heading h3{margin:0;font-size:22px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bm-folder-actions,.bm-create{display:flex;align-items:center;gap:5px;flex:none}.bookmarks-app .bm-folder-actions button{display:grid;place-items:center;background:transparent;padding:5px;color:var(--app-muted)}
+.bookmarks-app .bm-create button{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;white-space:nowrap;padding:8px 10px}
+.bookmarks-app .bm-primary{background:#507f6f;color:#fff}.bookmarks-app .bm-primary:hover{background:#619580}
+.bm-list-tools{display:flex;align-items:center;gap:5px;padding:0 0 10px;border-bottom:1px solid var(--app-border);font-size:11px;color:var(--app-muted)}.bm-result-count{flex:1;min-width:0}
+.bookmarks-app .bm-list-tools select{background:transparent;font-size:11px;padding:5px 3px;max-width:125px}.bookmarks-app .bm-list-tools button{display:grid;place-items:center;padding:5px;background:transparent;color:var(--app-muted)}
+.bm-list{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;overscroll-behavior:contain;padding-bottom:18px}.bm-list ul{margin:0;padding:0;list-style:none}
+.bm-list li{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--app-border);padding:8px 2px}.bm-list li:hover{background:var(--app-pane)}
+.bookmarks-app .bm-row-open{display:flex;align-items:center;gap:13px;color:inherit;text-decoration:none;background:transparent;min-width:0;flex:1;border-radius:8px;text-align:left;padding:8px 4px}
+.bm-row-copy{display:flex;flex-direction:column;min-width:0;flex:1;gap:3px}.bm-row-copy strong{font-size:13px;font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bm-row-copy small{font-size:11px;color:var(--app-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bm-row-copy small.bm-location{font-size:10px;color:#8da898}
+.bm-site-icon,.bm-folder-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;flex:none;background:var(--app-field,var(--w-control));color:var(--app-muted,var(--w-muted));font-size:16px;font-weight:600}
+.bm-folder-icon{background:transparent;color:#b0986a}.bm-folder-icon .icon{width:26px;height:26px}
+.bm-row-actions{display:flex;align-items:center;gap:3px;flex:none}.bookmarks-app .bm-row-actions button{display:grid;place-items:center;padding:7px;background:transparent;color:var(--app-muted);border-radius:8px}
+.bookmarks-app .bm-row-actions button:hover{background:var(--app-selection);color:var(--app-fg)}.bm-readonly{font-size:10px;color:var(--app-muted);padding:0 8px}
+.bm-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:220px;height:100%;gap:12px;padding:24px;color:var(--app-muted)}.bm-empty>.icon{width:36px;height:36px;opacity:.55}
+.bm-empty strong{font-size:15px;color:var(--app-fg);font-weight:500}.bm-empty p{margin:0;max-width:300px;font-size:12px}.bm-empty button{font-size:12px}
+.bm-footer{padding:9px 20px;border-top:1px solid var(--app-border);color:var(--app-muted);font-size:10px;flex:none;background:var(--app-pane)}
+.bm-editor-overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:#0007;padding:16px;backdrop-filter:blur(3px)}
+.bm-editor{width:min(470px,100%);max-height:100%;overflow:auto;background:var(--app-bg);border:1px solid var(--app-border);border-radius:18px;padding:20px;box-shadow:0 20px 70px #0004}
+.bm-editor>header{display:flex;align-items:center;gap:8px;margin-bottom:20px}.bm-editor h3{flex:1;margin:0;font-size:17px}.bm-editor>header button{display:grid;place-items:center;padding:5px;background:transparent}
+.bm-editor fieldset{border:0;padding:0;margin:0;min-width:0}.bm-editor label{display:flex;flex-direction:column;gap:8px;margin-bottom:17px;font-size:12px;color:var(--app-muted)}
+.bm-editor label input,.bm-editor label select{width:100%;color:var(--app-fg);font-size:13px;border:1px solid var(--app-border);padding:10px 12px}.bm-editor p{font-size:13px;overflow-wrap:anywhere}
+.bm-editor .bm-delete-note,.bm-editor-feedback{color:#d09072}.bm-editor footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}.bm-editor footer button{font-size:13px;min-width:75px}.bm-editor .bm-danger{background:#ac4949;color:white}.bm-moving-name{display:flex;gap:10px;align-items:center}
+.bookmarks-app button:disabled{opacity:.45;cursor:default}.bookmarks-app a:focus-visible{outline:2px solid var(--app-blue);outline-offset:-2px}
+@container(max-width:800px){.bm-layout{grid-template-columns:185px minmax(0,1fr)}.bm-header-caption{display:none}.bm-topbar{gap:12px;flex-wrap:wrap}.bm-search{flex-basis:100%}.bm-main{padding:12px 16px 0}.bm-toolbar{align-items:flex-start;flex-wrap:wrap;gap:12px}.bm-heading{flex-basis:100%}.bm-heading h3{font-size:20px}}
+@container(max-width:520px){
+ .bm-header{padding:10px 12px;gap:8px}.bm-header h2{font-size:16px}.bm-emblem{width:30px;height:30px}.bm-topbar{padding:10px 10px 8px;gap:8px}.bm-sources{width:100%}.bookmarks-app .bm-sources button{flex:1;justify-content:center;font-size:11px;padding:6px 3px}
+ .bm-source-note{padding:0 12px 10px;font-size:10px}.bm-layout{grid-template-columns:112px minmax(0,1fr)}.bm-sidebar{padding:10px 3px}.bm-sidebar-label{padding-left:5px;font-size:9px}.bookmarks-app .bm-recent{font-size:11px;padding:7px 5px;gap:5px}
+ .bm-tree-row{padding-left:calc(min(var(--depth,0),20) * 9px)}.bookmarks-app .bm-tree-row>[role=treeitem]{font-size:11px;gap:5px;padding:6px 4px}.bm-tree-row small{display:none}.bm-tree-row .icon{width:13px}.bm-tree-toggle,.bm-tree-spacer{width:12px!important}
+ .bm-main{padding:9px 9px 0}.bm-toolbar{gap:8px;padding:12px 0}.bm-heading{flex-wrap:wrap;gap:3px}.bm-heading h3{font-size:17px;max-width:100%}.bm-create{flex-wrap:wrap;width:100%}.bookmarks-app .bm-create button{font-size:10px;padding:7px 5px;gap:4px;flex:1}.bm-create .icon{width:13px}
+ .bm-result-count{font-size:10px}.bookmarks-app .bm-list-tools select{font-size:10px;max-width:85px}.bm-list li{flex-wrap:wrap;gap:0;padding:6px 0}.bookmarks-app .bm-row-open{flex-basis:100%;gap:7px}.bm-row-copy strong{font-size:12px}.bm-row-copy small{font-size:10px}
+ .bm-site-icon,.bm-folder-icon{width:25px;height:25px;border-radius:6px;font-size:12px}.bm-folder-icon .icon{width:21px;height:21px}.bm-row-actions{margin-left:auto}.bookmarks-app .bm-row-actions button{padding:5px}.bm-row-actions .icon{width:14px;height:14px}
+ .bm-empty{min-height:190px;padding:14px 5px;gap:10px}.bm-empty strong{font-size:13px}.bm-empty p{font-size:11px}.bm-footer{padding:7px 12px}.bm-editor{padding:15px}.bm-editor-overlay{padding:10px}
+}
+/* The wide card mirrors the manager's folders / links split. */
+.widget-inner.w-bookmarks{display:flex;flex-direction:column;gap:0;padding:10px;overflow:hidden}.w-bookmarks .icon{width:15px;height:15px;flex:none}
+.w-bookmarks button,.w-bookmarks a{color:inherit;font:inherit;border:0;background:transparent;text-decoration:none;cursor:pointer}.bm-card-header{display:flex;align-items:center;justify-content:space-between;gap:6px;flex:none;padding-bottom:7px}
+.bm-card-header button{display:flex;align-items:center;gap:6px;padding:0;min-width:0;font-size:11px}.bm-card-header strong{font-weight:600}.bm-card-header small{font-size:10px;color:var(--w-muted)}
+.bm-card-layout{display:grid;grid-template-columns:34% minmax(0,1fr);flex:1;min-height:0;gap:9px;overflow:hidden}.bm-card-folders{display:flex;flex-direction:column;gap:3px;overflow:auto;min-width:0;border-right:1px solid var(--w-border);padding-right:5px;scrollbar-width:none}
+.bm-card-folders button,.bm-card-root{display:flex;align-items:center;gap:5px;min-width:0;flex:none;text-align:left;padding:3px 1px;font-size:10px;white-space:nowrap;color:var(--w-muted)}.bm-card-folders button span,.bm-card-links a>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.bm-card-folders .icon{width:12px;height:12px;color:#b0986a}
+.bm-card-links{overflow:auto;min-height:0;min-width:0;scrollbar-width:none}.bm-card-links a{display:flex;align-items:center;gap:6px;padding:4px 2px;font-size:11px}.bm-card-links .bm-site-icon{width:20px;height:20px;border-radius:5px;font-size:10px}.bm-card-links a:hover,.bm-card-folders button:hover{background:var(--w-hover);border-radius:5px}
+.bm-card-footer{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--w-muted);padding-top:7px;gap:7px;flex:none}.bm-card-footer>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bm-card-footer button{font-size:9px;white-space:nowrap;padding:0}.bm-card-muted{font-size:9px;color:var(--w-muted);padding:4px 0}
+.w-bookmarks .bm-card-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;height:100%;min-height:50px;width:100%;font-size:10px;color:var(--w-muted);padding:2px}.bm-card-empty .icon{width:22px;height:22px;opacity:.7}
+.w-bookmarks[data-display-size="2x2"] .bm-card-layout{grid-template-columns:32% minmax(0,1fr);gap:6px}.w-bookmarks[data-display-size="2x2"] .bm-card-folders .icon{display:none}.w-bookmarks[data-display-size="2x2"] .bm-card-footer>span{max-width:50%}
+.w-bookmarks .bm-mini{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;gap:3px;padding:0}.bm-mini strong{font-size:23px;line-height:1.1;font-weight:600}.bm-mini span{font-size:10px;color:var(--w-muted)}.bm-mini small{font-size:9px;color:var(--w-muted)}
+.w-bookmarks[data-display-size="1x1"]{padding:4px}.w-bookmarks[data-display-size="1x1"] .bm-mini{gap:2px}.w-bookmarks[data-display-size="1x1"] .bm-mini strong{font-size:19px}.w-bookmarks[data-display-size="1x1"] .bm-mini span,.w-bookmarks[data-display-size="1x1"] .bm-mini small{display:none}
+.w-bookmarks[data-display-size="2x1"] .bm-mini{display:grid;grid-template-columns:auto auto;column-gap:9px}.w-bookmarks[data-display-size="2x1"] .bm-mini>.icon{grid-row:1 / 3;width:24px;height:24px}.w-bookmarks[data-display-size="2x1"] .bm-mini small{display:none}
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
 .hotsearch-app{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
 .hotsearch-app [hidden]{display:none!important}
 .hotsearch-app .icon{width:18px;height:18px;flex:none}
@@ -2567,6 +2651,76 @@ const englishMessages = {
   "已复制截断值，请留意小数精度。": "Copied a truncated value. Check the fractional precision.",
   "无法访问剪贴板，请选中结果后手动复制。": "Clipboard access is unavailable. Select and copy the result manually.",
   "请在输入框中使用 Ctrl/⌘ + V 粘贴。": "Use Ctrl/⌘ + V to paste in the input field.",
+  "这条收藏已改变，请关闭编辑后重试": "This bookmark changed elsewhere. Close the editor and try again",
+  "分层整理独立收藏，授权后管理浏览器书签": "Organize nested collections and manage browser bookmarks with permission",
+  "独立收藏": "Qiye bookmarks",
+  "全部收藏": "All bookmarks",
+  "请输入有效的 http 或 https 网址": "Enter a valid HTTP or HTTPS address",
+  "目标文件夹不存在": "The destination folder no longer exists",
+  "不能将文件夹移入自身或子文件夹": "A folder cannot be moved into itself or its descendants",
+  "文件夹层级最多为 {count} 层": "Folders support up to {count} levels",
+  "不支持的书签操作": "Unsupported bookmark operation",
+  "这条收藏已不存在，请刷新后重试": "This bookmark no longer exists. Refresh and try again",
+  "浏览器系统文件夹或只读收藏无法修改": "Browser system folders and managed bookmarks cannot be changed",
+  "请选择可写入的文件夹": "Choose a writable folder",
+  "此文件夹已收藏这个网址": "This address is already bookmarked in this folder",
+  "未命名文件夹": "Untitled folder",
+  "书签授权已失效，已返回独立收藏": "Bookmark permission was removed. Showing Qiye bookmarks",
+  "文件夹内容已改变，请重新确认删除": "The folder contents changed. Review the deletion again",
+  "为喜欢的网页，找到位置": "A place for the pages you love",
+  "收藏来源": "Bookmark source",
+  "连接浏览器书签": "Connect browser bookmarks",
+  "搜索所有文件夹、标题或网址": "Search all folders, titles or addresses",
+  "收藏文件夹": "Bookmark folders",
+  "文件夹路径": "Folder path",
+  "添加书签": "Add bookmark",
+  "书签排序": "Sort bookmarks",
+  "原始顺序": "Original order",
+  "按名称排序": "By name",
+  "最近添加": "Recently added",
+  "刷新收藏": "Refresh bookmarks",
+  "收藏列表": "Bookmark list",
+  "收起文件夹": "Collapse folder",
+  "展开文件夹": "Expand folder",
+  "收藏库": "Library",
+  "正在读取收藏…": "Loading bookmarks…",
+  "没有找到匹配的收藏": "No matching bookmarks",
+  "这个文件夹还很安静": "This folder is empty",
+  "试试网站名称、网址或文件夹名": "Try a website name, address or folder name",
+  "添加一个书签，或用文件夹整理你的收藏": "Save a page or organize your bookmarks into folders",
+  "清除搜索": "Clear search",
+  "{count} 个项目": "{count} items",
+  "此地址只能在浏览器收藏夹中打开": "Open this special address from your browser's bookmark manager",
+  "特殊地址": "Special address",
+  "在文件夹中显示": "Show in folder",
+  "移动到文件夹": "Move to folder",
+  "显示更多收藏": "Show more bookmarks",
+  "重命名文件夹": "Rename folder",
+  "删除文件夹": "Delete folder",
+  "删除收藏": "Delete bookmark",
+  "编辑书签": "Edit bookmark",
+  "确定删除“{title}”？": "Delete “{title}”?",
+  "包含 {links} 个书签和 {folders} 个文件夹，将一并删除。": "This also deletes {links} bookmarks and {folders} subfolders.",
+  "这会直接删除浏览器中的原始收藏，无法在此撤销。": "This deletes the original browser bookmark. It cannot be undone here.",
+  "删除后无法撤销，请确认已不再需要。": "This cannot be undone. Make sure you no longer need it.",
+  "例如：设计灵感": "e.g. Design inspiration",
+  "例如：常用文档": "e.g. Useful documentation",
+  "保存到文件夹": "Destination folder",
+  "确认删除": "Delete",
+  "打开书签管理": "Open bookmark manager",
+  "上一级文件夹": "Parent folder",
+  "上一级": "Back",
+  "暂无子文件夹": "No subfolders",
+  "选择文件夹浏览收藏": "Choose a folder to browse",
+  "收藏下一个灵感": "Save your next inspiration",
+  "管理收藏": "Manage",
+  "{links} 个书签 · {folders} 个文件夹": "{links} bookmarks · {folders} folders",
+  "正在管理浏览器原始收藏，修改会直接生效。": "Managing your original browser bookmarks. Changes take effect directly.",
+  "独立收藏随此组件保存；连接浏览器后可直接管理原始收藏，两者各自保留。": "Qiye bookmarks are saved with this widget. Connect your browser to manage its bookmarks separately.",
+  "独立收藏随此组件保存。安装栖页扩展后可连接浏览器书签。": "Qiye bookmarks are saved with this widget. Install the Qiye extension to connect browser bookmarks.",
+  "读取收藏失败，请重试": "Could not load bookmarks. Try again",
+  "未授予书签权限，继续使用独立收藏": "Permission was not granted. You can keep using Qiye bookmarks",
+  "收藏已保存": "Bookmarks saved",
   "热搜榜": "Trending",
   "订阅全网热榜，分类浏览与实时更新": "Follow trending lists, browse categories and stay up to date",
   "我的订阅": "Following",
@@ -4455,6 +4609,7 @@ const { publicHttpsUrl } = __public_json;
 const { HOTSEARCH_DEFAULTS, validateHotsearchConfig } = __hotsearch_sources;
 
 const builtins = [
+  { type: 'bookmarks', title: '书签', description: '分层整理独立收藏，授权后管理浏览器书签', size: '4x2', icon: 'bookmark' },
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
   { type: 'calendar', title: '日历', description: '公历月份与中国农历', size: '4x2', icon: 'calendar' },
@@ -4477,6 +4632,7 @@ const builtins = [
 const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  bookmarks: { source: 'local' },
   hotsearch: HOTSEARCH_DEFAULTS,
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
   weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius', source: 'auto', fallback: true },
@@ -4564,6 +4720,7 @@ function validateBuiltinConfig(widgetType, raw, path) {
   }
   const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
   const out = {};
+  if (widgetType === 'bookmarks') out.source = enumeration(v.source, ['local','browser'], `${path}.source`);
   if (widgetType === 'calendar') {
     out.weekStart = enumeration(v.weekStart, [0,1], `${path}.weekStart`);
     out.showLunar = bool(v.showLunar, `${path}.showLunar`);
@@ -4607,6 +4764,203 @@ function validateBuiltinConfig(widgetType, raw, path) {
 
 
 return {WIDGET_API_VERSION, createWidgetRegistry, getWidgetDefinition, listWidgetDefinitions, newWidgetConfig, validateWidgetConfig};
+})();
+const __bookmarks = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { keys, array, id, string, number, unique, invalid } = __validation;
+
+const BOOKMARK_LIMIT = 5000;
+const BOOKMARK_DEPTH = 64;
+
+function bookmarkUrl(value) {
+  const text = String(value || '').trim();
+  if (!text || /[\u0000-\u0020\u007f]/.test(text)) return null;
+  try {
+    const url = new URL(/^[a-z][a-z\d+.-]*:/i.test(text) ? text : 'https://' + text);
+    return ['https:', 'http:'].includes(url.protocol) && url.hostname && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
+
+function bookmarkIndex(nodes) {
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  const children = new Map();
+  for (const node of nodes) {
+    if (!children.has(node.parentId)) children.set(node.parentId, []);
+    children.get(node.parentId).push(node);
+  }
+  return { byId, children };
+}
+
+function bookmarkPath(nodes, folderId) {
+  const { byId } = bookmarkIndex(nodes), path = [], seen = new Set();
+  let node = byId.get(folderId);
+  while (node && !seen.has(node.id)) {
+    seen.add(node.id); path.unshift(node); node = byId.get(node.parentId);
+  }
+  return path;
+}
+
+function bookmarkDescendants(nodes, nodeId) {
+  const { children } = bookmarkIndex(nodes), result = new Set(), queue = [nodeId];
+  while (queue.length) {
+    const current = queue.pop();
+    if (result.has(current)) continue;
+    result.add(current);
+    for (const child of children.get(current) || []) queue.push(child.id);
+  }
+  return result;
+}
+
+function validateBookmarks(raw, path = 'bookmarks') {
+  keys(raw, ['nodes'], path);
+  const nodes = array(raw.nodes, path + '.nodes', BOOKMARK_LIMIT).map((node, i) => {
+    const p = `${path}.nodes[${i}]`;
+    keys(node, ['id', 'parentId', 'title', 'url', 'dateAdded'], p);
+    const url = node.url === null ? null : bookmarkUrl(string(node.url, p + '.url', 4096));
+    if (node.url !== null && !url) invalid(p, t('请输入有效的 http 或 https 网址'));
+    return { id:id(node.id, p + '.id'), parentId:node.parentId === '' ? '' : id(node.parentId, p + '.parentId'),
+      title:string(node.title, p + '.title', 300), url, dateAdded:number(node.dateAdded, p + '.dateAdded', 0, 8640000000000000) };
+  });
+  unique(nodes.map(node => node.id), path);
+  const { byId } = bookmarkIndex(nodes);
+  for (const node of nodes) {
+    const visited = new Set([node.id]);
+    let parentId = node.parentId;
+    while (parentId !== '') {
+      const parent = byId.get(parentId);
+      if (!parent || parent.url !== null) invalid(path, t('目标文件夹不存在'));
+      if (visited.has(parentId)) invalid(path, t('不能将文件夹移入自身或子文件夹'));
+      visited.add(parentId);
+      if (visited.size > BOOKMARK_DEPTH) invalid(path, t('文件夹层级最多为 {count} 层', {count:BOOKMARK_DEPTH}));
+      parentId = parent.parentId;
+    }
+  }
+  return { nodes };
+}
+
+// Both storage adapters enforce these rules. Browser data keeps unsupported URLs
+// visible, but they never become executable links in an extension page.
+function checkBookmarkChange(nodes, change, source = 'local') {
+  const { byId } = bookmarkIndex(nodes), node = byId.get(change.id);
+  if (!['create','update','move','delete'].includes(change.type)) throw new Error(t('不支持的书签操作'));
+  if (change.type !== 'create' && !node) throw new Error(t('这条收藏已不存在，请刷新后重试'));
+  if (node && (node.readonly || node.protected)) throw new Error(t('浏览器系统文件夹或只读收藏无法修改'));
+  if (change.type === 'create' || change.type === 'move') {
+    const parent = byId.get(change.parentId);
+    if (change.parentId !== '' && (!parent || parent.url !== null)) throw new Error(t('目标文件夹不存在'));
+    if (parent?.readonly || source === 'browser' && change.parentId === '') throw new Error(t('请选择可写入的文件夹'));
+    if (node && bookmarkDescendants(nodes, node.id).has(change.parentId)) throw new Error(t('不能将文件夹移入自身或子文件夹'));
+  }
+  if (change.type === 'create' || change.type === 'update') {
+    string(change.title, 'bookmark.title', 300);
+    const isFolder = change.type === 'create' ? change.url === null : node.url === null;
+    if (!isFolder && (!bookmarkUrl(change.url) || String(change.url).length > 4096) && !(source === 'browser' && node?.url === change.url)) throw new Error(t('请输入有效的 http 或 https 网址'));
+    if (isFolder && change.url !== null) throw new Error(t('不支持的书签操作'));
+  }
+  const url = change.type === 'move' ? node.url : change.url;
+  const parentId = change.type === 'update' ? node.parentId : change.parentId;
+  const changesLocation = change.type === 'create' || change.type === 'move' && node.parentId !== parentId || change.type === 'update' && node.url !== (bookmarkUrl(url) || url);
+  if (changesLocation && url && nodes.some(other => other.id !== node?.id && other.parentId === parentId && other.url === (bookmarkUrl(url) || url))) throw new Error(t('此文件夹已收藏这个网址'));
+  if (change.type === 'delete' && node.url === null) {
+    const subtree = bookmarkDescendants(nodes, node.id);
+    if (nodes.some(entry => subtree.has(entry.id) && entry.readonly)) throw new Error(t('浏览器系统文件夹或只读收藏无法修改'));
+  }
+  return node;
+}
+
+function changeLocalBookmarks(data, change) {
+  const nodes = structuredClone(data.nodes);
+  const node = checkBookmarkChange(nodes, change);
+  if (change.type === 'create') nodes.push({id:change.id, parentId:change.parentId, title:change.title.trim(), url:change.url === null ? null : bookmarkUrl(change.url), dateAdded:change.dateAdded});
+  if (change.type === 'update') { node.title = change.title.trim(); node.url = change.url === null ? null : bookmarkUrl(change.url); }
+  if (change.type === 'move') { nodes.splice(nodes.indexOf(node), 1); node.parentId = change.parentId; nodes.push(node); }
+  const deleted = change.type === 'delete' ? bookmarkDescendants(nodes, node.id) : new Set();
+  return validateBookmarks({nodes:nodes.filter(entry => !deleted.has(entry.id))});
+}
+
+function listBookmarks(nodes, {folder = '', query = '', sort = 'manual', scope = 'folder'} = {}) {
+  const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const result = nodes.filter(node => terms.length ? terms.every(term => (node.title + ' ' + (node.url || '')).toLocaleLowerCase().includes(term))
+    : scope === 'recent' ? node.url !== null : node.parentId === folder);
+  return result.sort((a, b) => {
+    if (sort === 'recent' || scope === 'recent' && sort === 'manual' && !terms.length) return b.dateAdded - a.dateAdded;
+    const foldersFirst = Number(a.url !== null) - Number(b.url !== null);
+    return foldersFirst || (sort === 'title' ? a.title.localeCompare(b.title) : 0);
+  });
+}
+
+function flattenBrowserBookmarks(tree) {
+  const nodes = [], stack = [];
+  for (const root of tree) for (const child of [...(root.children || [])].reverse()) stack.push({node:child, parentId:'', readonly:!!root.unmodifiable});
+  while (stack.length) {
+    const {node, parentId, readonly} = stack.pop();
+    const locked = readonly || !!node.unmodifiable;
+    nodes.push({id:node.id, parentId, title:node.title || node.url || t('未命名文件夹'), url:typeof node.url === 'string' ? node.url : null,
+      dateAdded:node.dateAdded || 0, readonly:locked, protected:parentId === '' || !!node.folderType});
+    for (const child of [...(node.children || [])].reverse()) stack.push({node:child, parentId:node.id, readonly:locked});
+  }
+  return nodes;
+}
+
+function createBrowserBookmarkClient(api = globalThis.chrome) {
+  let snapshot = {granted:false, nodes:[]};
+  const descriptor = {permissions:['bookmarks']};
+  const supported = () => !!api?.permissions?.request;
+  async function load() {
+    if (!api?.permissions?.contains || !await api.permissions.contains(descriptor)) return snapshot = {granted:false, nodes:[]};
+    if (!api.bookmarks?.getTree) throw new Error(t('当前浏览器未提供书签接口。'));
+    const tree = await api.bookmarks.getTree();
+    // Revocation while a read is in flight must not repopulate the old tree.
+    if (!await api.permissions.contains(descriptor)) return snapshot = {granted:false, nodes:[]};
+    return snapshot = {granted:true, nodes:flattenBrowserBookmarks(tree)};
+  }
+  return {
+    supported,
+    snapshot: () => snapshot,
+    load,
+    // Call directly from the user's click, before any asynchronous work.
+    request() {
+      try { return supported() ? api.permissions.request(descriptor) : Promise.resolve(false); }
+      catch (error) { return Promise.reject(error); }
+    },
+    async mutate(change) {
+      const latest = await load();
+      if (!latest.granted) throw new Error(t('书签授权已失效，已返回独立收藏'));
+      const node = checkBookmarkChange(latest.nodes, change, 'browser');
+      if (node && change.expectedNode && JSON.stringify({title:node.title,url:node.url,parentId:node.parentId}) !== change.expectedNode) throw new Error(t('这条收藏已改变，请关闭编辑后重试'));
+      if (change.type === 'create') return api.bookmarks.create({parentId:change.parentId, title:change.title.trim(), ...(change.url === null ? {} : {url:bookmarkUrl(change.url)})});
+      if (change.type === 'update') return api.bookmarks.update(change.id, {title:change.title.trim(), ...(node.url === null ? {} : {url:bookmarkUrl(change.url) || change.url})});
+      if (change.type === 'move') return api.bookmarks.move(change.id, {parentId:change.parentId});
+      // Empty-folder deletion must fail if a child arrived after confirmation.
+      if (node.url === null && change.expectedSubtree) {
+        const ids = bookmarkDescendants(latest.nodes, node.id);
+        const actual = JSON.stringify(latest.nodes.filter(entry => ids.has(entry.id)));
+        if (actual !== change.expectedSubtree) throw new Error(t('文件夹内容已改变，请重新确认删除'));
+      }
+      return api.bookmarks[node.url === null ? 'removeTree' : 'remove'](change.id);
+    },
+    subscribe(callback) {
+      let bookmarkCleanups = [];
+      function listen(event, handler, disposers) {
+        if (event?.addListener) { event.addListener(handler); disposers.push(() => event.removeListener(handler)); }
+      }
+      function bind() {
+        bookmarkCleanups.forEach(dispose => dispose()); bookmarkCleanups = [];
+        for (const name of ['onCreated','onChanged','onRemoved','onMoved','onChildrenReordered','onImportEnded']) listen(api?.bookmarks?.[name], () => callback('change'), bookmarkCleanups);
+      }
+      const permissionCleanups = [];
+      listen(api?.permissions?.onAdded, change => { if (change.permissions?.includes('bookmarks')) { bind(); callback('permission'); } }, permissionCleanups);
+      listen(api?.permissions?.onRemoved, change => { if (change.permissions?.includes('bookmarks')) { snapshot = {granted:false, nodes:[]}; callback('revoked'); } }, permissionCleanups);
+      bind();
+      return () => { bookmarkCleanups.forEach(dispose => dispose()); permissionCleanups.forEach(dispose => dispose()); };
+    },
+  };
+}
+
+const browserBookmarkClient = createBrowserBookmarkClient();
+
+return {BOOKMARK_LIMIT, BOOKMARK_DEPTH, bookmarkUrl, bookmarkIndex, bookmarkPath, bookmarkDescendants, validateBookmarks, checkBookmarkChange, changeLocalBookmarks, listBookmarks, flattenBrowserBookmarks, createBrowserBookmarkClient, browserBookmarkClient};
 })();
 const __memos = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -4757,6 +5111,7 @@ const __widget_data = (() => {
 const { t } = __i18n;
 const { keys, string, array, id, bool, number, date, unique, invalid } = __validation;
 
+const { validateBookmarks } = __bookmarks;
 const { validateMemos } = __memos;
 const { newBaseConverterData, validateBaseConverterData } = __base_converter;
 const { validateCommunityData } = __community_format;
@@ -4767,6 +5122,7 @@ const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, rema
 function newWidgetData(type) {
   if (type === 'base-converter') return newBaseConverterData();
   if(type==='community')return {value:'null'};
+  if (type === 'bookmarks') return { nodes: [] };
   if (type === 'memo') return { entries: [] };
   if (type === 'calendar') return { events: [] };
   const key = dataKeys[type];
@@ -4785,6 +5141,7 @@ function widgetContentSummary(items) {
 function validateWidgetData(type, raw, path) {
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if(type==='community')return validateCommunityData(raw);
+  if (type === 'bookmarks') return validateBookmarks(raw, path);
   if (type === 'memo') return validateMemos(raw, path);
   if (type === 'calendar') {
     keys(raw, ['events'], path);
@@ -5214,6 +5571,357 @@ function renderWidgetSummary(item, model, symbol) {
 }
 
 return {renderWidgetSummary};
+})();
+const __bookmarks_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: esc } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const { bookmarkUrl, bookmarkIndex, bookmarkPath, bookmarkDescendants, listBookmarks, browserBookmarkClient } = __bookmarks;
+
+const button = (action, label, glyph, id = '') => `<button type="button" data-bm-action="${action}" data-id="${esc(id)}" title="${esc(label)}" aria-label="${esc(label)}">${icon(glyph)}</button>`;
+const sourceLabel = source => t(source === 'browser' ? '浏览器书签' : '独立收藏');
+function bookmarkLocation(nodes, folderId) { return [t('全部收藏'), ...bookmarkPath(nodes, folderId).map(node => node.title)].join(' / '); }
+function bookmarkCounts(nodes) { return {links:nodes.filter(node => node.url !== null).length, folders:nodes.filter(node => node.url === null).length}; }
+function address(url) { try { return new URL(url).hostname || new URL(url).protocol; } catch { return url; } }
+function mark(node) { return node.url === null ? `<span class="bm-folder-icon">${icon('folder')}</span>` : `<span class="bm-site-icon" aria-hidden="true">${esc((address(node.url).replace(/^www\./, '') || '?').slice(0, 1).toUpperCase())}</span>`; }
+
+function bookmarkWorkspace(item) {
+  return `<section class="bookmarks-app">
+    <header class="bm-header"><span class="bm-emblem">${icon('bookmark')}</span><h2 id="dialog-title">${esc(item.title)}</h2><span class="bm-header-caption">${t('为喜欢的网页，找到位置')}</span>${windowControls()}</header>
+    <div class="bm-topbar"><div class="bm-sources" role="group" aria-label="${t('收藏来源')}"><button type="button" data-bm-source="local" aria-pressed="true">${icon('bookmark')}${t('独立收藏')}</button><button type="button" data-bm-source="browser" aria-pressed="false">${icon('globe')}<span>${t('连接浏览器书签')}</span></button></div><label class="bm-search">${icon('search')}<input type="search" data-bm-query placeholder="${t('搜索所有文件夹、标题或网址')}" aria-label="${t('搜索所有文件夹、标题或网址')}"></label></div>
+    <div class="bm-source-note"></div><p class="bm-feedback" role="status" hidden></p>
+    <div class="bm-layout"><aside class="bm-sidebar" aria-label="${t('收藏文件夹')}"></aside><main class="bm-main"><div class="bm-breadcrumb" aria-label="${t('文件夹路径')}"></div><div class="bm-toolbar"><div class="bm-heading"></div><div class="bm-create"><button type="button" data-bm-action="new-folder">${icon('folder')}<span>${t('新建文件夹')}</span></button><button type="button" data-bm-action="new-bookmark" class="bm-primary">${icon('plus')}<span>${t('添加书签')}</span></button></div></div><div class="bm-list-tools"><span class="bm-result-count"></span><label><span class="sr-only">${t('书签排序')}</span><select data-bm-sort aria-label="${t('书签排序')}"><option value="manual">${t('原始顺序')}</option><option value="title">${t('按名称排序')}</option><option value="recent">${t('最近添加')}</option></select></label>${button('refresh',t('刷新收藏'),'refresh')}</div><div class="bm-list" aria-label="${t('收藏列表')}"></div></main></div>
+    <footer class="bm-footer"></footer><div class="bm-editor-overlay" hidden><section class="bm-editor" role="dialog" aria-modal="true" aria-labelledby="bm-editor-title" tabindex="-1"></section></div>
+  </section>`;
+}
+
+function bookmarkSidebar(nodes, view) {
+  const {children} = bookmarkIndex(nodes), counts = bookmarkCounts(nodes);
+  const rows = [], stack = (children.get('') || []).filter(node => node.url === null).reverse().map(node => ({node, depth:1}));
+  while (stack.length) {
+    const {node, depth} = stack.pop(), folders = (children.get(node.id) || []).filter(child => child.url === null);
+    const open = view.expanded.has(node.id), selected = view.scope === 'folder' && view.folder === node.id;
+    rows.push(`<div class="bm-tree-row" role="none" style="--depth:${depth}">${folders.length ? `<button type="button" class="bm-tree-toggle" data-bm-toggle="${esc(node.id)}" tabindex="-1" aria-label="${esc(t(open ? '收起文件夹' : '展开文件夹'))}">${icon(open ? 'chevron' : 'right')}</button>` : '<span class="bm-tree-spacer"></span>'}<button type="button" role="treeitem" data-bm-folder="${esc(node.id)}" aria-level="${depth + 1}" aria-selected="${selected}" ${folders.length ? `aria-expanded="${open}"` : ''} title="${esc(node.title)}">${icon('folder')}<span>${esc(node.title)}</span>${node.readonly ? icon('shield') : ''}<small>${(children.get(node.id) || []).length}</small></button></div>`);
+    if (open) for (const child of [...folders].reverse()) stack.push({node:child, depth:depth + 1});
+  }
+  return `<div class="bm-sidebar-label">${t('收藏库')}</div><button type="button" class="bm-recent" data-bm-action="recent" aria-pressed="${view.scope === 'recent'}">${icon('history')}<span>${t('最近添加')}</span></button><div class="bm-sidebar-label">${t('文件夹')}<span>${counts.folders}</span></div><div class="bm-tree" role="tree" aria-label="${t('收藏文件夹')}"><div class="bm-tree-row bm-tree-root" role="none"><button type="button" role="treeitem" aria-level="1" data-bm-folder="" aria-selected="${view.scope === 'folder' && view.folder === ''}">${icon('bookmark')}<span>${t('全部收藏')}</span><small>${counts.links}</small></button></div>${rows.join('')}</div>`;
+}
+
+function bookmarkRows(nodes, view, state) {
+  const rows = listBookmarks(nodes, view), {children} = bookmarkIndex(nodes);
+  if (view.loading) return `<div class="bm-empty">${icon('refresh')}<strong>${t('正在读取收藏…')}</strong></div>`;
+  if (!rows.length) return `<div class="bm-empty">${icon(view.query ? 'search' : 'bookmark')}<strong>${t(view.query ? '没有找到匹配的收藏' : '这个文件夹还很安静')}</strong><p>${t(view.query ? '试试网站名称、网址或文件夹名' : '添加一个书签，或用文件夹整理你的收藏')}</p>${view.query ? `<button type="button" data-bm-action="clear-search">${t('清除搜索')}</button>` : ''}</div>`;
+  return `<ul>${rows.slice(0, view.limit || 100).map(node => {
+    const location = view.query || view.scope === 'recent' ? bookmarkLocation(nodes, node.parentId) : '';
+    const url = node.url !== null && bookmarkUrl(node.url);
+    const subtitle = node.url === null ? t('{count} 个项目', {count:(children.get(node.id) || []).length}) : node.url;
+    const text = `${mark(node)}<span class="bm-row-copy"><strong>${esc(node.title)}</strong><small title="${esc(subtitle)}">${esc(subtitle)}</small>${location ? `<small class="bm-location">${esc(location)}</small>` : ''}</span>`;
+    const link = node.url === null ? `<button type="button" class="bm-row-open" data-bm-folder="${esc(node.id)}">${text}</button>`
+      : url ? `<a class="bm-row-open" href="${esc(url)}" ${state.settings?.openNewTab !== false ? 'target="_blank"' : ''} rel="noopener noreferrer" title="${esc(node.url)}">${text}</a>`
+      : `<div class="bm-row-open" title="${t('此地址只能在浏览器收藏夹中打开')}">${text}<span class="bm-readonly">${t('特殊地址')}</span></div>`;
+    return `<li data-bm-row="${esc(node.id)}">${link}<div class="bm-row-actions">${location ? button('locate',t('在文件夹中显示'),'folder',node.id) : ''}${node.protected || node.readonly ? `<span class="bm-readonly" title="${t('浏览器系统文件夹或只读收藏无法修改')}">${icon('shield')}</span>` : button('edit',t('编辑'),'edit',node.id) + button('move',t('移动到文件夹'),'move',node.id) + button('delete',t('删除'),'trash',node.id)}</div></li>`;
+  }).join('')}</ul>${rows.length > (view.limit || 100) ? `<button type="button" class="bm-load-more" data-bm-action="more">${t('显示更多收藏')}</button>` : ''}`;
+}
+
+function bookmarkBreadcrumb(nodes, view) {
+  const path = bookmarkPath(nodes, view.folder);
+  return `<nav>${[{id:'', title:sourceLabel(view.source)}, ...path].map((node, index) => `${index ? icon('right') : ''}<button type="button" data-bm-folder="${esc(node.id)}" title="${esc(node.title)}">${esc(node.title)}</button>`).join('')}</nav>`;
+}
+
+function bookmarkHeading(nodes, view) {
+  const node = nodes.find(node => node.id === view.folder);
+  const title = view.query ? t('搜索结果') : view.scope === 'recent' ? t('最近添加') : node?.title || t('全部收藏');
+  return `<h3 title="${esc(title)}">${esc(title)}</h3>${node && !node.protected && !node.readonly && !view.query && view.scope === 'folder' ? `<div class="bm-folder-actions">${button('edit',t('重命名文件夹'),'edit',node.id)}${button('move',t('移动到文件夹'),'move',node.id)}${button('delete',t('删除文件夹'),'trash',node.id)}</div>` : ''}`;
+}
+
+function bookmarkEditor(nodes, view, editor) {
+  const node = nodes.find(entry => entry.id === editor.id);
+  const move = editor.type === 'move', remove = editor.type === 'delete', create = editor.type === 'create';
+  const folder = create ? editor.folder : node?.url === null;
+  const title = remove ? t('删除收藏') : move ? t('移动到文件夹') : create ? t(folder ? '新建文件夹' : '添加书签') : t(folder ? '重命名文件夹' : '编辑书签');
+  const excluded = node ? bookmarkDescendants(nodes, node.id) : new Set();
+  const folders = nodes.filter(entry => entry.url === null && !entry.readonly && !excluded.has(entry.id));
+  const options = (view.source === 'local' ? [{id:'',title:t('全部收藏')}] : []).concat(folders.map(entry => ({id:entry.id,title:bookmarkLocation(nodes, entry.id)})));
+  const selected = editor.parentId;
+  const affected = remove ? nodes.filter(entry => excluded.has(entry.id)) : [];
+  return `<header><h3 id="bm-editor-title">${title}</h3>${button('cancel',t('取消'),'close')}</header><form id="bm-editor-form"><fieldset>
+    ${remove ? `<p>${esc(t('确定删除“{title}”？', {title:node?.title}))}</p>${folder ? `<p>${esc(t('包含 {links} 个书签和 {folders} 个文件夹，将一并删除。', {links:bookmarkCounts(affected).links, folders:Math.max(0,bookmarkCounts(affected).folders - 1)}))}</p>` : ''}<p class="bm-delete-note">${t(view.source === 'browser' ? '这会直接删除浏览器中的原始收藏，无法在此撤销。' : '删除后无法撤销，请确认已不再需要。')}</p>`
+    : `${move ? `<p class="bm-moving-name">${icon(folder ? 'folder' : 'bookmark')}${esc(node?.title)}</p>` : `<label><span>${t('名称')}</span><input name="title" required maxlength="300" value="${esc(node?.title || '')}" autocomplete="off" placeholder="${t(folder ? '例如：设计灵感' : '例如：常用文档')}"></label>${folder ? '' : `<label><span>${t('网址')}</span><input name="url" required maxlength="4096" value="${esc(node?.url || '')}" placeholder="https://" inputmode="url" autocomplete="off" spellcheck="false"></label>`}`}
+    ${create || move ? `<label><span>${t('保存到文件夹')}</span><select name="parentId">${options.map(entry => `<option value="${esc(entry.id)}" ${entry.id === selected ? 'selected' : ''}>${esc(entry.title)}</option>`).join('')}</select></label>` : ''}`}
+    <p class="bm-editor-feedback" role="alert" hidden></p><footer><button type="button" data-bm-action="cancel">${t('取消')}</button><button type="submit" class="${remove ? 'bm-danger' : 'bm-primary'}" ${!remove && (create || move) && !options.length ? 'disabled' : ''}>${t(remove ? '确认删除' : move ? '移动' : '保存')}</button></footer></fieldset></form>`;
+}
+
+function bookmarkCard(item, state, folder = '') {
+  const snapshot = browserBookmarkClient.snapshot();
+  const browser = item.config.source === 'browser' && snapshot.granted;
+  const nodes = browser ? snapshot.nodes : item.data.nodes, counts = bookmarkCounts(nodes);
+  const source = sourceLabel(browser ? 'browser' : 'local');
+  if (['1x1','1x2','2x1'].includes(item.size)) return `<button type="button" class="bm-mini" data-action="widget-open" aria-label="${esc(item.title)}">${icon('bookmark')}<strong>${counts.links}</strong><span>${t('书签')}</span><small>${source}</small></button>`;
+  const {children,byId} = bookmarkIndex(nodes);
+  if (!byId.has(folder)) folder = '';
+  const folders = (children.get(folder) || []).filter(node => node.url === null);
+  const links = (children.get(folder) || []).filter(node => node.url !== null);
+  return `<header class="bm-card-header"><button type="button" data-action="widget-open">${icon('bookmark')}<strong>${t('书签')}</strong><small>${counts.links}</small></button><button type="button" data-action="widget-open" title="${t('打开书签管理')}" aria-label="${t('打开书签管理')}">${icon('right')}</button></header><div class="bm-card-layout"><div class="bm-card-folders">${folder ? `<button type="button" data-bm-card-folder="${esc(byId.get(folder)?.parentId || '')}" title="${t('上一级文件夹')}">${icon('chevronLeft')}<span>${t('上一级')}</span></button>` : `<span class="bm-card-root">${icon('folder')}${t('文件夹')}</span>`}${folders.slice(0, 12).map(node => `<button type="button" data-bm-card-folder="${esc(node.id)}" title="${esc(node.title)}">${icon('folder')}<span>${esc(node.title)}</span></button>`).join('')}${!folders.length ? `<span class="bm-card-muted">${t('暂无子文件夹')}</span>` : ''}</div><div class="bm-card-links">${links.slice(0,8).map(node => bookmarkUrl(node.url) ? `<a href="${esc(bookmarkUrl(node.url))}" ${state.settings?.openNewTab !== false ? 'target="_blank"' : ''} rel="noopener noreferrer" title="${esc(node.title + ' · ' + node.url)}">${mark(node)}<span>${esc(node.title)}</span></a>` : '').join('')}${!links.length ? `<button type="button" class="bm-card-empty" data-action="widget-open">${icon('bookmark')}<span>${t(folders.length ? '选择文件夹浏览收藏' : '收藏下一个灵感')}</span></button>` : ''}</div></div><footer class="bm-card-footer"><span>${esc(byId.get(folder)?.title || source)}</span><button type="button" data-action="widget-open">${t('管理收藏')}</button></footer>`;
+}
+
+return {bookmarkLocation, bookmarkCounts, bookmarkWorkspace, bookmarkSidebar, bookmarkRows, bookmarkBreadcrumb, bookmarkHeading, bookmarkEditor, bookmarkCard};
+})();
+const __bookmarks_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { icon } = __icons;
+const { bookmarkPath, bookmarkDescendants, changeLocalBookmarks, listBookmarks, browserBookmarkClient } = __bookmarks;
+const { bookmarkSidebar, bookmarkRows, bookmarkBreadcrumb, bookmarkHeading, bookmarkEditor, bookmarkCounts, bookmarkCard } = __bookmarks_view;
+
+function bindBookmarkWorkspace(root, initial, host, client = browserBookmarkClient) {
+  const controller = new AbortController(), options = {signal:controller.signal};
+  const find = selector => root.querySelector(selector);
+  const current = () => host.getState().items.find(item => item.id === initial.id);
+  const alive = () => !controller.signal.aborted && root.isConnected && !!current();
+  const view = {source:'local', folder:'', scope:'folder', query:'', sort:'manual', expanded:new Set(), loading:false, limit:100};
+  let granted = false, browserNodes = [], editor = null, saving = false, switching = false, sequence = 0, timer, expanded = false;
+  const nodes = () => view.source === 'browser' ? browserNodes : current()?.data.nodes || [];
+  const feedback = message => { if (alive()) { find('.bm-feedback').textContent = message; find('.bm-feedback').hidden = !message; } };
+
+  function render() {
+    if (!alive()) return;
+    const entries = nodes();
+    if (view.folder && !entries.some(node => node.id === view.folder && node.url === null)) view.folder = '';
+    const sidebar = find('.bm-sidebar'), scroll = sidebar.scrollTop;
+    sidebar.innerHTML = bookmarkSidebar(entries, view); sidebar.scrollTop = scroll;
+    find('.bm-breadcrumb').innerHTML = bookmarkBreadcrumb(entries, view);
+    find('.bm-heading').innerHTML = bookmarkHeading(entries, view);
+    find('.bm-list').innerHTML = bookmarkRows(entries, view, host.getState());
+    find('.bm-result-count').textContent = t('{count} 个项目', {count:listBookmarks(entries,view).length});
+    const counts = bookmarkCounts(entries);
+    find('.bm-footer').textContent = t('{links} 个书签 · {folders} 个文件夹', counts);
+    find('.bm-source-note').textContent = t(view.source === 'browser' ? '正在管理浏览器原始收藏，修改会直接生效。' : client.supported() ? '独立收藏随此组件保存；连接浏览器后可直接管理原始收藏，两者各自保留。' : '独立收藏随此组件保存。安装栖页扩展后可连接浏览器书签。');
+    find('.bm-source-note').classList.toggle('is-browser', view.source === 'browser');
+    for (const source of root.querySelectorAll('[data-bm-source]')) {
+      source.setAttribute('aria-pressed', String(source.dataset.bmSource === view.source));
+      source.disabled = switching || saving || source.dataset.bmSource === 'browser' && !client.supported();
+      if (source.dataset.bmSource === 'browser') source.querySelector('span').textContent = t(granted ? '浏览器书签' : '连接浏览器书签');
+    }
+    const writable = view.source === 'local' || entries.some(node => node.url === null && !node.readonly);
+    for (const action of ['new-folder','new-bookmark']) find(`[data-bm-action=${action}]`).disabled = !writable || view.loading || switching;
+    find('[data-bm-action=refresh]').disabled = view.loading;
+  }
+
+  function navigate(folder) {
+    view.folder = folder; view.scope = 'folder'; view.query = ''; view.limit = 100; find('[data-bm-query]').value = '';
+    for (const node of bookmarkPath(nodes(), folder)) view.expanded.add(node.id);
+    render(); find('.bm-list').scrollTop = 0;
+  }
+
+  function closeEditor(force = false) {
+    if (saving && !force) return;
+    editor = null; find('.bm-editor-overlay').hidden = true;
+    for (const selector of ['.bm-header','.bm-topbar','.bm-layout']) find(selector).inert = false;
+    find('[data-bm-action=new-bookmark]').focus({preventScroll:true});
+  }
+
+  function openEditor(type, id = '', folder = false) {
+    if (saving || switching || view.loading) return;
+    const entries = nodes(), node = entries.find(entry => entry.id === id);
+    if (type !== 'create' && (!node || node.readonly || node.protected)) return;
+    let parentId = type === 'move' ? node.parentId : view.folder;
+    if (view.source === 'browser' && (!parentId || entries.find(entry => entry.id === parentId)?.readonly)) parentId = entries.find(entry => entry.url === null && !entry.readonly)?.id;
+    editor = {type,id,folder,parentId,source:view.source,baseline:JSON.stringify(current().data)};
+    if (node) editor.expectedNode = JSON.stringify({title:node.title,url:node.url,parentId:node.parentId});
+    if (type === 'delete' && node.url === null) {
+      const ids = bookmarkDescendants(entries,id);
+      editor.expectedSubtree = JSON.stringify(entries.filter(entry => ids.has(entry.id)));
+    }
+    find('.bm-editor').innerHTML = bookmarkEditor(entries,view,editor);
+    find('.bm-editor-overlay').hidden = false;
+    for (const selector of ['.bm-header','.bm-topbar','.bm-layout']) find(selector).inert = true;
+    (find('.bm-editor input') || find('.bm-editor select') || find('.bm-editor [data-bm-action=cancel]'))?.focus();
+  }
+
+  async function reload({initialLoad = false, showLoading = false} = {}) {
+    const ticket = ++sequence;
+    if (showLoading) { view.loading = true; render(); }
+    try {
+      const snapshot = await client.load();
+      if (!alive() || ticket !== sequence) return;
+      granted = snapshot.granted; browserNodes = snapshot.nodes;
+      if (initialLoad && initial.config.source === 'browser' && granted) view.source = 'browser';
+      if (!granted && view.source === 'browser') {
+        view.source = 'local'; view.folder = ''; view.expanded.clear(); closeEditor(true);
+        feedback(t('书签授权已失效，已返回独立收藏'));
+      }
+    } catch (error) { if (alive() && ticket === sequence) feedback(error.message || t('读取收藏失败，请重试')); }
+    finally { if (alive() && ticket === sequence) { view.loading = false; render(); } }
+  }
+
+  async function selectSource(source) {
+    if (switching || saving || source === view.source) return;
+    // The permission request is deliberately the first asynchronous operation.
+    const permission = source === 'browser' && !granted ? client.request() : Promise.resolve(true);
+    switching = true; feedback(''); render();
+    try {
+      if (!await permission) { feedback(t('未授予书签权限，继续使用独立收藏')); return; }
+      if (!alive()) return;
+      if (source === 'browser') {
+        await reload();
+        if (!alive() || !granted) return;
+      }
+      const item = current();
+      await host.saveSettings(item.id, {title:item.title, config:{...item.config,source}}, JSON.stringify([item.title,item.config]));
+      if (!alive()) return;
+      if (source === 'browser' && !granted) return;
+      view.source = source; view.folder = ''; view.scope = 'folder'; view.expanded.clear(); view.query = ''; find('[data-bm-query]').value = '';
+    } catch (error) { feedback(error.message || t('保存失败，请重试')); }
+    finally { switching = false; render(); }
+  }
+
+  async function submit(event) {
+    if (event.target.id !== 'bm-editor-form') return;
+    event.preventDefault(); event.stopPropagation();
+    if (!editor || saving || switching) return;
+    const session = editor, form = event.target, values = new FormData(form);
+    const entries = nodes(), node = entries.find(entry => entry.id === session.id);
+    const change = {type:session.type,id:session.id,expectedSubtree:session.expectedSubtree,expectedNode:session.expectedNode};
+    if (session.type === 'create') { change.id = host.uid(); change.dateAdded = Date.now(); }
+    if (session.type === 'create' || session.type === 'update') {
+      change.title = String(values.get('title') || '').trim();
+      change.url = (session.type === 'create' ? session.folder : node?.url === null) ? null : String(values.get('url') || '').trim();
+    }
+    if (session.type === 'create' || session.type === 'move') change.parentId = String(values.get('parentId') ?? '');
+    saving = true; form.querySelector('fieldset').disabled = true;
+    const errorNode = form.querySelector('.bm-editor-feedback'); errorNode.hidden = true;
+    try {
+      if (session.source === 'browser') {
+        await client.mutate(change);
+        await reload();
+      } else {
+        const next = changeLocalBookmarks(JSON.parse(session.baseline), change);
+        await host.saveData(initial.id,next,session.baseline);
+      }
+      host.refreshCards?.();
+      if (!alive()) return;
+      closeEditor(true); feedback(t('收藏已保存'));
+      if (session.type === 'create' || session.type === 'move') navigate(change.parentId);
+      else render();
+    } catch (error) {
+      if (!alive()) return;
+      errorNode.textContent = error.message || t('保存失败，请重试'); errorNode.hidden = false;
+      if (session.source === 'browser') await reload();
+    } finally {
+      saving = false;
+      if (alive()) {
+        form.querySelector('fieldset').disabled = false; render();
+        if (editor === session) form.querySelector('input,select,button[type=submit]')?.focus();
+      }
+    }
+  }
+
+  root.addEventListener('click', event => {
+    const target = event.target.closest('button');
+    if (!target || target.hasAttribute('data-close')) return;
+    if (target.dataset.detailAction === 'window-expand') {
+      expanded = !expanded; root.closest('dialog').classList.toggle('widget-app-expanded',expanded);
+      target.innerHTML = icon(expanded ? 'minimize' : 'maximize'); target.setAttribute('aria-pressed',String(expanded));
+      target.title = t(expanded ? '还原窗口' : '最大化窗口'); target.setAttribute('aria-label',target.title); return;
+    }
+    if (target.hasAttribute('data-bm-source')) { void selectSource(target.dataset.bmSource); return; }
+    if (target.hasAttribute('data-bm-folder')) { navigate(target.dataset.bmFolder); focusFolder(target.dataset.bmFolder); return; }
+    if (target.hasAttribute('data-bm-toggle')) {
+      const id = target.dataset.bmToggle;
+      if (view.expanded.has(id)) view.expanded.delete(id); else view.expanded.add(id);
+      render(); focusFolder(id); return;
+    }
+    const action = target.dataset.bmAction, id = target.dataset.id;
+    if (action === 'new-folder' || action === 'new-bookmark') openEditor('create','',action === 'new-folder');
+    if (action === 'edit') openEditor('update',id);
+    if (action === 'move' || action === 'delete') openEditor(action,id);
+    if (action === 'cancel') closeEditor();
+    if (action === 'locate') navigate(nodes().find(node => node.id === id)?.parentId || '');
+    if (action === 'recent') { view.scope = 'recent'; view.query = ''; find('[data-bm-query]').value = ''; render(); }
+    if (action === 'clear-search') { view.query = ''; find('[data-bm-query]').value = ''; render(); find('[data-bm-query]').focus(); }
+    if (action === 'more') { view.limit += 100; const scroll = find('.bm-list').scrollTop; render(); find('.bm-list').scrollTop = scroll; }
+    if (action === 'refresh') { feedback(''); void reload({showLoading:true}); }
+  }, options);
+  root.addEventListener('input', event => { if (event.target.matches('[data-bm-query]')) { view.query = event.target.value.trim(); view.limit = 100; render(); } }, options);
+  root.addEventListener('change', event => { if (event.target.matches('[data-bm-sort]')) { view.sort = event.target.value; render(); } }, options);
+  root.addEventListener('submit', event => { void submit(event); }, options);
+  root.closest('dialog').addEventListener('cancel', event => {
+    if (!editor) return;
+    event.preventDefault(); event.stopImmediatePropagation(); closeEditor();
+  }, {capture:true, signal:controller.signal});
+
+  function focusFolder(id) { [...root.querySelectorAll('[role=treeitem]')].find(button => button.dataset.bmFolder === id)?.focus({preventScroll:true}); }
+  root.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && ['f','k'].includes(event.key.toLowerCase())) {
+      event.preventDefault(); event.stopPropagation();
+      if (!editor) find('[data-bm-query]').focus();
+      return;
+    }
+    if (editor) {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeEditor(); }
+      if (event.key === 'Tab') {
+        const fields = [...find('.bm-editor').querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled)')].filter(node => !node.closest('fieldset:disabled'));
+        const first = fields[0], last = fields.at(-1);
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+      return;
+    }
+    if (!event.target.matches('[role=treeitem]')) return;
+    const buttons = [...root.querySelectorAll('[role=treeitem]')], at = buttons.indexOf(event.target), id = event.target.dataset.bmFolder;
+    if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+    event.preventDefault();
+    if (event.key === 'ArrowLeft') {
+      if (view.expanded.has(id)) { view.expanded.delete(id); render(); focusFolder(id); }
+      else focusFolder(nodes().find(node => node.id === id)?.parentId || '');
+    } else if (event.key === 'ArrowRight') {
+      if (!view.expanded.has(id)) { view.expanded.add(id); render(); focusFolder(id); }
+      else buttons[at + 1]?.focus();
+    } else buttons[event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : Math.max(0,Math.min(buttons.length - 1,at + (event.key === 'ArrowDown' ? 1 : -1)))]?.focus();
+  }, options);
+  const unsubscribe = client.subscribe(reason => {
+    if (!alive()) return;
+    if (reason === 'revoked') {
+      sequence++; granted = false; browserNodes = []; view.loading = false;
+      if (view.source === 'browser') { view.source = 'local'; view.folder = ''; view.expanded.clear(); closeEditor(true); feedback(t('书签授权已失效，已返回独立收藏')); }
+      render();
+    } else { clearTimeout(timer); timer = setTimeout(() => { void reload(); },80); }
+  });
+  render(); void reload({initialLoad:true});
+  return () => { controller.abort(); sequence++; clearTimeout(timer); unsubscribe(); };
+}
+
+function bindBookmarkCards(container, host, client = browserBookmarkClient) {
+  const roots = [...container.querySelectorAll('[data-widget=bookmarks]')];
+  if (!roots.length) return () => {};
+  const controller = new AbortController(), folders = new Map();
+  let timer;
+  const render = () => {
+    if (controller.signal.aborted) return;
+    for (const root of roots) {
+      const item = host.getState().items.find(item => item.id === root.dataset.widgetId);
+      if (item && root.isConnected) root.innerHTML = bookmarkCard(item,host.getState(),folders.get(item.id) || '');
+    }
+  };
+  const load = () => client.load().then(render).catch(() => {});
+  container.addEventListener('click', event => {
+    const button = event.target.closest('[data-bm-card-folder]');
+    if (!button) return;
+    const root = button.closest('[data-widget=bookmarks]');
+    if (!root) return;
+    event.preventDefault(); event.stopPropagation(); folders.set(root.dataset.widgetId,button.dataset.bmCardFolder); render();
+  }, {signal:controller.signal});
+  const unsubscribe = client.subscribe(reason => {
+    if (reason === 'revoked') { folders.clear(); render(); }
+    else { clearTimeout(timer); timer = setTimeout(load,100); }
+  });
+  if (roots.some(root => host.getState().items.find(item => item.id === root.dataset.widgetId)?.config.source === 'browser')) void load();
+  return () => { controller.abort(); clearTimeout(timer); unsubscribe(); };
+}
+
+return {bindBookmarkWorkspace, bindBookmarkCards};
 })();
 const __community_widget = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -17121,6 +17829,8 @@ const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { baseConverterCard } = __base_converter_view;
 const { renderWidgetSummary } = __widget_summary;
+const { bookmarkCard } = __bookmarks_view;
+const { bindBookmarkCards } = __bookmarks_workspace;
 const { communityCard } = __community_widget;
 const { isCompactWidget } = __widget_sizes;
 const { t } = __i18n;
@@ -17480,6 +18190,7 @@ function renderCompact(item) {
 
 function renderWidgetContent(item, state) {
   if (item.widget === 'base-converter') return baseConverterCard(item);
+  if (item.widget === 'bookmarks') return bookmarkCard(item, state);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
@@ -17492,7 +18203,7 @@ function renderWidget(item, state) {
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
   if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
-  if (definition.builtin && isCompactWidget(item.size)) return renderCompact(item);
+  if (definition.builtin && type !== 'bookmarks' && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
     try {
@@ -17749,6 +18460,7 @@ function bindWidgets(container, context) {
     flushNotes();
     binding.alive = false;
     binding.extensions?.cleanup();
+    binding.bookmarksCleanup?.();
     binding.hotsearchCleanup?.();
     clearTimeout(binding.noteTimer);
     container.removeEventListener('click', click);
@@ -17759,6 +18471,7 @@ function bindWidgets(container, context) {
     if (bindings.get(container) === binding) bindings.delete(container);
   };
   binding.extensions = mountWidgetExtensions(container, context);
+  binding.bookmarksCleanup = bindBookmarkCards(container, context);
   binding.hotsearchCleanup = bindHotsearchCards(container, context);
   binding.cleanup = cleanup;
   bindings.set(container, binding);
@@ -17856,7 +18569,7 @@ const { renderWidget } = __widgets;
 
 const categories = ['全部', '日常', '效率', '工具'];
 const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock', 'hotsearch']);
-const productivity = new Set(['todo', 'focus', 'habit', 'countdown', 'workday']);
+const productivity = new Set(['todo', 'focus', 'habit', 'countdown', 'workday', 'bookmarks']);
 const categoryOf = type => daily.has(type) ? '日常' : productivity.has(type) ? '效率' : '工具';
 
 function preview(definition, size, state) {
@@ -21088,6 +21801,8 @@ const { weatherWorkspace } = __weather_view;
 const { bindWeatherWorkspace } = __weather_workspace;
 const { hotsearchWorkspace, refreshHotsearchCards } = __hotsearch_view;
 const { bindHotsearchWorkspace } = __hotsearch_workspace;
+const { bookmarkWorkspace } = __bookmarks_view;
+const { bindBookmarkWorkspace } = __bookmarks_workspace;
 const { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } = __widget_workspaces;
 const { baseConverterWorkspace, bindBaseConverter } = __base_converter_view;
 const { sharingView, bindSharing } = __sharing_ui;
@@ -21770,11 +22485,12 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['calendar','memo','weather','community','hotsearch','base-converter'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['calendar','memo','weather','community','hotsearch','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
+ dialog.classList.toggle('bookmarks-app-dialog',detailWidget === 'bookmarks');
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
@@ -21789,6 +22505,7 @@ function openDialog(kind,data={}) {
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
@@ -21822,6 +22539,7 @@ function openDialog(kind,data={}) {
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
+  else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='hotsearch')viewerCleanup=bindHotsearchWorkspace($('#hotsearch-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>refreshHotsearchCards($('#desktop'),state)});
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
@@ -21837,7 +22555,7 @@ function openDialog(kind,data={}) {
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch','bookmarks'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {

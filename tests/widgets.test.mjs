@@ -88,6 +88,7 @@ test('weather data keeps missing optional measurements unknown and rejects absen
 
 test('all catalog widgets render offline without requesting external services', () => {
   assert.ok(widgetCatalog.some(widget => widget.type === 'base-converter'));
+  assert.ok(widgetCatalog.some(entry => entry.type === 'bookmarks'));
   const originalFetch = globalThis.fetch;
   let requested = false;
   globalThis.fetch = () => { requested = true; throw new Error('unexpected network request'); };

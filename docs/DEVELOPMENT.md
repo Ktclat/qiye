@@ -36,6 +36,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | `index.html`、`styles.css` | 页面结构与桌面样式 |
 | `src/app.js` | 桌面交互、弹层、布局与保存流程 |
 | `src/core.js` | 共享状态、持久化、备份校验及浏览器数据接口 |
+| `src/bookmarks.js`、`src/bookmarks-view.js`、`src/bookmarks-workspace.js`、`src/bookmarks.css` | 独立收藏校验、原生书签权限与 CRUD、左右分栏文件夹树及组件卡片 |
 | `src/drag.js` | 实时 DOM 重排、FLIP 动画、稳定指针捕获、键盘排序和取消恢复 |
 | `src/icon-artwork.js`、`src/site-icon-catalog.js` | ICO 原生帧恢复、本机缓存与已核验首方地址 |
 | `src/desktop.css` | 分离滚动/固定区域、统一网站图标和组件比例、添加面板 |
@@ -46,7 +47,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | `src/avatar.js` | 本地头像格式校验、解码、裁切与大小限制 |
 | `src/search-history.js` | 可选的本机最近搜索记录与清除，不进入桌面备份 |
 | `fonts/`、`docs/THIRD_PARTY.md` | 本地 Inter 可变字体、完整 OFL 许可与来源 |
-| `src/widgets.js`、`src/widgets.css` | 14 类内置卡片的渲染、交互与样式 |
+| `src/widgets.js`、`src/widgets.css` | 内置卡片的渲染、交互与样式 |
 | `src/calendar.js`、`src/memos.js`、`src/weather.js` | 日期 / 调休、多条备忘录与天气服务 |
 | `src/widget-details.js`、`src/widget-workspaces.js`、`src/widget-drafts.js` | 详情交互、视图与可重试的独立草稿保存 |
 | `src/i18n.js`、`src/messages-en.js`、`_locales/` | 运行时国际化与浏览器扩展元数据 |

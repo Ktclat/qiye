@@ -56,6 +56,9 @@ jobs:
           python3 tests/weather-e2e.py --preview
           python3 tests/hotsearch-e2e.py
           python3 tests/hotsearch-e2e.py --preview
+          python3 tests/bookmarks-e2e.py
+          python3 tests/bookmarks-e2e.py --preview
+          python3 tests/bookmarks-native-e2e.py
           python3 tests/extension-e2e.py
           python3 tests/tab-favicon-e2e.py
       - name: Package extension, source and standalone preview
@@ -74,6 +77,7 @@ jobs:
           name: qiye-browser-report
           path: |
             test-results
+            output/playwright/bookmarks
             output/playwright/hotsearch
           retention-days: 14
       - name: Source archive

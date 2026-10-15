@@ -17,11 +17,12 @@ Native source can access its execution environment; its API is not a permission 
 
 ## Built-in catalog
 
-The registry contains 14 user-facing built-in widget types. `community` is a separate internal type, and the legacy `hotlinks` type is retained only for compatibility with existing data. All built-ins support the five sizes.
+The registry provides the user-facing built-in widgets below. `community` is a separate internal type, and the legacy `hotlinks` type is retained only for compatibility with existing data. All built-ins support the five sizes.
 
 | Type | Name | Behavior and limits |
 | --- | --- | --- |
 | `wallpaper` | Wallpapers | Every size opens the wallpaper center; galleries load on demand |
+| `bookmarks` | Bookmarks | Nested folder tree on the left, bookmarks on the right; independent data and authorized browser bookmarks stay separate |
 | `weather` | Weather | Independent city, unit and network opt-in; observations, hourly/daily forecasts and air quality |
 | `calendar` | Calendar | Gregorian/lunar dates, events, date and workday tools; verified mainland China adjustments for 2026 only |
 | `memo` | Memos | Multiple plain-text entries, search, pinning, sorting, autosave, undo deletion and TXT export |
@@ -45,6 +46,15 @@ Add **Widgets → Tools → Base converter**. Binary, octal, decimal and hexadec
 - Choose 1–128 maximum fractional digits. Parentheses mark recurring digits; longer expansions are truncated, not rounded, and show `≈` and `…`. Negatives retain a minus sign; two's complement and scientific notation are not supported.
 - Copy individual results or all results. Individual copies omit grouping spaces and announce truncation when applicable; copying all preserves base labels and approximation markers. Only exact results within the input limit can be reused as input.
 - Each instance independently saves its input, output bases and formatting in desktop data, JSON backups and WebDAV. Public layout sharing resets these to defaults. Conversion needs no network access; failed saves retain session drafts and offer retry.
+
+## Bookmark manager
+
+Add **Widgets → Productivity → Bookmarks**. The default 4×2 card has folders on the left and links on the right; all five sizes open the full manager. Create, edit, move and delete bookmarks or nested folders, follow breadcrumbs, browse recent additions and sort by name. Search matches names and addresses across folders, displays their paths and can jump to the containing folder. Ctrl / Cmd + F or K focuses search.
+
+Qiye bookmarks are independent per widget and included in JSON backups and WebDAV. Public layout sharing removes their content. Each widget supports up to 5,000 items and paths of 64 levels. New addresses accept HTTP / HTTPS, default to HTTPS when no scheme is supplied, and reject duplicates within a folder. Move destinations exclude the folder itself and its descendants; recursive deletion shows the number of affected bookmarks and subfolders.
+
+In the extension, **Connect browser bookmarks** requests optional permission. Authorized changes directly affect the original browser bookmarks, and external browser changes update the view. The browser tree stays in memory and is not included in desktop backups or WebDAV. Connecting never imports Qiye bookmarks into the browser. Denied or revoked permission leaves Qiye bookmarks available. System folders cannot be renamed, moved or deleted; managed collections are read-only. Existing special-scheme bookmarks remain visible without executing those addresses. See the [Chrome Bookmarks API](https://developer.chrome.com/docs/extensions/reference/api/bookmarks).
+
 
 ## Trending lists
 

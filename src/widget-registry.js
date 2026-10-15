@@ -8,6 +8,7 @@ import { publicHttpsUrl } from './public-json.js';
 import { HOTSEARCH_DEFAULTS, validateHotsearchConfig } from './hotsearch-sources.js';
 
 const builtins = [
+  { type: 'bookmarks', title: '书签', description: '分层整理独立收藏，授权后管理浏览器书签', size: '4x2', icon: 'bookmark' },
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },
   { type: 'calendar', title: '日历', description: '公历月份与中国农历', size: '4x2', icon: 'calendar' },
@@ -30,6 +31,7 @@ const builtins = [
 export const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
+  bookmarks: { source: 'local' },
   hotsearch: HOTSEARCH_DEFAULTS,
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
   weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius', source: 'auto', fallback: true },
@@ -117,6 +119,7 @@ function validateBuiltinConfig(widgetType, raw, path) {
   }
   const v = keys(raw, Object.keys(builtinConfig[widgetType] || {}), path);
   const out = {};
+  if (widgetType === 'bookmarks') out.source = enumeration(v.source, ['local','browser'], `${path}.source`);
   if (widgetType === 'calendar') {
     out.weekStart = enumeration(v.weekStart, [0,1], `${path}.weekStart`);
     out.showLunar = bool(v.showLunar, `${path}.showLunar`);

@@ -32,7 +32,7 @@ with sync_playwright() as p:
         def saved():return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v5"))')
         def close():
             page.locator('#dialog [data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
-        check('all 14 compact widgets render',page.locator('#desktop [data-compact]').count()==14)
+        check('all registered compact widgets render',page.locator('#desktop [data-widget][data-display-size="1x1"]').count()==len(state['items']))
         # The same pointer target has a short-click action and a long-press drag.
         button=page.locator('[data-item=calendar] [data-action=widget-open]');r=button.bounding_box()
         page.mouse.move(r['x']+r['width']/2,r['y']+r['height']/2);page.mouse.down();page.wait_for_timeout(380)
@@ -78,9 +78,9 @@ with sync_playwright() as p:
         page.locator('[data-preference=windowSize]').select_option('100')
         page.locator('[data-preference=settingsPresentation]').select_option('sidebar');close();page.locator('#brand-button').click()
         page.screenshot(path=str(OUT/'settings.png'),animations='disabled');close()
-        page.locator('.top-tools [data-action=add]').click();check('add defaults to widget showcase',page.locator('[data-catalog-card]').count()==14)
+        page.locator('.top-tools [data-action=add]').click();check('add defaults to widget showcase',page.locator('[data-catalog-card]').count()==len(state['items']))
         page.screenshot(path=str(OUT/'catalog.png'),animations='disabled')
-        page.locator('[data-catalog-category="工具"]').click();check('category filters actual catalog',page.locator('[data-catalog-card]:visible').count()==1 and page.locator('[data-catalog-widget=calculator]').is_visible())
+        page.locator('[data-catalog-category="工具"]').click();check('category filters actual catalog',page.locator('[data-catalog-card]:visible').evaluate_all('nodes=>nodes.every(node=>node.dataset.category==="工具")') and page.locator('[data-catalog-widget=calculator]').is_visible())
         page.locator('#widget-query').fill('nothing-matches');check('combined search shows empty state',page.locator('#widget-catalog-empty').is_visible())
         page.locator('[data-add-tab=sites]').click();page.locator('#widget-query').fill('github');page.locator('#catalog-group').select_option('code')
         page.locator('[data-catalog-card]:visible [data-add-site]').first.click();page.locator('#dialog').wait_for(state='hidden');check('website picker honors target group',saved()['items'][-1]['groupId']=='code')

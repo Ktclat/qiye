@@ -8,7 +8,7 @@ import { renderWidget } from './widgets.js';
 
 const categories = ['全部', '日常', '效率', '工具'];
 const daily = new Set(['calendar', 'weather', 'memo', 'notes', 'quote', 'wallpaper', 'clock', 'hotsearch']);
-const productivity = new Set(['todo', 'focus', 'habit', 'countdown', 'workday']);
+const productivity = new Set(['todo', 'focus', 'habit', 'countdown', 'workday', 'bookmarks']);
 const categoryOf = type => daily.has(type) ? '日常' : productivity.has(type) ? '效率' : '工具';
 
 function preview(definition, size, state) {

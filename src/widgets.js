@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { baseConverterCard } from './base-converter-view.js';
 import { renderWidgetSummary } from './widget-summary.js';
+import { bookmarkCard } from './bookmarks-view.js';
+import { bindBookmarkCards } from './bookmarks-workspace.js';
 import { communityCard } from './community-widget.js';
 import { isCompactWidget } from './widget-sizes.js';
 import { t } from './i18n.js';
@@ -360,6 +362,7 @@ function renderCompact(item) {
 
 export function renderWidgetContent(item, state) {
   if (item.widget === 'base-converter') return baseConverterCard(item);
+  if (item.widget === 'bookmarks') return bookmarkCard(item, state);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
@@ -372,7 +375,7 @@ export function renderWidget(item, state) {
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
   if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
-  if (definition.builtin && isCompactWidget(item.size)) return renderCompact(item);
+  if (definition.builtin && type !== 'bookmarks' && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
     let content;
     try {
@@ -629,6 +632,7 @@ export function bindWidgets(container, context) {
     flushNotes();
     binding.alive = false;
     binding.extensions?.cleanup();
+    binding.bookmarksCleanup?.();
     binding.hotsearchCleanup?.();
     clearTimeout(binding.noteTimer);
     container.removeEventListener('click', click);
@@ -639,6 +643,7 @@ export function bindWidgets(container, context) {
     if (bindings.get(container) === binding) bindings.delete(container);
   };
   binding.extensions = mountWidgetExtensions(container, context);
+  binding.bookmarksCleanup = bindBookmarkCards(container, context);
   binding.hotsearchCleanup = bindHotsearchCards(container, context);
   binding.cleanup = cleanup;
   bindings.set(container, binding);
