@@ -1336,52 +1336,58 @@ html[data-theme=light] #dialog.widget-app-dialog {
 .hotsearch-app{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
 .hotsearch-app [hidden]{display:none!important}
 .hotsearch-app .icon{width:18px;height:18px;flex:none}
-.hotsearch-app-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--app-border);flex:none}
-.hotsearch-emblem{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:15px;color:#fff;background:linear-gradient(145deg,#ff703d,#ff3429)}
-.hotsearch-emblem .icon{width:27px;height:27px}
-.hotsearch-app-header h2{font-size:23px;line-height:1.3;letter-spacing:-.5px;margin:0 auto 0 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hotsearch-header-actions{display:flex;align-items:center;border:1px solid var(--app-border);border-radius:14px;padding:3px;gap:2px}
-.hotsearch-header-actions button{display:flex;gap:7px;align-items:center;justify-content:center;background:transparent;padding:7px 9px;min-height:32px;white-space:nowrap;font-size:14px}
+.hotsearch-app-header{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--app-border);flex:none}
+.hotsearch-emblem{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:11px;color:#fff;background:linear-gradient(145deg,#ff703d,#ff3429)}
+.hotsearch-emblem .icon{width:23px;height:23px}
+.hotsearch-app-header h2{font-size:20px;line-height:1.3;letter-spacing:-.5px;margin:0 auto 0 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hotsearch-header-actions{display:flex;align-items:center;border:1px solid var(--app-border);border-radius:11px;padding:2px;gap:2px}
+.hotsearch-header-actions button{display:flex;gap:6px;align-items:center;justify-content:center;background:transparent;padding:5px 7px;min-height:28px;white-space:nowrap;font-size:12px}
 .hotsearch-header-actions button.is-loading .icon{animation:hotsearch-spin 1s linear infinite}
 @keyframes hotsearch-spin{to{transform:rotate(360deg)}}
-.hotsearch-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;min-width:0;flex:none}
-.hotsearch-toolbar>button{display:grid;place-items:center;flex:none;width:38px;height:38px;padding:8px;border:1px solid var(--app-border);background:var(--app-pane);border-radius:50%}
-.hotsearch-toolbar>input{width:170px;max-width:36%;border:1px solid var(--app-border);height:38px}
-.hotsearch-categories{display:flex;gap:7px;overflow:auto;scrollbar-width:none;min-width:0;padding:1px}
-.hotsearch-categories button{flex:none;white-space:nowrap;border:1px solid var(--app-border);border-radius:22px;padding:7px 22px;background:var(--app-pane);font-size:16px}
+.hotsearch-toolbar{display:flex;align-items:center;gap:6px;padding:7px 10px;min-width:0;flex:none}
+.hotsearch-toolbar>button{display:grid;place-items:center;flex:none;width:30px;height:30px;padding:5px;border:1px solid var(--app-border);background:var(--app-pane);border-radius:50%}
+.hotsearch-toolbar>input{width:150px;max-width:36%;border:1px solid var(--app-border);height:30px;font-size:13px}
+.hotsearch-categories{display:flex;gap:6px;overflow:auto;scrollbar-width:none;min-width:0;padding:1px}
+.hotsearch-categories button{flex:none;white-space:nowrap;border:1px solid var(--app-border);border-radius:18px;padding:5px 16px;background:var(--app-pane);font-size:13px}
 .hotsearch-categories button[aria-pressed=true]{color:var(--app-blue);border-color:var(--app-blue);background:color-mix(in srgb,var(--app-blue) 7%,var(--app-bg));font-weight:600}
-.hotsearch-layout{display:grid;grid-template-columns:248px minmax(0,1fr);gap:10px;padding:0 10px;flex:1;min-height:0}
-.hotsearch-sidebar{border:1px solid var(--app-border);border-radius:20px;background:var(--app-pane);padding:9px;overflow:auto;scrollbar-width:thin}
-.hotsearch-source-row{display:flex;align-items:center;border-radius:13px;min-width:0;position:relative;margin-bottom:3px}
+.hotsearch-layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px;padding:0 8px;flex:1;min-height:0}
+.hotsearch-sidebar{border:1px solid var(--app-border);border-radius:16px;background:var(--app-pane);padding:7px;overflow:auto;scrollbar-width:thin}
+.hotsearch-source-row{display:flex;align-items:center;border-radius:10px;min-width:0;position:relative;margin-bottom:3px}
 .hotsearch-source-row:has([aria-pressed=true]){background:var(--app-selection);color:var(--app-blue)}
 .hotsearch-source-row:has([aria-pressed=true]):before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:4px;background:var(--app-blue)}
-.hotsearch-source-row .hotsearch-source{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left;border-radius:13px;padding:10px 8px;background:transparent;font-size:17px}
+.hotsearch-source-row .hotsearch-source{display:flex;align-items:center;gap:8px;flex:1;min-width:0;text-align:left;border-radius:10px;padding:7px 6px;background:transparent;font-size:14px}
 .hotsearch-source>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hotsearch-logo{display:inline-grid;place-items:center;background:var(--source-color);color:#fff;border-radius:9px;width:30px;height:30px;font-size:16px;font-weight:650;line-height:1;flex:none;letter-spacing:-.4px}
+.hotsearch-logo.site-visual{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border-radius:6px;background:var(--app-field,var(--w-hover));color:var(--app-muted,var(--w-muted));line-height:1}
+.hotsearch-logo.site-visual.is-loaded{background:#fff}
+.hotsearch-logo.site-visual>.site-favicon{width:100%;height:100%;max-width:none;max-height:none}
+.hotsearch-logo>.site-fallback{display:grid;place-items:center;width:100%;height:100%}
+.hotsearch-logo .icon{width:16px;height:16px}
+.hotsearch-card-tabs .hotsearch-logo{width:14px;height:14px;border-radius:3px}
+.hotsearch-card-tabs .hotsearch-logo .icon{width:12px;height:12px}
 .hotsearch-app .hotsearch-grip{background:transparent;color:var(--app-muted);font-size:19px;padding:6px 3px;cursor:grab;flex:none}
 .hotsearch-source-row .hotsearch-grip{margin-left:5px}
 .hotsearch-main{min-width:0;min-height:0;overflow:auto;scrollbar-width:thin}
 .hotsearch-boards{height:100%;min-height:0}
-.hotsearch-board{display:flex;flex-direction:column;border:1px solid var(--app-border);border-radius:20px;background:var(--app-pane);height:100%;overflow:hidden;min-width:0;min-height:0}
-.hotsearch-board>header{display:flex;align-items:center;gap:11px;min-height:60px;padding:12px 18px;flex:none;border-bottom:1px solid var(--app-border)}
-.hotsearch-board h3{font-size:20px;line-height:1.4;margin:0;min-width:0;flex:1}
+.hotsearch-board{display:flex;flex-direction:column;border:1px solid var(--app-border);border-radius:16px;background:var(--app-pane);height:100%;overflow:hidden;min-width:0;min-height:0}
+.hotsearch-board>header{display:flex;align-items:center;gap:9px;min-height:48px;padding:8px 14px;flex:none;border-bottom:1px solid var(--app-border)}
+.hotsearch-board h3{font-size:16px;line-height:1.4;margin:0;min-width:0;flex:1}
 .hotsearch-board h3 a{color:inherit;text-decoration:none}
-.hotsearch-board h3 span{font-size:18px;font-weight:500}
-.hotsearch-board header button{display:grid;place-items:center;background:transparent;width:30px;height:30px;padding:5px;color:var(--app-muted);flex:none}
+.hotsearch-board h3 span{font-size:14px;font-weight:500}
+.hotsearch-board header button{display:grid;place-items:center;background:transparent;width:28px;height:28px;padding:4px;color:var(--app-muted);flex:none}
 .hotsearch-board header button[aria-pressed=true]{color:var(--app-blue)}
 .hotsearch-board header .hotsearch-collapse{font-size:20px}
-.hotsearch-board-content{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;overscroll-behavior:contain;padding:4px 12px}
+.hotsearch-board-content{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;overscroll-behavior:contain;padding:4px 10px}
 .hotsearch-rows{margin:0;padding:0;list-style:none}
-.hotsearch-rows a,.hotsearch-unlinked{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:8px 5px;border-radius:9px;min-width:0}
+.hotsearch-rows a,.hotsearch-unlinked{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;padding:6px 4px;border-radius:7px;min-width:0}
 .hotsearch-rows a:hover{background:var(--app-selection,var(--w-hover))}
 .hotsearch-rows a:focus-visible{outline:2px solid var(--app-blue,var(--w-accent));outline-offset:-2px}
-.hotsearch-rank{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--app-field,var(--w-control));color:var(--app-muted,var(--w-muted));font-size:16px;font-weight:650;flex:none;font-variant-numeric:tabular-nums}
+.hotsearch-rank{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--app-field,var(--w-control));color:var(--app-muted,var(--w-muted));font-size:13px;font-weight:650;flex:none;font-variant-numeric:tabular-nums}
 .hotsearch-rank.rank-1{background:#f52b43;color:#fff}.hotsearch-rank.rank-2{background:#ff7b12;color:#fff}.hotsearch-rank.rank-3{background:#e8a600;color:#fff}
-.hotsearch-title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px}
-.hotsearch-heat{flex:none;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:var(--app-muted,var(--w-muted));font-variant-numeric:tabular-nums}
-.hotsearch-board>footer{display:flex;justify-content:space-between;gap:12px;font-size:11px;padding:9px 18px;color:var(--app-muted);flex:none;border-top:1px solid var(--app-border)}
+.hotsearch-title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.hotsearch-heat{flex:none;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--app-muted,var(--w-muted));font-variant-numeric:tabular-nums}
+.hotsearch-board>footer{display:flex;justify-content:space-between;gap:12px;font-size:10px;padding:6px 14px;color:var(--app-muted);flex:none;border-top:1px solid var(--app-border)}
 .hotsearch-board>footer a{color:inherit;text-decoration:none;white-space:nowrap}.hotsearch-board>footer a:hover{color:var(--app-blue)}
-.hotsearch-app-footer{text-align:center;color:var(--app-muted);font-size:11px;flex:none;line-height:1.5;padding:6px 14px}
+.hotsearch-app-footer{text-align:center;color:var(--app-muted);font-size:10px;flex:none;line-height:1.5;padding:4px 12px}
 .hotsearch-layout.is-grid{grid-template-columns:minmax(0,1fr)}.hotsearch-layout.is-grid>.hotsearch-sidebar{display:none}
 .hotsearch-boards.is-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;height:auto;align-items:start;padding-bottom:5px}
 .hotsearch-boards.is-grid .hotsearch-board{height:430px}.hotsearch-board:has(.hotsearch-board-content[hidden]){height:auto}
@@ -1390,7 +1396,7 @@ html[data-theme=light] #dialog.widget-app-dialog {
 .hotsearch-main-empty>.icon{width:36px;height:36px;opacity:.6}.hotsearch-main-empty h3{color:var(--app-fg)}
 .hotsearch-error{display:flex;gap:12px;align-items:center;justify-content:space-between;color:#ed956e;background:#f0805010;padding:12px;border-radius:10px;margin:8px 0;font-size:13px}.hotsearch-error button{flex:none}
 html[data-theme=light] .hotsearch-error{color:#9b411e}
-.hotsearch-skeleton{padding:4px 6px}.hotsearch-skeleton>span{display:flex;align-items:center;gap:14px;height:44px}.hotsearch-skeleton i{font-style:normal;color:var(--app-muted);opacity:.5;width:26px;text-align:center}.hotsearch-skeleton b{height:12px;border-radius:4px;width:72%;background:var(--app-field)}.hotsearch-skeleton>span:nth-child(3n) b{width:48%}.hotsearch-skeleton>span:nth-child(2n) b{width:86%}
+.hotsearch-skeleton{padding:4px 6px}.hotsearch-skeleton>span{display:flex;align-items:center;gap:10px;height:34px}.hotsearch-skeleton i{font-style:normal;color:var(--app-muted);opacity:.5;width:22px;text-align:center}.hotsearch-skeleton b{height:12px;border-radius:4px;width:72%;background:var(--app-field)}.hotsearch-skeleton>span:nth-child(3n) b{width:48%}.hotsearch-skeleton>span:nth-child(2n) b{width:86%}
 .hotsearch-feedback{margin:0 14px 8px;padding:8px 12px;border-radius:10px;background:var(--app-field);font-size:13px;overflow-wrap:anywhere}
 .hotsearch-source-note{font-size:12px;color:var(--app-muted);margin:8px 5px;line-height:1.6}
 .hotsearch-manager-feedback{padding:10px;border-radius:9px;background:var(--app-field);font-size:13px;overflow-wrap:anywhere}
@@ -1407,7 +1413,7 @@ html[data-theme=light] .hotsearch-error{color:#9b411e}
 .w-hotsearch{--w-bg:#fffaf6;--w-heading:#c04e32;--w-fg:#493b36;--w-muted:#8c7166;--w-accent:#ef603c;--w-hover:#f5e9e0}
 html[data-theme=dark] .w-hotsearch{--w-bg:#292322;--w-heading:#ff9e7d;--w-fg:#f4e7df;--w-muted:#bea69a;--w-hover:#42322b;--w-control:#ffffff10}
 .hotsearch-card-header{display:flex;align-items:center;justify-content:space-between;flex:none;gap:6px}.hotsearch-card-header button{display:flex;align-items:center;gap:6px;background:transparent;border:0;padding:0;color:var(--w-heading);cursor:pointer;font:inherit}.hotsearch-card-header .icon{width:16px;height:16px}
-.hotsearch-card-tabs{display:flex;gap:4px;overflow:auto;scrollbar-width:none;margin:7px 0 4px;flex:none}.hotsearch-card-tabs button{border:0;background:transparent;color:var(--w-muted);border-radius:6px;padding:3px 6px;font:inherit;font-size:10px;white-space:nowrap;cursor:pointer}.hotsearch-card-tabs button[aria-pressed=true]{background:var(--w-hover);color:var(--w-heading);font-weight:600}
+.hotsearch-card-tabs{display:flex;gap:4px;overflow:auto;scrollbar-width:none;margin:7px 0 4px;flex:none}.hotsearch-card-tabs button{display:flex;align-items:center;gap:4px;flex:none;border:0;background:transparent;color:var(--w-muted);border-radius:6px;padding:3px 6px;font:inherit;font-size:10px;white-space:nowrap;cursor:pointer}.hotsearch-card-tabs button[aria-pressed=true]{background:var(--w-hover);color:var(--w-heading);font-weight:600}
 .hotsearch-card-picker{display:none;flex:none;width:100%;max-width:100%;min-width:0;height:26px;margin:7px 0 4px;padding:3px 6px;border:0;border-radius:6px;background:var(--w-hover);color:var(--w-fg);font:inherit;font-size:11px}
 .w-hotsearch[data-display-size="2x2"] .hotsearch-card-tabs{display:none}
 .w-hotsearch[data-display-size="2x2"] .hotsearch-card-picker{display:block}
@@ -1683,17 +1689,18 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
 #dialog.settings-dialog { width:min(var(--settings-width,880px),var(--dialog-width)); }
 #dialog.settings-drawer {
   position:fixed; inset:0 0 0 auto; margin:0;
-  width:var(--drawer-width,480px);
+  width:var(--drawer-width,560px);
   height:100dvh;
   max-height:100dvh;
   border-radius:22px 0 0 22px; border-right:0;
   animation:settings-enter .26s cubic-bezier(.2,.75,.2,1);
 }
-#dialog.settings-drawer .settings-layout { grid-template-columns:138px minmax(0,1fr); }
-#dialog.settings-drawer .settings-nav { padding:24px 8px; }
-#dialog.settings-drawer .settings-nav-button { gap:8px; padding:11px 8px; font-size:12px; }
+#dialog.settings-drawer .settings-layout { grid-template-columns:180px minmax(0,1fr); }
+#dialog.settings-drawer .settings-nav { padding:24px 10px 16px; gap:5px; }
+#dialog.settings-dialog .settings-nav-button { min-height:38px; gap:8px; padding:8px 12px; border:0; border-radius:8px; font-size:13px; line-height:1.5; }
+#dialog.settings-dialog .settings-nav-button span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
 #dialog.settings-drawer .settings-nav-button.active { position:relative; border-color:transparent; background:var(--nav-selection); }
-#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:11px; bottom:11px; width:3px; background:var(--accent); border-radius:4px; }
+#dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:16px; background:var(--accent); border-radius:3px; }
 #dialog.settings-drawer .settings-content { padding:52px 22px 28px; }
 #dialog.settings-drawer .workspace-title { font-size:25px; }
 #dialog.settings-drawer .two-columns { grid-template-columns:1fr; }
@@ -1702,8 +1709,8 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
 #dialog.settings-drawer .setting-row { flex-wrap:wrap; gap:10px; }
 #dialog.widget-app-expanded,#dialog.workspace-expanded { width:var(--dialog-width); height:var(--dialog-height); }
 #dialog.hotsearch-app-dialog:not(.widget-app-expanded) {
-  width:min(var(--hotsearch-width,1260px),var(--dialog-width));
-  height:min(var(--hotsearch-height,840px),var(--dialog-height));
+  width:min(var(--hotsearch-width,1000px),var(--dialog-width));
+  height:min(var(--hotsearch-height,660px),var(--dialog-height));
 }
 .workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
 .context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
@@ -1723,12 +1730,16 @@ html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 body.reduce-effects #dialog.settings-drawer { animation:none; }
 @media(prefers-reduced-motion:reduce) { #dialog.settings-drawer { animation:none; } }
 @container window (max-width:620px) {
-  .settings-layout,#dialog.settings-drawer .settings-layout { grid-template-columns:110px minmax(0,1fr); grid-template-rows:1fr; }
+  .settings-layout { grid-template-columns:150px minmax(0,1fr); grid-template-rows:1fr; }
   .settings-nav { display:flex; flex-direction:column; overflow-y:auto; padding:22px 6px; }
   .settings-content,#dialog.settings-drawer .settings-content { padding:50px 14px 22px; }
   .settings-nav-button { padding:10px 5px; gap:5px; font-size:11px; }
   .settings-nav-button .icon { display:none; }
   .two-columns { grid-template-columns:1fr; }
+}
+@container window (max-width:480px) {
+  #dialog.settings-drawer:not(.compact-dialog) .settings-layout { grid-template-columns:150px minmax(0,1fr); }
+  #dialog.settings-dialog .settings-nav-button { padding:8px 10px; font-size:12px; }
 }
 @container window (max-width:760px) {
   .calendar-detail { grid-template-columns:1fr; padding:10px; }
@@ -2670,6 +2681,7 @@ const englishMessages = {
   "布局": "Layout",
   "侧边栏": "Sidebar",
   "WebDAV 同步": "WebDAV sync",
+  "同步": "Sync",
   "备份与恢复": "Backup & restore",
   "关于栖页": "About Qiye",
   "语言 / Language": "Language",
@@ -4058,29 +4070,30 @@ const HOTSEARCH_CATEGORIES = [
 // Default API: https://uapis.cn/docs/api-reference/get-misc-hotboard
 // Custom services use DailyHotApi route names: https://github.com/imsyy/DailyHotApi
 // GitHub uses its public search API and is explicitly labelled as newly created repositories.
+// First-party favicons verified 2026-10-15; URLs only, no trademark artwork bundled.
 const HOTSEARCH_SOURCES = [
-  {id:'zhihu', name:'知乎', label:'热榜', categories:['general','community'], mark:'知', color:'#087cf5', url:'https://www.zhihu.com/hot'},
-  {id:'weibo', name:'微博', label:'热搜榜', categories:['general','entertainment'], mark:'微', color:'#e84136', url:'https://s.weibo.com/top/summary'},
-  {id:'52pojie', name:'吾爱破解', label:'热帖', categories:['tech','community'], mark:'吾', color:'#e72d52', url:'https://www.52pojie.cn/'},
-  {id:'github', name:'GitHub', label:'本周新星', categories:['tech'], mark:'GH', color:'#303744', url:'https://github.com/trending', github:true},
-  {id:'baidu', name:'百度', label:'热搜榜', categories:['general'], mark:'百', color:'#3462f5', url:'https://top.baidu.com/board?tab=realtime'},
-  {id:'toutiao', name:'今日头条', label:'热榜', categories:['general'], mark:'头', color:'#ed4148', url:'https://www.toutiao.com/'},
-  {id:'thepaper', name:'澎湃新闻', label:'热榜', categories:['general'], mark:'澎', color:'#246d8b', url:'https://www.thepaper.cn/'},
-  {id:'ithome', name:'IT之家', label:'热榜', categories:['tech'], mark:'IT', color:'#d93e42', url:'https://www.ithome.com/'},
-  {id:'sspai', name:'少数派', label:'热榜', categories:['tech'], mark:'少', color:'#d64136', url:'https://sspai.com/'},
-  {id:'juejin', name:'稀土掘金', label:'热榜', categories:['tech','community'], mark:'掘', color:'#2878ed', url:'https://juejin.cn/'},
-  {id:'github-ai', name:'GitHub AI', label:'本月 AI 新星', categories:['ai','tech'], mark:'AI', color:'#7656d6', url:'https://github.com/topics/artificial-intelligence', github:true},
-  {id:'bilibili', name:'哔哩哔哩', label:'热门榜', categories:['entertainment'], mark:'哔', color:'#e56491', url:'https://www.bilibili.com/v/popular/rank/all'},
-  {id:'douyin', name:'抖音', label:'热点榜', categories:['entertainment'], mark:'抖', color:'#272a37', url:'https://www.douyin.com/hot'},
-  {id:'douban-movie', name:'豆瓣电影', label:'新片榜', categories:['entertainment'], mark:'豆', color:'#31834b', url:'https://movie.douban.com/chart'},
-  {id:'tieba', name:'百度贴吧', label:'热议榜', categories:['community'], mark:'贴', color:'#3d70ef', url:'https://tieba.baidu.com/hottopic/browse/topicList'},
-  {id:'v2ex', name:'V2EX', label:'主题榜', categories:['community','tech'], mark:'V2', color:'#66717c', url:'https://www.v2ex.com/?tab=hot'},
-  {id:'hupu', name:'虎扑', label:'步行街热帖', categories:['community'], mark:'虎', color:'#cb3035', url:'https://bbs.hupu.com/all-gambia'},
-  {id:'ithome-xijiayi', name:'IT之家 · 喜加一', label:'游戏优惠', categories:['shopping'], mark:'喜', color:'#e17b30', url:'https://www.ithome.com/'},
-  {id:'36kr', name:'36氪', label:'热榜', categories:['finance','tech'], mark:'氪', color:'#2870bd', url:'https://36kr.com/'},
-  {id:'huxiu', name:'虎嗅', label:'24小时', categories:['finance'], mark:'虎', color:'#ea7d28', url:'https://www.huxiu.com/'},
-  {id:'zhihu-daily', name:'知乎日报', label:'推荐榜', categories:['daily'], mark:'知', color:'#0782bd', url:'https://daily.zhihu.com/'},
-  {id:'guokr', name:'果壳', label:'热门文章', categories:['daily','tech'], mark:'果', color:'#489b43', url:'https://www.guokr.com/'},
+  {id:'zhihu', name:'知乎', label:'热榜', categories:['general','community'], iconUrl:'https://static.zhihu.com/heifetz/favicon.ico', url:'https://www.zhihu.com/hot'},
+  {id:'weibo', name:'微博', label:'热搜榜', categories:['general','entertainment'], iconUrl:'https://s.weibo.com/favicon.ico', url:'https://s.weibo.com/top/summary'},
+  {id:'52pojie', name:'吾爱破解', label:'热帖', categories:['tech','community'], iconUrl:'https://www.52pojie.cn/favicon.ico', url:'https://www.52pojie.cn/'},
+  {id:'github', name:'GitHub', label:'本周新星', categories:['tech'], iconUrl:'https://github.githubassets.com/favicons/favicon.png', url:'https://github.com/trending', github:true},
+  {id:'baidu', name:'百度', label:'热搜榜', categories:['general'], iconUrl:'https://www.baidu.com/favicon.ico', url:'https://top.baidu.com/board?tab=realtime'},
+  {id:'toutiao', name:'今日头条', label:'热榜', categories:['general'], iconUrl:'https://www.toutiao.com/favicon.ico', url:'https://www.toutiao.com/'},
+  {id:'thepaper', name:'澎湃新闻', label:'热榜', categories:['general'], iconUrl:'https://www.thepaper.cn/favicon.ico', url:'https://www.thepaper.cn/'},
+  {id:'ithome', name:'IT之家', label:'热榜', categories:['tech'], iconUrl:'https://www.ithome.com/favicon.ico', url:'https://www.ithome.com/'},
+  {id:'sspai', name:'少数派', label:'热榜', categories:['tech'], iconUrl:'https://cdn-static.sspai.com/favicon/sspai.ico', url:'https://sspai.com/'},
+  {id:'juejin', name:'稀土掘金', label:'热榜', categories:['tech','community'], iconUrl:'https://juejin.cn/favicon.ico', url:'https://juejin.cn/'},
+  {id:'github-ai', name:'GitHub AI', label:'本月 AI 新星', categories:['ai','tech'], iconUrl:'https://github.githubassets.com/favicons/favicon.png', url:'https://github.com/topics/artificial-intelligence', github:true},
+  {id:'bilibili', name:'哔哩哔哩', label:'热门榜', categories:['entertainment'], iconUrl:'https://www.bilibili.com/favicon.ico', url:'https://www.bilibili.com/v/popular/rank/all'},
+  {id:'douyin', name:'抖音', label:'热点榜', categories:['entertainment'], iconUrl:'https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico', url:'https://www.douyin.com/hot'},
+  {id:'douban-movie', name:'豆瓣电影', label:'新片榜', categories:['entertainment'], iconUrl:'https://movie.douban.com/favicon.ico', url:'https://movie.douban.com/chart'},
+  {id:'tieba', name:'百度贴吧', label:'热议榜', categories:['community'], iconUrl:'https://tieba.baidu.com/favicon.ico', url:'https://tieba.baidu.com/hottopic/browse/topicList'},
+  {id:'v2ex', name:'V2EX', label:'主题榜', categories:['community','tech'], iconUrl:'https://www.v2ex.com/favicon.ico', url:'https://www.v2ex.com/?tab=hot'},
+  {id:'hupu', name:'虎扑', label:'步行街热帖', categories:['community'], iconUrl:'https://www.hupu.com/favicon.ico', url:'https://bbs.hupu.com/all-gambia'},
+  {id:'ithome-xijiayi', name:'IT之家 · 喜加一', label:'游戏优惠', categories:['shopping'], iconUrl:'https://www.ithome.com/favicon.ico', url:'https://www.ithome.com/'},
+  {id:'36kr', name:'36氪', label:'热榜', categories:['finance','tech'], iconUrl:'https://www.36kr.com/favicon.ico', url:'https://36kr.com/'},
+  {id:'huxiu', name:'虎嗅', label:'24小时', categories:['finance'], iconUrl:'https://www.huxiu.com/favicon.ico', url:'https://www.huxiu.com/'},
+  {id:'zhihu-daily', name:'知乎日报', label:'推荐榜', categories:['daily'], iconUrl:'https://daily.zhihu.com/favicon.ico', url:'https://daily.zhihu.com/'},
+  {id:'guokr', name:'果壳', label:'热门文章', categories:['daily','tech'], iconUrl:'https://www.guokr.com/favicon.ico', url:'https://www.guokr.com/'},
 ];
 
 const HOTSEARCH_DEFAULTS = {subscriptions:['zhihu','weibo','52pojie','github'], activeSource:'zhihu', layout:'list', enabled:false, apiBase:HOTSEARCH_API};
@@ -5255,6 +5268,1414 @@ function mountWidgetExtensions(container, host, registry = { get: getWidgetDefin
 
 return {mountWidgetExtensions};
 })();
+const __site_icon_catalog = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Public icon declarations verified on 2026-10-12; no logo bytes are bundled.
+// This small bootstrap index is not a substitute for per-site discovery.
+const SITE_ICON_CATALOG = Object.freeze({
+  "https://www.bing.com/": [
+    {
+      "url": "https://www.bing.com/sa/simg/favicon-trans-bg-blue-mg-png.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.baidu.com/": [
+    {
+      "url": "https://www.baidu.com/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://psstatic.cdn.bcebos.com/video/wiseindex/aa6eef91f8b5b1a33b454c401_1660835115000.png",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://duckduckgo.com/": [
+    {
+      "url": "https://duckduckgo.com/favicon.ico",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_60x60.png",
+      "width": 60,
+      "height": 60,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_76x76.png",
+      "width": 76,
+      "height": 76,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_120x120.png",
+      "width": 120,
+      "height": 120,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_152x152.png",
+      "width": 152,
+      "height": 152,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://github.com/": [
+    {
+      "url": "https://github.com/fluidicon.png",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://github.githubassets.com/favicons/favicon.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://github.githubassets.com/favicons/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    }
+  ],
+  "https://www.youtube.com/": [
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_32x32.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_48x48.png",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_96x96.png",
+      "width": 96,
+      "height": 96,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_144x144.png",
+      "width": 144,
+      "height": 144,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.notion.so/": [
+    {
+      "url": "https://www.notion.com/front-static/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.notion.com/front-static/logo-ios.png",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://www.notion.com/": [
+    {
+      "url": "https://www.notion.com/front-static/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://www.notion.com/front-static/logo-ios.png",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://developer.mozilla.org/": [
+    {
+      "url": "https://developer.mozilla.org/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/apple-touch-icon.png",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://developer.mozilla.org/en-US/": [
+    {
+      "url": "https://developer.mozilla.org/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    },
+    {
+      "url": "https://developer.mozilla.org/apple-touch-icon.png",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "kind": "apple"
+    }
+  ],
+  "https://excalidraw.com/": [
+    {
+      "url": "https://excalidraw.com/apple-touch-icon.png",
+      "width": 180,
+      "height": 180,
+      "scalable": false,
+      "kind": "apple"
+    },
+    {
+      "url": "https://excalidraw.com/favicon-32x32.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://excalidraw.com/favicon-16x16.png",
+      "width": 16,
+      "height": 16,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.figma.com/": [
+    {
+      "url": "https://static.figma.com/app/icon/2/icon-128.png",
+      "width": 128,
+      "height": 128,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/icon-192.png",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/icon-256.png",
+      "width": 256,
+      "height": 256,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/favicon.png",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/favicon.svg",
+      "width": 0,
+      "height": 0,
+      "scalable": true,
+      "kind": "html"
+    },
+    {
+      "url": "https://static.figma.com/app/icon/2/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "kind": "html"
+    }
+  ],
+  "https://www.google.com/": [
+    {
+      "url": "https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png",
+      "width": 128,
+      "height": 128,
+      "scalable": false,
+      "kind": "html"
+    }
+  ]
+});
+
+return {SITE_ICON_CATALOG};
+})();
+const __favicons = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { SITE_ICON_CATALOG } = __site_icon_catalog;
+/* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
+
+const FAVICON_CACHE_KEY = 'qiye.favicons.local.v2';
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+const FAILURE_TTL = 10 * 60 * 1000;
+const MAX_ENTRIES = 200;
+const MAX_CANDIDATES = 12;
+const HTML_LIMIT = 384 * 1024;
+const MANIFEST_LIMIT = 128 * 1024;
+const REQUEST_TIMEOUT = 8_000;
+const UPGRADE_TTL = 24 * 60 * 60 * 1000;
+const MAX_UPGRADE_CANDIDATES = 3;
+const MAX_TARGET_SIZE = 256;
+const cache = new Map();
+const pending = new Map();
+const WARNINGS = Object.freeze({
+  unsafe: '此网址不支持在线图标提取；请使用公开网站的 HTTPS 地址。',
+  permission: '尚未允许读取此站点，已使用站点图标地址回退。',
+  network: '无法读取站点图标声明；网页版可能受网站 CORS 限制，已使用站点图标地址回退。',
+  timeout: '图标提取超时，已使用站点图标地址回退。',
+  redirect: '站点跳转无法安全读取；可将网址改成跳转后的 HTTPS 地址再试。',
+  large: '站点返回的内容过大，已使用站点图标地址回退。',
+  content: '站点未返回可读取的网页或图标清单，已使用站点图标地址回退。',
+  missing: '网页未声明可用图标，已使用站点图标地址回退。',
+});
+
+function extensionRuntime() {
+  const runtime = globalThis.chrome?.runtime;
+  return runtime?.id && typeof runtime.getURL === 'function' ? runtime : null;
+}
+
+/* URL() canonicalizes alternate IPv4 spellings before this check. Reject local
+ * hostnames and IP literals, including public IPs, to keep extraction on ordinary
+ * public HTTPS domains. DNS resolution remains subject to the browser's policy. */
+function publicHost(hostname) {
+  const host = hostname.toLowerCase().replace(/\.$/, '');
+  return host.includes('.') && !host.includes(':') && !/^\d+(?:\.\d+){3}$/.test(host)
+    && !/(?:^|\.)(?:localhost|local|internal|lan|home|localdomain|intranet|onion)$/.test(host);
+}
+
+function safeImageUrl(value, base) {
+  if (typeof value !== 'string' || !value.trim() || value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+  try {
+    const url = new URL(value.trim(), base);
+    if (url.protocol !== 'https:' || url.username || url.password || url.port || !publicHost(url.hostname)) return null;
+    url.hash = '';
+    return url.href;
+  } catch { return null; }
+}
+
+function sitePageUrl(value) {
+  if (typeof value !== 'string' || value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol === 'http:' && !url.port) url.protocol = 'https:';
+    const safe = safeImageUrl(url.href);
+    if (!safe) return null;
+    const result = new URL(safe);
+    result.search = '';
+    result.hash = '';
+    return result.href;
+  } catch { return null; }
+}
+
+function originKey(pageUrl){return new URL(pageUrl).origin+'/';}
+
+function unique(values) { return [...new Set(values.filter(Boolean))].slice(0, MAX_CANDIDATES); }
+
+function requestedSize({ targetSize = 64, pixelRatio = 1 } = {}) {
+  const cssSize = Number.isFinite(targetSize) && targetSize > 0 ? Math.min(targetSize, MAX_TARGET_SIZE) : 64;
+  const ratio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? Math.min(pixelRatio, 4) : 1;
+  return Math.min(MAX_TARGET_SIZE, Math.max(16, Math.ceil(cssSize * ratio)));
+}
+
+function browserFavicon(pageUrl, options) {
+  try {
+    const runtime = extensionRuntime();
+    if (!runtime) return null;
+    const url = new URL(runtime.getURL('/_favicon/'));
+    if (url.protocol !== 'chrome-extension:' || url.hostname !== runtime.id) return null;
+    url.searchParams.set('pageUrl', pageUrl);
+    // Request enough physical pixels for this surface; Chrome may still return
+    // a smaller cached source, which the caller measures after image load.
+    const required = requestedSize(options);
+    url.searchParams.set('size', String([16, 32, 64, 128, 256].find(size => size >= required)));
+    return url.href;
+  } catch { return null; }
+}
+
+function currentEntry(pageUrl) {
+  const entry = cache.get(pageUrl);
+  if (entry && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > Date.now()) return entry;
+  if (entry) cache.delete(pageUrl);
+  return null;
+}
+
+function dimension(value) { return Number.isInteger(value) && value > 0 && value <= 8192 ? value : 0; }
+
+function iconQuality(detail = {}, options = {}) {
+  const requiredSize = requestedSize(options);
+  const suppliedWidth = dimension(options.width), suppliedHeight = dimension(options.height);
+  const observed = detail.measuredAt + CACHE_TTL > Date.now() && detail.actualWidth && detail.actualHeight;
+  const measured = !!(suppliedWidth && suppliedHeight || observed);
+  const width = suppliedWidth && suppliedHeight ? suppliedWidth : observed ? detail.actualWidth : detail.width || 0;
+  const height = suppliedWidth && suppliedHeight ? suppliedHeight : observed ? detail.actualHeight : detail.height || 0;
+  const size = Math.min(width || 0, height || 0);
+  const scalable = detail.scalable === true;
+  const shapePenalty = width && height ? Math.abs(width - height) / Math.max(width, height) * 100 : 0;
+  const adequate = scalable || size >= requiredSize;
+  // Prefer a vector or the smallest sufficient bitmap over a needlessly large
+  // image. Unknown sources can be tried ahead of a measured undersized bitmap.
+  let score = scalable ? 1300 : size >= requiredSize ? 1000 - Math.min(100, Math.log2(size / requiredSize) * 25)
+    : size ? 300 + size / requiredSize * 180 : 550;
+  score += detail.kind === 'html' ? 20 : detail.kind === 'apple' ? 10 : 0;
+  score -= shapePenalty + (detail.maskable ? 60 : 0);
+  return { size, requiredSize, scalable, adequate, score, measured };
+}
+
+function detailFor(entry, url) {
+  const detail = entry?.details?.find(item => item.url === url);
+  if (detail) return detail;
+  for(const icons of Object.values(SITE_ICON_CATALOG)){const known=icons.find(icon=>icon.url===url);if(known)return known;}
+  let scalable = false;
+  try { scalable = /\.svg$/i.test(new URL(url).pathname); } catch { /* No inferred metadata. */ }
+  return { url, scalable, kind: /\/apple-touch-icon\.png(?:\?|$)/i.test(url) ? 'apple' : 'fallback' };
+}
+
+/** The caller supplies naturalWidth/naturalHeight after load. Declared sizes
+ * help choose candidates; observed dimensions take precedence for bitmaps. */
+function getFaviconQuality(siteUrl, iconUrl, options = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  return iconQuality(detailFor(pageUrl ? currentEntry(pageUrl) : null, iconUrl), options);
+}
+
+/** Synchronous only: no page fetches and no permission prompts during render.
+ * SVG/touch icons and useful declarations precede a small conventional ICO. */
+function getFaviconCandidates(siteUrl, options = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  if (!pageUrl) return [];
+  const entry = currentEntry(pageUrl);
+  const origin = new URL(pageUrl).origin;
+  const audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
+  const known = [...(entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : []),...audited.map(icon=>icon.url)];
+  const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
+  const qualityOptions = { targetSize: options.targetSize, pixelRatio: options.pixelRatio };
+  const conventional = [`${origin}/favicon.svg`, `${origin}/apple-touch-icon.png`, `${origin}/favicon.ico`, browserFavicon(pageUrl, options)].filter(Boolean);
+  const extracted = unique([preferred, ...known]);
+  const sorted = extracted.map((url, order) => ({ url, order, ...iconQuality(detailFor(entry, url), qualityOptions) }))
+    .sort((a, b) => b.score - a.score || a.order - b.order).map(item => item.url);
+  const declared = sorted.filter(url => !conventional.includes(url));
+  // Known declarations come first, then conventional paths. A known tiny ICO
+  // cannot hide a discovered SVG or a touch icon with sufficient resolution.
+  const preferredQuality = preferred ? iconQuality(detailFor(entry, preferred), qualityOptions) : null;
+  const coolingDown = entry?.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= requestedSize(options);
+  let keepPreferred = false;
+  if (preferred && (preferredQuality.adequate || !preferredQuality.measured || coolingDown)) {
+    const best = declared.find(url => iconQuality(detailFor(entry, url), qualityOptions).score > preferredQuality.score);
+    keepPreferred = !best || !preferredQuality.measured || (coolingDown && !iconQuality(detailFor(entry,best),qualityOptions).adequate);
+  }
+  const first = keepPreferred ? [preferred, ...declared.filter(url => url !== preferred)] : declared;
+  const last = conventional.filter(url => !keepPreferred || url !== preferred);
+  return unique([...first.slice(0, MAX_CANDIDATES - last.length), ...last]);
+}
+
+/** Claim one bounded background quality upgrade. Keep the current image visible
+ * while trying these candidates. A day-long, size-aware cooldown avoids probing
+ * the same low-resolution-only site on every render; explicit extraction resets
+ * it. This function returns URLs only and never performs any network request. */
+function takeFaviconUpgradeCandidates(siteUrl, iconUrl, options = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  const entry = pageUrl && currentEntry(pageUrl);
+  if (!entry) return [];
+  const current = getFaviconQuality(pageUrl, iconUrl, options);
+  if (current.adequate) return [];
+  if (!options.force && entry.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= current.requiredSize) return [];
+  const candidates = getFaviconCandidates(pageUrl, options);
+  entry.upgradeAt = Date.now();
+  entry.upgradeSize = current.requiredSize;
+  cache.set(pageUrl, entry);
+  persistCache();
+  const attempted = new Set(Array.isArray(options.attempted) ? options.attempted.slice(0, MAX_CANDIDATES) : []);
+  attempted.add(iconUrl);
+  return candidates.filter(url => {
+    if (attempted.has(url)) return false;
+    const quality = getFaviconQuality(pageUrl, url, { targetSize: options.targetSize, pixelRatio: options.pixelRatio });
+    return !quality.measured || quality.score > current.score;
+  }).slice(0, MAX_UPGRADE_CANDIDATES);
+}
+
+function trimCache() {
+  const ordered = [...cache].sort((a, b) => Math.max(b[1].checkedAt, b[1].loadedAt) - Math.max(a[1].checkedAt, a[1].loadedAt));
+  cache.clear();
+  for (const [key, entry] of ordered.slice(0, MAX_ENTRIES)) {
+    if (Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > Date.now()) cache.set(key, entry);
+  }
+}
+
+async function readCache() {
+  try {
+    let raw;
+    if (extensionRuntime() && globalThis.chrome?.storage?.local) raw = (await globalThis.chrome.storage.local.get(FAVICON_CACHE_KEY))?.[FAVICON_CACHE_KEY];
+    else {
+      const json = globalThis.localStorage?.getItem(FAVICON_CACHE_KEY);
+      if (typeof json === 'string' && json.length <= 1024 * 1024) raw = JSON.parse(json);
+    }
+    if (!raw || raw.version !== 2 || !Array.isArray(raw.entries)) return;
+    const now = Date.now();
+    for (const item of raw.entries.slice(0, MAX_ENTRIES)) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      const pageUrl = sitePageUrl(item.pageUrl);
+      if (!pageUrl || pageUrl !== item.pageUrl) continue;
+      const time = value => Number.isFinite(value) && value >= 0 && value <= now ? value : 0;
+      const entry = {
+        preferred: safeImageUrl(item.preferred) || '',
+        candidates: unique(Array.isArray(item.candidates) ? item.candidates.slice(0, MAX_CANDIDATES).map(url => safeImageUrl(url)) : []),
+        checkedAt: time(item.checkedAt), loadedAt: time(item.loadedAt),
+        failedUntil: Number.isFinite(item.failedUntil) && item.failedUntil >= 0 && item.failedUntil <= now + FAILURE_TTL ? item.failedUntil : 0,
+        errorCode: Object.hasOwn(WARNINGS, item.errorCode) ? item.errorCode : '',
+        source: ['html', 'manifest', 'fallback'].includes(item.source) ? item.source : 'fallback',
+        details: [], upgradeAt: time(item.upgradeAt),
+        upgradeSize: Number.isInteger(item.upgradeSize) && item.upgradeSize >= 16 && item.upgradeSize <= MAX_TARGET_SIZE ? item.upgradeSize : 0,
+      };
+      if (Array.isArray(item.details)) {
+        for (const detail of item.details.slice(0, MAX_CANDIDATES)) {
+          if (!detail || typeof detail !== 'object' || Array.isArray(detail)) continue;
+          const url = safeImageUrl(detail.url);
+          if (!url || entry.details.some(known => known.url === url)) continue;
+          const measuredAt = time(detail.measuredAt);
+          const actualWidth = dimension(detail.actualWidth), actualHeight = dimension(detail.actualHeight);
+          entry.details.push({
+            url, width: dimension(detail.width), height: dimension(detail.height),
+            scalable: detail.scalable === true,
+            kind: ['html', 'apple', 'manifest'].includes(detail.kind) ? detail.kind : 'fallback',
+            maskable: detail.maskable === true,
+            actualWidth, actualHeight, measuredAt: actualWidth && actualHeight ? measuredAt : 0,
+          });
+        }
+      }
+      if (!cache.has(pageUrl) && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > now) cache.set(pageUrl, entry);
+    }
+    trimCache();
+  } catch { /* Private browsing or storage quotas must not prevent local fallback. */ }
+}
+
+const faviconCacheReady = readCache();
+let writeQueued = false;
+let writes = Promise.resolve();
+
+function persistCache() {
+  if (writeQueued) return;
+  writeQueued = true;
+  queueMicrotask(() => {
+    writeQueued = false;
+    writes = writes.catch(() => {}).then(async () => {
+      await faviconCacheReady;
+      trimCache();
+      const value = { version: 2, entries: [...cache].map(([pageUrl, entry]) => ({ pageUrl, ...entry })) };
+      try {
+        if (extensionRuntime() && globalThis.chrome?.storage?.local) await globalThis.chrome.storage.local.set({ [FAVICON_CACHE_KEY]: value });
+        else globalThis.localStorage?.setItem(FAVICON_CACHE_KEY, JSON.stringify(value));
+      } catch { /* Best-effort cache; desktop data is stored separately. */ }
+    });
+  });
+}
+
+/** Call only after an <img> load succeeds. Internal Chrome URLs never persist. */
+function rememberFavicon(siteUrl, iconUrl, { width = 0, height = 0 } = {}) {
+  const pageUrl = sitePageUrl(siteUrl);
+  const safe = safeImageUrl(iconUrl);
+  if (!pageUrl || !safe) return false;
+  const entry = currentEntry(pageUrl) || { candidates: [], details: [], preferred: '', checkedAt: 0, loadedAt: 0, failedUntil: 0, errorCode: '', source: 'fallback', upgradeAt: 0, upgradeSize: 0 };
+  const actualWidth = dimension(width), actualHeight = dimension(height);
+  const existing = detailFor(entry, safe);
+  const sameDimensions = !actualWidth || !actualHeight || actualWidth === (existing.actualWidth || 0) && actualHeight === (existing.actualHeight || 0);
+  if (entry.preferred === safe && sameDimensions && entry.loadedAt + CACHE_TTL / 2 > Date.now()) return true;
+  const detail = {
+    ...existing,
+    ...(actualWidth && actualHeight ? { actualWidth, actualHeight, measuredAt: Date.now() } : {}),
+  };
+  entry.details = [detail, ...(entry.details || []).filter(item => item.url !== safe)].slice(0, MAX_CANDIDATES);
+  const previous = iconQuality(detailFor(entry, entry.preferred));
+  const next = iconQuality(detail);
+  // Remember every successful measurement, but a later small fallback must not
+  // displace a sharper working source. Calls without dimensions remain compatible.
+  if (!entry.preferred || entry.preferred === safe || !actualWidth || !actualHeight || !previous.measured && !previous.scalable || next.score > previous.score) entry.preferred = safe;
+  entry.loadedAt = Date.now();
+  cache.set(pageUrl, entry);
+  persistCache();
+  return true;
+}
+
+function decodeAttribute(value) {
+  const named = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', colon: ':', sol: '/', Tab: '\t', NewLine: '\n' };
+  return value.replace(/&(#x[\da-f]+|#\d+|amp|quot|apos|lt|gt|colon|sol|Tab|NewLine);/gi, (entity, key) => {
+    if (key[0] !== '#') return named[key] ?? named[key.toLowerCase()] ?? entity;
+    const code = key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1));
+    return code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff) ? String.fromCodePoint(code) : '\uFFFD';
+  });
+}
+
+/* A bounded metadata tokenizer, not a DOM: fetched markup is never inserted,
+ * executed, or handed to DOMParser (which can load embedded resources). */
+function metadataTags(html) {
+  const tags = [];
+  const lower = html.toLowerCase();
+  let index = 0;
+  let templateDepth = 0;
+  while (index < html.length && tags.length < 128) {
+    const start = html.indexOf('<', index);
+    if (start < 0) break;
+    if (html.startsWith('<!--', start)) {
+      const end = html.indexOf('-->', start + 4);
+      index = end < 0 ? html.length : end + 3;
+      continue;
+    }
+    const match = /^<\s*(\/?)\s*([a-z][a-z\d:-]*)/i.exec(html.slice(start, start + 100));
+    if (!match) { index = start + 1; continue; }
+    const tag = match[2].toLowerCase();
+    const closing = Boolean(match[1]);
+    let cursor = start + match[0].length;
+    const attrs = Object.create(null);
+    while (cursor < html.length) {
+      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
+      if (html[cursor] === '>' || html[cursor] === '/' && html[cursor + 1] === '>') break;
+      const nameStart = cursor;
+      while (cursor < html.length && !/[\s=/>]/.test(html[cursor])) cursor++;
+      const name = html.slice(nameStart, cursor).toLowerCase();
+      if (!name) { cursor++; continue; }
+      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
+      let value = '';
+      if (html[cursor] === '=') {
+        cursor++;
+        while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
+        const quote = html[cursor] === '"' || html[cursor] === "'" ? html[cursor++] : null;
+        const valueStart = cursor;
+        if (quote) while (cursor < html.length && html[cursor] !== quote) cursor++;
+        else while (cursor < html.length && !/[\s>]/.test(html[cursor])) cursor++;
+        value = html.slice(valueStart, cursor);
+        if (quote && html[cursor] === quote) cursor++;
+      }
+      if (!Object.hasOwn(attrs, name)) attrs[name] = decodeAttribute(value);
+    }
+    const end = html.indexOf('>', cursor);
+    index = end < 0 ? html.length : end + 1;
+    if (!templateDepth && (tag === 'body' || closing && tag === 'head')) break;
+    if (tag === 'template') { templateDepth = Math.max(0, templateDepth + (closing ? -1 : 1)); continue; }
+    if (!closing && /^(?:script|style|title|textarea|xmp|iframe|noembed|noframes|noscript)$/.test(tag)) {
+      const endTag = new RegExp(`</${tag}(?=[\\s/>])`, 'g');
+      endTag.lastIndex = index;
+      const rawEnd = endTag.exec(lower);
+      index = rawEnd ? rawEnd.index : html.length;
+      continue;
+    }
+    if (!templateDepth && !closing && (tag === 'link' || tag === 'base')) tags.push({ tag, attrs });
+  }
+  return tags;
+}
+
+function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, order, options) {
+  const mime = String(type).toLowerCase().split(';')[0].trim();
+  if (mime && !/^image\/(?:png|jpeg|gif|webp|avif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/.test(mime)) return null;
+  const purposes = String(purpose).toLowerCase().split(/\s+/);
+  if (purposes.includes('monochrome') && !purposes.includes('any') && !purposes.includes('maskable')) return null;
+  const scalable = mime === 'image/svg+xml' || /\.svg$/i.test(new URL(url).pathname);
+  const detail = { url, width: 0, height: 0, scalable, kind, maskable: purposes.includes('maskable') && !purposes.includes('any') };
+  let bestScore = -Infinity;
+  for (const token of String(sizes).slice(0, 250).split(/\s+/)) {
+    const dimensions = /^(\d{1,4})x(\d{1,4})$/i.exec(token);
+    if (!dimensions) continue;
+    const width = Number(dimensions[1]), height = Number(dimensions[2]);
+    if (!width || !height || width > 8192 || height > 8192) continue;
+    const { score } = iconQuality({ ...detail, width, height }, options);
+    if (score > bestScore) { bestScore = score; detail.width = width; detail.height = height; }
+  }
+  const { score, adequate } = iconQuality(detail, options);
+  return { ...detail, score, adequate, source: kind === 'manifest' ? 'manifest' : 'html', order };
+}
+
+function parseHtmlIcons(html, pageUrl, options) {
+  const tags = metadataTags(html);
+  const firstBase = tags.find(tag => tag.tag === 'base' && Object.hasOwn(tag.attrs, 'href'));
+  const base = firstBase ? safeImageUrl(firstBase.attrs.href, pageUrl) || pageUrl : pageUrl;
+  let manifest = null;
+  const icons = [];
+  for (const { tag, attrs } of tags) {
+    if (tag !== 'link' || typeof attrs.href !== 'string' || !attrs.href.trim()) continue;
+    const rel = String(attrs.rel || '').toLowerCase().split(/\s+/);
+    const url = safeImageUrl(attrs.href, base);
+    if (!url) continue;
+    const kind = rel.includes('icon') || rel.includes('fluid-icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
+    if (kind) {
+      const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length, options);
+      if (icon) icons.push(icon);
+    }
+    if (!manifest && rel.includes('manifest') && new URL(url).origin === new URL(pageUrl).origin) manifest = sitePageUrl(url);
+  }
+  return { icons, manifest };
+}
+
+function parseManifestIcons(text, manifestUrl, offset, options) {
+  let value;
+  try { value = JSON.parse(text); } catch { throw new Error('content'); }
+  if (!value || typeof value !== 'object' || !Array.isArray(value.icons)) return [];
+  return value.icons.slice(0, 64).flatMap((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+    const url = safeImageUrl(item.src, manifestUrl);
+    if (!url) return [];
+    const icon = rankIcon({ url, sizes: item.sizes, type: item.type, purpose: item.purpose, kind: 'manifest' }, offset + index, options);
+    return icon ? [icon] : [];
+  });
+}
+
+async function boundedText(response, limit, headOnly=false) {
+  const headEnd=text=>{const match=/<\/head\s*>|<body(?:\s|>)/i.exec(text);return match?match.index+match[0].length:0;};
+  if ((!headOnly || !response.body?.getReader) && Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
+  if (!response.body?.getReader) {
+    let text = await response.text();
+    if(headOnly&&headEnd(text))text=text.slice(0,headEnd(text));
+    if (new TextEncoder().encode(text).byteLength > limit) throw new Error('large');
+    return text;
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let length = 0, text = '';
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      text += decoder.decode(value, { stream: true });
+      if(headOnly){const end=headEnd(text);if(end&&new TextEncoder().encode(text.slice(0,end)).length<=limit){await reader.cancel().catch(()=>{});return text.slice(0,end);}}
+      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
+    }
+    return text + decoder.decode();
+  } finally { reader.releaseLock(); }
+}
+
+async function fetchMetadata(url, kind, signal) {
+  const origin = new URL(url).origin;
+  const seen = new Set();
+  for (let redirects = 0; redirects <= 2; redirects++) {
+    if (seen.has(url)) throw new Error('redirect');
+    seen.add(url);
+    const response = await globalThis.fetch(url, {
+      method: 'GET', signal, credentials: 'omit', referrerPolicy: 'no-referrer',
+      redirect: 'manual', mode: 'cors', cache: 'no-store',
+      headers: { Accept: kind === 'html' ? 'text/html,application/xhtml+xml;q=0.9' : 'application/manifest+json,application/json;q=0.9' },
+    });
+    if (response.type === 'opaqueredirect') throw new Error('redirect');
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers?.get?.('location');
+      const safe = typeof location === 'string' ? safeImageUrl(location, url) : null;
+      const next = safe && sitePageUrl(safe);
+      if (!next || new URL(next).origin !== origin || redirects === 2) throw new Error('redirect');
+      url = next;
+      continue;
+    }
+    if (response.url && (!safeImageUrl(response.url) || new URL(response.url).origin !== origin)) throw new Error('redirect');
+    if (!response.ok) throw new Error('network');
+    const mime = (response.headers?.get?.('content-type') || '').toLowerCase().split(';')[0].trim();
+    if (mime && !(kind === 'html' ? ['text/html', 'application/xhtml+xml'].includes(mime) : /^(?:application\/(?:manifest\+json|json)|text\/json)$/.test(mime))) throw new Error('content');
+    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT, kind === 'html'), url };
+  }
+  throw new Error('redirect');
+}
+
+function resultFor(pageUrl, source, errorCode = '', options) {
+  const candidates = pageUrl ? getFaviconCandidates(pageUrl, options) : [];
+  return { url: candidates[0] || null, candidates, variants: pageUrl ? getFaviconVariants(pageUrl, options) : [], source, ...(errorCode ? { warning: t(WARNINGS[errorCode] || WARNINGS.network) } : {}) };
+}
+
+/** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
+ * synchronously, before cache initialization or any asynchronous work. Web pages
+ * can read only sites that opt into CORS; no proxy bypass is attempted. */
+function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1, allCandidates = false } = {}) {
+  const options = { targetSize, pixelRatio, allCandidates };
+  const pageUrl = sitePageUrl(siteUrl);
+  if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe', options));
+  const requestKey = pageUrl + (allCandidates ? '#all' : '#best');
+  if (pending.has(requestKey)) return pending.get(requestKey);
+  const runtime = extensionRuntime();
+  const origins = [`${new URL(pageUrl).origin}/*`];
+  let permission;
+  if (runtime && requestPermission) {
+    try { permission = Promise.resolve(globalThis.chrome?.permissions?.request?.({ origins })).catch(() => false); }
+    catch { permission = Promise.resolve(false); }
+  }
+  const job = (async () => {
+    await faviconCacheReady;
+    if (runtime) {
+      let granted = false;
+      try { granted = permission ? await permission : await globalThis.chrome?.permissions?.contains?.({ origins }); }
+      catch { /* A revoked or unavailable permission is an ordinary fallback. */ }
+      if (granted !== true) return resultFor(pageUrl, 'fallback', 'permission', options);
+    }
+    const previous = currentEntry(pageUrl);
+    if (!force && previous) {
+      if (previous.failedUntil > Date.now()) return resultFor(pageUrl, 'fallback', previous.errorCode || 'network', options);
+      if (previous.checkedAt + CACHE_TTL > Date.now() && previous.candidates.length) return resultFor(pageUrl, 'cache', '', options);
+    }
+    const controller = new AbortController();
+    let timer;
+    const deadline = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('timeout')); }, REQUEST_TIMEOUT); });
+    try {
+      const operation = (async () => {
+        const html = await fetchMetadata(pageUrl, 'html', controller.signal);
+        const metadata = parseHtmlIcons(html.text, html.url, options);
+        const measuredIcon = icon => {
+          const observed = previous?.details?.find(detail => detail.url === icon.url && detail.measuredAt);
+          const detail = observed ? { ...icon, actualWidth: observed.actualWidth, actualHeight: observed.actualHeight, measuredAt: observed.measuredAt } : icon;
+          const { score, adequate } = iconQuality(detail, options);
+          return { ...detail, score, adequate };
+        };
+        let icons = metadata.icons.map(measuredIcon);
+        let manifestError = '';
+        if (metadata.manifest && (allCandidates || !icons.some(icon => icon.adequate))) {
+          try {
+            const manifest = await fetchMetadata(metadata.manifest, 'manifest', controller.signal);
+            icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length, options).map(measuredIcon)];
+          } catch (error) { manifestError = Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network'; }
+        }
+        if (!icons.length) throw new Error(manifestError || 'missing');
+        icons.sort((a, b) => b.score - a.score || a.order - b.order);
+        return icons;
+      })();
+      const icons = await Promise.race([operation, deadline]);
+      const candidates = unique(icons.map(icon => icon.url));
+      const details = [];
+      for (const icon of [...icons, ...(previous?.details || [])]) {
+        if (details.some(detail => detail.url === icon.url) || details.length >= MAX_CANDIDATES) continue;
+        const { score: _score, adequate: _adequate, order: _order, source: _source, ...detail } = icon;
+        details.push(detail);
+      }
+      cache.set(pageUrl, { preferred: previous?.preferred || '', candidates, details, checkedAt: Date.now(), loadedAt: previous?.loadedAt || 0, failedUntil: 0, errorCode: '', source: icons[0].source, upgradeAt: 0, upgradeSize: 0 });
+      persistCache();
+      return resultFor(pageUrl, icons[0].source, '', options);
+    } catch (error) {
+      const code = controller.signal.aborted ? 'timeout' : Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network';
+      const entry = currentEntry(pageUrl) || { preferred: '', candidates: [], loadedAt: 0, source: 'fallback' };
+      cache.set(pageUrl, { ...entry, checkedAt: entry.checkedAt || Date.now(), failedUntil: Date.now() + FAILURE_TTL, errorCode: code });
+      persistCache();
+      return resultFor(pageUrl, 'fallback', code, options);
+    } finally {
+      clearTimeout(timer);
+      controller.abort(); // Also stop unread bodies rejected by their headers.
+    }
+  })();
+  pending.set(requestKey, job);
+  job.finally(() => { if (pending.get(requestKey) === job) pending.delete(requestKey); });
+  return job;
+}
+
+/** Safe diagnostic data for UI; no network and no credentials. */
+function describeFavicon(siteUrl,iconUrl,options={}){
+ const pageUrl=sitePageUrl(siteUrl),entry=pageUrl?currentEntry(pageUrl):null;
+ const quality=getFaviconQuality(siteUrl,iconUrl,options);
+ return {source:entry?.source||'site',url:iconUrl,quality,warning:entry?.errorCode?WARNINGS[entry.errorCode]:''};
+}
+
+/** All distinct source assets for the picker. Do not substitute a third-party
+ * favicon aggregation service; fallback paths are labelled as guesses until
+ * the browser has successfully decoded them. Each asset is an inert image. */
+function getFaviconVariants(siteUrl, options={}) {
+ const pageUrl=sitePageUrl(siteUrl);if(!pageUrl)return [];
+ const entry=currentEntry(pageUrl), audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
+ const declared=entry?.checkedAt + CACHE_TTL > Date.now()?entry.candidates:[];
+ return getFaviconCandidates(pageUrl,options).filter(url=>safeImageUrl(url)).map(url=>{
+  const detail=detailFor(entry,url), known=audited.some(v=>v.url===url);
+  return {url,kind:detail.kind||'fallback',scalable:!!detail.scalable,
+   width:detail.actualWidth||detail.width||0,height:detail.actualHeight||detail.height||0,
+   source:declared.includes(url)?t("网站声明"):known?t("已核对站点资源"):t("常规路径")};
+ });
+}
+
+return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon, describeFavicon, getFaviconVariants};
+})();
+const __avatar = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+/** Local avatar decoding and storage boundary. No network requests are used. */
+const MAX_AVATAR_BYTES = 256 * 1024;
+const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
+const AVATAR_SIZE = 256;
+
+const AVATAR_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const MAX_AVATAR_PIXELS = 40 * 1024 * 1024;
+
+function avatarError(message = t("头像仅支持有效的 PNG、JPEG 或 WebP 图片")) { throw new Error(message); }
+function avatarTag(bytes, offset) { return String.fromCharCode(...bytes.subarray(offset, offset + 4)); }
+function avatarDimensions(width, height) {
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) avatarError();
+  if (width > 16384 || height > 16384 || width * height > MAX_AVATAR_PIXELS) avatarError(t("头像图片分辨率过大，请先缩小图片"));
+  return { width, height };
+}
+
+// Check container signatures before image decoding. Imported data URLs must also
+// be static; uploaded PNG/WebP animations are flattened by the canvas below.
+function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let dimensions = null;
+  if (mime === 'image/png') {
+    if (bytes.length < 45 || bytes[0] !== 0x89 || avatarTag(bytes, 1) !== 'PNG\r' ||
+      bytes[5] !== 10 || bytes[6] !== 26 || bytes[7] !== 10) avatarError();
+    let offset = 8, imageData = false, ended = false;
+    while (offset + 12 <= bytes.length) {
+      const size = view.getUint32(offset);
+      if (size > bytes.length - offset - 12) avatarError();
+      const type = avatarTag(bytes, offset + 4);
+      if (offset === 8 && (type !== 'IHDR' || size !== 13)) avatarError();
+      if (type === 'IHDR') {
+        if (offset !== 8 || size !== 13) avatarError();
+        dimensions = avatarDimensions(view.getUint32(offset + 8), view.getUint32(offset + 12));
+      }
+      if (type === 'acTL' && !allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
+      if (type === 'IDAT' && size > 0) imageData = true;
+      offset += size + 12;
+      if (type === 'IEND') {
+        if (size !== 0 || offset !== bytes.length) avatarError();
+        ended = true;
+        break;
+      }
+    }
+    if (!ended || !imageData || !dimensions) avatarError();
+  } else if (mime === 'image/jpeg') {
+    if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8 ||
+      bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) avatarError();
+    let offset = 2;
+    const frames = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+    while (offset + 1 < bytes.length) {
+      if (bytes[offset++] !== 0xff) avatarError();
+      while (bytes[offset] === 0xff) offset += 1;
+      const marker = bytes[offset++];
+      if (marker === 0xd9) break;
+      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > bytes.length) avatarError();
+      const size = view.getUint16(offset);
+      if (size < 2 || size > bytes.length - offset) avatarError();
+      if (frames.has(marker)) {
+        if (size < 8) avatarError();
+        dimensions = avatarDimensions(view.getUint16(offset + 5), view.getUint16(offset + 3));
+      }
+      if (marker === 0xda) break; // Pixel data is checked by the browser decoder.
+      offset += size;
+    }
+    if (!dimensions) avatarError();
+  } else if (mime === 'image/webp') {
+    if (bytes.length < 26 || avatarTag(bytes, 0) !== 'RIFF' || avatarTag(bytes, 8) !== 'WEBP' ||
+      view.getUint32(4, true) !== bytes.length - 8) avatarError();
+    let offset = 12, hasFrame = false;
+    while (offset + 8 <= bytes.length) {
+      const type = avatarTag(bytes, offset);
+      const size = view.getUint32(offset + 4, true);
+      const data = offset + 8;
+      if (size > bytes.length - data) avatarError();
+      if (type === 'VP8X') {
+        if (size < 10) avatarError();
+        if ((bytes[data] & 0x02) && !allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
+        const width = 1 + bytes[data + 4] + (bytes[data + 5] << 8) + (bytes[data + 6] << 16);
+        const height = 1 + bytes[data + 7] + (bytes[data + 8] << 8) + (bytes[data + 9] << 16);
+        dimensions = avatarDimensions(width, height);
+      }
+      if (type === 'ANIM' || type === 'ANMF') {
+        if (!allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
+        if (type === 'ANMF') hasFrame = true;
+      }
+      if (type === 'VP8L') {
+        if (size < 5 || bytes[data] !== 0x2f) avatarError();
+        const width = 1 + bytes[data + 1] + ((bytes[data + 2] & 0x3f) << 8);
+        const height = 1 + (bytes[data + 2] >> 6) + (bytes[data + 3] << 2) + ((bytes[data + 4] & 0x0f) << 10);
+        dimensions ||= avatarDimensions(width, height);
+        hasFrame = true;
+      }
+      if (type === 'VP8 ') {
+        if (size < 10 || bytes[data + 3] !== 0x9d || bytes[data + 4] !== 1 || bytes[data + 5] !== 0x2a) avatarError();
+        dimensions ||= avatarDimensions(view.getUint16(data + 6, true) & 0x3fff, view.getUint16(data + 8, true) & 0x3fff);
+        hasFrame = true;
+      }
+      offset = data + size + (size % 2);
+    }
+    if (offset !== bytes.length || !hasFrame || !dimensions) avatarError();
+  } else avatarError();
+  return dimensions;
+}
+
+/** A strict, bounded data URL boundary shared by imports, storage and uploads. */
+function validateAvatarDataUrl(value) {
+  if (typeof value !== 'string' || !value.startsWith('data:')) avatarError(t("头像仅支持本地 PNG、JPEG 或 WebP 的 data URL"));
+  // Reject large strings before allocating decoded bytes.
+  if (value.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) avatarError(t("头像不能超过 256 KiB"));
+  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  if (!match || match[2].length % 4 !== 0) avatarError(t("头像仅支持 PNG、JPEG 或 WebP 的 base64 数据"));
+  const size = match[2].length / 4 * 3 - (match[2].endsWith('==') ? 2 : match[2].endsWith('=') ? 1 : 0);
+  if (size > MAX_AVATAR_BYTES) avatarError(t("头像不能超过 256 KiB"));
+  let binary;
+  try { binary = atob(match[2]); } catch { avatarError(t("头像的 base64 数据无效")); }
+  if (btoa(binary) !== match[2]) avatarError(t("头像的 base64 数据无效"));
+  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  inspectAvatarBytes(bytes, match[1]);
+  return value;
+}
+
+async function decodeLocalAvatar(file) {
+  if (typeof globalThis.createImageBitmap === 'function') {
+    const image = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
+    return { image, width: image.width, height: image.height, release: () => image.close() };
+  }
+  if (!globalThis.Image || !globalThis.URL?.createObjectURL) avatarError(t("当前浏览器无法读取本地图片"));
+  const objectUrl = globalThis.URL.createObjectURL(file);
+  const image = new globalThis.Image();
+  try {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error(t("头像读取超时，请选择另一张图片"))), 15000);
+      image.onload = () => { clearTimeout(timeout); resolve(); };
+      image.onerror = () => { clearTimeout(timeout); reject(new Error(t("头像图片无法解码，请选择另一张图片"))); };
+      image.src = objectUrl;
+    });
+    return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => { image.src = ''; } };
+  } finally {
+    image.onload = image.onerror = null;
+    globalThis.URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function createAvatarCanvas(size) {
+  if (!globalThis.document?.createElement) avatarError(t("当前浏览器无法处理本地图片"));
+  const canvas = globalThis.document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  return canvas;
+}
+
+/**
+ * Flatten a local PNG/JPEG/WebP into a centered 256 px square. Dependencies may
+ * be supplied by non-browser callers; output still passes the storage boundary.
+ */
+async function normalizeAvatarFile(file, { decodeImage = decodeLocalAvatar, createCanvas = createAvatarCanvas } = {}) {
+  if (!(file instanceof Blob) || !AVATAR_TYPES.has(file.type)) avatarError(t("请选择 PNG、JPEG 或 WebP 图片作为头像"));
+  if (!file.size) avatarError(t("头像文件为空"));
+  if (file.size > MAX_AVATAR_FILE_BYTES) avatarError(t("上传的头像文件不能超过 4 MiB"));
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  inspectAvatarBytes(bytes, file.type, true);
+  let decoded;
+  try {
+    try { decoded = await decodeImage(file); }
+    catch { avatarError(t("头像图片无法解码，请选择另一张图片")); }
+    if (!decoded?.image) avatarError(t("头像图片无法解码，请选择另一张图片"));
+    const { width, height } = avatarDimensions(decoded.width, decoded.height);
+    const canvas = createCanvas(AVATAR_SIZE);
+    const context = canvas?.getContext?.('2d', { alpha: true });
+    if (!context || typeof canvas.toDataURL !== 'function') avatarError(t("当前浏览器无法处理本地图片"));
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    const side = Math.min(width, height);
+    context.drawImage(decoded.image, (width - side) / 2, (height - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+    // Browsers that cannot encode WebP return PNG automatically.
+    let result = canvas.toDataURL('image/webp', 0.9);
+    if (result.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) result = canvas.toDataURL('image/webp', 0.75);
+    return validateAvatarDataUrl(result);
+  } finally {
+    try { decoded?.release?.(); } catch { /* Decoding resources must not mask the result. */ }
+  }
+}
+
+return {MAX_AVATAR_BYTES, MAX_AVATAR_FILE_BYTES, AVATAR_SIZE, validateAvatarDataUrl, normalizeAvatarFile};
+})();
+const __icon_selection = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { validateAvatarDataUrl } = __avatar;
+
+/** Persist an explicitly chosen native asset, never a proxy URL or executable
+ * markup. Local uploads are re-encoded through the existing static image boundary.
+ * This field is independent of the best-image cache so later renders cannot
+ * silently replace a user's choice. */
+function normalizeIconSelection(value) {
+ if (value === undefined || value === null || value === '') return null;
+ if (typeof value !== 'string') return null;
+ if (value.startsWith('data:')) {
+  try { return validateAvatarDataUrl(value); } catch { return null; }
+ }
+ if (value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+ try {
+  const u = new URL(value);
+  if (u.protocol !== 'https:' || u.username || u.password || u.port) return null;
+  const host=u.hostname.toLowerCase();
+  if (!host.includes('.') || !/^[a-z0-9.-]+$/.test(host) || /^\d+(?:\.\d+){3}$/.test(host)
+      || /(?:^|\.)(?:localhost|local|internal|lan|home|localdomain|intranet|onion)$/.test(host)) return null;
+  u.hash='';return u.href;
+ } catch { return null; }
+}
+
+function iconSelectionLabel(url, width=0, height=0) {
+ if (url?.startsWith('data:')) return t("本机上传");
+ try { if (/\.svg$/i.test(new URL(url).pathname)) return t("SVG · 矢量"); } catch { /* Invalid URLs are not displayed. */ }
+ return width > 0 && height > 0 ? `${width} × ${height}` : t("等待图片");
+}
+
+return {normalizeIconSelection, iconSelectionLabel};
+})();
+const __icon_artwork = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Recover the best REAL ICO frame; never pretend an upscaled 16px source is HD.
+const LIMIT=1024*1024,TTL=7*86400000,KEY='qiye.icon-artwork.v1';
+const memory=new Map(),pending=new Map(),failed=new Map();
+function allowed(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&u.hostname.includes('.')&&!/^\d+(?:\.\d+){3}$/.test(u.hostname)&&!/(?:^|\.)(?:localhost|local|internal|lan|home|onion)$/.test(u.hostname);}catch{return false;}}
+/** ICO frame selection is checked before a browser decoder sees any bytes. */
+function selectIcoFrame(value,requested=128){
+ const bytes=value instanceof Uint8Array?value:new Uint8Array(value);
+ if(bytes.length<22||bytes.length>LIMIT)return null;
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ if(view.getUint16(0,true)!==0||view.getUint16(2,true)!==1)return null;
+ const count=view.getUint16(4,true);if(!count||count>64||6+count*16>bytes.length)return null;
+ const frames=[];
+ for(let i=0;i<count;i++){
+  const at=6+i*16,w=bytes[at]||256,h=bytes[at+1]||256,size=view.getUint32(at+8,true),offset=view.getUint32(at+12,true);
+  if(offset<6+count*16||size<8||offset+size>bytes.length)continue;
+  const extent=Math.min(w,h),sufficient=extent>=requested;
+  frames.push({at,width:w,height:h,size,offset,score:(sufficient?1000-Math.abs(extent-requested):extent)-Math.abs(w-h)*2});
+ }
+ if(!frames.length)return null;
+ const f=frames.sort((a,b)=>b.score-a.score)[0],raw=bytes.slice(f.offset,f.offset+f.size);
+ const isPng=raw[0]===137&&raw[1]===80&&raw[2]===78&&raw[3]===71;
+ if(isPng)return {...f,mime:'image/png',bytes:raw};
+ const ico=new Uint8Array(22+raw.length);ico.set([0,0,1,0,1,0]);ico.set(bytes.slice(f.at,f.at+16),6);
+ new DataView(ico.buffer).setUint32(18,22,true);ico.set(raw,22);
+ return {...f,mime:'image/x-icon',bytes:ico};
+}
+function validData(v){return typeof v==='string'&&v.length<=180000&&/^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(v);}
+try{
+ const raw=globalThis.localStorage?.getItem(KEY);
+ if(raw&&raw.length<2400000)for(const row of JSON.parse(raw).slice(0,16))if(allowed(row.url)&&validData(row.dataUrl)&&row.time<=Date.now()&&row.time+TTL>Date.now()&&row.width>0&&row.width<=256&&row.height>0&&row.height<=256)memory.set(row.url,row);
+}catch{/* Storage is only a cache. */}
+function store(row){
+ memory.delete(row.url);memory.set(row.url,row);
+ while(memory.size>16)memory.delete(memory.keys().next().value);
+ let encoded=JSON.stringify([...memory.values()]);
+ while(encoded.length>2400000&&memory.size>1){memory.delete(memory.keys().next().value);encoded=JSON.stringify([...memory.values()]);}
+ try{globalThis.localStorage?.setItem(KEY,encoded);}catch{/* A failed cache write never touches desktop data. */}
+}
+/** One bounded, coalesced attempt, only for ICOs and only after a low-res load.
+ * CORS/host permission denial retains the visible icon; it never uses a proxy. */
+function recoverIcoArtwork(url,{requiredSize=128,fetchImpl=globalThis.fetch}={}){
+ if(!allowed(url)||!/(?:\.ico)(?:\?|$)/i.test(url))return Promise.resolve(null);
+ if(memory.get(url)?.time+TTL>Date.now())return Promise.resolve(memory.get(url));
+ if(failed.get(url)>Date.now())return Promise.resolve(null);
+ if(pending.has(url))return pending.get(url);
+ const work=(async()=>{
+  const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),3500);
+  let objectUrl='';
+  try{
+   const r=await fetchImpl(url,{signal:abort.signal,mode:'cors',credentials:'omit',referrerPolicy:'no-referrer',redirect:'error'});
+   if(!r.ok||Number(r.headers?.get?.('content-length'))>LIMIT)return null;
+   const chunks=[];let total=0;
+   if(r.body?.getReader){const reader=r.body.getReader();try{for(;;){const {done,value}=await reader.read();if(done)break;total+=value.byteLength;if(total>LIMIT){await reader.cancel();return null;}chunks.push(value);}}finally{reader.releaseLock();}}
+   else {const value=new Uint8Array(await r.arrayBuffer());if(value.byteLength>LIMIT)return null;chunks.push(value);total=value.byteLength;}
+   const bytes=new Uint8Array(total);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}
+   const frame=selectIcoFrame(bytes,Math.min(256,requiredSize));if(!frame)return null;
+   if(abort.signal.aborted)return null;
+   const im=new Image();objectUrl=URL.createObjectURL(new Blob([frame.bytes],{type:frame.mime}));
+   await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=reject;abort.signal.addEventListener('abort',reject,{once:true});im.src=objectUrl;});
+   if(!im.naturalWidth||im.naturalWidth>256||im.naturalHeight>256)return null;
+   const canvas=document.createElement('canvas');canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;
+   const context=canvas.getContext('2d');if(!context)return null;context.drawImage(im,0,0);
+   const dataUrl=canvas.toDataURL('image/png');if(!validData(dataUrl))return null;
+   const row={url,dataUrl,width:canvas.width,height:canvas.height,time:Date.now()};store(row);return row;
+  }catch{return null;}
+  finally{clearTimeout(timer);if(objectUrl)URL.revokeObjectURL(objectUrl);failed.set(url,Date.now()+86400000);while(failed.size>200)failed.delete(failed.keys().next().value);pending.delete(url);}
+ })();pending.set(url,work);return work;
+}
+
+return {selectIcoFrame, recoverIcoArtwork};
+})();
+const __favicon_view = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates, discoverFavicon } = __favicons;
+
+const { normalizeIconSelection } = __icon_selection;
+
+const { recoverIcoArtwork } = __icon_artwork;
+
+// Metadata requests have their own two-slot queue; page HTML is never fetched
+// from every render, and no permission prompt is opened automatically.
+const metadataQueue=[];let metadataActive=0;
+function queueMetadata(current,job){return new Promise(resolve=>{metadataQueue.push({current,job,resolve});pumpMetadata();});}
+function pumpMetadata(){while(metadataActive<2&&metadataQueue.length){const work=metadataQueue.shift();if(!work.current()){work.resolve(null);continue;}metadataActive++;Promise.resolve().then(work.job).catch(()=>null).then(result=>work.resolve(result)).finally(()=>{metadataActive--;pumpMetadata();});}}
+
+const faviconImageBindings = new WeakMap();
+const faviconImageFailures = new Map();
+const faviconImageWork = new Set();
+const faviconImageQueue = [];
+const FAVICON_IMAGE_TIMEOUT = 8_000;
+const FAVICON_IMAGE_FAILURE_TTL = 5 * 60 * 1000;
+const MAX_FAVICON_IMAGE_REQUESTS = 4;
+let activeFaviconImageRequests = 0;
+
+function pumpFaviconImageQueue() {
+  while (activeFaviconImageRequests < MAX_FAVICON_IMAGE_REQUESTS && faviconImageQueue.length) {
+    const job = faviconImageQueue.shift();
+    if (!job.binding.current()) { job.binding.cancel(); continue; }
+    activeFaviconImageRequests++;
+    let released = false;
+    job.start(() => {
+      if (released) return;
+      released = true;
+      activeFaviconImageRequests--;
+      pumpFaviconImageQueue();
+    });
+  }
+}
+
+function faviconTargetSize(visual, image, options) {
+  if (Number.isFinite(options.targetSize) && options.targetSize > 0) return Math.min(256, options.targetSize);
+  if (visual.closest?.('.engine-mark')) return 24;
+  const bounds = visual.getBoundingClientRect?.() || {};
+  const imageBounds = image.getBoundingClientRect?.() || {};
+  let style;
+  try { style = globalThis.getComputedStyle?.(image); } catch { /* Detached test or transient DOM. */ }
+  const pixels = (value, available) => {
+    if (typeof value !== 'string' || !value.trim() || /^(?:auto|none|normal)$/.test(value)) return 0;
+    const number = parseFloat(value);
+    if (!Number.isFinite(number) || number <= 0) return 0;
+    return value.endsWith('%') ? available > 0 ? available * number / 100 : 0 : number;
+  };
+  const constrained = (axis, limit, available, rendered) => {
+    const size = pixels(style?.[axis], available) || rendered || 0;
+    const maximum = pixels(style?.[limit], available);
+    return maximum ? Math.min(size || maximum, maximum) : size;
+  };
+  const width = constrained('width', 'maxWidth', bounds.width, imageBounds.width);
+  const height = constrained('height', 'maxHeight', bounds.height, imageBounds.height);
+  return Math.min(256, Math.max(16, Math.ceil(Math.max(width, height) || 64)));
+}
+
+function markFaviconImageFailure(url) {
+  faviconImageFailures.set(url, Date.now() + FAVICON_IMAGE_FAILURE_TTL);
+  if (faviconImageFailures.size > 500) faviconImageFailures.delete(faviconImageFailures.keys().next().value);
+}
+
+/** Hydrate inert favicon markup. Image requests share a four-slot queue, and
+ * quality upgrades use a separate image so a usable icon never flashes away. */
+function bindFaviconImages(root = document, options = {}) {
+  // Switching groups can detach a whole grid while its requests are queued.
+  // Release those slots immediately instead of waiting for their timeouts.
+  for (const binding of [...faviconImageWork]) if (!binding.current()) binding.cancel();
+  for (const visual of root.querySelectorAll('.site-visual[data-favicon-site]')) {
+    const previous = faviconImageBindings.get(visual);
+    if (previous && !options.force) continue;
+    previous?.cancel();
+    let image = visual.querySelector('.site-favicon');
+    const siteUrl = visual.dataset.faviconSite;
+    if (!image || !siteUrl) continue;
+    const sizeOptions = {
+      targetSize: faviconTargetSize(visual, image, options),
+      pixelRatio: Number.isFinite(options.pixelRatio) && options.pixelRatio > 0 ? options.pixelRatio : globalThis.devicePixelRatio || 1,
+    };
+    const selected = normalizeIconSelection(visual.dataset.faviconSelected);
+    const provided = selected ? [selected] : Array.isArray(options.candidates) ? options.candidates : getFaviconCandidates(siteUrl, sizeOptions);
+    const candidates = [...new Set(provided)].filter(url => typeof url === 'string' && url).slice(0, 12);
+    const tried = new Set();
+    let candidateIndex = 0, upgradeIndex = 0, upgrades = null, stopped = false, requestTicket = 0;
+    let best = null, enhanced=false;
+    const autoDiscover=options.autoDiscover ?? (globalThis.document?.documentElement?.dataset?.iconDiscovery==='auto');
+    if (previous?.siteUrl === siteUrl && !image.hidden && image.naturalWidth && image.naturalHeight) {
+      const url = image.currentSrc || image.src;
+      best = { url, width: image.naturalWidth, height: image.naturalHeight, quality: getFaviconQuality(siteUrl, url, { ...sizeOptions, width: image.naturalWidth, height: image.naturalHeight }) };
+    }
+    const binding = {
+      siteUrl,
+      current: () => !stopped && visual.isConnected && faviconImageBindings.get(visual) === binding,
+      abort: null,
+      cancel: () => {
+        if (stopped) return;
+        stopped = true;
+        requestTicket++;
+        for (let index = faviconImageQueue.length - 1; index >= 0; index--) if (faviconImageQueue[index].binding === binding) faviconImageQueue.splice(index, 1);
+        binding.abort?.();
+        faviconImageWork.delete(binding);
+      },
+    };
+    faviconImageBindings.set(visual, binding);
+    faviconImageWork.add(binding);
+    const complete = () => {
+      faviconImageWork.delete(binding);
+      if (!best) { image.hidden = true; image.removeAttribute('src'); visual.classList.remove('is-loaded'); visual.dataset.iconQuality='missing'; }
+      report();
+    };
+    const report=()=>{
+      if(!binding.current())return;
+      const information=best?{siteUrl,url:best.sourceUrl||best.url,width:best.width,height:best.height,requiredSize:best.quality.requiredSize,scalable:best.quality.scalable,adequate:best.quality.adequate}:{siteUrl,url:null,adequate:false};
+      visual.dataset.iconQuality=best?(best.quality.adequate?'sharp':'low'):'missing';
+      visual.dataset.iconWidth=String(best?.width||0);visual.dataset.iconHeight=String(best?.height||0);
+      visual.dataset.iconSource=information.url||'';
+      try{options.onStatus?.(information);}catch{/* Observer callbacks cannot interrupt loading. */}
+    };
+    const enhance=async()=>{
+      if(enhanced||selected||!autoDiscover||!binding.current()){complete();return;}
+      enhanced=true;
+      try{
+        const result=await queueMetadata(binding.current,async()=>{
+          const recovered=best&&!best.quality.adequate?await recoverIcoArtwork(best.sourceUrl||best.url,{requiredSize:best.quality.requiredSize}):null;
+          const metadata=(!recovered||Math.min(recovered.width,recovered.height)<sizeOptions.targetSize*sizeOptions.pixelRatio)?await discoverFavicon(siteUrl,{...sizeOptions,requestPermission:false}):null;
+          return {recovered,metadata};
+        });
+        if(!binding.current()){binding.cancel();return;}
+        const choices=[];
+        if(result?.recovered&&(!best||Math.min(result.recovered.width,result.recovered.height)>Math.min(best.width,best.height)))choices.push({url:result.recovered.dataUrl,sourceUrl:result.recovered.url});
+        for(const url of result?.metadata?.candidates||[])if(!tried.has(url))choices.push({url});
+        let index=0;
+        const next=()=>{
+          if(!binding.current()){binding.cancel();return;}
+          if(best?.quality.adequate||index>=Math.min(3,choices.length)){complete();return;}
+          const choice=choices[index++];load(choice.url,!!best,next,choice.sourceUrl);
+        };
+        next();
+      }catch{complete();}
+    };
+    const nextUsable = (values, start) => {
+      for (let index = start; index < values.length; index++) {
+        const url = values[index];
+        if (tried.has(url) || !options.force && (faviconImageFailures.get(url) || 0) > Date.now()) continue;
+        return { url, index: index + 1 };
+      }
+      return null;
+    };
+    const load = (url, background, done, sourceUrl=null) => {
+      const job = { binding, start: release => {
+        const ticket = ++requestTicket;
+        let target;
+        try { target = background ? new globalThis.Image() : image; }
+        catch { release(); complete(); return; }
+        let settled = false, timer = null;
+        const active = () => !settled && ticket === requestTicket && binding.current();
+        const cleanup = abort => {
+          if (settled) return false;
+          settled = true;
+          clearTimeout(timer);
+          target.onload = null;
+          target.onerror = null;
+          if (abort) target.removeAttribute('src');
+          binding.abort = null;
+          release();
+          return true;
+        };
+        binding.abort = () => cleanup(true);
+        const failed = () => {
+          if (!active()) { if (!binding.current()) binding.cancel(); else cleanup(true); return; }
+          markFaviconImageFailure(url);
+          cleanup(true);
+          done(false);
+        };
+        target.onload = () => {
+          if (!active()) { if (!binding.current()) binding.cancel(); else cleanup(true); return; }
+          const width = target.naturalWidth, height = target.naturalHeight;
+          if (!width || !height) { failed(); return; }
+          const quality = getFaviconQuality(siteUrl, sourceUrl||url, { ...sizeOptions, width, height });
+          cleanup(false);
+          faviconImageFailures.delete(url);
+          try { Promise.resolve(selected ? undefined : rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
+          catch { /* Cache quotas do not hide a successfully loaded image. */ }
+          if (!best || quality.score > best.quality.score) {
+            if (background) {
+              // Reuse the already loaded image instead of assigning its URL a
+              // second time; this also keeps the concurrency bound meaningful.
+              target.className = image.className || 'site-favicon';
+              target.alt = '';
+              target.draggable = false;
+              image.replaceWith(target);
+              image = target;
+            }
+            best = { url, sourceUrl, width, height, quality };
+            image.hidden = false;
+            visual.classList.add('is-loaded');
+          }
+          report();
+          done(true);
+        };
+        target.onerror = failed;
+        timer = setTimeout(failed, FAVICON_IMAGE_TIMEOUT);
+        target.referrerPolicy = 'no-referrer';
+        target.decoding = 'async';
+        target.draggable = false;
+        if (!background) { target.hidden = true; visual.classList.remove('is-loaded'); }
+        tried.add(url);
+        try { target.src = url; } catch { failed(); }
+      } };
+      // Already validated local artwork needs no network slot. A blocked remote
+      // site must not hold up an upload or a captured browser-cache image.
+      if (url.startsWith('data:')) {
+        if (binding.current()) job.start(() => {}); else binding.cancel();
+      } else {
+        faviconImageQueue.push(job);
+        pumpFaviconImageQueue();
+      }
+    };
+    const advanceUpgrade = () => {
+      if (!binding.current()) { binding.cancel(); return; }
+      if (selected || best?.quality.adequate) { complete(); return; }
+      if (!upgrades) {
+        upgrades = takeFaviconUpgradeCandidates(siteUrl, best.url, {
+          ...sizeOptions, width: best.width, height: best.height, attempted: [...tried], force: !!options.force,
+        }).slice(0, 3);
+      }
+      const next = nextUsable(upgrades, upgradeIndex);
+      if (!next) { enhance(); return; }
+      upgradeIndex = next.index;
+      load(next.url, true, advanceUpgrade);
+    };
+    const advanceInitial = () => {
+      if (!binding.current()) { binding.cancel(); return; }
+      const next = nextUsable(candidates, candidateIndex);
+      if (!next) { enhance(); return; }
+      candidateIndex = next.index;
+      load(next.url, !!best, loaded => loaded ? advanceUpgrade() : advanceInitial());
+    };
+    advanceInitial();
+  }
+}
+
+return {bindFaviconImages};
+})();
 const __hotsearch_data = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, formatNumber } = __i18n;
@@ -5370,13 +6791,15 @@ const __hotsearch_view = (() => {
 const { t, formatDate } = __i18n;
 const { escapeText: esc } = __html;
 const { icon } = __icons;
+const { bindFaviconImages } = __favicon_view;
 const { windowControls } = __widget_app_controls;
 const { HOTSEARCH_CATEGORIES, hotsearchSource, filterHotsearchSources } = __hotsearch_sources;
 const { hotsearchClient, hotsearchHeat, HOTSEARCH_TTL } = __hotsearch_data;
 
 function hotsearchLogo(source) {
-  return `<span class="hotsearch-logo" style="--source-color:${source.color}" aria-hidden="true">${esc(source.mark)}</span>`;
+  return `<span class="hotsearch-logo site-visual" data-favicon-site="${esc(source.url)}" data-favicon-selected="${esc(source.iconUrl)}" aria-hidden="true"><span class="site-fallback">${icon('globe')}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
+function bindHotsearchLogos(root) { bindFaviconImages(root,{autoDiscover:false,targetSize:24}); }
 const linkAttrs = state => `${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer"`;
 function hotsearchRows(data, source, state, limit = 100) {
   return `<ol class="hotsearch-rows">${data.items.slice(0,limit).map(row => `<li>${row.url?`<a href="${esc(row.url)}"${linkAttrs(state)} title="${esc(row.title)}">`:`<span class="hotsearch-unlinked" title="${esc(row.title+' · '+t('平台未提供原文链接'))}">`}<span class="hotsearch-rank rank-${Math.min(row.rank,4)}">${row.rank}</span><span class="hotsearch-title">${esc(row.title)}</span><span class="hotsearch-heat">${source.github && row.heat ? '★ ' : ''}${esc(hotsearchHeat(row.heat))}</span>${row.url?'</a>':'</span>'}</li>`).join('')}</ol>`;
@@ -5436,17 +6859,17 @@ function hotsearchCard(item, state) {
     : status.data?.items.length ? hotsearchRows(status.data,source,state,5)
     : `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t(status.status==='error'?'榜单暂不可用':status.data?'这个榜单暂时没有内容。':status.status==='loading'||item.config.enabled?'正在加载榜单…':'点击查看实时榜单')}</strong><span>${t('打开热搜榜')}</span></button>`;
   const picker = sources.length ? `<select class="hotsearch-card-picker" data-hot-card-select aria-label="${t('榜单平台')}">${sources.map(entry=>`<option value="${entry.id}" ${entry.id===source.id?'selected':''}>${esc(t(entry.name))}</option>`).join('')}</select>` : '';
-  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${esc(t(entry.name))}</button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
+  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${hotsearchLogo(entry)}<span>${esc(t(entry.name))}</span></button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
 }
 
 function refreshHotsearchCards(container, state) {
   for (const root of container.querySelectorAll('[data-widget=hotsearch]:not([data-compact])')) {
     const item=state.items.find(item=>item.id===root.dataset.widgetId);
-    if (item) root.innerHTML=hotsearchCard(item,state);
+    if (item) { root.innerHTML=hotsearchCard(item,state); bindHotsearchLogos(root); }
   }
 }
 
-return {hotsearchLogo, hotsearchRows, hotsearchBoard, hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchWorkspace, hotsearchCard, refreshHotsearchCards};
+return {hotsearchLogo, bindHotsearchLogos, hotsearchRows, hotsearchBoard, hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchWorkspace, hotsearchCard, refreshHotsearchCards};
 })();
 const __hotsearch_workspace = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -5455,7 +6878,7 @@ const { icon } = __icons;
 const { requestPublicOrigin } = __public_json;
 const { hotsearchApiBase, hotsearchSource, filterHotsearchSources, moveHotsearchSubscription } = __hotsearch_sources;
 const { hotsearchClient } = __hotsearch_data;
-const { hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchCard } = __hotsearch_view;
+const { hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchCard, bindHotsearchLogos } = __hotsearch_view;
 
 function bindHotsearchWorkspace(root, initial, host) {
   const events = new AbortController(), options = {signal:events.signal};
@@ -5474,6 +6897,7 @@ function bindHotsearchWorkspace(root, initial, host) {
     const main = find('.hotsearch-main'), scroll = main.scrollTop;
     const positions = new Map([...main.querySelectorAll('[data-hot-board]')].map(board => [board.dataset.hotBoard, board.querySelector('.hotsearch-board-content').scrollTop]));
     main.innerHTML=hotsearchMain(current(),host.getState(),view);
+    bindHotsearchLogos(main);
     main.scrollTop=scroll;
     for (const board of main.querySelectorAll('[data-hot-board]')) board.querySelector('.hotsearch-board-content').scrollTop=positions.get(board.dataset.hotBoard) || 0;
   }
@@ -5483,6 +6907,7 @@ function bindHotsearchWorkspace(root, initial, host) {
     const form = panel.querySelector('#hotsearch-settings');
     const draft = form && {apiBase:form.elements.apiBase.value, enabled:form.elements.enabled.checked, open:panel.querySelector('details').open};
     panel.innerHTML=hotsearchManager(current(),view);
+    bindHotsearchLogos(panel);
     panel.scrollTop=scroll;
     if (draft) { panel.querySelector('details').open=draft.open; panel.querySelector('[name=apiBase]').value=draft.apiBase; panel.querySelector('[name=enabled]').checked=draft.enabled; }
     if (queryFocused) panel.querySelector('[data-hot-manage-query]').focus();
@@ -5491,6 +6916,7 @@ function bindHotsearchWorkspace(root, initial, host) {
     if (!alive()) return;
     selectVisible();
     find('.hotsearch-sidebar').innerHTML=hotsearchSidebar(current(),view);
+    bindHotsearchLogos(find('.hotsearch-sidebar'));
     find('.hotsearch-layout').classList.toggle('is-grid',current().config.layout==='grid');
     for (const button of root.querySelectorAll('[data-hot-category]')) button.setAttribute('aria-pressed',String(button.dataset.hotCategory===view.category));
     const grid=current().config.layout==='grid', layout=find('[data-hot-action=layout]');
@@ -5652,7 +7078,7 @@ function bindHotsearchCards(container,host) {
   const roots=()=>container.querySelectorAll('[data-widget=hotsearch]:not([data-compact])');
   const current=root=>host.getState().items.find(item=>item.id===root.dataset.widgetId);
   const alive=root=>!controller.signal.aborted && root.isConnected && !!current(root);
-  function render(root) { if(alive(root))root.innerHTML=hotsearchCard(current(root),host.getState()); }
+  function render(root) { if(alive(root)){root.innerHTML=hotsearchCard(current(root),host.getState());bindHotsearchLogos(root);} }
   async function load(root,manual=false) {
     if(!alive(root))return;
     const item=current(root);if(!item.config.enabled&&!manual||!item.config.subscriptions.length)return;
@@ -15412,10 +16838,10 @@ function windowMetrics(percent, width, height) {
   return { width: availableWidth, height: availableHeight,
     windowWidth: Math.min(980 * ratio, availableWidth),
     windowHeight: Math.min(640 * ratio, availableHeight),
-    hotsearchWidth: Math.min(1260 * ratio, availableWidth),
-    hotsearchHeight: Math.min(840 * ratio, availableHeight),
+    hotsearchWidth: Math.min(1000 * ratio, availableWidth),
+    hotsearchHeight: Math.min(660 * ratio, availableHeight),
     settingsWidth: Math.min(880 * ratio, availableWidth),
-    drawerWidth: Math.min(480 * ratio, width),
+    drawerWidth: Math.min(560 * ratio, width),
     formWidth: Math.min(640 * ratio, availableWidth),
     catalogWidth: Math.min(1060 * ratio, availableWidth) };
 }
@@ -15431,228 +16857,6 @@ function applyWindowSize(dialog, percent, viewport = globalThis) {
 }
 
 return {WINDOW_SIZES, windowMetrics, applyWindowSize};
-})();
-const __avatar = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-/** Local avatar decoding and storage boundary. No network requests are used. */
-const MAX_AVATAR_BYTES = 256 * 1024;
-const MAX_AVATAR_FILE_BYTES = 4 * 1024 * 1024;
-const AVATAR_SIZE = 256;
-
-const AVATAR_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
-const MAX_AVATAR_PIXELS = 40 * 1024 * 1024;
-
-function avatarError(message = t("头像仅支持有效的 PNG、JPEG 或 WebP 图片")) { throw new Error(message); }
-function avatarTag(bytes, offset) { return String.fromCharCode(...bytes.subarray(offset, offset + 4)); }
-function avatarDimensions(width, height) {
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) avatarError();
-  if (width > 16384 || height > 16384 || width * height > MAX_AVATAR_PIXELS) avatarError(t("头像图片分辨率过大，请先缩小图片"));
-  return { width, height };
-}
-
-// Check container signatures before image decoding. Imported data URLs must also
-// be static; uploaded PNG/WebP animations are flattened by the canvas below.
-function inspectAvatarBytes(bytes, mime, allowAnimation = false) {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  let dimensions = null;
-  if (mime === 'image/png') {
-    if (bytes.length < 45 || bytes[0] !== 0x89 || avatarTag(bytes, 1) !== 'PNG\r' ||
-      bytes[5] !== 10 || bytes[6] !== 26 || bytes[7] !== 10) avatarError();
-    let offset = 8, imageData = false, ended = false;
-    while (offset + 12 <= bytes.length) {
-      const size = view.getUint32(offset);
-      if (size > bytes.length - offset - 12) avatarError();
-      const type = avatarTag(bytes, offset + 4);
-      if (offset === 8 && (type !== 'IHDR' || size !== 13)) avatarError();
-      if (type === 'IHDR') {
-        if (offset !== 8 || size !== 13) avatarError();
-        dimensions = avatarDimensions(view.getUint32(offset + 8), view.getUint32(offset + 12));
-      }
-      if (type === 'acTL' && !allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
-      if (type === 'IDAT' && size > 0) imageData = true;
-      offset += size + 12;
-      if (type === 'IEND') {
-        if (size !== 0 || offset !== bytes.length) avatarError();
-        ended = true;
-        break;
-      }
-    }
-    if (!ended || !imageData || !dimensions) avatarError();
-  } else if (mime === 'image/jpeg') {
-    if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8 ||
-      bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) avatarError();
-    let offset = 2;
-    const frames = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
-    while (offset + 1 < bytes.length) {
-      if (bytes[offset++] !== 0xff) avatarError();
-      while (bytes[offset] === 0xff) offset += 1;
-      const marker = bytes[offset++];
-      if (marker === 0xd9) break;
-      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
-      if (offset + 2 > bytes.length) avatarError();
-      const size = view.getUint16(offset);
-      if (size < 2 || size > bytes.length - offset) avatarError();
-      if (frames.has(marker)) {
-        if (size < 8) avatarError();
-        dimensions = avatarDimensions(view.getUint16(offset + 5), view.getUint16(offset + 3));
-      }
-      if (marker === 0xda) break; // Pixel data is checked by the browser decoder.
-      offset += size;
-    }
-    if (!dimensions) avatarError();
-  } else if (mime === 'image/webp') {
-    if (bytes.length < 26 || avatarTag(bytes, 0) !== 'RIFF' || avatarTag(bytes, 8) !== 'WEBP' ||
-      view.getUint32(4, true) !== bytes.length - 8) avatarError();
-    let offset = 12, hasFrame = false;
-    while (offset + 8 <= bytes.length) {
-      const type = avatarTag(bytes, offset);
-      const size = view.getUint32(offset + 4, true);
-      const data = offset + 8;
-      if (size > bytes.length - data) avatarError();
-      if (type === 'VP8X') {
-        if (size < 10) avatarError();
-        if ((bytes[data] & 0x02) && !allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
-        const width = 1 + bytes[data + 4] + (bytes[data + 5] << 8) + (bytes[data + 6] << 16);
-        const height = 1 + bytes[data + 7] + (bytes[data + 8] << 8) + (bytes[data + 9] << 16);
-        dimensions = avatarDimensions(width, height);
-      }
-      if (type === 'ANIM' || type === 'ANMF') {
-        if (!allowAnimation) avatarError(t("头像必须是静态图片，请通过上传重新生成头像"));
-        if (type === 'ANMF') hasFrame = true;
-      }
-      if (type === 'VP8L') {
-        if (size < 5 || bytes[data] !== 0x2f) avatarError();
-        const width = 1 + bytes[data + 1] + ((bytes[data + 2] & 0x3f) << 8);
-        const height = 1 + (bytes[data + 2] >> 6) + (bytes[data + 3] << 2) + ((bytes[data + 4] & 0x0f) << 10);
-        dimensions ||= avatarDimensions(width, height);
-        hasFrame = true;
-      }
-      if (type === 'VP8 ') {
-        if (size < 10 || bytes[data + 3] !== 0x9d || bytes[data + 4] !== 1 || bytes[data + 5] !== 0x2a) avatarError();
-        dimensions ||= avatarDimensions(view.getUint16(data + 6, true) & 0x3fff, view.getUint16(data + 8, true) & 0x3fff);
-        hasFrame = true;
-      }
-      offset = data + size + (size % 2);
-    }
-    if (offset !== bytes.length || !hasFrame || !dimensions) avatarError();
-  } else avatarError();
-  return dimensions;
-}
-
-/** A strict, bounded data URL boundary shared by imports, storage and uploads. */
-function validateAvatarDataUrl(value) {
-  if (typeof value !== 'string' || !value.startsWith('data:')) avatarError(t("头像仅支持本地 PNG、JPEG 或 WebP 的 data URL"));
-  // Reject large strings before allocating decoded bytes.
-  if (value.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) avatarError(t("头像不能超过 256 KiB"));
-  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
-  if (!match || match[2].length % 4 !== 0) avatarError(t("头像仅支持 PNG、JPEG 或 WebP 的 base64 数据"));
-  const size = match[2].length / 4 * 3 - (match[2].endsWith('==') ? 2 : match[2].endsWith('=') ? 1 : 0);
-  if (size > MAX_AVATAR_BYTES) avatarError(t("头像不能超过 256 KiB"));
-  let binary;
-  try { binary = atob(match[2]); } catch { avatarError(t("头像的 base64 数据无效")); }
-  if (btoa(binary) !== match[2]) avatarError(t("头像的 base64 数据无效"));
-  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
-  inspectAvatarBytes(bytes, match[1]);
-  return value;
-}
-
-async function decodeLocalAvatar(file) {
-  if (typeof globalThis.createImageBitmap === 'function') {
-    const image = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
-    return { image, width: image.width, height: image.height, release: () => image.close() };
-  }
-  if (!globalThis.Image || !globalThis.URL?.createObjectURL) avatarError(t("当前浏览器无法读取本地图片"));
-  const objectUrl = globalThis.URL.createObjectURL(file);
-  const image = new globalThis.Image();
-  try {
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error(t("头像读取超时，请选择另一张图片"))), 15000);
-      image.onload = () => { clearTimeout(timeout); resolve(); };
-      image.onerror = () => { clearTimeout(timeout); reject(new Error(t("头像图片无法解码，请选择另一张图片"))); };
-      image.src = objectUrl;
-    });
-    return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => { image.src = ''; } };
-  } finally {
-    image.onload = image.onerror = null;
-    globalThis.URL.revokeObjectURL(objectUrl);
-  }
-}
-
-function createAvatarCanvas(size) {
-  if (!globalThis.document?.createElement) avatarError(t("当前浏览器无法处理本地图片"));
-  const canvas = globalThis.document.createElement('canvas');
-  canvas.width = canvas.height = size;
-  return canvas;
-}
-
-/**
- * Flatten a local PNG/JPEG/WebP into a centered 256 px square. Dependencies may
- * be supplied by non-browser callers; output still passes the storage boundary.
- */
-async function normalizeAvatarFile(file, { decodeImage = decodeLocalAvatar, createCanvas = createAvatarCanvas } = {}) {
-  if (!(file instanceof Blob) || !AVATAR_TYPES.has(file.type)) avatarError(t("请选择 PNG、JPEG 或 WebP 图片作为头像"));
-  if (!file.size) avatarError(t("头像文件为空"));
-  if (file.size > MAX_AVATAR_FILE_BYTES) avatarError(t("上传的头像文件不能超过 4 MiB"));
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  inspectAvatarBytes(bytes, file.type, true);
-  let decoded;
-  try {
-    try { decoded = await decodeImage(file); }
-    catch { avatarError(t("头像图片无法解码，请选择另一张图片")); }
-    if (!decoded?.image) avatarError(t("头像图片无法解码，请选择另一张图片"));
-    const { width, height } = avatarDimensions(decoded.width, decoded.height);
-    const canvas = createCanvas(AVATAR_SIZE);
-    const context = canvas?.getContext?.('2d', { alpha: true });
-    if (!context || typeof canvas.toDataURL !== 'function') avatarError(t("当前浏览器无法处理本地图片"));
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
-    const side = Math.min(width, height);
-    context.drawImage(decoded.image, (width - side) / 2, (height - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
-    // Browsers that cannot encode WebP return PNG automatically.
-    let result = canvas.toDataURL('image/webp', 0.9);
-    if (result.length > Math.ceil(MAX_AVATAR_BYTES / 3) * 4 + 32) result = canvas.toDataURL('image/webp', 0.75);
-    return validateAvatarDataUrl(result);
-  } finally {
-    try { decoded?.release?.(); } catch { /* Decoding resources must not mask the result. */ }
-  }
-}
-
-return {MAX_AVATAR_BYTES, MAX_AVATAR_FILE_BYTES, AVATAR_SIZE, validateAvatarDataUrl, normalizeAvatarFile};
-})();
-const __icon_selection = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-const { validateAvatarDataUrl } = __avatar;
-
-/** Persist an explicitly chosen native asset, never a proxy URL or executable
- * markup. Local uploads are re-encoded through the existing static image boundary.
- * This field is independent of the best-image cache so later renders cannot
- * silently replace a user's choice. */
-function normalizeIconSelection(value) {
- if (value === undefined || value === null || value === '') return null;
- if (typeof value !== 'string') return null;
- if (value.startsWith('data:')) {
-  try { return validateAvatarDataUrl(value); } catch { return null; }
- }
- if (value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
- try {
-  const u = new URL(value);
-  if (u.protocol !== 'https:' || u.username || u.password || u.port) return null;
-  const host=u.hostname.toLowerCase();
-  if (!host.includes('.') || !/^[a-z0-9.-]+$/.test(host) || /^\d+(?:\.\d+){3}$/.test(host)
-      || /(?:^|\.)(?:localhost|local|internal|lan|home|localdomain|intranet|onion)$/.test(host)) return null;
-  u.hash='';return u.href;
- } catch { return null; }
-}
-
-function iconSelectionLabel(url, width=0, height=0) {
- if (url?.startsWith('data:')) return t("本机上传");
- try { if (/\.svg$/i.test(new URL(url).pathname)) return t("SVG · 矢量"); } catch { /* Invalid URLs are not displayed. */ }
- return width > 0 && height > 0 ? `${width} × ${height}` : t("等待图片");
-}
-
-return {normalizeIconSelection, iconSelectionLabel};
 })();
 const __core = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -18109,871 +19313,6 @@ function createSyncController(context) {
 
 return {createSyncController};
 })();
-const __site_icon_catalog = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-// Public icon declarations verified on 2026-10-12; no logo bytes are bundled.
-// This small bootstrap index is not a substitute for per-site discovery.
-const SITE_ICON_CATALOG = Object.freeze({
-  "https://www.bing.com/": [
-    {
-      "url": "https://www.bing.com/sa/simg/favicon-trans-bg-blue-mg-png.png",
-      "width": 32,
-      "height": 32,
-      "scalable": false,
-      "kind": "html"
-    }
-  ],
-  "https://www.baidu.com/": [
-    {
-      "url": "https://www.baidu.com/favicon.ico",
-      "width": 64,
-      "height": 64,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://psstatic.cdn.bcebos.com/video/wiseindex/aa6eef91f8b5b1a33b454c401_1660835115000.png",
-      "width": 1024,
-      "height": 1024,
-      "scalable": false,
-      "kind": "apple"
-    }
-  ],
-  "https://duckduckgo.com/": [
-    {
-      "url": "https://duckduckgo.com/favicon.ico",
-      "width": 32,
-      "height": 32,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_60x60.png",
-      "width": 60,
-      "height": 60,
-      "scalable": false,
-      "kind": "apple"
-    },
-    {
-      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_76x76.png",
-      "width": 76,
-      "height": 76,
-      "scalable": false,
-      "kind": "apple"
-    },
-    {
-      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_120x120.png",
-      "width": 120,
-      "height": 120,
-      "scalable": false,
-      "kind": "apple"
-    },
-    {
-      "url": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_152x152.png",
-      "width": 152,
-      "height": 152,
-      "scalable": false,
-      "kind": "apple"
-    }
-  ],
-  "https://github.com/": [
-    {
-      "url": "https://github.com/fluidicon.png",
-      "width": 512,
-      "height": 512,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://github.githubassets.com/favicons/favicon.png",
-      "width": 32,
-      "height": 32,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://github.githubassets.com/favicons/favicon.svg",
-      "width": 0,
-      "height": 0,
-      "scalable": true,
-      "kind": "html"
-    }
-  ],
-  "https://www.youtube.com/": [
-    {
-      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon.ico",
-      "width": 48,
-      "height": 48,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_32x32.png",
-      "width": 32,
-      "height": 32,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_48x48.png",
-      "width": 48,
-      "height": 48,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_96x96.png",
-      "width": 96,
-      "height": 96,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://www.youtube.com/s/desktop/0a4db377/img/favicon_144x144.png",
-      "width": 144,
-      "height": 144,
-      "scalable": false,
-      "kind": "html"
-    }
-  ],
-  "https://www.notion.so/": [
-    {
-      "url": "https://www.notion.com/front-static/favicon.ico",
-      "width": 64,
-      "height": 64,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://www.notion.com/front-static/logo-ios.png",
-      "width": 512,
-      "height": 512,
-      "scalable": false,
-      "kind": "apple"
-    }
-  ],
-  "https://www.notion.com/": [
-    {
-      "url": "https://www.notion.com/front-static/favicon.ico",
-      "width": 64,
-      "height": 64,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://www.notion.com/front-static/logo-ios.png",
-      "width": 512,
-      "height": 512,
-      "scalable": false,
-      "kind": "apple"
-    }
-  ],
-  "https://developer.mozilla.org/": [
-    {
-      "url": "https://developer.mozilla.org/favicon.ico",
-      "width": 48,
-      "height": 48,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://developer.mozilla.org/favicon.svg",
-      "width": 0,
-      "height": 0,
-      "scalable": true,
-      "kind": "html"
-    },
-    {
-      "url": "https://developer.mozilla.org/apple-touch-icon.png",
-      "width": 192,
-      "height": 192,
-      "scalable": false,
-      "kind": "apple"
-    }
-  ],
-  "https://developer.mozilla.org/en-US/": [
-    {
-      "url": "https://developer.mozilla.org/favicon.ico",
-      "width": 48,
-      "height": 48,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://developer.mozilla.org/favicon.svg",
-      "width": 0,
-      "height": 0,
-      "scalable": true,
-      "kind": "html"
-    },
-    {
-      "url": "https://developer.mozilla.org/apple-touch-icon.png",
-      "width": 192,
-      "height": 192,
-      "scalable": false,
-      "kind": "apple"
-    }
-  ],
-  "https://excalidraw.com/": [
-    {
-      "url": "https://excalidraw.com/apple-touch-icon.png",
-      "width": 180,
-      "height": 180,
-      "scalable": false,
-      "kind": "apple"
-    },
-    {
-      "url": "https://excalidraw.com/favicon-32x32.png",
-      "width": 32,
-      "height": 32,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://excalidraw.com/favicon-16x16.png",
-      "width": 16,
-      "height": 16,
-      "scalable": false,
-      "kind": "html"
-    }
-  ],
-  "https://www.figma.com/": [
-    {
-      "url": "https://static.figma.com/app/icon/2/icon-128.png",
-      "width": 128,
-      "height": 128,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://static.figma.com/app/icon/2/icon-192.png",
-      "width": 192,
-      "height": 192,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://static.figma.com/app/icon/2/icon-256.png",
-      "width": 256,
-      "height": 256,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://static.figma.com/app/icon/2/favicon.png",
-      "width": 32,
-      "height": 32,
-      "scalable": false,
-      "kind": "html"
-    },
-    {
-      "url": "https://static.figma.com/app/icon/2/favicon.svg",
-      "width": 0,
-      "height": 0,
-      "scalable": true,
-      "kind": "html"
-    },
-    {
-      "url": "https://static.figma.com/app/icon/2/favicon.ico",
-      "width": 64,
-      "height": 64,
-      "scalable": false,
-      "kind": "html"
-    }
-  ],
-  "https://www.google.com/": [
-    {
-      "url": "https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png",
-      "width": 128,
-      "height": 128,
-      "scalable": false,
-      "kind": "html"
-    }
-  ]
-});
-
-return {SITE_ICON_CATALOG};
-})();
-const __favicons = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { t } = __i18n;
-const { SITE_ICON_CATALOG } = __site_icon_catalog;
-/* Site-owned favicons. No image proxy, remote JavaScript, or desktop-state fields. */
-
-const FAVICON_CACHE_KEY = 'qiye.favicons.local.v2';
-const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
-const FAILURE_TTL = 10 * 60 * 1000;
-const MAX_ENTRIES = 200;
-const MAX_CANDIDATES = 12;
-const HTML_LIMIT = 384 * 1024;
-const MANIFEST_LIMIT = 128 * 1024;
-const REQUEST_TIMEOUT = 8_000;
-const UPGRADE_TTL = 24 * 60 * 60 * 1000;
-const MAX_UPGRADE_CANDIDATES = 3;
-const MAX_TARGET_SIZE = 256;
-const cache = new Map();
-const pending = new Map();
-const WARNINGS = Object.freeze({
-  unsafe: '此网址不支持在线图标提取；请使用公开网站的 HTTPS 地址。',
-  permission: '尚未允许读取此站点，已使用站点图标地址回退。',
-  network: '无法读取站点图标声明；网页版可能受网站 CORS 限制，已使用站点图标地址回退。',
-  timeout: '图标提取超时，已使用站点图标地址回退。',
-  redirect: '站点跳转无法安全读取；可将网址改成跳转后的 HTTPS 地址再试。',
-  large: '站点返回的内容过大，已使用站点图标地址回退。',
-  content: '站点未返回可读取的网页或图标清单，已使用站点图标地址回退。',
-  missing: '网页未声明可用图标，已使用站点图标地址回退。',
-});
-
-function extensionRuntime() {
-  const runtime = globalThis.chrome?.runtime;
-  return runtime?.id && typeof runtime.getURL === 'function' ? runtime : null;
-}
-
-/* URL() canonicalizes alternate IPv4 spellings before this check. Reject local
- * hostnames and IP literals, including public IPs, to keep extraction on ordinary
- * public HTTPS domains. DNS resolution remains subject to the browser's policy. */
-function publicHost(hostname) {
-  const host = hostname.toLowerCase().replace(/\.$/, '');
-  return host.includes('.') && !host.includes(':') && !/^\d+(?:\.\d+){3}$/.test(host)
-    && !/(?:^|\.)(?:localhost|local|internal|lan|home|localdomain|intranet|onion)$/.test(host);
-}
-
-function safeImageUrl(value, base) {
-  if (typeof value !== 'string' || !value.trim() || value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
-  try {
-    const url = new URL(value.trim(), base);
-    if (url.protocol !== 'https:' || url.username || url.password || url.port || !publicHost(url.hostname)) return null;
-    url.hash = '';
-    return url.href;
-  } catch { return null; }
-}
-
-function sitePageUrl(value) {
-  if (typeof value !== 'string' || value.length > 2048 || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
-  try {
-    const url = new URL(value.trim());
-    if (url.protocol === 'http:' && !url.port) url.protocol = 'https:';
-    const safe = safeImageUrl(url.href);
-    if (!safe) return null;
-    const result = new URL(safe);
-    result.search = '';
-    result.hash = '';
-    return result.href;
-  } catch { return null; }
-}
-
-function originKey(pageUrl){return new URL(pageUrl).origin+'/';}
-
-function unique(values) { return [...new Set(values.filter(Boolean))].slice(0, MAX_CANDIDATES); }
-
-function requestedSize({ targetSize = 64, pixelRatio = 1 } = {}) {
-  const cssSize = Number.isFinite(targetSize) && targetSize > 0 ? Math.min(targetSize, MAX_TARGET_SIZE) : 64;
-  const ratio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? Math.min(pixelRatio, 4) : 1;
-  return Math.min(MAX_TARGET_SIZE, Math.max(16, Math.ceil(cssSize * ratio)));
-}
-
-function browserFavicon(pageUrl, options) {
-  try {
-    const runtime = extensionRuntime();
-    if (!runtime) return null;
-    const url = new URL(runtime.getURL('/_favicon/'));
-    if (url.protocol !== 'chrome-extension:' || url.hostname !== runtime.id) return null;
-    url.searchParams.set('pageUrl', pageUrl);
-    // Request enough physical pixels for this surface; Chrome may still return
-    // a smaller cached source, which the caller measures after image load.
-    const required = requestedSize(options);
-    url.searchParams.set('size', String([16, 32, 64, 128, 256].find(size => size >= required)));
-    return url.href;
-  } catch { return null; }
-}
-
-function currentEntry(pageUrl) {
-  const entry = cache.get(pageUrl);
-  if (entry && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > Date.now()) return entry;
-  if (entry) cache.delete(pageUrl);
-  return null;
-}
-
-function dimension(value) { return Number.isInteger(value) && value > 0 && value <= 8192 ? value : 0; }
-
-function iconQuality(detail = {}, options = {}) {
-  const requiredSize = requestedSize(options);
-  const suppliedWidth = dimension(options.width), suppliedHeight = dimension(options.height);
-  const observed = detail.measuredAt + CACHE_TTL > Date.now() && detail.actualWidth && detail.actualHeight;
-  const measured = !!(suppliedWidth && suppliedHeight || observed);
-  const width = suppliedWidth && suppliedHeight ? suppliedWidth : observed ? detail.actualWidth : detail.width || 0;
-  const height = suppliedWidth && suppliedHeight ? suppliedHeight : observed ? detail.actualHeight : detail.height || 0;
-  const size = Math.min(width || 0, height || 0);
-  const scalable = detail.scalable === true;
-  const shapePenalty = width && height ? Math.abs(width - height) / Math.max(width, height) * 100 : 0;
-  const adequate = scalable || size >= requiredSize;
-  // Prefer a vector or the smallest sufficient bitmap over a needlessly large
-  // image. Unknown sources can be tried ahead of a measured undersized bitmap.
-  let score = scalable ? 1300 : size >= requiredSize ? 1000 - Math.min(100, Math.log2(size / requiredSize) * 25)
-    : size ? 300 + size / requiredSize * 180 : 550;
-  score += detail.kind === 'html' ? 20 : detail.kind === 'apple' ? 10 : 0;
-  score -= shapePenalty + (detail.maskable ? 60 : 0);
-  return { size, requiredSize, scalable, adequate, score, measured };
-}
-
-function detailFor(entry, url) {
-  const detail = entry?.details?.find(item => item.url === url);
-  if (detail) return detail;
-  for(const icons of Object.values(SITE_ICON_CATALOG)){const known=icons.find(icon=>icon.url===url);if(known)return known;}
-  let scalable = false;
-  try { scalable = /\.svg$/i.test(new URL(url).pathname); } catch { /* No inferred metadata. */ }
-  return { url, scalable, kind: /\/apple-touch-icon\.png(?:\?|$)/i.test(url) ? 'apple' : 'fallback' };
-}
-
-/** The caller supplies naturalWidth/naturalHeight after load. Declared sizes
- * help choose candidates; observed dimensions take precedence for bitmaps. */
-function getFaviconQuality(siteUrl, iconUrl, options = {}) {
-  const pageUrl = sitePageUrl(siteUrl);
-  return iconQuality(detailFor(pageUrl ? currentEntry(pageUrl) : null, iconUrl), options);
-}
-
-/** Synchronous only: no page fetches and no permission prompts during render.
- * SVG/touch icons and useful declarations precede a small conventional ICO. */
-function getFaviconCandidates(siteUrl, options = {}) {
-  const pageUrl = sitePageUrl(siteUrl);
-  if (!pageUrl) return [];
-  const entry = currentEntry(pageUrl);
-  const origin = new URL(pageUrl).origin;
-  const audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
-  const known = [...(entry?.checkedAt + CACHE_TTL > Date.now() ? entry.candidates : []),...audited.map(icon=>icon.url)];
-  const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
-  const qualityOptions = { targetSize: options.targetSize, pixelRatio: options.pixelRatio };
-  const conventional = [`${origin}/favicon.svg`, `${origin}/apple-touch-icon.png`, `${origin}/favicon.ico`, browserFavicon(pageUrl, options)].filter(Boolean);
-  const extracted = unique([preferred, ...known]);
-  const sorted = extracted.map((url, order) => ({ url, order, ...iconQuality(detailFor(entry, url), qualityOptions) }))
-    .sort((a, b) => b.score - a.score || a.order - b.order).map(item => item.url);
-  const declared = sorted.filter(url => !conventional.includes(url));
-  // Known declarations come first, then conventional paths. A known tiny ICO
-  // cannot hide a discovered SVG or a touch icon with sufficient resolution.
-  const preferredQuality = preferred ? iconQuality(detailFor(entry, preferred), qualityOptions) : null;
-  const coolingDown = entry?.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= requestedSize(options);
-  let keepPreferred = false;
-  if (preferred && (preferredQuality.adequate || !preferredQuality.measured || coolingDown)) {
-    const best = declared.find(url => iconQuality(detailFor(entry, url), qualityOptions).score > preferredQuality.score);
-    keepPreferred = !best || !preferredQuality.measured || (coolingDown && !iconQuality(detailFor(entry,best),qualityOptions).adequate);
-  }
-  const first = keepPreferred ? [preferred, ...declared.filter(url => url !== preferred)] : declared;
-  const last = conventional.filter(url => !keepPreferred || url !== preferred);
-  return unique([...first.slice(0, MAX_CANDIDATES - last.length), ...last]);
-}
-
-/** Claim one bounded background quality upgrade. Keep the current image visible
- * while trying these candidates. A day-long, size-aware cooldown avoids probing
- * the same low-resolution-only site on every render; explicit extraction resets
- * it. This function returns URLs only and never performs any network request. */
-function takeFaviconUpgradeCandidates(siteUrl, iconUrl, options = {}) {
-  const pageUrl = sitePageUrl(siteUrl);
-  const entry = pageUrl && currentEntry(pageUrl);
-  if (!entry) return [];
-  const current = getFaviconQuality(pageUrl, iconUrl, options);
-  if (current.adequate) return [];
-  if (!options.force && entry.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= current.requiredSize) return [];
-  const candidates = getFaviconCandidates(pageUrl, options);
-  entry.upgradeAt = Date.now();
-  entry.upgradeSize = current.requiredSize;
-  cache.set(pageUrl, entry);
-  persistCache();
-  const attempted = new Set(Array.isArray(options.attempted) ? options.attempted.slice(0, MAX_CANDIDATES) : []);
-  attempted.add(iconUrl);
-  return candidates.filter(url => {
-    if (attempted.has(url)) return false;
-    const quality = getFaviconQuality(pageUrl, url, { targetSize: options.targetSize, pixelRatio: options.pixelRatio });
-    return !quality.measured || quality.score > current.score;
-  }).slice(0, MAX_UPGRADE_CANDIDATES);
-}
-
-function trimCache() {
-  const ordered = [...cache].sort((a, b) => Math.max(b[1].checkedAt, b[1].loadedAt) - Math.max(a[1].checkedAt, a[1].loadedAt));
-  cache.clear();
-  for (const [key, entry] of ordered.slice(0, MAX_ENTRIES)) {
-    if (Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > Date.now()) cache.set(key, entry);
-  }
-}
-
-async function readCache() {
-  try {
-    let raw;
-    if (extensionRuntime() && globalThis.chrome?.storage?.local) raw = (await globalThis.chrome.storage.local.get(FAVICON_CACHE_KEY))?.[FAVICON_CACHE_KEY];
-    else {
-      const json = globalThis.localStorage?.getItem(FAVICON_CACHE_KEY);
-      if (typeof json === 'string' && json.length <= 1024 * 1024) raw = JSON.parse(json);
-    }
-    if (!raw || raw.version !== 2 || !Array.isArray(raw.entries)) return;
-    const now = Date.now();
-    for (const item of raw.entries.slice(0, MAX_ENTRIES)) {
-      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-      const pageUrl = sitePageUrl(item.pageUrl);
-      if (!pageUrl || pageUrl !== item.pageUrl) continue;
-      const time = value => Number.isFinite(value) && value >= 0 && value <= now ? value : 0;
-      const entry = {
-        preferred: safeImageUrl(item.preferred) || '',
-        candidates: unique(Array.isArray(item.candidates) ? item.candidates.slice(0, MAX_CANDIDATES).map(url => safeImageUrl(url)) : []),
-        checkedAt: time(item.checkedAt), loadedAt: time(item.loadedAt),
-        failedUntil: Number.isFinite(item.failedUntil) && item.failedUntil >= 0 && item.failedUntil <= now + FAILURE_TTL ? item.failedUntil : 0,
-        errorCode: Object.hasOwn(WARNINGS, item.errorCode) ? item.errorCode : '',
-        source: ['html', 'manifest', 'fallback'].includes(item.source) ? item.source : 'fallback',
-        details: [], upgradeAt: time(item.upgradeAt),
-        upgradeSize: Number.isInteger(item.upgradeSize) && item.upgradeSize >= 16 && item.upgradeSize <= MAX_TARGET_SIZE ? item.upgradeSize : 0,
-      };
-      if (Array.isArray(item.details)) {
-        for (const detail of item.details.slice(0, MAX_CANDIDATES)) {
-          if (!detail || typeof detail !== 'object' || Array.isArray(detail)) continue;
-          const url = safeImageUrl(detail.url);
-          if (!url || entry.details.some(known => known.url === url)) continue;
-          const measuredAt = time(detail.measuredAt);
-          const actualWidth = dimension(detail.actualWidth), actualHeight = dimension(detail.actualHeight);
-          entry.details.push({
-            url, width: dimension(detail.width), height: dimension(detail.height),
-            scalable: detail.scalable === true,
-            kind: ['html', 'apple', 'manifest'].includes(detail.kind) ? detail.kind : 'fallback',
-            maskable: detail.maskable === true,
-            actualWidth, actualHeight, measuredAt: actualWidth && actualHeight ? measuredAt : 0,
-          });
-        }
-      }
-      if (!cache.has(pageUrl) && Math.max(entry.checkedAt, entry.loadedAt) + CACHE_TTL > now) cache.set(pageUrl, entry);
-    }
-    trimCache();
-  } catch { /* Private browsing or storage quotas must not prevent local fallback. */ }
-}
-
-const faviconCacheReady = readCache();
-let writeQueued = false;
-let writes = Promise.resolve();
-
-function persistCache() {
-  if (writeQueued) return;
-  writeQueued = true;
-  queueMicrotask(() => {
-    writeQueued = false;
-    writes = writes.catch(() => {}).then(async () => {
-      await faviconCacheReady;
-      trimCache();
-      const value = { version: 2, entries: [...cache].map(([pageUrl, entry]) => ({ pageUrl, ...entry })) };
-      try {
-        if (extensionRuntime() && globalThis.chrome?.storage?.local) await globalThis.chrome.storage.local.set({ [FAVICON_CACHE_KEY]: value });
-        else globalThis.localStorage?.setItem(FAVICON_CACHE_KEY, JSON.stringify(value));
-      } catch { /* Best-effort cache; desktop data is stored separately. */ }
-    });
-  });
-}
-
-/** Call only after an <img> load succeeds. Internal Chrome URLs never persist. */
-function rememberFavicon(siteUrl, iconUrl, { width = 0, height = 0 } = {}) {
-  const pageUrl = sitePageUrl(siteUrl);
-  const safe = safeImageUrl(iconUrl);
-  if (!pageUrl || !safe) return false;
-  const entry = currentEntry(pageUrl) || { candidates: [], details: [], preferred: '', checkedAt: 0, loadedAt: 0, failedUntil: 0, errorCode: '', source: 'fallback', upgradeAt: 0, upgradeSize: 0 };
-  const actualWidth = dimension(width), actualHeight = dimension(height);
-  const existing = detailFor(entry, safe);
-  const sameDimensions = !actualWidth || !actualHeight || actualWidth === (existing.actualWidth || 0) && actualHeight === (existing.actualHeight || 0);
-  if (entry.preferred === safe && sameDimensions && entry.loadedAt + CACHE_TTL / 2 > Date.now()) return true;
-  const detail = {
-    ...existing,
-    ...(actualWidth && actualHeight ? { actualWidth, actualHeight, measuredAt: Date.now() } : {}),
-  };
-  entry.details = [detail, ...(entry.details || []).filter(item => item.url !== safe)].slice(0, MAX_CANDIDATES);
-  const previous = iconQuality(detailFor(entry, entry.preferred));
-  const next = iconQuality(detail);
-  // Remember every successful measurement, but a later small fallback must not
-  // displace a sharper working source. Calls without dimensions remain compatible.
-  if (!entry.preferred || entry.preferred === safe || !actualWidth || !actualHeight || !previous.measured && !previous.scalable || next.score > previous.score) entry.preferred = safe;
-  entry.loadedAt = Date.now();
-  cache.set(pageUrl, entry);
-  persistCache();
-  return true;
-}
-
-function decodeAttribute(value) {
-  const named = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', colon: ':', sol: '/', Tab: '\t', NewLine: '\n' };
-  return value.replace(/&(#x[\da-f]+|#\d+|amp|quot|apos|lt|gt|colon|sol|Tab|NewLine);/gi, (entity, key) => {
-    if (key[0] !== '#') return named[key] ?? named[key.toLowerCase()] ?? entity;
-    const code = key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1));
-    return code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff) ? String.fromCodePoint(code) : '\uFFFD';
-  });
-}
-
-/* A bounded metadata tokenizer, not a DOM: fetched markup is never inserted,
- * executed, or handed to DOMParser (which can load embedded resources). */
-function metadataTags(html) {
-  const tags = [];
-  const lower = html.toLowerCase();
-  let index = 0;
-  let templateDepth = 0;
-  while (index < html.length && tags.length < 128) {
-    const start = html.indexOf('<', index);
-    if (start < 0) break;
-    if (html.startsWith('<!--', start)) {
-      const end = html.indexOf('-->', start + 4);
-      index = end < 0 ? html.length : end + 3;
-      continue;
-    }
-    const match = /^<\s*(\/?)\s*([a-z][a-z\d:-]*)/i.exec(html.slice(start, start + 100));
-    if (!match) { index = start + 1; continue; }
-    const tag = match[2].toLowerCase();
-    const closing = Boolean(match[1]);
-    let cursor = start + match[0].length;
-    const attrs = Object.create(null);
-    while (cursor < html.length) {
-      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
-      if (html[cursor] === '>' || html[cursor] === '/' && html[cursor + 1] === '>') break;
-      const nameStart = cursor;
-      while (cursor < html.length && !/[\s=/>]/.test(html[cursor])) cursor++;
-      const name = html.slice(nameStart, cursor).toLowerCase();
-      if (!name) { cursor++; continue; }
-      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
-      let value = '';
-      if (html[cursor] === '=') {
-        cursor++;
-        while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
-        const quote = html[cursor] === '"' || html[cursor] === "'" ? html[cursor++] : null;
-        const valueStart = cursor;
-        if (quote) while (cursor < html.length && html[cursor] !== quote) cursor++;
-        else while (cursor < html.length && !/[\s>]/.test(html[cursor])) cursor++;
-        value = html.slice(valueStart, cursor);
-        if (quote && html[cursor] === quote) cursor++;
-      }
-      if (!Object.hasOwn(attrs, name)) attrs[name] = decodeAttribute(value);
-    }
-    const end = html.indexOf('>', cursor);
-    index = end < 0 ? html.length : end + 1;
-    if (!templateDepth && (tag === 'body' || closing && tag === 'head')) break;
-    if (tag === 'template') { templateDepth = Math.max(0, templateDepth + (closing ? -1 : 1)); continue; }
-    if (!closing && /^(?:script|style|title|textarea|xmp|iframe|noembed|noframes|noscript)$/.test(tag)) {
-      const endTag = new RegExp(`</${tag}(?=[\\s/>])`, 'g');
-      endTag.lastIndex = index;
-      const rawEnd = endTag.exec(lower);
-      index = rawEnd ? rawEnd.index : html.length;
-      continue;
-    }
-    if (!templateDepth && !closing && (tag === 'link' || tag === 'base')) tags.push({ tag, attrs });
-  }
-  return tags;
-}
-
-function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, order, options) {
-  const mime = String(type).toLowerCase().split(';')[0].trim();
-  if (mime && !/^image\/(?:png|jpeg|gif|webp|avif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/.test(mime)) return null;
-  const purposes = String(purpose).toLowerCase().split(/\s+/);
-  if (purposes.includes('monochrome') && !purposes.includes('any') && !purposes.includes('maskable')) return null;
-  const scalable = mime === 'image/svg+xml' || /\.svg$/i.test(new URL(url).pathname);
-  const detail = { url, width: 0, height: 0, scalable, kind, maskable: purposes.includes('maskable') && !purposes.includes('any') };
-  let bestScore = -Infinity;
-  for (const token of String(sizes).slice(0, 250).split(/\s+/)) {
-    const dimensions = /^(\d{1,4})x(\d{1,4})$/i.exec(token);
-    if (!dimensions) continue;
-    const width = Number(dimensions[1]), height = Number(dimensions[2]);
-    if (!width || !height || width > 8192 || height > 8192) continue;
-    const { score } = iconQuality({ ...detail, width, height }, options);
-    if (score > bestScore) { bestScore = score; detail.width = width; detail.height = height; }
-  }
-  const { score, adequate } = iconQuality(detail, options);
-  return { ...detail, score, adequate, source: kind === 'manifest' ? 'manifest' : 'html', order };
-}
-
-function parseHtmlIcons(html, pageUrl, options) {
-  const tags = metadataTags(html);
-  const firstBase = tags.find(tag => tag.tag === 'base' && Object.hasOwn(tag.attrs, 'href'));
-  const base = firstBase ? safeImageUrl(firstBase.attrs.href, pageUrl) || pageUrl : pageUrl;
-  let manifest = null;
-  const icons = [];
-  for (const { tag, attrs } of tags) {
-    if (tag !== 'link' || typeof attrs.href !== 'string' || !attrs.href.trim()) continue;
-    const rel = String(attrs.rel || '').toLowerCase().split(/\s+/);
-    const url = safeImageUrl(attrs.href, base);
-    if (!url) continue;
-    const kind = rel.includes('icon') || rel.includes('fluid-icon') ? 'html' : rel.includes('apple-touch-icon') || rel.includes('apple-touch-icon-precomposed') ? 'apple' : null;
-    if (kind) {
-      const icon = rankIcon({ url, sizes: attrs.sizes, type: attrs.type, kind }, icons.length, options);
-      if (icon) icons.push(icon);
-    }
-    if (!manifest && rel.includes('manifest') && new URL(url).origin === new URL(pageUrl).origin) manifest = sitePageUrl(url);
-  }
-  return { icons, manifest };
-}
-
-function parseManifestIcons(text, manifestUrl, offset, options) {
-  let value;
-  try { value = JSON.parse(text); } catch { throw new Error('content'); }
-  if (!value || typeof value !== 'object' || !Array.isArray(value.icons)) return [];
-  return value.icons.slice(0, 64).flatMap((item, index) => {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
-    const url = safeImageUrl(item.src, manifestUrl);
-    if (!url) return [];
-    const icon = rankIcon({ url, sizes: item.sizes, type: item.type, purpose: item.purpose, kind: 'manifest' }, offset + index, options);
-    return icon ? [icon] : [];
-  });
-}
-
-async function boundedText(response, limit, headOnly=false) {
-  const headEnd=text=>{const match=/<\/head\s*>|<body(?:\s|>)/i.exec(text);return match?match.index+match[0].length:0;};
-  if ((!headOnly || !response.body?.getReader) && Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
-  if (!response.body?.getReader) {
-    let text = await response.text();
-    if(headOnly&&headEnd(text))text=text.slice(0,headEnd(text));
-    if (new TextEncoder().encode(text).byteLength > limit) throw new Error('large');
-    return text;
-  }
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let length = 0, text = '';
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      length += value.byteLength;
-      text += decoder.decode(value, { stream: true });
-      if(headOnly){const end=headEnd(text);if(end&&new TextEncoder().encode(text.slice(0,end)).length<=limit){await reader.cancel().catch(()=>{});return text.slice(0,end);}}
-      if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
-    }
-    return text + decoder.decode();
-  } finally { reader.releaseLock(); }
-}
-
-async function fetchMetadata(url, kind, signal) {
-  const origin = new URL(url).origin;
-  const seen = new Set();
-  for (let redirects = 0; redirects <= 2; redirects++) {
-    if (seen.has(url)) throw new Error('redirect');
-    seen.add(url);
-    const response = await globalThis.fetch(url, {
-      method: 'GET', signal, credentials: 'omit', referrerPolicy: 'no-referrer',
-      redirect: 'manual', mode: 'cors', cache: 'no-store',
-      headers: { Accept: kind === 'html' ? 'text/html,application/xhtml+xml;q=0.9' : 'application/manifest+json,application/json;q=0.9' },
-    });
-    if (response.type === 'opaqueredirect') throw new Error('redirect');
-    if ([301, 302, 303, 307, 308].includes(response.status)) {
-      const location = response.headers?.get?.('location');
-      const safe = typeof location === 'string' ? safeImageUrl(location, url) : null;
-      const next = safe && sitePageUrl(safe);
-      if (!next || new URL(next).origin !== origin || redirects === 2) throw new Error('redirect');
-      url = next;
-      continue;
-    }
-    if (response.url && (!safeImageUrl(response.url) || new URL(response.url).origin !== origin)) throw new Error('redirect');
-    if (!response.ok) throw new Error('network');
-    const mime = (response.headers?.get?.('content-type') || '').toLowerCase().split(';')[0].trim();
-    if (mime && !(kind === 'html' ? ['text/html', 'application/xhtml+xml'].includes(mime) : /^(?:application\/(?:manifest\+json|json)|text\/json)$/.test(mime))) throw new Error('content');
-    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT, kind === 'html'), url };
-  }
-  throw new Error('redirect');
-}
-
-function resultFor(pageUrl, source, errorCode = '', options) {
-  const candidates = pageUrl ? getFaviconCandidates(pageUrl, options) : [];
-  return { url: candidates[0] || null, candidates, variants: pageUrl ? getFaviconVariants(pageUrl, options) : [], source, ...(errorCode ? { warning: t(WARNINGS[errorCode] || WARNINGS.network) } : {}) };
-}
-
-/** Explicit action or opt-in bounded automatic metadata discovery. When requested, the permission API is invoked
- * synchronously, before cache initialization or any asynchronous work. Web pages
- * can read only sites that opt into CORS; no proxy bypass is attempted. */
-function discoverFavicon(siteUrl, { requestPermission = false, force = false, targetSize = 64, pixelRatio = 1, allCandidates = false } = {}) {
-  const options = { targetSize, pixelRatio, allCandidates };
-  const pageUrl = sitePageUrl(siteUrl);
-  if (!pageUrl) return Promise.resolve(resultFor(null, 'fallback', 'unsafe', options));
-  const requestKey = pageUrl + (allCandidates ? '#all' : '#best');
-  if (pending.has(requestKey)) return pending.get(requestKey);
-  const runtime = extensionRuntime();
-  const origins = [`${new URL(pageUrl).origin}/*`];
-  let permission;
-  if (runtime && requestPermission) {
-    try { permission = Promise.resolve(globalThis.chrome?.permissions?.request?.({ origins })).catch(() => false); }
-    catch { permission = Promise.resolve(false); }
-  }
-  const job = (async () => {
-    await faviconCacheReady;
-    if (runtime) {
-      let granted = false;
-      try { granted = permission ? await permission : await globalThis.chrome?.permissions?.contains?.({ origins }); }
-      catch { /* A revoked or unavailable permission is an ordinary fallback. */ }
-      if (granted !== true) return resultFor(pageUrl, 'fallback', 'permission', options);
-    }
-    const previous = currentEntry(pageUrl);
-    if (!force && previous) {
-      if (previous.failedUntil > Date.now()) return resultFor(pageUrl, 'fallback', previous.errorCode || 'network', options);
-      if (previous.checkedAt + CACHE_TTL > Date.now() && previous.candidates.length) return resultFor(pageUrl, 'cache', '', options);
-    }
-    const controller = new AbortController();
-    let timer;
-    const deadline = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('timeout')); }, REQUEST_TIMEOUT); });
-    try {
-      const operation = (async () => {
-        const html = await fetchMetadata(pageUrl, 'html', controller.signal);
-        const metadata = parseHtmlIcons(html.text, html.url, options);
-        const measuredIcon = icon => {
-          const observed = previous?.details?.find(detail => detail.url === icon.url && detail.measuredAt);
-          const detail = observed ? { ...icon, actualWidth: observed.actualWidth, actualHeight: observed.actualHeight, measuredAt: observed.measuredAt } : icon;
-          const { score, adequate } = iconQuality(detail, options);
-          return { ...detail, score, adequate };
-        };
-        let icons = metadata.icons.map(measuredIcon);
-        let manifestError = '';
-        if (metadata.manifest && (allCandidates || !icons.some(icon => icon.adequate))) {
-          try {
-            const manifest = await fetchMetadata(metadata.manifest, 'manifest', controller.signal);
-            icons = [...icons, ...parseManifestIcons(manifest.text, manifest.url, icons.length, options).map(measuredIcon)];
-          } catch (error) { manifestError = Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network'; }
-        }
-        if (!icons.length) throw new Error(manifestError || 'missing');
-        icons.sort((a, b) => b.score - a.score || a.order - b.order);
-        return icons;
-      })();
-      const icons = await Promise.race([operation, deadline]);
-      const candidates = unique(icons.map(icon => icon.url));
-      const details = [];
-      for (const icon of [...icons, ...(previous?.details || [])]) {
-        if (details.some(detail => detail.url === icon.url) || details.length >= MAX_CANDIDATES) continue;
-        const { score: _score, adequate: _adequate, order: _order, source: _source, ...detail } = icon;
-        details.push(detail);
-      }
-      cache.set(pageUrl, { preferred: previous?.preferred || '', candidates, details, checkedAt: Date.now(), loadedAt: previous?.loadedAt || 0, failedUntil: 0, errorCode: '', source: icons[0].source, upgradeAt: 0, upgradeSize: 0 });
-      persistCache();
-      return resultFor(pageUrl, icons[0].source, '', options);
-    } catch (error) {
-      const code = controller.signal.aborted ? 'timeout' : Object.hasOwn(WARNINGS, error?.message) ? error.message : 'network';
-      const entry = currentEntry(pageUrl) || { preferred: '', candidates: [], loadedAt: 0, source: 'fallback' };
-      cache.set(pageUrl, { ...entry, checkedAt: entry.checkedAt || Date.now(), failedUntil: Date.now() + FAILURE_TTL, errorCode: code });
-      persistCache();
-      return resultFor(pageUrl, 'fallback', code, options);
-    } finally {
-      clearTimeout(timer);
-      controller.abort(); // Also stop unread bodies rejected by their headers.
-    }
-  })();
-  pending.set(requestKey, job);
-  job.finally(() => { if (pending.get(requestKey) === job) pending.delete(requestKey); });
-  return job;
-}
-
-/** Safe diagnostic data for UI; no network and no credentials. */
-function describeFavicon(siteUrl,iconUrl,options={}){
- const pageUrl=sitePageUrl(siteUrl),entry=pageUrl?currentEntry(pageUrl):null;
- const quality=getFaviconQuality(siteUrl,iconUrl,options);
- return {source:entry?.source||'site',url:iconUrl,quality,warning:entry?.errorCode?WARNINGS[entry.errorCode]:''};
-}
-
-/** All distinct source assets for the picker. Do not substitute a third-party
- * favicon aggregation service; fallback paths are labelled as guesses until
- * the browser has successfully decoded them. Each asset is an inert image. */
-function getFaviconVariants(siteUrl, options={}) {
- const pageUrl=sitePageUrl(siteUrl);if(!pageUrl)return [];
- const entry=currentEntry(pageUrl), audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
- const declared=entry?.checkedAt + CACHE_TTL > Date.now()?entry.candidates:[];
- return getFaviconCandidates(pageUrl,options).filter(url=>safeImageUrl(url)).map(url=>{
-  const detail=detailFor(entry,url), known=audited.some(v=>v.url===url);
-  return {url,kind:detail.kind||'fallback',scalable:!!detail.scalable,
-   width:detail.actualWidth||detail.width||0,height:detail.actualHeight||detail.height||0,
-   source:declared.includes(url)?t("网站声明"):known?t("已核对站点资源"):t("常规路径")};
- });
-}
-
-return {getFaviconQuality, getFaviconCandidates, takeFaviconUpgradeCandidates, faviconCacheReady, rememberFavicon, discoverFavicon, describeFavicon, getFaviconVariants};
-})();
 const __tab_favicon = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { safeUrl } = __core;
@@ -19088,327 +19427,6 @@ async function visitForFavicon(value, {
 }
 
 return {canVisitForFavicon, readCachedTabIcon, visitForFavicon};
-})();
-const __icon_artwork = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-// Recover the best REAL ICO frame; never pretend an upscaled 16px source is HD.
-const LIMIT=1024*1024,TTL=7*86400000,KEY='qiye.icon-artwork.v1';
-const memory=new Map(),pending=new Map(),failed=new Map();
-function allowed(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&u.hostname.includes('.')&&!/^\d+(?:\.\d+){3}$/.test(u.hostname)&&!/(?:^|\.)(?:localhost|local|internal|lan|home|onion)$/.test(u.hostname);}catch{return false;}}
-/** ICO frame selection is checked before a browser decoder sees any bytes. */
-function selectIcoFrame(value,requested=128){
- const bytes=value instanceof Uint8Array?value:new Uint8Array(value);
- if(bytes.length<22||bytes.length>LIMIT)return null;
- const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
- if(view.getUint16(0,true)!==0||view.getUint16(2,true)!==1)return null;
- const count=view.getUint16(4,true);if(!count||count>64||6+count*16>bytes.length)return null;
- const frames=[];
- for(let i=0;i<count;i++){
-  const at=6+i*16,w=bytes[at]||256,h=bytes[at+1]||256,size=view.getUint32(at+8,true),offset=view.getUint32(at+12,true);
-  if(offset<6+count*16||size<8||offset+size>bytes.length)continue;
-  const extent=Math.min(w,h),sufficient=extent>=requested;
-  frames.push({at,width:w,height:h,size,offset,score:(sufficient?1000-Math.abs(extent-requested):extent)-Math.abs(w-h)*2});
- }
- if(!frames.length)return null;
- const f=frames.sort((a,b)=>b.score-a.score)[0],raw=bytes.slice(f.offset,f.offset+f.size);
- const isPng=raw[0]===137&&raw[1]===80&&raw[2]===78&&raw[3]===71;
- if(isPng)return {...f,mime:'image/png',bytes:raw};
- const ico=new Uint8Array(22+raw.length);ico.set([0,0,1,0,1,0]);ico.set(bytes.slice(f.at,f.at+16),6);
- new DataView(ico.buffer).setUint32(18,22,true);ico.set(raw,22);
- return {...f,mime:'image/x-icon',bytes:ico};
-}
-function validData(v){return typeof v==='string'&&v.length<=180000&&/^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(v);}
-try{
- const raw=globalThis.localStorage?.getItem(KEY);
- if(raw&&raw.length<2400000)for(const row of JSON.parse(raw).slice(0,16))if(allowed(row.url)&&validData(row.dataUrl)&&row.time<=Date.now()&&row.time+TTL>Date.now()&&row.width>0&&row.width<=256&&row.height>0&&row.height<=256)memory.set(row.url,row);
-}catch{/* Storage is only a cache. */}
-function store(row){
- memory.delete(row.url);memory.set(row.url,row);
- while(memory.size>16)memory.delete(memory.keys().next().value);
- let encoded=JSON.stringify([...memory.values()]);
- while(encoded.length>2400000&&memory.size>1){memory.delete(memory.keys().next().value);encoded=JSON.stringify([...memory.values()]);}
- try{globalThis.localStorage?.setItem(KEY,encoded);}catch{/* A failed cache write never touches desktop data. */}
-}
-/** One bounded, coalesced attempt, only for ICOs and only after a low-res load.
- * CORS/host permission denial retains the visible icon; it never uses a proxy. */
-function recoverIcoArtwork(url,{requiredSize=128,fetchImpl=globalThis.fetch}={}){
- if(!allowed(url)||!/(?:\.ico)(?:\?|$)/i.test(url))return Promise.resolve(null);
- if(memory.get(url)?.time+TTL>Date.now())return Promise.resolve(memory.get(url));
- if(failed.get(url)>Date.now())return Promise.resolve(null);
- if(pending.has(url))return pending.get(url);
- const work=(async()=>{
-  const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),3500);
-  let objectUrl='';
-  try{
-   const r=await fetchImpl(url,{signal:abort.signal,mode:'cors',credentials:'omit',referrerPolicy:'no-referrer',redirect:'error'});
-   if(!r.ok||Number(r.headers?.get?.('content-length'))>LIMIT)return null;
-   const chunks=[];let total=0;
-   if(r.body?.getReader){const reader=r.body.getReader();try{for(;;){const {done,value}=await reader.read();if(done)break;total+=value.byteLength;if(total>LIMIT){await reader.cancel();return null;}chunks.push(value);}}finally{reader.releaseLock();}}
-   else {const value=new Uint8Array(await r.arrayBuffer());if(value.byteLength>LIMIT)return null;chunks.push(value);total=value.byteLength;}
-   const bytes=new Uint8Array(total);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}
-   const frame=selectIcoFrame(bytes,Math.min(256,requiredSize));if(!frame)return null;
-   if(abort.signal.aborted)return null;
-   const im=new Image();objectUrl=URL.createObjectURL(new Blob([frame.bytes],{type:frame.mime}));
-   await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=reject;abort.signal.addEventListener('abort',reject,{once:true});im.src=objectUrl;});
-   if(!im.naturalWidth||im.naturalWidth>256||im.naturalHeight>256)return null;
-   const canvas=document.createElement('canvas');canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;
-   const context=canvas.getContext('2d');if(!context)return null;context.drawImage(im,0,0);
-   const dataUrl=canvas.toDataURL('image/png');if(!validData(dataUrl))return null;
-   const row={url,dataUrl,width:canvas.width,height:canvas.height,time:Date.now()};store(row);return row;
-  }catch{return null;}
-  finally{clearTimeout(timer);if(objectUrl)URL.revokeObjectURL(objectUrl);failed.set(url,Date.now()+86400000);while(failed.size>200)failed.delete(failed.keys().next().value);pending.delete(url);}
- })();pending.set(url,work);return work;
-}
-
-return {selectIcoFrame, recoverIcoArtwork};
-})();
-const __favicon_view = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-const { getFaviconCandidates, getFaviconQuality, rememberFavicon, takeFaviconUpgradeCandidates, discoverFavicon } = __favicons;
-
-const { normalizeIconSelection } = __icon_selection;
-
-const { recoverIcoArtwork } = __icon_artwork;
-
-// Metadata requests have their own two-slot queue; page HTML is never fetched
-// from every render, and no permission prompt is opened automatically.
-const metadataQueue=[];let metadataActive=0;
-function queueMetadata(current,job){return new Promise(resolve=>{metadataQueue.push({current,job,resolve});pumpMetadata();});}
-function pumpMetadata(){while(metadataActive<2&&metadataQueue.length){const work=metadataQueue.shift();if(!work.current()){work.resolve(null);continue;}metadataActive++;Promise.resolve().then(work.job).catch(()=>null).then(result=>work.resolve(result)).finally(()=>{metadataActive--;pumpMetadata();});}}
-
-const faviconImageBindings = new WeakMap();
-const faviconImageFailures = new Map();
-const faviconImageWork = new Set();
-const faviconImageQueue = [];
-const FAVICON_IMAGE_TIMEOUT = 8_000;
-const FAVICON_IMAGE_FAILURE_TTL = 5 * 60 * 1000;
-const MAX_FAVICON_IMAGE_REQUESTS = 4;
-let activeFaviconImageRequests = 0;
-
-function pumpFaviconImageQueue() {
-  while (activeFaviconImageRequests < MAX_FAVICON_IMAGE_REQUESTS && faviconImageQueue.length) {
-    const job = faviconImageQueue.shift();
-    if (!job.binding.current()) { job.binding.cancel(); continue; }
-    activeFaviconImageRequests++;
-    let released = false;
-    job.start(() => {
-      if (released) return;
-      released = true;
-      activeFaviconImageRequests--;
-      pumpFaviconImageQueue();
-    });
-  }
-}
-
-function faviconTargetSize(visual, image, options) {
-  if (Number.isFinite(options.targetSize) && options.targetSize > 0) return Math.min(256, options.targetSize);
-  if (visual.closest?.('.engine-mark')) return 24;
-  const bounds = visual.getBoundingClientRect?.() || {};
-  const imageBounds = image.getBoundingClientRect?.() || {};
-  let style;
-  try { style = globalThis.getComputedStyle?.(image); } catch { /* Detached test or transient DOM. */ }
-  const pixels = (value, available) => {
-    if (typeof value !== 'string' || !value.trim() || /^(?:auto|none|normal)$/.test(value)) return 0;
-    const number = parseFloat(value);
-    if (!Number.isFinite(number) || number <= 0) return 0;
-    return value.endsWith('%') ? available > 0 ? available * number / 100 : 0 : number;
-  };
-  const constrained = (axis, limit, available, rendered) => {
-    const size = pixels(style?.[axis], available) || rendered || 0;
-    const maximum = pixels(style?.[limit], available);
-    return maximum ? Math.min(size || maximum, maximum) : size;
-  };
-  const width = constrained('width', 'maxWidth', bounds.width, imageBounds.width);
-  const height = constrained('height', 'maxHeight', bounds.height, imageBounds.height);
-  return Math.min(256, Math.max(16, Math.ceil(Math.max(width, height) || 64)));
-}
-
-function markFaviconImageFailure(url) {
-  faviconImageFailures.set(url, Date.now() + FAVICON_IMAGE_FAILURE_TTL);
-  if (faviconImageFailures.size > 500) faviconImageFailures.delete(faviconImageFailures.keys().next().value);
-}
-
-/** Hydrate inert favicon markup. Image requests share a four-slot queue, and
- * quality upgrades use a separate image so a usable icon never flashes away. */
-function bindFaviconImages(root = document, options = {}) {
-  // Switching groups can detach a whole grid while its requests are queued.
-  // Release those slots immediately instead of waiting for their timeouts.
-  for (const binding of [...faviconImageWork]) if (!binding.current()) binding.cancel();
-  for (const visual of root.querySelectorAll('.site-visual[data-favicon-site]')) {
-    const previous = faviconImageBindings.get(visual);
-    if (previous && !options.force) continue;
-    previous?.cancel();
-    let image = visual.querySelector('.site-favicon');
-    const siteUrl = visual.dataset.faviconSite;
-    if (!image || !siteUrl) continue;
-    const sizeOptions = {
-      targetSize: faviconTargetSize(visual, image, options),
-      pixelRatio: Number.isFinite(options.pixelRatio) && options.pixelRatio > 0 ? options.pixelRatio : globalThis.devicePixelRatio || 1,
-    };
-    const selected = normalizeIconSelection(visual.dataset.faviconSelected);
-    const provided = selected ? [selected] : Array.isArray(options.candidates) ? options.candidates : getFaviconCandidates(siteUrl, sizeOptions);
-    const candidates = [...new Set(provided)].filter(url => typeof url === 'string' && url).slice(0, 12);
-    const tried = new Set();
-    let candidateIndex = 0, upgradeIndex = 0, upgrades = null, stopped = false, requestTicket = 0;
-    let best = null, enhanced=false;
-    const autoDiscover=options.autoDiscover ?? (globalThis.document?.documentElement?.dataset?.iconDiscovery==='auto');
-    if (previous?.siteUrl === siteUrl && !image.hidden && image.naturalWidth && image.naturalHeight) {
-      const url = image.currentSrc || image.src;
-      best = { url, width: image.naturalWidth, height: image.naturalHeight, quality: getFaviconQuality(siteUrl, url, { ...sizeOptions, width: image.naturalWidth, height: image.naturalHeight }) };
-    }
-    const binding = {
-      siteUrl,
-      current: () => !stopped && visual.isConnected && faviconImageBindings.get(visual) === binding,
-      abort: null,
-      cancel: () => {
-        if (stopped) return;
-        stopped = true;
-        requestTicket++;
-        for (let index = faviconImageQueue.length - 1; index >= 0; index--) if (faviconImageQueue[index].binding === binding) faviconImageQueue.splice(index, 1);
-        binding.abort?.();
-        faviconImageWork.delete(binding);
-      },
-    };
-    faviconImageBindings.set(visual, binding);
-    faviconImageWork.add(binding);
-    const complete = () => {
-      faviconImageWork.delete(binding);
-      if (!best) { image.hidden = true; image.removeAttribute('src'); visual.classList.remove('is-loaded'); visual.dataset.iconQuality='missing'; }
-      report();
-    };
-    const report=()=>{
-      if(!binding.current())return;
-      const information=best?{siteUrl,url:best.sourceUrl||best.url,width:best.width,height:best.height,requiredSize:best.quality.requiredSize,scalable:best.quality.scalable,adequate:best.quality.adequate}:{siteUrl,url:null,adequate:false};
-      visual.dataset.iconQuality=best?(best.quality.adequate?'sharp':'low'):'missing';
-      visual.dataset.iconWidth=String(best?.width||0);visual.dataset.iconHeight=String(best?.height||0);
-      visual.dataset.iconSource=information.url||'';
-      try{options.onStatus?.(information);}catch{/* Observer callbacks cannot interrupt loading. */}
-    };
-    const enhance=async()=>{
-      if(enhanced||selected||!autoDiscover||!binding.current()){complete();return;}
-      enhanced=true;
-      try{
-        const result=await queueMetadata(binding.current,async()=>{
-          const recovered=best&&!best.quality.adequate?await recoverIcoArtwork(best.sourceUrl||best.url,{requiredSize:best.quality.requiredSize}):null;
-          const metadata=(!recovered||Math.min(recovered.width,recovered.height)<sizeOptions.targetSize*sizeOptions.pixelRatio)?await discoverFavicon(siteUrl,{...sizeOptions,requestPermission:false}):null;
-          return {recovered,metadata};
-        });
-        if(!binding.current()){binding.cancel();return;}
-        const choices=[];
-        if(result?.recovered&&(!best||Math.min(result.recovered.width,result.recovered.height)>Math.min(best.width,best.height)))choices.push({url:result.recovered.dataUrl,sourceUrl:result.recovered.url});
-        for(const url of result?.metadata?.candidates||[])if(!tried.has(url))choices.push({url});
-        let index=0;
-        const next=()=>{
-          if(!binding.current()){binding.cancel();return;}
-          if(best?.quality.adequate||index>=Math.min(3,choices.length)){complete();return;}
-          const choice=choices[index++];load(choice.url,!!best,next,choice.sourceUrl);
-        };
-        next();
-      }catch{complete();}
-    };
-    const nextUsable = (values, start) => {
-      for (let index = start; index < values.length; index++) {
-        const url = values[index];
-        if (tried.has(url) || !options.force && (faviconImageFailures.get(url) || 0) > Date.now()) continue;
-        return { url, index: index + 1 };
-      }
-      return null;
-    };
-    const load = (url, background, done, sourceUrl=null) => {
-      const job = { binding, start: release => {
-        const ticket = ++requestTicket;
-        let target;
-        try { target = background ? new globalThis.Image() : image; }
-        catch { release(); complete(); return; }
-        let settled = false, timer = null;
-        const active = () => !settled && ticket === requestTicket && binding.current();
-        const cleanup = abort => {
-          if (settled) return false;
-          settled = true;
-          clearTimeout(timer);
-          target.onload = null;
-          target.onerror = null;
-          if (abort) target.removeAttribute('src');
-          binding.abort = null;
-          release();
-          return true;
-        };
-        binding.abort = () => cleanup(true);
-        const failed = () => {
-          if (!active()) { if (!binding.current()) binding.cancel(); else cleanup(true); return; }
-          markFaviconImageFailure(url);
-          cleanup(true);
-          done(false);
-        };
-        target.onload = () => {
-          if (!active()) { if (!binding.current()) binding.cancel(); else cleanup(true); return; }
-          const width = target.naturalWidth, height = target.naturalHeight;
-          if (!width || !height) { failed(); return; }
-          const quality = getFaviconQuality(siteUrl, sourceUrl||url, { ...sizeOptions, width, height });
-          cleanup(false);
-          faviconImageFailures.delete(url);
-          try { Promise.resolve(selected ? undefined : rememberFavicon(siteUrl, sourceUrl||url, { width, height })).catch(() => {}); }
-          catch { /* Cache quotas do not hide a successfully loaded image. */ }
-          if (!best || quality.score > best.quality.score) {
-            if (background) {
-              // Reuse the already loaded image instead of assigning its URL a
-              // second time; this also keeps the concurrency bound meaningful.
-              target.className = image.className || 'site-favicon';
-              target.alt = '';
-              target.draggable = false;
-              image.replaceWith(target);
-              image = target;
-            }
-            best = { url, sourceUrl, width, height, quality };
-            image.hidden = false;
-            visual.classList.add('is-loaded');
-          }
-          report();
-          done(true);
-        };
-        target.onerror = failed;
-        timer = setTimeout(failed, FAVICON_IMAGE_TIMEOUT);
-        target.referrerPolicy = 'no-referrer';
-        target.decoding = 'async';
-        target.draggable = false;
-        if (!background) { target.hidden = true; visual.classList.remove('is-loaded'); }
-        tried.add(url);
-        try { target.src = url; } catch { failed(); }
-      } };
-      // Already validated local artwork needs no network slot. A blocked remote
-      // site must not hold up an upload or a captured browser-cache image.
-      if (url.startsWith('data:')) {
-        if (binding.current()) job.start(() => {}); else binding.cancel();
-      } else {
-        faviconImageQueue.push(job);
-        pumpFaviconImageQueue();
-      }
-    };
-    const advanceUpgrade = () => {
-      if (!binding.current()) { binding.cancel(); return; }
-      if (selected || best?.quality.adequate) { complete(); return; }
-      if (!upgrades) {
-        upgrades = takeFaviconUpgradeCandidates(siteUrl, best.url, {
-          ...sizeOptions, width: best.width, height: best.height, attempted: [...tried], force: !!options.force,
-        }).slice(0, 3);
-      }
-      const next = nextUsable(upgrades, upgradeIndex);
-      if (!next) { enhance(); return; }
-      upgradeIndex = next.index;
-      load(next.url, true, advanceUpgrade);
-    };
-    const advanceInitial = () => {
-      if (!binding.current()) { binding.cancel(); return; }
-      const next = nextUsable(candidates, candidateIndex);
-      if (!next) { enhance(); return; }
-      candidateIndex = next.index;
-      load(next.url, !!best, loaded => loaded ? advanceUpgrade() : advanceInitial());
-    };
-    advanceInitial();
-  }
-}
-
-return {bindFaviconImages};
 })();
 const __search_history = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -20675,7 +20693,7 @@ function settingsDialog(tab) {
   {id:'general',name:t("打开方式"),icon:'link'}, {id:'search',name:t("搜索栏"),icon:'search'},
   {id:'icons',name:t("图标"),icon:'grid'}, {id:'clock',name:t("时间 / 日期"),icon:'clock'},
   {id:'appearance',name:t("主题与材质"),icon:'sun'}, {id:'layout',name:t("布局"),icon:'move'},
-  {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("WebDAV 同步"),icon:'sync'},
+  {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("同步"),icon:'sync'},
   {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
  ];
  if (!tabs.some(item=>item.id===tab)) tab='general';
