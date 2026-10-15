@@ -10,6 +10,10 @@ This is the canonical version history, moved from the original README. Historica
 
 ## 未发布 / Unreleased
 
+- 新增“编码工具”：Base64 / Base64 URL、三种 URL 范围、HTML 实体、Unicode、UTF-8 十六进制和 JSON 字符串编解码，以及 MD2 / MD4 / MD5 / SHA 摘要。支持实时转换、双栏编辑、复制与连续转换、中英文、深浅主题和窄屏；文本仅留在当前窗口，关闭清空。
+- 编码工具新增“趣味编码”：经典佛曰、兽语 / 兽音译者、原版熊曰 / 与熊论道。标明格式版本，支持自定义兽音字表、解码自动识别字表、损坏密文提示与解压长度限制，全部在本机处理。
+- 编码工具窗口改为 46px 单行标题栏，缩小图标并移除副标题，将更多空间留给输入与结果；长标题省略显示，悬停可查看完整名称。
+
 - 新增“进制转换”：2–36 进制多结果实时展示，支持精确大整数、负数、小数及循环节，提供精度、分组、前缀、逐项 / 全部复制和独立保存；适配五种卡片尺寸、中英文、深浅主题与窄屏。
 - Added a Base converter with simultaneous outputs for bases 2–36, exact large integers and fractions, recurring notation, precision and formatting controls, copy actions, independent saved state and responsive layouts.
 

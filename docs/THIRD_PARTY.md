@@ -91,3 +91,15 @@ U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
 - [澳门地球物理气象局 XML](https://xml.smg.gov.mo/)：`c_actual_brief.xml` 实况、`c_7daysforecast.xml` / `e_7daysforecast.xml` 七日预报，使用官方气象代码与测量类型定义。
 
 以上数据按各服务条件提供，接口内容和可用性由服务方维护。栖页不附带第三方账户密钥。官方实况、模型补充、空气质量分别标明来源；切换源失败可回退，界面会显示实际生效来源。iTab 的公开网页天气模块调用其自有 `/api/getWeather` 和 `/api/weather/24`，未据此推断未公开的上游供应商，也不调用其私有服务。
+
+## 趣味编码格式参考
+
+`src/codec-fun.js` 独立实现以下已有文本格式，仅使用浏览器 Web Crypto 与 Compression Streams；没有打包这些参考项目的源码或依赖。字符表、固定参数与标记顺序用于兼容既有格式。核验日期：2026-10-15。
+
+- 经典佛曰：参考 [lersh/TudouCode 的格式定义](https://github.com/lersh/TudouCode/blob/258494a88ff7a92acb435a005e519b6bb8f25a50/TudouSharp/Tudou.cs) 与 [AES 参数填充规则](https://github.com/lersh/TudouCode/blob/258494a88ff7a92acb435a005e519b6bb8f25a50/TudouSharp/AES.cs)。UTF-16LE、固定 AES-256-CBC 参数、PKCS#7 填充、128 字表与 12 个高位标记；不实现佛又曰、新佛曰或如是我闻变体。
+- 兽音译者：参考 [sgdrg15rdg/beast_js](https://github.com/sgdrg15rdg/beast_js/blob/041c854ad442e9990eab83397d3052daa3ae2c4d/beast.js) 的带首尾标记格式。默认字表 `嗷呜啊~`，UTF-16 每个四位组叠加位置偏移，再映射为两个字符。扩展自定义字表时保留相同标记顺序；不接受省略首尾标记的 SDK 裸输出。
+- 原版熊曰：参考 [SheepChef/Abracadabra 的格式分析](https://github.com/SheepChef/Abracadabra/blob/6da979e788a8aef910eb95d644014648f37977e5/src/javascript/XiongyueDecHelper.js)，UTF-8 → raw DEFLATE → basE91 数值 → 固定字表 → 倒序，带 `呋` 标记。该项目当前使用 AIPL-1.2，栖页未引入其实现代码；原生压缩、字符转换、校验与有界流式解压在栖页独立实现。
+- 互操作验证使用 [Borber/whisperer README 中的公开格式对照](https://github.com/Borber/whisperer/blob/b50f7cf5da42f8884d6a32995f08680229ffc933/README.md) 及上述项目的短样例。校验覆盖外部密文解码和兼容输出，不仅验证本地往返。
+- 原生 `deflate-raw` API 的兼容性见 [MDN CompressionStream](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream/CompressionStream) 与 [浏览器兼容数据](https://github.com/mdn/browser-compat-data/blob/main/api/CompressionStream.json)：Chrome / Edge 103 起支持，低于扩展要求的最低 116 版本。
+
+以上格式参数公开，属于趣味文本混淆，无用户密码保护。详细格式边界见[小组件说明](wiki/Widgets-Overview.md#编码工具)。

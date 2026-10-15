@@ -32,6 +32,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 | 路径 | 职责 |
 | --- | --- |
+| `src/codec.js`、`src/codec-hashes.js`、`src/codec-fun.js`、`src/codec-workspace.js`、`src/codec.css` | 编码、解码、哈希摘要、佛曰 / 兽音 / 熊曰及不持久保存内容的工具窗口 |
 | `manifest.json` | Manifest V3、权限、新标签页入口与快捷键 |
 | `index.html`、`styles.css` | 页面结构与桌面样式 |
 | `src/app.js` | 桌面交互、弹层、布局与保存流程 |

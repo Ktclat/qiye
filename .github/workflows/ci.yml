@@ -63,6 +63,8 @@ jobs:
           python3 tests/bookmarks-native-e2e.py
           python3 tests/pomodoro-e2e.py
           python3 tests/pomodoro-e2e.py --preview
+          python3 tests/codec-e2e.py
+          python3 tests/codec-e2e.py --preview
           python3 tests/extension-e2e.py
           python3 tests/tab-favicon-e2e.py
       - name: Package extension, source and standalone preview
@@ -84,6 +86,7 @@ jobs:
             output/playwright/bookmarks
             output/playwright/hotsearch
             output/playwright/pomodoro
+            output/playwright/codec
           retention-days: 14
       - name: Source archive
         run: git archive --format=zip --output="$RUNNER_TEMP/qiye-source.zip" HEAD

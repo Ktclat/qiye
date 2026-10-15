@@ -10,6 +10,7 @@ import { publicHttpsUrl } from './public-json.js';
 import { HOTSEARCH_DEFAULTS, validateHotsearchConfig } from './hotsearch-sources.js';
 
 const builtins = [
+  { type: 'codec', title: '编码工具', description: 'Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道', size: '2x2', icon: 'code' },
   { type: 'bookmarks', title: '书签', description: '分层整理独立收藏，授权后管理浏览器书签', size: '4x2', icon: 'bookmark' },
   { type: 'wallpaper', title: '在线壁纸', description: '浏览公开摄影图库，一键设为壁纸', size: '4x2', icon: 'image' },
   { type: 'weather', title: '天气', description: '启用后显示城市的实时天气', size: '2x2', icon: 'cloud' },

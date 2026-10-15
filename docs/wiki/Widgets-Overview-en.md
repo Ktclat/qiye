@@ -34,10 +34,26 @@ The registry provides the user-facing built-in widgets below. `community` is a s
 | `workday` | Workday countdown | Working days, end time and payday |
 | `quote` | Quotes | Custom text/author or built-in quotes |
 | `hotsearch` | Trending | 22 sources, categories/search, subscription ordering, single/multiple lists, refresh and local cache; opens directly to rankings |
+| `codec` | Encoding tools | Base64 / URL and other conversions, MD / SHA hashes, and Buddha, Beast and Bear formats |
 | `calculator` | Calculator | Arithmetic, parentheses and percentages |
 | `base-converter` | Base converter | Simultaneous results for bases 2–36, large integers, negatives, fractions, recurring digits and precision controls |
 | `habit` | Habits | Daily records and streaks |
 | `clock` | World clock | IANA timezone, city label and time comparison |
+
+
+## Encoding tools
+
+Add **Widgets → Tools → Encoding tools**. All five sizes open a dedicated workspace; 2×2 / 4×2 cards include Base64, URL and MD5 shortcuts. The workspace has a 46px single-row title bar with its name and window controls; long titles are truncated with the full name available on hover. It uses algorithm navigation and side-by-side input/output editors, switching to an algorithm selector and stacked editors on narrow screens. It includes live conversion, manual execution, Ctrl / ⌘ + Enter, examples, clear, copy and reuse of output as input.
+
+- Reversible formats: Base64, Base64 URL, URL parameters / full URLs / form values, HTML entities, Unicode escapes, UTF-8 hex and JSON strings. HTML supports `amp`, `lt`, `gt`, `quot`, `apos`, `nbsp` and numeric entities; other named entities remain unchanged. Only URL form mode decodes `+` as a space.
+- One-way hashes: MD2, MD4, MD5, SHA-1, SHA-256, SHA-384 and SHA-512, with lowercase or uppercase hex output. Hash mode has no decode operation. Empty text can be hashed manually. MD algorithms and SHA-1 are for legacy compatibility, not password storage or secure signatures.
+- Playful formats include classic Buddha (`佛曰：`, excluding newer Buddha variants), the original framed Beast translator, and original Bear (`熊曰：呋`, also accepting the shorter `呋` prefix). Beast supports a custom alphabet of four distinct characters, excluding whitespace and emoji. Decoding detects the alphabet from the opening and closing markers; the original text can include Chinese and emoji. These formats have public alphabets and fixed parameters, with no password protection.
+- Standard formats use UTF-8; classic Buddha uses UTF-16LE and Beast operates on UTF-16 code units. Original whitespace, line breaks and BOM are preserved. Playful decoders allow line breaks in encoded text. Invalid encodings show an error and clear stale results. Input is limited to 100,000 UTF-16 code units. Larger standard-format output can be copied but cannot be reused directly. Playful output is also limited to 100,000 units, so Beast accepts up to 12,499 input units; Bear additionally bounds streamed decompression bytes.
+- Text and custom Beast alphabets remain only in the current tool window's memory, clear on close, make no network requests and are excluded from persistence, backups and WebDAV. The widget's title, size and placement are saved normally. SHA and classic Buddha use browser Web Crypto and require the extension, HTTPS / localhost, or a local-file environment that supports it. Bear uses native Compression Streams without loading external scripts.
+
+The independent MD implementations are checked against standard vectors from [RFC 1319](https://www.rfc-editor.org/rfc/rfc1319), [RFC 1320](https://www.rfc-editor.org/rfc/rfc1320) and [RFC 1321](https://www.rfc-editor.org/rfc/rfc1321). Base64 follows [RFC 4648](https://www.rfc-editor.org/rfc/rfc4648).
+
+Playful format references, versions and published compatibility fixtures are recorded in [Third-party references](../THIRD_PARTY.md#趣味编码格式参考).
 
 ## Base converter
 

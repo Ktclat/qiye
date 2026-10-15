@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { codecCard } from './codec-workspace.js';
 import { baseConverterCard } from './base-converter-view.js';
 import { pomodoroCard } from './pomodoro-view.js';
 import { bindPomodoro } from './pomodoro-runtime.js';
@@ -343,6 +344,7 @@ function compactModel(item) {
   else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
   else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
   else if (type === 'base-converter') { value = '2↔16'; caption = t('进制转换'); detail = 'BIN · OCT · DEC · HEX'; meta = t('支持 2–36 进制'); }
+  else if (type === 'codec') { caption = t('编码工具'); detail = 'Base64 · URL'; meta = t('编码 · 解码 · 哈希'); }
   return {value, caption, detail, meta, unit};
 }
 function renderCompact(item) {
@@ -353,6 +355,7 @@ export function renderWidgetContent(item, state) {
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
   if (item.widget === 'pomodoro') return pomodoroCard(item);
+  if (item.widget === 'codec') return codecCard(item);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
@@ -483,7 +486,7 @@ export function bindWidgets(container, context) {
     if (target.dataset.calendarDate) { event.preventDefault(); event.stopPropagation(); context.openDialog('widget-detail',{item,date:target.dataset.calendarDate}); return; }
     event.stopPropagation();
     if (target.tagName !== 'INPUT') event.preventDefault();
-    if (action === 'widget-open') { context.openDialog('widget-detail',{item}); return; }
+    if (action === 'widget-open') { context.openDialog('widget-detail',{item,codecAlgorithm:target.dataset.codecAlgorithm}); return; }
     if (action === 'widget-config') { context.openDialog('widget-config', { item }); return; }
     const data = ['todo', 'habit', 'focus'].includes(item.widget) ? item.data : null;
     if (['widget-calendar-detail','widget-weather-detail','widget-memo-open','widget-memo-new'].includes(action)) { context.openDialog('widget-detail', { item, memoId: target.dataset.memoId, newMemo: action === 'widget-memo-new' }); return; }
