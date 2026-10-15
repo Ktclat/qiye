@@ -14,7 +14,7 @@ export function bindWeatherWorkspace(root, initial, host) {
   const alive = () => !events.signal.aborted && root.isConnected && current();
   let baseline = JSON.stringify([initial.title,initial.config]), busy = false;
   let cities = weatherCityList(readWeatherCities(),initial.config.city), metric = 'temperature';
-  let cityOpen=(root.clientWidth||window.innerWidth)>760, panel=cityOpen?'cities':'', expanded=false, search=null, results=[], returnFocus=null;
+  let panel='', expanded=false, search=null, results=[], returnFocus=null;
 
   function feedback(message = '') {
     if (!alive()) return;
@@ -54,24 +54,22 @@ export function bindWeatherWorkspace(root, initial, host) {
     root.querySelectorAll('.weather-search-results').forEach(node=>node.hidden=true);
   }
   function updatePanels() {
-    find('#weather-city-panel').hidden=!cityOpen;
+    find('.weather-app').dataset.panel=panel;
+    find('#weather-city-panel').hidden=panel!=='cities';
     find('#weather-settings-panel').hidden=panel!=='settings';
-    find('.weather-panel-shade').hidden=!(panel==='settings'||cityOpen&&root.clientWidth<=760);
-    find('[data-detail-action=weather-cities]').setAttribute('aria-expanded',String(cityOpen));
-    root.querySelectorAll('[data-detail-action=weather-settings]').forEach(button=>button.setAttribute('aria-expanded',String(panel==='settings')));
+    for(const action of ['weather-cities','weather-add-city']) find(`[data-detail-action=${action}]`).setAttribute('aria-expanded',String(panel==='cities'));
+    find('[data-detail-action=weather-settings]').setAttribute('aria-expanded',String(panel==='settings'));
   }
   function loadCities() {
     if(!alive()||!current().config.enabled) return;
     for(const city of cities) void requestWeather(city,false,current().config).then(renderCities);
   }
-  function togglePanel(next,trigger) {
+  function togglePanel(next,trigger,searchInput=false) {
     if(trigger) returnFocus=trigger;
-    if(next==='cities') cityOpen=true;
-    else if(!next&&panel!=='settings') cityOpen=false;
-    panel=next||(cityOpen?'cities':'');
+    panel=next;
     hideSearch(); updatePanels();
-    if(next==='settings') find('#weather-settings [name=source]').focus();
-    else if(next==='cities') {find('#weather-list-query').focus();loadCities();}
+    if(next==='settings') find('#weather-settings-title').focus({preventScroll:true});
+    else if(next==='cities') {find(searchInput?'#weather-list-query':'#weather-city-title').focus({preventScroll:true});loadCities();}
     else returnFocus?.focus({preventScroll:true});
   }
   async function save(changes, credentials) {
@@ -89,8 +87,8 @@ export function bindWeatherWorkspace(root, initial, host) {
       find('#dialog-title').textContent = updated.title;
       find('#weather-settings').outerHTML = weatherSettings(updated);
       renderForecast(true);
-      if(panel==='settings') {panel=cityOpen?'cities':'';updatePanels();returnFocus?.focus({preventScroll:true});}
-      void loadForecast();loadCities();
+      if(panel==='settings') togglePanel('');
+      void loadForecast();if(panel==='cities') loadCities();
       return true;
     } catch (error) {
       feedback(error.message);
@@ -106,8 +104,8 @@ export function bindWeatherWorkspace(root, initial, host) {
     const clean = {name:city.name,latitude:city.latitude,longitude:city.longitude,...(city.countryCode?{countryCode:city.countryCode}:{})};
     if (await save({title:current().title,config:{...current().config,city:clean,enabled:true}})) {
       hideSearch();
-      find('#weather-city-query').value=''; find('#weather-list-query').value='';
-      if(root.clientWidth<=760) {cityOpen=false;panel='';updatePanels();}
+      find('#weather-list-query').value='';
+      if(root.clientWidth<=760) togglePanel('');
       find('[data-detail-action=weather-cities]').focus({preventScroll:true});
     }
   }
@@ -131,7 +129,7 @@ export function bindWeatherWorkspace(root, initial, host) {
   }
 
   root.addEventListener('click', event => {
-    const target = event.target.closest('button,[data-weather-dismiss]');
+    const target = event.target.closest('button');
     if (!target) return;
     if (target.dataset.weatherMetric) {
       metric = target.dataset.weatherMetric; renderForecast();
@@ -145,13 +143,12 @@ export function bindWeatherWorkspace(root, initial, host) {
       catch { feedback(t('城市列表未能保存，请重试。')); }
       return;
     }
-    if (target.hasAttribute('data-weather-dismiss')) { togglePanel(''); return; }
     const action = target.dataset.detailAction;
     if (action === 'weather-cities' || action === 'weather-settings') {
       const next = action === 'weather-cities' ? 'cities' : 'settings';
-      togglePanel((next==='cities'?cityOpen:panel===next)?'':next,target);
+      togglePanel(panel===next?'':next,target);
     } else if (action === 'weather-panel-close') togglePanel('');
-    else if (action === 'weather-add-city') { togglePanel('cities');find('#weather-list-query').focus(); }
+    else if (action === 'weather-add-city') togglePanel('cities',target,true);
     else if (action === 'weather-refresh') void loadForecast(true);
     else if (action === 'weather-enable') void save({title:current().title,config:{...current().config,enabled:true}});
     else if (action === 'window-expand') {
@@ -186,9 +183,8 @@ export function bindWeatherWorkspace(root, initial, host) {
   root.addEventListener('pointerdown',event=>{
     if(!event.target.closest('.weather-city-search')) hideSearch();
   },options);
-  const resize=new ResizeObserver(updatePanels);resize.observe(root);
   updatePanels();
   renderForecast();
-  void loadForecast(); loadCities();
-  return () => { events.abort(); search?.abort();resize.disconnect(); };
+  void loadForecast();
+  return () => { events.abort(); search?.abort(); };
 }

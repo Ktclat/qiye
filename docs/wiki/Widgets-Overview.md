@@ -166,6 +166,8 @@ flowchart LR
 
 和风接入当前 v1 经纬度接口，需要个人 API Host / API Key；气象署需要个人授权码。密钥单独保存在本机，不进入桌面备份、WebDAV 或分享文件。旧天气配置自动补充 `source: auto` 和 `fallback: true`；其他必需配置仍严格校验。可以关闭失败回退。缓存键包括城市、地区、来源、回退开关、凭据修订及语言，避免跨来源串用。单次来源请求超时 8 秒、空气质量 4.5 秒；缓存有效期 30 分钟，普通失败 1 分钟后重试，主动刷新可立即重试；内存最多 64 个来源/城市组合，本机最多 48 个组合，保留最多 7 天旧预报。空气质量失败不丢弃有效天气。网页版遵循服务 CORS，澳门 XML 在扩展中需按需授予对应来源访问权限。
 
-城市搜索超时 8 秒，后续请求取消前次请求。天气工作区由 [weather-workspace.js](../../src/weather-workspace.js) 管理，[weather-chart.js](../../src/weather-chart.js) 计算曲线，缺失数据断线而非填零。[weather-cities.js](../../src/weather-cities.js) 另存最近 8 城，按坐标去重；宽屏城市列表默认常驻，窄屏可收起；天气启用后读取收藏城市概况。本地常用城市索引支持内地、港澳台简繁体及英文别名，无匹配时使用 Open-Meteo 地理编码。城市历史、凭据与天气缓存不进入备份或 WebDAV。
+城市搜索超时 8 秒，后续请求取消前次请求。天气工作区由 [weather-workspace.js](../../src/weather-workspace.js) 管理，[weather-chart.js](../../src/weather-chart.js) 计算曲线，缺失数据断线而非填零。[weather-cities.js](../../src/weather-cities.js) 另存最近 8 城，按坐标去重；天气启用且打开城市侧栏时读取收藏城市概况。本地常用城市索引支持内地、港澳台简繁体及英文别名，无匹配时使用 Open-Meteo 地理编码。城市历史、凭据与天气缓存不进入备份或 WebDAV。
+
+天气窗口按用户提供的 iTab 截图调整：默认收起搜索与侧栏，添加城市、列表、设置与放大、关闭按钮共用标题栏；“＋”打开并聚焦城市搜索。列表和设置共用颜色更清晰的右侧栏，主区与侧栏分别滚动，不使用遮罩；空间充足时窗口向外扩展并保持主区宽度，窄屏改为上下排列。切换侧栏保留预报及滚动位置，Esc 收起面板并返回触发按钮。布局采用 [CSS Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Basic_concepts)；键盘焦点遵循 [:focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible)，打开设置时先聚焦面板标题，避免鼠标点击后直接突出表单控件。
 
 [下一篇：原生组件 API →](Native-Widgets.md) · [社区组件 →](Community-Widgets.md)
