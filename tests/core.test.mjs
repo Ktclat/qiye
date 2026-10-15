@@ -98,7 +98,7 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
     assert.ok(checked.items.some(item => item.groupId === groupId));
   }
   const homeWidgets = checked.items.filter(item => item.groupId === 'home' && item.type === 'widget');
-  for (const kind of ['weather', 'calendar', 'wallpaper', 'notes', 'todo', 'countdown', 'focus', 'workday']) {
+  for (const kind of ['weather', 'calendar', 'wallpaper', 'notes', 'todo', 'countdown', 'pomodoro', 'workday']) {
     assert.ok(homeWidgets.some(item => item.widget === kind), `${kind} has a default home card`);
   }
   assert.equal(homeWidgets.find(item => item.widget === 'wallpaper').size, '4x2');
@@ -461,9 +461,9 @@ test('date, timer, location, and widget configuration values are validated', () 
   assert.throws(() => validateImport(state), /有效日期/);
   state.items.find(item => item.widget === 'countdown').config.date = '2028-02-29';
   assert.equal(validateImport(state).items.find(item => item.widget === 'countdown').config.date, '2028-02-29');
-  widgetData(state, 'focus').focus.running = true;
-  assert.throws(() => validateImport(state), /结束时间/);
-  widgetData(state, 'focus').focus.running = false;
+  widgetData(state, 'pomodoro').status = 'running';
+  assert.throws(() => validateImport(state), /状态与剩余时间不一致/);
+  widgetData(state, 'pomodoro').status = 'idle';
   state.items.find(i=>i.widget==='weather').config.city.latitude = 91;
   assert.throws(() => validateImport(state), /latitude/);
   state.items.find(i=>i.widget==='weather').config.city.latitude = 22;

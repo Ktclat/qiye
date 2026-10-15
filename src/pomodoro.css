@@ -72,24 +72,22 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 #dialog.pomodoro-app-dialog{width:min(1000px,var(--dialog-width));height:min(780px,var(--dialog-height))}
 #dialog.pomodoro-app-dialog.widget-app-expanded{width:var(--dialog-width);height:var(--dialog-height)}
 .pomo-app{height:100%;display:flex;flex-direction:column;min-height:0;color:var(--w-fg);background:var(--w-bg);font-size:14px}
-.pomo-app-header{display:flex;align-items:center;justify-content:space-between;padding:19px 28px;border-bottom:1px solid var(--w-border);gap:15px;flex:none}
-.pomo-brand{display:flex;gap:12px;align-items:center;min-width:0}
-.pomo-brand>.icon{width:35px;height:35px;color:var(--w-accent)}
-.pomo-brand>div{min-width:0}
-.pomo-brand h2{font-size:18px;line-height:1.4;margin:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pomo-brand span{font-size:9px;letter-spacing:.2em;color:var(--w-muted)}
-.pomo-header-actions{display:flex;gap:13px;align-items:center}
+.pomo-app-header{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:6px 20px;border-bottom:1px solid var(--w-border);gap:12px;flex:none;box-sizing:border-box}
+.pomo-brand{display:flex;gap:9px;align-items:center;min-width:0}
+.pomo-brand>.icon{width:23px;height:23px;flex:none;color:var(--w-accent)}
+.pomo-brand h2{font-size:15px;line-height:1.4;margin:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pomo-header-actions{display:flex;gap:4px;align-items:center;flex:none}
 .pomo-app .pomo-settings-jump{background:none;padding:6px;color:var(--w-muted)}
 .pomo-app-scroll{min-height:0;flex:1;overflow:auto;scrollbar-color:var(--pomo-soft) transparent;scrollbar-width:thin}
 .pomo-workbench{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,1fr);padding:28px 32px 24px;gap:38px}
 .pomo-studio{display:flex;flex-direction:column;align-items:center;min-width:0;padding:0 0 14px}
-.pomo-phase-tabs{display:flex;padding:4px;border:1px solid var(--w-border);border-radius:999px;gap:2px;max-width:100%;margin-bottom:34px}
+.pomo-phase-tabs{display:flex;padding:4px;border:1px solid var(--w-border);border-radius:999px;gap:2px;max-width:100%;margin-bottom:14px}
 .pomo-app .pomo-phase-tabs button{font-size:12px;border-radius:999px;background:transparent;padding:7px 17px;white-space:nowrap;color:var(--w-muted)}
 .pomo-app .pomo-phase-tabs button[aria-pressed=true]{background:var(--w-accent);color:var(--w-accent-ink)}
 .pomo-phase-tabs button:disabled{cursor:default;opacity:.65}
 .pomo-phase-tabs button[aria-pressed=true]:disabled{opacity:1}
-.pomo-studio>.pomo-dial{width:min(100%,266px);flex:none}
-.pomo-hint{color:var(--w-muted);font-size:13px;text-align:center;line-height:1.7;margin:19px 0 22px}
+.pomo-studio>.pomo-dial{width:min(100%,246px);flex:none}
+.pomo-hint{color:var(--w-muted);font-size:13px;text-align:center;line-height:1.7;margin:14px 0 16px}
 .pomo-controls{display:flex;gap:16px;align-items:center}
 .pomo-controls .pomo-start{min-width:150px;height:46px;padding:10px 22px;font-size:14px;font-weight:550}
 .pomo-app .pomo-secondary{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:transparent;color:var(--w-muted);padding:8px}
@@ -125,6 +123,17 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 .pomo-preferences form{display:flex;flex-direction:column;gap:14px;margin-top:16px}
 .pomo-presets{display:flex;gap:7px}
 .pomo-app .pomo-presets button{border:1px solid var(--w-border);background:var(--w-control);font-size:11px;padding:7px 9px}
+.pomo-duration-editor{width:min(100%,330px);margin:0 0 24px}
+.pomo-duration-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pomo-duration-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--w-muted);font-size:10px}
+.pomo-duration-value{display:flex;align-items:center;gap:2px;border:1px solid var(--w-border);border-radius:9px;background:var(--w-input);padding:4px 7px}
+.pomo-app .pomo-duration-value input{width:100%;min-width:0;border:0;background:none;padding:2px 0;color:var(--w-fg);font-size:19px;line-height:1.4;font-variant-numeric:tabular-nums;appearance:textfield}
+.pomo-duration-value input::-webkit-inner-spin-button,.pomo-duration-value input::-webkit-outer-spin-button{appearance:none;margin:0}
+.pomo-duration-value small{flex:none;font-size:9px;white-space:nowrap}
+.pomo-duration-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.pomo-app .pomo-duration-actions .pomo-presets button{padding:3px 8px;font-size:10px}
+.pomo-app .pomo-apply-duration{padding:5px 10px;font-size:11px;background:var(--w-accent);color:var(--w-accent-ink);white-space:nowrap}
+.pomo-duration-help{font-size:10px;line-height:1.5;color:var(--w-muted);margin:7px 0 0;text-align:center}
 .pomo-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pomo-settings-grid>label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--w-muted);min-width:0}
 .pomo-number-field{display:flex;align-items:center;gap:5px;min-width:0}
@@ -155,11 +164,11 @@ html[data-accent=custom] .w-pomodoro{--w-accent:var(--accent);--w-accent-ink:var
 .pomo-app :is(button,input,summary):focus-visible{outline:2px solid var(--w-accent);outline-offset:3px}
 .pomo-app button:disabled{cursor:default;opacity:.6}
 @container(max-width:700px){
-  .pomo-app-header{padding:15px 20px}.pomo-workbench{grid-template-columns:1fr;gap:24px;padding:24px 22px}
+  .pomo-app-header{padding:6px 12px}.pomo-workbench{grid-template-columns:1fr;gap:24px;padding:20px 22px}
   .pomo-companion{border-left:0;border-top:1px solid var(--w-border);padding:24px 0 0;gap:22px}
-  .pomo-studio>.pomo-dial{width:230px}.pomo-phase-tabs{margin-bottom:27px}.pomo-hint{margin:14px 0 18px}
+  .pomo-studio>.pomo-dial{width:220px}.pomo-phase-tabs{margin-bottom:14px}.pomo-hint{margin:14px 0 18px}
   .pomo-rounds{margin-top:20px}.pomo-history{margin:0 22px}.pomo-history ol{grid-template-columns:1fr}.pomo-storage-note{padding:12px 22px 20px}
   .pomo-harvest{padding:18px}.pomo-totals{gap:55px}.pomo-history-heading{align-items:flex-start}.pomo-history-heading>span{font-size:9px}
 }
-@container(max-width:340px){.pomo-studio>.pomo-dial{width:min(100%,210px)}.pomo-app .pomo-phase-tabs button{padding:7px 13px;font-size:11px}.pomo-controls{gap:9px}.pomo-controls .pomo-start{min-width:130px}.pomo-brand h2{font-size:16px}.pomo-brand>.icon{width:29px;height:29px}.pomo-header-actions{gap:3px}}
+@container(max-width:340px){.pomo-studio>.pomo-dial{width:min(100%,210px)}.pomo-app .pomo-phase-tabs button{padding:7px 13px;font-size:11px}.pomo-controls{gap:9px}.pomo-controls .pomo-start{min-width:130px}.pomo-brand h2{font-size:14px}.pomo-brand>.icon{width:21px;height:21px}.pomo-header-actions{gap:3px}}
 @media(prefers-reduced-motion:reduce){.w-pomodoro *{transition:none!important;scroll-behavior:auto!important}}

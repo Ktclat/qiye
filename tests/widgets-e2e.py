@@ -94,7 +94,7 @@ with sync_playwright() as p:
 
         state = copy.deepcopy(base_state)
         state['items'] = []
-        for widget in ['notes', 'todo', 'habit', 'focus']:
+        for widget in ['notes', 'todo', 'habit', 'pomodoro']:
             for index in [1, 2]:
                 state['items'].append({'id': f'{widget}-{index}', 'groupId': 'home', 'type': 'widget', 'widget': widget, 'title': f'{widget}-{index}', 'size': '2x2', 'config': copy.deepcopy(next(i['config'] for i in base_state['items'] if i.get('widget') == widget)), 'data': copy.deepcopy(next(i['data'] for i in base_state['items'] if i.get('widget') == widget))})
         context, page = setup(state)
@@ -107,9 +107,9 @@ with sync_playwright() as p:
             page.locator(f'[data-item={widget}-1] input[name=text]').fill(f'unique {widget}')
             page.locator(f'[data-item={widget}-1] input[name=text]').press('Enter')
             check(f'{widget} new entry is isolated', page.locator(f'[data-item={widget}-2] li').all_text_contents() == second_before)
-        page.locator('[data-item=focus-1] [data-action=widget-focus-toggle]').click()
-        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id==="focus-1").data?.focus.running')
-        check('focus timers run independently', page.locator('[data-item=focus-2] [data-live=focus-button]').inner_text() == '开始')
+        page.locator('[data-item=pomodoro-1] [data-pomo-action=toggle]').click()
+        page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id==="pomodoro-1").data.status==="running"')
+        check('Pomodoro timers run independently', page.locator('[data-item=pomodoro-2] [data-pomo=start]').inner_text() == '开始专注')
         page.reload(); page.locator('[data-item=notes-1] textarea').wait_for()
         check('independent notes survive reload', page.locator('[data-item=notes-1] textarea').input_value() == 'first note only' and page.locator('[data-item=notes-2] textarea').input_value() == original)
         add(page, 'notes')

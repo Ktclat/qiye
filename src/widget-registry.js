@@ -19,7 +19,8 @@ const builtins = [
   { type: 'notes', title: '便签', description: '随手记录，自动保存到本机', size: '2x2', icon: 'note' },
   { type: 'todo', title: '待办清单', description: '添加、勾选和删除日常任务', size: '2x2', icon: 'check' },
   { type: 'countdown', title: '倒数日', description: '记住值得期待的日子', size: '2x2', icon: 'flag' },
-  { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer' },
+  // Validation only: existing focus timers upgrade to Pomodoro on load/import.
+  { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer', internal: true },
   { type: 'pomodoro', title: '番茄钟', description: '一颗番茄，一件事。专注与休息交替，收获每天的小小成果', size: '2x2', icon: 'tomato' },
   { type: 'workday', title: '下班倒计时', description: '工作日下班与发薪日倒计时', size: '2x2', icon: 'briefcase' },
   { type: 'quote', title: '每日一句', description: '给日常留一点思考的空白', size: '4x2', icon: 'quote' },

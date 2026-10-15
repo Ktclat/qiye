@@ -17,7 +17,7 @@ Native source can access its execution environment; its API is not a permission 
 
 ## Built-in catalog
 
-The registry provides the user-facing built-in widgets below. `community` is a separate internal type, and the legacy `hotlinks` type is retained only for compatibility with existing data. All built-ins support the five sizes.
+The registry provides the user-facing built-in widgets below. `community` is a separate internal type. Legacy `hotlinks` and `focus` types remain only to validate and migrate existing data; neither appears in the catalog. All built-ins support the five sizes.
 
 | Type | Name | Behavior and limits |
 | --- | --- | --- |
@@ -29,7 +29,6 @@ The registry provides the user-facing built-in widgets below. `community` is a s
 | `notes` | Sticky notes | Independent text and color |
 | `todo` | To-dos | Add, complete and delete tasks |
 | `countdown` | Countdown | Event title and target date |
-| `focus` | Focus timer | Pause/resume, restore remaining time from the end timestamp |
 | `pomodoro` | Pomodoro | Focus, short/long breaks, a task per round, daily goals and completed sessions; each next phase starts manually |
 | `workday` | Workday countdown | Working days, end time and payday |
 | `quote` | Quotes | Custom text/author or built-in quotes |
@@ -82,6 +81,12 @@ In the extension, choose **Browser bookmarks** from the upper-left source menu t
 ## Pomodoro
 
 Add **Widgets → Productivity → Pomodoro**. The default rhythm is 25 minutes of focus, a 5-minute short break, and a 15-minute long break after 4 completed focus rounds. Durations, cycle length, daily goal and completion chime are configurable, with 25 / 5 and 50 / 10 presets. Changes preserve running or paused rounds and apply immediately to idle phases.
+
+The single-line header is 48px high. Focus, short-break and long-break inputs sit above the dial, always visible. Type minutes and press Enter or Apply times; starting an idle timer also saves the entered durations. Focus accepts 1–180 minutes, short breaks 1–60 and long breaks 1–120. Cycle length, daily goal and chimes remain under More settings. Failed saves preserve typed drafts for retry.
+
+The old Focus timer is removed from the catalog and new desktops. Existing cards and backups migrate to Pomodoro while preserving identity, placement, size, custom names, duration and running/paused progress. Stopped timers at zero return to a ready state without inventing completion records.
+
+Design references: [Pomofocus](https://pomofocus.io/) for customizable focus/break rhythms and [MDN number inputs](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/number) for labels, range and step constraints. Based on the supplied screenshot, duration controls move above the dial with labeled integer inputs, local validation and keyboard access, while the shorter header frees vertical space.
 
 The leaf-topped dial uses distinct focus and break palettes. The 1×1 card opens the workspace; 1×2 and 2×1 provide start/pause controls; 2×2 shows the timer and daily harvest; 4×2 adds the current task and cycle progress. The dedicated workspace includes phase selection, a focus task, daily goal progress, today's six most recent sessions and rhythm settings, with responsive layouts, light/dark themes and Chinese/English support.
 
@@ -145,7 +150,7 @@ Each widget card has `config` and `data`. Native extensions keep declared scalar
 | Sticky `notes` | 100000 characters |
 | `todos` | 500 items; 1000-character text per item |
 | `habits` | 100 items; 3660 dates per item |
-| `focus` | 1–180 minutes; running timers require an end timestamp |
+| `pomodoro` | Focus 1–180 minutes, short breaks 1–60, long breaks 1–120; up to 2,000 completed sessions |
 | Community `value` | 64 KiB of UTF-8 JSON text |
 | Full desktop backup | 6 MiB; web storage also depends on browser quotas |
 

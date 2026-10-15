@@ -15,6 +15,18 @@ export function newPomodoroData() {
   return { phase: 'focus', status: 'idle', duration: 1500, remaining: 1500, endAt: null, cycle: 0, task: '', sessions: [] };
 }
 
+// Receives an already validated legacy timer. Completed, stopped timers have no
+// reliable completion timestamp, so migration does not invent session history.
+export function migrateFocusTimer(focus) {
+  const duration = focus.duration * 60;
+  const remaining = Math.min(duration, Math.ceil(focus.remaining));
+  const running = focus.running && focus.endAt > 0;
+  const data = { ...newPomodoroData(), duration, remaining: remaining || duration };
+  if (running) Object.assign(data, { status: 'running', endAt: Math.ceil(focus.endAt) });
+  else if (remaining > 0 && remaining < duration) data.status = 'paused';
+  return { config: { ...POMODORO_DEFAULTS, focusMinutes: focus.duration }, data };
+}
+
 export function validatePomodoroConfig(raw, path = 'config') {
   keys(raw, Object.keys(POMODORO_DEFAULTS), path);
   return {

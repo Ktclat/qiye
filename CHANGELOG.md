@@ -14,6 +14,9 @@ This is the canonical version history, moved from the original README. Historica
 - 编码工具新增“趣味编码”：经典佛曰、兽语 / 兽音译者、原版熊曰 / 与熊论道。标明格式版本，支持自定义兽音字表、解码自动识别字表、损坏密文提示与解压长度限制，全部在本机处理。
 - 编码工具窗口改为 46px 单行标题栏，缩小图标并移除副标题，将更多空间留给输入与结果；长标题省略显示，悬停可查看完整名称。
 
+- 移除旧“专注计时”入口，已有卡片自动迁移为番茄钟并保留计时进度；番茄钟采用 48px 单行标题栏，专注、短休、长休可在计时盘上方直接输入并应用。
+- Retired the old Focus timer with automatic progress-preserving migration to Pomodoro. Added a compact 48px header and directly editable focus, short-break and long-break durations above the dial.
+
 - 新增“进制转换”：2–36 进制多结果实时展示，支持精确大整数、负数、小数及循环节，提供精度、分组、前缀、逐项 / 全部复制和独立保存；适配五种卡片尺寸、中英文、深浅主题与窄屏。
 - Added a Base converter with simultaneous outputs for bases 2–36, exact large integers and fractions, recurring notation, precision and formatting controls, copy actions, independent saved state and responsive layouts.
 

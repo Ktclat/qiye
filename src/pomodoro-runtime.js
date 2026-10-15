@@ -2,7 +2,7 @@
 import { t } from './i18n.js';
 import { icon } from './icons.js';
 import { changePomodoro, configurePomodoro, settlePomodoro, validatePomodoroConfig } from './pomodoro.js';
-import { readPomodoroSettings, updatePomodoroView } from './pomodoro-view.js';
+import { readPomodoroSettings, readPomodoroDurations, updatePomodoroView } from './pomodoro-view.js';
 
 const pending = new Set(), failedCompletions = new Map(), observers = new Set();
 let audioContext;
@@ -121,32 +121,44 @@ export function bindPomodoro(container, host) {
     }
     if (button.dataset.pomoPreset) {
       const form = button.closest('form'), deep = button.dataset.pomoPreset === 'deep';
-      for (const [name, value] of Object.entries({ focusMinutes: deep ? 50 : 25, shortBreakMinutes: deep ? 10 : 5, longBreakMinutes: deep ? 30 : 15, longBreakEvery: 4 })) form.elements[name].value = value;
+      for (const [name, value] of Object.entries({ focusMinutes: deep ? 50 : 25, shortBreakMinutes: deep ? 10 : 5, longBreakMinutes: deep ? 30 : 15 })) form.elements[name].value = value;
+      form.dataset.dirty = 'true';
       return;
     }
     if (item.config.sound) enableSound();
     const taskInput = root.querySelector('[name="task"]');
+    const durations = root.querySelector('[data-pomo-duration-form]');
+    const applyDurations = action === 'toggle' && item.data.status === 'idle' && durations?.dataset.dirty;
+    if (applyDurations && !durations.reportValidity()) return;
     try {
       const saved = await savePomodoroChange(host, item.id, current => {
-        const data = action === 'toggle' && current.data.status === 'idle' && taskInput
-          ? changePomodoro(current.data, current.config, { type: 'task', task: taskInput.value }) : current.data;
-        return { config: current.config, data: changePomodoro(data, current.config, { type: action, phase: button.dataset.phaseValue }) };
+        if (applyDurations && JSON.stringify(current.config) !== settingsBase) throw new Error(t('组件设置已在其他位置修改，请重新打开。'));
+        const config = applyDurations ? validatePomodoroConfig(readPomodoroDurations(new FormData(durations), current.config)) : current.config;
+        const configured = applyDurations ? configurePomodoro(current.data, config) : current.data;
+        const data = action === 'toggle' && configured.status === 'idle' && taskInput
+          ? changePomodoro(configured, config, { type: 'task', task: taskInput.value }) : configured;
+        return { config, data: changePomodoro(data, config, { type: action, phase: button.dataset.phaseValue }) };
       });
       if (saved && taskInput && action === 'toggle') delete taskInput.dataset.dirty;
+      if (saved && applyDurations) { delete durations.dataset.dirty; settingsBase = JSON.stringify(host.getState().items.find(entry => entry.id === item.id)?.config); }
       if (!controller.signal.aborted) { feedback(saved ? '' : t('未能保存，请重试。')); refresh(); }
     } catch (error) { if (!controller.signal.aborted) { feedback(error.message); host.toast?.(error.message); } }
   }, options);
   container.addEventListener('input', event => {
     if (event.target.matches('[data-pomo-task-form] input')) event.target.dataset.dirty = 'true';
+    const durations = event.target.closest('[data-pomo-duration-form]');
+    if (durations) durations.dataset.dirty = 'true';
   }, options);
   container.addEventListener('submit', async event => {
     const form = event.target;
-    if (!form.matches('[data-pomo-task-form],[data-pomo-settings-form]')) return;
+    if (!form.matches('[data-pomo-task-form],[data-pomo-settings-form],[data-pomo-duration-form]')) return;
     event.preventDefault(); event.stopPropagation();
     const id = form.closest('[data-widget="pomodoro"]').dataset.widgetId;
     try {
-      const fields = new FormData(form), settings = form.hasAttribute('data-pomo-settings-form');
-      const config = settings ? validatePomodoroConfig(readPomodoroSettings(fields)) : null;
+      const fields = new FormData(form), durations = form.hasAttribute('data-pomo-duration-form');
+      const settings = durations || form.hasAttribute('data-pomo-settings-form');
+      const previous = host.getState().items.find(entry => entry.id === id)?.config;
+      const config = settings ? validatePomodoroConfig(durations ? readPomodoroDurations(fields, previous) : readPomodoroSettings(fields, previous)) : null;
       if (config?.sound) enableSound();
       const saved = await savePomodoroChange(host, id, item => {
         if (settings && JSON.stringify(item.config) !== settingsBase) throw new Error(t('组件设置已在其他位置修改，请重新打开。'));
@@ -154,7 +166,7 @@ export function bindPomodoro(container, host) {
           : { config: item.config, data: changePomodoro(item.data, item.config, { type: 'task', task: String(fields.get('task') || '') }) };
       });
       if (saved) {
-        if (settings) settingsBase = JSON.stringify(config);
+        if (settings) { settingsBase = JSON.stringify(config); if (durations) delete form.dataset.dirty; }
         else delete form.elements.task.dataset.dirty;
       }
       if (!controller.signal.aborted) { feedback(saved ? t('已保存') : t('未能保存，请重试。')); refresh(); }

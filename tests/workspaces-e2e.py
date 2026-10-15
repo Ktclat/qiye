@@ -55,15 +55,15 @@ with sync_playwright() as p:
         page.mouse.move(r['x']+20,r['y']+20);page.mouse.down();page.wait_for_timeout(360);page.mouse.move(target['x']+target['width']-3,target['y']+target['height']/2,steps=15);page.wait_for_timeout(100);page.mouse.up()
         page.wait_for_function('(before)=>JSON.parse(localStorage.getItem("qiye.state.v5")).items.map(i=>i.id).join()!==before',arg=original)
         check('wallpaper long-press drop persists new order',not page.locator('#dialog').is_visible())
-        for kind in ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotsearch','weather']:
-            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app,.hotsearch-app').count()==1 and page.locator('.widget-viewer').count()==0)
+        for kind in ['countdown','workday','pomodoro','notes','todo','habit','clock','quote','calculator','hotsearch','weather']:
+            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app,.hotsearch-app,.pomo-app').count()==1 and page.locator('.widget-viewer').count()==0)
             if kind=='countdown':
                 page.locator('[data-life-action=countdown-edit]').click();page.locator('[name=eventTitle]').fill('Launch day');page.locator('[name=date]').fill('2027-03-21');page.locator('[data-life-form=countdown] [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="countdown").data.events[0].title==="Launch day"');check('countdown settings update date and detail',page.locator('.countdown-detail h3').inner_text().startswith('Launch day'))
                 page.screenshot(path=str(OUT/'countdown-dark.png'),animations='disabled')
             elif kind=='workday':
                 page.locator('[name=endTime]').fill('19:30');page.locator('[name=payday]').fill('31');page.locator('[name=workdays][value="6"]').check();page.locator('[data-utility-form] [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="workday").config.endTime==="19:30"');check('workday persists custom workweek',6 in next(i for i in saved()['items'] if i['widget']=='workday')['config']['workdays'])
-            elif kind=='focus':
-                page.locator('[data-duration="5"]').click();page.locator('[data-utility-form] [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="focus").data.focus.duration===5');page.locator('#dialog [data-action=widget-focus-toggle]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="focus").data.focus.running');check('focus preset and start control persist timer',True)
+            elif kind=='pomodoro':
+                page.locator('[data-pomo-duration-form] [name=focusMinutes]').fill('5');page.locator('#dialog [data-pomo-action=toggle]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="pomodoro").data.status==="running"');check('direct duration and start persist together',next(i for i in saved()['items'] if i['widget']=='pomodoro')['data']['duration']==300)
             elif kind=='notes':
                 page.locator('#dialog textarea').fill('Private note remains private');page.locator('[data-note-color=mint]').click();page.wait_for_timeout(750);check('notes edits survive saving style',next(i for i in saved()['items'] if i['widget']=='notes')['data']['notes']=='Private note remains private')
             elif kind=='todo':

@@ -5,6 +5,7 @@ import { t, localizeSeed } from './i18n.js';
 import { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } from './validation.js';
 import { getWidgetDefinition, newWidgetConfig, validateWidgetConfig } from './widget-registry.js';
 import { newWidgetData, validateWidgetData } from './widget-data.js';
+import { migrateFocusTimer } from './pomodoro.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { validateAvatarDataUrl } from './avatar.js';
 import { normalizeIconSelection } from './icon-selection.js';
@@ -101,7 +102,7 @@ export const DEFAULT_STATE = deepFreeze({
     link('site-douban', 'home', '豆瓣', 'https://www.douban.com/', '豆', '#2DA854'),
     link('site-notion', 'home', 'Notion', 'https://www.notion.so/', 'N', '#F6F4F0'),
     widget('countdown-home', 'countdown', '下一份期待'),
-    widget('focus-home', 'focus', '专注时刻'),
+    widget('focus-home', 'pomodoro', '番茄钟'),
     widget('workday-home', 'workday', '下班倒计时'),
     { id: 'folder-tools', groupId: 'home', type: 'folder', title: '随手工具', icon: 'folder', color: '#A6B1E1', size: '2x2' },
     link('tool-deepl', 'home', 'DeepL', 'https://www.deepl.com/translator', '译', '#234D68', 'folder-tools'),
@@ -113,7 +114,7 @@ export const DEFAULT_STATE = deepFreeze({
     link('work-calendar', 'work', 'Google 日历', 'https://calendar.google.com/', 'calendar', '#4385EF'),
     link('work-drive', 'work', 'Google 云端硬盘', 'https://drive.google.com/', 'triangle', '#2FAC75'),
     widget('todo-work', 'todo', '工作清单', '2x2', {}, 'work'),
-    widget('focus-work', 'focus', '专注工作', '2x2', {}, 'work'),
+    widget('focus-work', 'pomodoro', '番茄钟', '2x2', {}, 'work'),
     link('code-mdn', 'code', 'MDN', 'https://developer.mozilla.org/zh-CN/', 'M', '#242933'),
     link('code-github', 'code', 'GitHub', 'https://github.com/', 'github', '#24292F'),
     link('code-stack', 'code', 'Stack Overflow', 'https://stackoverflow.com/', 'code', '#EF8A38'),
@@ -322,6 +323,11 @@ export function validateImport(raw) {
       if(item.widget==='community'&&!item.config?.manifest?.sizes?.includes(size))invalid(`${path}.size`,t('组件不支持此尺寸'));
       const checked = { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
       // Validate legacy records before upgrading; keep identity, placement and custom names.
+      if (checked.widget === 'focus') {
+        Object.assign(checked, { widget: 'pomodoro' }, migrateFocusTimer(checked.data.focus));
+        if (checked.title === '专注计时') checked.title = '番茄钟';
+        else if (checked.title === 'Focus timer') checked.title = 'Pomodoro';
+      }
       if (checked.widget === 'hotlinks') {
         checked.widget = 'hotsearch';
         checked.config = newWidgetConfig('hotsearch');

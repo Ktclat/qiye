@@ -6,7 +6,7 @@ import { newWidgetConfig, listWidgetDefinitions } from '../src/widget-registry.j
 import { newWidgetData } from '../src/widget-data.js';
 import { DEFAULT_STATE, validateImport } from '../src/core.js';
 import { renderWidget } from '../src/widgets.js';
-import { pomodoroWorkspace } from '../src/pomodoro-view.js';
+import { pomodoroWorkspace, readPomodoroDurations, readPomodoroSettings } from '../src/pomodoro-view.js';
 import { setLocale } from '../src/i18n.js';
 
 const config = POMODORO_DEFAULTS;
@@ -24,6 +24,48 @@ test('new Pomodoro instances have independent state and round-trip through deskt
   first.config.focusMinutes = 45; assert.equal(second.config.focusMinutes, 25);
   const state = structuredClone(DEFAULT_STATE); state.items.push(first);
   assert.deepEqual(validateImport(JSON.stringify(state)).items.find(entry => entry.id === first.id), first);
+});
+
+test('retired focus cards migrate without losing identity, placement, custom titles or timer progress', () => {
+  assert.ok(!listWidgetDefinitions().some(entry => entry.type === 'focus'));
+  assert.ok(!DEFAULT_STATE.items.some(entry => entry.widget === 'focus'));
+  for (const running of [true, false]) {
+    const legacy = { ...item(), widget: 'focus', title: 'My writing timer', size: '4x2', config: {}, data: { focus: { duration: 40, remaining: 930, running, endAt: running ? now + 930000 : null } } };
+    const state = structuredClone(DEFAULT_STATE); state.items = [legacy];
+    const migrated = validateImport(state).items[0];
+    assert.equal(migrated.widget, 'pomodoro'); assert.equal(migrated.id, legacy.id);
+    assert.equal(migrated.title, legacy.title); assert.equal(migrated.groupId, legacy.groupId); assert.equal(migrated.size, legacy.size);
+    assert.equal(migrated.config.focusMinutes, 40); assert.equal(migrated.data.duration, 2400);
+    assert.equal(migrated.data.remaining, 930); assert.equal(migrated.data.status, running ? 'running' : 'paused');
+    assert.equal(migrated.data.endAt, legacy.data.focus.endAt);
+    assert.deepEqual(validateImport(validateImport(state)).items[0], migrated);
+  }
+});
+
+test('legacy completion is reconciled once and stopped timers never invent history', () => {
+  const state = structuredClone(DEFAULT_STATE);
+  state.items = [{ ...item(), widget: 'focus', title: '专注计时', config: {}, data: { focus: { duration: 25, remaining: 1500, running: true, endAt: now - 1000 } } }];
+  const migrated = validateImport(state).items[0];
+  assert.equal(migrated.title, '番茄钟');
+  const completed = settlePomodoro(migrated.data, migrated.config, now);
+  assert.equal(completed.sessions.length, 1); assert.equal(completed.sessions[0].completedAt, now - 1000);
+  assert.strictEqual(settlePomodoro(completed, migrated.config, now + 86400000), completed);
+  state.items[0].data.focus = { duration: 25, remaining: 0, running: false, endAt: null };
+  const stopped = validateImport(state).items[0];
+  assert.equal(stopped.data.status, 'idle'); assert.equal(stopped.data.remaining, 1500); assert.deepEqual(stopped.data.sessions, []);
+  state.items[0].data.focus.running = true;
+  assert.throws(() => validateImport(state), /结束时间/);
+});
+
+test('direct duration edits and advanced settings preserve each other', () => {
+  const previous = { ...config, dailyGoal: 12, longBreakEvery: 6, sound: false };
+  const durations = new FormData();
+  for (const [key, value] of Object.entries({ focusMinutes: 42, shortBreakMinutes: 7, longBreakMinutes: 21 })) durations.set(key, value);
+  const updated = validatePomodoroConfig(readPomodoroDurations(durations, previous));
+  assert.deepEqual(updated, { ...previous, focusMinutes: 42, shortBreakMinutes: 7, longBreakMinutes: 21 });
+  const advanced = new FormData(); advanced.set('dailyGoal', '10'); advanced.set('longBreakEvery', '5'); advanced.set('sound', 'on');
+  assert.deepEqual(validatePomodoroConfig(readPomodoroSettings(advanced, updated)), { ...updated, dailyGoal: 10, longBreakEvery: 5, sound: true });
+  durations.set('focusMinutes', ''); assert.throws(() => validatePomodoroConfig(readPomodoroDurations(durations, previous)));
 });
 
 test('wall-clock deadlines survive reload, suspension and a backwards clock adjustment', () => {
