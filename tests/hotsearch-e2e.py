@@ -187,6 +187,12 @@ with sync_playwright() as p:
             for route in held:
                 route.abort()
             hold_source[0]=''
+            small=page.locator('[data-widget-id="hot-2x2"]')
+            picker=small.locator('[data-hot-card-select]')
+            check(language+' compact platform selector stays within the card',picker.is_visible() and picker.evaluate('n=>{const r=n.getBoundingClientRect(),p=n.closest(".widget-inner").getBoundingClientRect();return r.left>=p.left&&r.right<=p.right&&r.top>=p.top&&r.bottom<=p.bottom}'))
+            picker.select_option('github')
+            page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id==="hot-2x2").config.activeSource==="github"')
+            check(language+' compact platform selection is independent',saved()['activeSource']=='weibo' and not page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id==="hot-2x2").config.enabled'))
             legacy=copy.deepcopy(seed['state'])
             legacy['settings'].update(language=language,theme=theme,autoExtractIcons=False)
             legacy['items']=[dict(id='legacy-hot',type='widget',widget='hotlinks',title='My custom trends',size='4x2',groupId=legacy['activeGroupId'],config={},data={})]

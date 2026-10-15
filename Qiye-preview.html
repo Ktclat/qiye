@@ -1408,6 +1408,9 @@ html[data-theme=light] .hotsearch-error{color:#9b411e}
 html[data-theme=dark] .w-hotsearch{--w-bg:#292322;--w-heading:#ff9e7d;--w-fg:#f4e7df;--w-muted:#bea69a;--w-hover:#42322b;--w-control:#ffffff10}
 .hotsearch-card-header{display:flex;align-items:center;justify-content:space-between;flex:none;gap:6px}.hotsearch-card-header button{display:flex;align-items:center;gap:6px;background:transparent;border:0;padding:0;color:var(--w-heading);cursor:pointer;font:inherit}.hotsearch-card-header .icon{width:16px;height:16px}
 .hotsearch-card-tabs{display:flex;gap:4px;overflow:auto;scrollbar-width:none;margin:7px 0 4px;flex:none}.hotsearch-card-tabs button{border:0;background:transparent;color:var(--w-muted);border-radius:6px;padding:3px 6px;font:inherit;font-size:10px;white-space:nowrap;cursor:pointer}.hotsearch-card-tabs button[aria-pressed=true]{background:var(--w-hover);color:var(--w-heading);font-weight:600}
+.hotsearch-card-picker{display:none;flex:none;width:100%;max-width:100%;min-width:0;height:26px;margin:7px 0 4px;padding:3px 6px;border:0;border-radius:6px;background:var(--w-hover);color:var(--w-fg);font:inherit;font-size:11px}
+.w-hotsearch[data-display-size="2x2"] .hotsearch-card-tabs{display:none}
+.w-hotsearch[data-display-size="2x2"] .hotsearch-card-picker{display:block}
 .hotsearch-card-content{flex:1;min-height:0;overflow:auto;scrollbar-width:thin}.hotsearch-card-content .hotsearch-rows a,.hotsearch-card-content .hotsearch-unlinked{padding:4px 1px;gap:7px}.hotsearch-card-content .hotsearch-title{font-size:11px}.hotsearch-card-content .hotsearch-rank{width:18px;height:19px;font-size:10px;border-radius:5px}.hotsearch-card-content .hotsearch-heat{font-size:9px;max-width:55px}
 .hotsearch-card-empty{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;font:inherit;border:0;background:transparent;color:var(--w-fg);cursor:pointer;padding:6px}.hotsearch-card-empty>.icon{color:var(--w-heading);width:26px;height:26px;opacity:.8}.hotsearch-card-empty strong{font-size:12px}.hotsearch-card-empty span{font-size:10px;color:var(--w-muted)}
 .hotsearch-card-footer{font-size:8px;color:var(--w-muted);text-align:right;flex:none;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.w-hotsearch[data-display-size="2x2"] .hotsearch-heat{display:none}
@@ -5432,7 +5435,8 @@ function hotsearchCard(item, state) {
   const content = !item.config.subscriptions.length ? `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t('还没有订阅榜单')}</strong><span>${t('管理订阅')}</span></button>`
     : status.data?.items.length ? hotsearchRows(status.data,source,state,5)
     : `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t(status.status==='error'?'榜单暂不可用':status.data?'这个榜单暂时没有内容。':status.status==='loading'||item.config.enabled?'正在加载榜单…':'点击查看实时榜单')}</strong><span>${t('打开热搜榜')}</span></button>`;
-  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${esc(t(entry.name))}</button>`).join('')}</div><div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
+  const picker = sources.length ? `<select class="hotsearch-card-picker" data-hot-card-select aria-label="${t('榜单平台')}">${sources.map(entry=>`<option value="${entry.id}" ${entry.id===source.id?'selected':''}>${esc(t(entry.name))}</option>`).join('')}</select>` : '';
+  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${esc(t(entry.name))}</button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
 }
 
 function refreshHotsearchCards(container, state) {
@@ -5659,12 +5663,26 @@ function bindHotsearchCards(container,host) {
     try { const job=hotsearchClient.request(item.config,item.config.activeSource,{manual,signal:entry.controller.signal});render(root);await job;if(pending.get(root)===entry)render(root); }
     finally {if(pending.get(root)===entry)pending.delete(root);}
   }
+  async function selectSource(root,id) {
+    const item=current(root),previous=item.config;
+    try {
+      if(!hotsearchSource(id)?.github)await requestPublicOrigin(previous.apiBase);
+      if(!alive(root)||current(root)!==item)return;
+      item.config={...previous,activeSource:id};await host.save();render(root);
+      const picker=root.querySelector('[data-hot-card-select]');
+      const control=picker?.getClientRects().length?picker:root.querySelector(`[data-hot-card-source="${id}"]`);
+      control?.focus({preventScroll:true});void load(root,true);
+    } catch(error) {if(current(root)===item)item.config=previous;render(root);if(!error?.notified)host.toast?.(error.message);}
+  }
   container.addEventListener('click',event=>{
     const button=event.target.closest('[data-hot-card-source]'),root=button?.closest('[data-widget=hotsearch]');
     if(!root||!alive(root))return;
-    event.preventDefault();event.stopPropagation();
-    const item=current(root),previous=item.config;
-    void (async()=>{try{if(!hotsearchSource(button.dataset.hotCardSource)?.github)await requestPublicOrigin(previous.apiBase);if(!alive(root)||current(root)!==item)return;item.config={...previous,activeSource:button.dataset.hotCardSource};await host.save();render(root);root.querySelector(`[data-hot-card-source="${button.dataset.hotCardSource}"]`)?.focus({preventScroll:true});void load(root,true);}catch(error){if(current(root)===item)item.config=previous;render(root);if(!error?.notified)host.toast?.(error.message);}})();
+    event.preventDefault();event.stopPropagation();void selectSource(root,button.dataset.hotCardSource);
+  },{signal:controller.signal});
+  container.addEventListener('change',event=>{
+    const picker=event.target.closest('[data-hot-card-select]'),root=picker?.closest('[data-widget=hotsearch]');
+    if(!root||!alive(root))return;
+    event.preventDefault();event.stopPropagation();void selectSource(root,picker.value);
   },{signal:controller.signal});
   const tick=()=>{if(!globalThis.document?.hidden)for(const root of roots())void load(root);};
   const timer=setInterval(tick,60000);tick();

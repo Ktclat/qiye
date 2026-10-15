@@ -80,7 +80,7 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/'settings.png'),animations='disabled');close()
         page.locator('.top-tools [data-action=add]').click();check('add defaults to widget showcase',page.locator('[data-catalog-card]').count()==14)
         page.screenshot(path=str(OUT/'catalog.png'),animations='disabled')
-        page.locator('[data-catalog-category="工具"]').click();check('category filters actual catalog',page.locator('[data-catalog-card]:visible').count()==2)
+        page.locator('[data-catalog-category="工具"]').click();check('category filters actual catalog',page.locator('[data-catalog-card]:visible').count()==1 and page.locator('[data-catalog-widget=calculator]').is_visible())
         page.locator('#widget-query').fill('nothing-matches');check('combined search shows empty state',page.locator('#widget-catalog-empty').is_visible())
         page.locator('[data-add-tab=sites]').click();page.locator('#widget-query').fill('github');page.locator('#catalog-group').select_option('code')
         page.locator('[data-catalog-card]:visible [data-add-site]').first.click();page.locator('#dialog').wait_for(state='hidden');check('website picker honors target group',saved()['items'][-1]['groupId']=='code')
