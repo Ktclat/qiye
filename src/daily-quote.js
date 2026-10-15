@@ -5,6 +5,7 @@ import { fetchPublicJson } from './public-json.js';
 
 const CACHE_KEY = 'qiye.daily-quote.v1';
 const API_URL = 'https://v1.hitokoto.cn/';
+const COPY_FEEDBACK_MS = 1200;
 const LOCAL_QUOTES = [
   '把今天过得慢一点，认真看一朵云，认真完成一件小事。',
   '让注意力回到手边，下一步就会慢慢清楚。',
@@ -114,7 +115,9 @@ export function createDailyQuote(root, {onSearch = () => {}, onNotify = () => {}
       button.disabled = !quote;
       label(button, copied ? t('已复制短句') : t('复制短句'));
     });
-    text.parentElement.title = copied ? t('已复制短句') : t('点击复制');
+    const attribution = [quote?.author, quote?.from].filter(Boolean);
+    if (quote && !attribution.length) attribution.push(t(result.status === 'local' ? '本地短句' : '一言'));
+    text.parentElement.title = [...attribution, copied ? t('已复制短句') : t('点击复制')].join(' · ');
     text.parentElement.setAttribute('aria-label', t('复制短句：{text}', {text: text.textContent}));
     root.querySelector('.daily-quote-actions').setAttribute('aria-label', t('短句操作'));
     label(searchButton, t('搜索这句话'));
@@ -131,9 +134,9 @@ export function createDailyQuote(root, {onSearch = () => {}, onNotify = () => {}
       if (!enabled) return;
       copiedText = value;
       clearTimeout(copiedTimer);
-      copiedTimer = setTimeout(() => { copiedText = ''; render(); }, 1800);
+      copiedTimer = setTimeout(() => { copiedText = ''; render(); }, COPY_FEEDBACK_MS);
       render();
-      onNotify(t('已复制短句'));
+      onNotify(t('已复制短句'), COPY_FEEDBACK_MS);
     } catch {
       onNotify(t('复制失败，请检查浏览器的剪贴板权限。'));
     }

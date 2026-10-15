@@ -62,7 +62,7 @@ const WALLPAPERS = [
 ];
 const dialog = $('#dialog');
 const dailyQuote = createDailyQuote($('#daily-quote'), {
- onNotify: message => toast(message),
+ onNotify: (message, duration) => toast(message, undefined, undefined, duration),
  onSearch: text => navigate(currentEngine().url.replace(/\{q\}/g, encodeURIComponent(text)), false, true),
 });
 const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -343,10 +343,10 @@ async function visitLinkFavicon(button) {
   if(view.visitController===controller){view.visitController=null;if(form.isConnected&&dialog.open)updateLinkPreview(form);}
  }
 }
-function toast(message, undo, actionLabel=t("撤销")) {
+function toast(message, undo, actionLabel=t("撤销"), duration=5200) {
  clearTimeout(lastToastTimer); const el = $('#toast');
  $('span',el).textContent = message; $('button',el).hidden = !undo; $('button',el).textContent=actionLabel; undoAction = undo || null; el.hidden = false;
- lastToastTimer = setTimeout(() => { el.hidden = true; undoAction = null; }, undo ? 9500 : 5200);
+ lastToastTimer = setTimeout(() => { el.hidden = true; undoAction = null; }, undo ? 9500 : duration);
 }
 $('#toast button').addEventListener('click', async () => { const action = undoAction; $('#toast').hidden = true; undoAction = null; if (action) await action(); });
 async function persist(options = {}) {
