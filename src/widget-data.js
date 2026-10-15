@@ -3,12 +3,14 @@ import { t } from './i18n.js';
 import { keys, string, array, id, bool, number, date, unique, invalid } from './validation.js';
 
 import { validateMemos } from './memos.js';
+import { newBaseConverterData, validateBaseConverterData } from './base-converter.js';
 import { validateCommunityData } from './community-format.js';
 
 const dataKeys = Object.freeze({ notes: 'notes', todo: 'todos', habit: 'habits', focus: 'focus' });
 const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, remaining: 1500, running: false, endAt: null } };
 
 export function newWidgetData(type) {
+  if (type === 'base-converter') return newBaseConverterData();
   if(type==='community')return {value:'null'};
   if (type === 'memo') return { entries: [] };
   if (type === 'calendar') return { events: [] };
@@ -26,6 +28,7 @@ export function widgetContentSummary(items) {
 }
 
 export function validateWidgetData(type, raw, path) {
+  if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if(type==='community')return validateCommunityData(raw);
   if (type === 'memo') return validateMemos(raw, path);
   if (type === 'calendar') {

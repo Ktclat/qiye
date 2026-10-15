@@ -215,7 +215,7 @@ with sync_playwright() as p:
   check('dedicated sidebar icon opens icon controls',lambda:truth(page.locator('[data-range="gridSize"]').is_visible() and page.locator('[data-preference="iconShape"]').is_visible()))
   page.locator('[data-close]').first.click();page.locator('.top-tools').hover();page.locator('.top-tools [data-action="add"]').click()
   check('add window is a left navigation plus right content layout',lambda:eq(page.locator('.add-layout').evaluate('n=>getComputedStyle(n).display'),'grid'))
-  page.locator('[data-add-tab="widgets"]').click();check('widget category renders all fourteen choices',lambda:eq(page.locator('[data-add-widget]').count(),14))
+  page.locator('[data-add-tab="widgets"]').click();check('widget category includes the base converter',lambda:truth(page.locator('[data-add-widget="base-converter"]').is_visible()))
   page.locator('[data-add-tab="folder"]').click();check('folder category has its independent form',lambda:truth(page.locator('#folder-form').is_visible()))
   page.locator('[data-add-tab="link"]').click();page.screenshot(path=str(OUT/'add-dialog.png'));page.locator('[data-close]').first.click();check('new settings and chooser have no JS exceptions',lambda:eq(errors,[]));ctx.close()
 

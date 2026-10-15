@@ -10,6 +10,9 @@ This is the canonical version history, moved from the original README. Historica
 
 ## 未发布 / Unreleased
 
+- 新增“进制转换”：2–36 进制多结果实时展示，支持精确大整数、负数、小数及循环节，提供精度、分组、前缀、逐项 / 全部复制和独立保存；适配五种卡片尺寸、中英文、深浅主题与窄屏。
+- Added a Base converter with simultaneous outputs for bases 2–36, exact large integers and fractions, recurring notation, precision and formatting controls, copy actions, independent saved state and responsive layouts.
+
 - 已有“热搜入口”自动升级为热搜榜，保留位置、尺寸和自定义名称；添加面板只展示新版入口。Existing Trending links cards upgrade in place, and the widget catalog offers the new Trending widget.
 - 新增“热搜榜”：点击直接查看排名、标题和热度，1260 × 840 阅读窗口；支持 22 个公开来源、分类与平台搜索、订阅管理、拖动 / 键盘排序、单榜 / 多榜视图、刷新、最大化及五种桌面尺寸。自动更新开关仅控制后台刷新。
 - 默认接入 UAPI 热榜与 GitHub 新仓库榜，可配置兼容 DailyHotApi 的 HTTPS 服务。按实例保存设置，提供 10 分钟缓存、离线旧榜与失败重试，并适配中英文、深浅色和窄屏。

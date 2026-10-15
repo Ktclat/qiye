@@ -33,8 +33,18 @@ The registry contains 14 user-facing built-in widget types. `community` is a sep
 | `quote` | Quotes | Custom text/author or built-in quotes |
 | `hotsearch` | Trending | 22 sources, categories/search, subscription ordering, single/multiple lists, refresh and local cache; opens directly to rankings |
 | `calculator` | Calculator | Arithmetic, parentheses and percentages |
+| `base-converter` | Base converter | Simultaneous results for bases 2–36, large integers, negatives, fractions, recurring digits and precision controls |
 | `habit` | Habits | Daily records and streaks |
 | `clock` | World clock | IANA timezone, city label and time comparison |
+
+## Base converter
+
+Add **Widgets → Tools → Base converter**. Binary, octal, decimal and hexadecimal appear together by default; add or remove any output base from 2 to 36. The 2×2 / 4×2 desktop cards show the first four results, and all five sizes open the dedicated workspace. Narrow windows stack input and results and initially collapse formatting options.
+
+- Input is limited to 512 characters. Exact rational arithmetic preserves large integers and fractions beyond JavaScript's safe integer range. Accepts negatives, case-insensitive letters, space / underscore groups and recurring notation such as `0.(3)`. Pasting a complete `0b`, `0o` or `0x` number detects its input base.
+- Choose 1–128 maximum fractional digits. Parentheses mark recurring digits; longer expansions are truncated, not rounded, and show `≈` and `…`. Negatives retain a minus sign; two's complement and scientific notation are not supported.
+- Copy individual results or all results. Individual copies omit grouping spaces and announce truncation when applicable; copying all preserves base labels and approximation markers. Only exact results within the input limit can be reused as input.
+- Each instance independently saves its input, output bases and formatting in desktop data, JSON backups and WebDAV. Public layout sharing resets these to defaults. Conversion needs no network access; failed saves retain session drafts and offer retry.
 
 ## Trending lists
 

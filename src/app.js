@@ -12,6 +12,7 @@ import { bindWeatherWorkspace } from './weather-workspace.js';
 import { hotsearchWorkspace, refreshHotsearchCards } from './hotsearch-view.js';
 import { bindHotsearchWorkspace } from './hotsearch-workspace.js';
 import { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } from './widget-workspaces.js';
+import { baseConverterWorkspace, bindBaseConverter } from './base-converter-view.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
 import { communityView, bindCommunity } from './community-ui.js';
 import { communityWorkspace, bindCommunityWorkspace } from './community-widget.js';
@@ -692,12 +693,13 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['calendar','memo','weather','community','hotsearch'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['calendar','memo','weather','community','hotsearch','base-converter'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
+ dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
@@ -709,6 +711,7 @@ function openDialog(kind,data={}) {
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
+ else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
@@ -741,6 +744,7 @@ function openDialog(kind,data={}) {
   const utility=$('#utility-workspace');
   const viewer=$('#widget-viewer-body');
   if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
+  else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='hotsearch')viewerCleanup=bindHotsearchWorkspace($('#hotsearch-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>refreshHotsearchCards($('#desktop'),state)});
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
@@ -754,6 +758,7 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
+ else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();

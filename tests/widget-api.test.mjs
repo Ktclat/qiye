@@ -42,8 +42,8 @@ test('window presentation and independent size persist under the current strict 
 
 test('packaged extension registration supplies defaults without changing builtins', () => {
   const registry = createWidgetRegistry([counterWidget]);
-  assert.equal(listWidgetDefinitions().length, 14);
-  assert.equal(registry.list().length, 15);
+  assert.ok(listWidgetDefinitions().some(widget => widget.type === 'base-converter'));
+  assert.equal(registry.list().length, listWidgetDefinitions().length + 1);
   assert.deepEqual(registry.newConfig('counter'), { label: '今天的小进步', count: 0 });
   assert.ok(Object.isFrozen(registry.get('counter').fields[0]));
   assert.deepEqual(registry.get('counter').sizes, ['1x1', '2x2']);

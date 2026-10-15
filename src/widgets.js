@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { baseConverterCard } from './base-converter-view.js';
 import { renderWidgetSummary } from './widget-summary.js';
 import { communityCard } from './community-widget.js';
 import { isCompactWidget } from './widget-sizes.js';
@@ -40,6 +41,7 @@ export function escapeHtml(value = '') {
 }
 
 const icons = {
+  code: '<path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/>',
   settings: '<path d="m9.5 4 .5-2h4l.5 2 2 .9 1.8-.6 2 3.4-1.3 1.5v2.4l1.3 1.5-2 3.4-1.8-.6-2 .9-.5 2h-4l-.5-2-2-.9-1.8.6-2-3.4L4 11.6V9.2L2.7 7.7l2-3.4 1.8.6Z"/><circle cx="12" cy="10.5" r="3"/>',
   more: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
   chevronLeft: '<path d="m14 6-6 6 6 6"/>',
@@ -349,6 +351,7 @@ function compactModel(item) {
   else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
   else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
   else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
+  else if (type === 'base-converter') { value = '2↔16'; caption = t('进制转换'); detail = 'BIN · OCT · DEC · HEX'; meta = t('支持 2–36 进制'); }
   return {value, caption, detail, meta, unit};
 }
 function renderCompact(item) {
@@ -356,6 +359,7 @@ function renderCompact(item) {
 }
 
 export function renderWidgetContent(item, state) {
+  if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };

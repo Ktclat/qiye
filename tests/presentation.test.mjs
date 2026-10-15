@@ -5,6 +5,7 @@ import { gridMetrics, widgetDimensions, TILE_SIZES } from '../src/widget-sizes.j
 import { windowMetrics } from '../src/window-layout.js';
 import { themeTokens } from '../src/theme.js';
 import { renderCatalog } from '../src/widget-catalog.js';
+import { listWidgetDefinitions } from '../src/widget-registry.js';
 
 test('grid geometry excludes labels and preserves aspect ratios on smaller viewports', () => {
   const settings = DEFAULT_STATE.settings;
@@ -35,8 +36,9 @@ test('one accent switch applies to resolved system theme with readable button in
 
 test('catalog uses independent accessible size controls and inert production renderers', () => {
   const html=renderCatalog({state:DEFAULT_STATE,groupId:'home'});
-  assert.equal((html.match(/data-catalog-size=/g)||[]).length,70);
-  assert.equal((html.match(/class="catalog-stage" inert/g)||[]).length,14);
+  const definitions = listWidgetDefinitions();
+  assert.equal((html.match(/data-catalog-size=/g)||[]).length, definitions.reduce((count, widget) => count + widget.sizes.length, 0));
+  assert.equal((html.match(/class="catalog-stage" inert/g)||[]).length, definitions.length);
   assert.ok(html.includes('data-catalog-widget="countdown" data-preview-size="2x2"'));
   assert.ok(html.includes('--preview-width:330px;--preview-height:150px'));
   assert.ok(!html.includes('name="widgetSize"'));
