@@ -2373,12 +2373,12 @@ html[data-theme=dark] .w-base-converter{--w-bg:#25362f;--w-fg:#d4e9de;--w-muted:
 .radix-app .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 html[data-theme=light] .radix-app{--radix-accent:#23735d;--radix-error:#ae3831}
 html[data-accent=custom] .radix-app{--radix-accent:var(--accent)}
-.radix-header{display:flex;gap:13px;align-items:center;padding:22px 28px;border-bottom:1px solid var(--app-border);flex:none}
-.radix-app-mark{display:grid;place-items:center;width:42px;height:42px;background:var(--radix-tint);color:var(--radix-accent);border:1px solid color-mix(in srgb,var(--radix-accent) 30%,transparent);border-radius:12px;flex:none}
-.radix-app-mark .icon{width:23px;height:23px}
-.radix-header h2{font-size:20px;letter-spacing:.02em;margin:0;overflow-wrap:anywhere;font-weight:600}
-.radix-header p{font-size:12px;color:var(--app-muted);margin:4px 0 0}
-.radix-header .widget-app-controls{margin-left:auto}
+.radix-header{display:flex;gap:8px;align-items:center;min-height:44px;padding:6px 16px;border-bottom:1px solid var(--app-border);flex:none}
+.radix-app-mark{display:grid;place-items:center;width:24px;height:24px;background:var(--radix-tint);color:var(--radix-accent);border:1px solid color-mix(in srgb,var(--radix-accent) 30%,transparent);border-radius:7px;flex:none}
+.radix-app-mark .icon{width:16px;height:16px}
+.radix-header h2{flex:1;min-width:0;font-size:14px;line-height:20px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.radix-header .widget-app-controls{margin-left:auto;gap:2px}
+.radix-header .widget-app-button{width:30px;height:30px;padding:6px;border-radius:7px}
 .radix-layout{display:grid;grid-template-columns:minmax(260px,.85fr) minmax(0,1.5fr);flex:1;min-height:0;overflow:hidden}
 .radix-source{padding:24px 26px;overflow:auto;border-right:1px solid var(--app-border);background:var(--app-pane);scrollbar-width:thin}
 .radix-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
@@ -2454,7 +2454,7 @@ html[data-accent=custom] .radix-app{--radix-accent:var(--accent)}
 @container (max-width:760px){
   .radix-layout{grid-template-columns:minmax(230px,.95fr) minmax(0,1fr)}
   .radix-source,.radix-results-panel{padding:20px 16px}
-  .radix-header{padding:18px 20px}
+  .radix-header{padding-inline:14px}
   .radix-source-presets button{flex-direction:column;gap:3px}
   .radix-target-picker{gap:8px}.radix-add-target{margin-left:0}
   .radix-result-number output{font-size:20px}
@@ -2471,8 +2471,7 @@ html[data-accent=custom] .radix-app{--radix-accent:var(--accent)}
   .radix-format{display:flex;flex-wrap:wrap;gap:8px 16px}
   .radix-precision{flex-basis:100%}.radix-format .radix-help{flex-basis:100%;margin:0}
   .radix-toggle{margin:4px 0}.radix-guide{margin-top:10px;padding-top:10px}
-  .radix-header{padding:15px 16px}.radix-header h2{font-size:18px}
-  .radix-header p{font-size:11px}.radix-header .widget-app-controls{gap:1px}
+  .radix-header{padding-inline:12px}
   .radix-footer{padding:10px 16px;gap:7px}.radix-range{display:none}
 }
 @media (forced-colors:active){.radix-result.is-source,.radix-source-presets button[aria-pressed=true],.radix-target-picker button[aria-pressed=true]{border-color:Highlight}.radix-input-shell:focus-within{outline:2px solid Highlight}}
@@ -6373,7 +6372,7 @@ function formatToggle(key, label, checked) {
 function baseConverterWorkspace(item) {
   const data = drafts.get(item.id)?.data || item.data;
   return `<div class="radix-app">
-    <header class="radix-header"><div class="radix-app-mark" aria-hidden="true">${icon('code')}</div><div><h2 id="dialog-title">${e(item.title)}</h2><p>${t('一个数值，多种表达。')}</p></div>${windowControls()}</header>
+    <header class="radix-header"><div class="radix-app-mark" aria-hidden="true">${icon('code')}</div><h2 id="dialog-title" title="${e(item.title)}">${e(item.title)}</h2>${windowControls()}</header>
     <div class="radix-layout">
       <section class="radix-source" aria-label="${t('转换输入')}">
         <div class="radix-section-heading"><h3>${t('输入数值')}</h3><span class="radix-local">${t('本地计算')}</span></div>
