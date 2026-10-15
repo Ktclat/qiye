@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { newPomodoroData, validatePomodoroData } from './pomodoro.js';
 import { t } from './i18n.js';
 import { keys, string, array, id, bool, number, date, unique, invalid } from './validation.js';
 
@@ -12,6 +13,7 @@ const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, rema
 
 export function newWidgetData(type) {
   if (type === 'base-converter') return newBaseConverterData();
+  if (type === 'pomodoro') return newPomodoroData();
   if(type==='community')return {value:'null'};
   if (type === 'bookmarks') return { nodes: [] };
   if (type === 'memo') return { entries: [] };
@@ -31,6 +33,7 @@ export function widgetContentSummary(items) {
 
 export function validateWidgetData(type, raw, path) {
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
+  if (type === 'pomodoro') return validatePomodoroData(raw, path);
   if(type==='community')return validateCommunityData(raw);
   if (type === 'bookmarks') return validateBookmarks(raw, path);
   if (type === 'memo') return validateMemos(raw, path);

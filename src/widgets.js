@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { baseConverterCard } from './base-converter-view.js';
+import { pomodoroCard } from './pomodoro-view.js';
+import { bindPomodoro } from './pomodoro-runtime.js';
 import { renderWidgetSummary } from './widget-summary.js';
 import { bookmarkCard } from './bookmarks-view.js';
 import { bindBookmarkCards } from './bookmarks-workspace.js';
@@ -363,6 +365,7 @@ function renderCompact(item) {
 export function renderWidgetContent(item, state) {
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
+  if (item.widget === 'pomodoro') return pomodoroCard(item);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
   const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
@@ -374,6 +377,7 @@ export function renderWidget(item, state) {
   if (!definition) throw new Error(`${t("未知组件：{v0}", {v0: item.widget})}`);
   item = { ...item, size: item.size || definition.size };
   const type = item.widget;
+  if (type === 'pomodoro') return pomodoroCard(item);
   if(type==='community')return `<div class="widget-inner w-community" data-widget="community" data-widget-id="${escapeHtml(item.id)}" data-display-size="${item.size}">${communityCard(item)}</div>`;
   if (definition.builtin && type !== 'bookmarks' && isCompactWidget(item.size)) return renderCompact(item);
   if (definition && !definition.builtin) {
@@ -634,6 +638,7 @@ export function bindWidgets(container, context) {
     binding.extensions?.cleanup();
     binding.bookmarksCleanup?.();
     binding.hotsearchCleanup?.();
+    binding.pomodoroCleanup?.();
     clearTimeout(binding.noteTimer);
     container.removeEventListener('click', click);
     container.removeEventListener('input', input);
@@ -645,6 +650,7 @@ export function bindWidgets(container, context) {
   binding.extensions = mountWidgetExtensions(container, context);
   binding.bookmarksCleanup = bindBookmarkCards(container, context);
   binding.hotsearchCleanup = bindHotsearchCards(container, context);
+  binding.pomodoroCleanup = bindPomodoro(container, context);
   binding.cleanup = cleanup;
   bindings.set(container, binding);
   refreshLiveWidgets(container, context.getState());

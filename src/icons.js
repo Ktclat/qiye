@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
+ tomato:'<path d="M12 7C6 3 2 8 3 14c1 8 17 8 18 0 1-6-3-11-9-7Z"/><path d="m7 5 5 3 5-3-2 5-3-2-3 2 2-4 2-4"/>',
+ pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',
+ reset:'<path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/>',
+ skip:'<path d="m5 5 10 7-10 7ZM19 5v14"/>',
  list:'<path d="M9 6h12M9 12h12M9 18h12M3 6h.01M3 12h.01M3 18h.01"/>',
  droplet:'<path d="M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13Z"/>',
  wind:'<path d="M3 8h12a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M5 16h4a3 3 0 1 1-3 3"/>',

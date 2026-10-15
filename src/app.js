@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } from './pomodoro-view.js';
+import { configurePomodoro, validatePomodoroConfig } from './pomodoro.js';
+import { bindPomodoro } from './pomodoro-runtime.js';
 import { renderCatalog, filterCatalog, changeCatalogSize } from './widget-catalog.js';
 import { TILE_SIZES, sizeLabel, gridMetrics } from './widget-sizes.js';
 import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
@@ -695,7 +698,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['calendar','memo','weather','community','hotsearch','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
@@ -703,6 +706,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('bookmarks-app-dialog',detailWidget === 'bookmarks');
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
+ dialog.classList.toggle('pomodoro-app-dialog',detailWidget === 'pomodoro');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
@@ -719,6 +723,7 @@ function openDialog(kind,data={}) {
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='pomodoro'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="pomodoro-workspace" class="widget-app-body">${pomodoroWorkspace(item)}</div>`;}
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
  else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
  else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
@@ -752,6 +757,7 @@ function openDialog(kind,data={}) {
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='hotsearch')viewerCleanup=bindHotsearchWorkspace($('#hotsearch-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>refreshHotsearchCards($('#desktop'),state)});
+  else if(detailWidget==='pomodoro'){const cleanup=bindPomodoro($('#pomodoro-workspace'),{getState:()=>state,save:persist,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
   else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
   else if(viewer) {
     const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
@@ -765,7 +771,7 @@ function openDialog(kind,data={}) {
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch','bookmarks'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch','pomodoro','bookmarks'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -1002,6 +1008,7 @@ function widgetConfigDialog(item) {
  else if(type==='calendar') content += selectField('weekStart',t("每周开始日"),c.weekStart,[{value:'1',label:t("星期一")},{value:'0',label:t("星期日")}])+selectField('holidays',t("节假日地区"),c.holidays,[{value:'none',label:t("仅周末")},{value:'CN',label:t("中国大陆 · 2026")}])+`<label class="setting-row"><span>${t("显示农历")}</span><input type="checkbox" name="showLunar" ${c.showLunar?'checked':''}></label>`;
  else if(type==='countdown') content += field('eventTitle',t("纪念日 / 倒数日名称"),c.title,{required:true,maxlength:40})+field('date',t("目标日期"),c.date,{type:'date',required:true});
  else if(type==='focus') content += field('duration',t("每次专注时长（分钟）"),item.data.focus.duration,{type:'number',min:1,max:180,required:true,help:t("保存时会停止当前计时，并开始一轮新的时长。")});
+ else if(type==='pomodoro') content += pomodoroSettingsFields(c);
  else if(type==='workday') content += `<div class="two-columns">${field('endTime',t("下班时间"),c.endTime,{type:'time',required:true})}${field('payday',t("每月发薪日"),c.payday,{type:'number',min:1,max:31,required:true})}</div><div class="field"><span>${t("工作日")}</span><div class="color-options">${[t("日"),t("一"),t("二"),t("三"),t("四"),t("五"),t("六")].map((d,i)=>`<label class="help-text"><input type="checkbox" name="workdays" value="${i}" ${c.workdays.includes(i)?'checked':''}>${t("周{v0}", {v0: d})}</label>`).join('')}</div></div>`;
  else if(type==='clock') content += field('label',t("城市显示名称"),c.label,{required:true,maxlength:30})+selectField('timeZone',t("时区"),c.timeZone,[{value:'Asia/Hong_Kong',label:t("香港 / 北京")},{value:'Asia/Tokyo',label:t("东京")},{value:'Asia/Singapore',label:t("新加坡")},{value:'Europe/London',label:t("伦敦")},{value:'Europe/Paris',label:t("巴黎")},{value:'America/New_York',label:t("纽约")},{value:'America/Los_Angeles',label:t("洛杉矶")},{value:'Australia/Sydney',label:t("悉尼")},{value:'UTC',label:'UTC'}]);
  else if(type==='quote') content += `<label class="field"><span>${t("自定义短句（可留空）")}</span><textarea name="text" maxlength="300" placeholder="${t("写下一句想对自己说的话")}">${esc(c.text || '')}</textarea></label>${field('author',t("署名"),c.author || '',{maxlength:40})}`;
@@ -1247,6 +1254,7 @@ dialog.addEventListener('submit',async event=>{
    if(type==='calendar'){c.weekStart=Number(value('weekStart'));c.holidays=value('holidays');c.showLunar=data.has('showLunar');}
    if(type==='countdown'){c.title=value('eventTitle');c.date=value('date');}
    if(type==='focus'){const duration=Number(value('duration'));if(!Number.isInteger(duration)||duration<1||duration>180)throw new Error(t("专注时长需为 1–180 分钟。"));item.data.focus={duration,remaining:duration*60,endAt:null,running:false};}
+   if(type==='pomodoro'){item.config=validatePomodoroConfig(readPomodoroSettings(data));item.data=configurePomodoro(item.data,item.config);}
    if(type==='workday'){c.endTime=value('endTime');c.payday=Number(value('payday'));c.workdays=data.getAll('workdays').map(Number);}
    if(type==='clock'){c.timeZone=value('timeZone');c.label=value('label');}
    if(type==='quote'){c.text=value('text');c.author=value('author');}

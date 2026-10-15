@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { POMODORO_DEFAULTS, validatePomodoroConfig } from './pomodoro.js';
 import { t, localizeSeed } from './i18n.js';
 import { keys, string, number, bool, enumeration, array, unique, date, time, invalid } from './validation.js';
 import { TILE_SIZES, REQUIRED_WIDGET_SIZES } from './widget-sizes.js';
@@ -17,6 +18,7 @@ const builtins = [
   { type: 'todo', title: '待办清单', description: '添加、勾选和删除日常任务', size: '2x2', icon: 'check' },
   { type: 'countdown', title: '倒数日', description: '记住值得期待的日子', size: '2x2', icon: 'flag' },
   { type: 'focus', title: '专注计时', description: '可暂停的番茄钟，关闭页面继续计时', size: '2x2', icon: 'timer' },
+  { type: 'pomodoro', title: '番茄钟', description: '一颗番茄，一件事。专注与休息交替，收获每天的小小成果', size: '2x2', icon: 'tomato' },
   { type: 'workday', title: '下班倒计时', description: '工作日下班与发薪日倒计时', size: '2x2', icon: 'briefcase' },
   { type: 'quote', title: '每日一句', description: '给日常留一点思考的空白', size: '4x2', icon: 'quote' },
   // Kept for validating old desktops and backups; the catalog offers its replacement.
@@ -32,6 +34,7 @@ export const WIDGET_API_VERSION = 3;
 const fieldTypes = ['text', 'number', 'select', 'checkbox'];
 const builtinConfig = {
   bookmarks: { source: 'local' },
+  pomodoro: POMODORO_DEFAULTS,
   hotsearch: HOTSEARCH_DEFAULTS,
   calendar: { weekStart: 0, showLunar: true, holidays: 'CN' },
   weather: { city: { name: '香港', latitude: 22.32, longitude: 114.17 }, enabled: false, unit: 'celsius', source: 'auto', fallback: true },
@@ -112,6 +115,7 @@ export function newWidgetConfig(type) { return registry.newConfig(type); }
 export function validateWidgetConfig(type, raw, path) { return registry.validateConfig(type, raw, path); }
 
 function validateBuiltinConfig(widgetType, raw, path) {
+  if (widgetType === 'pomodoro') return validatePomodoroConfig(raw, path);
   if (widgetType === 'hotsearch') return validateHotsearchConfig(raw, path);
   if(widgetType==='community'){
     keys(raw,['manifest','source'],path);
