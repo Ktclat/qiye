@@ -26,12 +26,16 @@ export function bindBookmarkWorkspace(root, initial, host, client = browserBookm
     find('.bm-result-count').textContent = t('{count} 个项目', {count:listBookmarks(entries,view).length});
     const counts = bookmarkCounts(entries);
     find('.bm-footer').textContent = t('{links} 个书签 · {folders} 个文件夹', counts);
+    find('.bm-footer').title = find('.bm-footer').textContent;
+    find('.bm-source-label').textContent = t(view.source === 'browser' ? '浏览器收藏' : '独立收藏');
+    find('.bm-source-glyph').innerHTML = icon(view.source === 'browser' ? 'globe' : 'bookmark');
+    find('.bm-sort-label').textContent = find('[data-bm-sort]').selectedOptions[0].textContent;
     find('.bm-source-note').textContent = t(view.source === 'browser' ? '正在管理浏览器原始收藏，修改会直接生效。' : client.supported() ? '独立收藏随此组件保存；连接浏览器后可直接管理原始收藏，两者各自保留。' : '独立收藏随此组件保存。安装栖页扩展后可连接浏览器书签。');
     find('.bm-source-note').classList.toggle('is-browser', view.source === 'browser');
     for (const source of root.querySelectorAll('[data-bm-source]')) {
       source.setAttribute('aria-pressed', String(source.dataset.bmSource === view.source));
       source.disabled = switching || saving || source.dataset.bmSource === 'browser' && !client.supported();
-      if (source.dataset.bmSource === 'browser') source.querySelector('span').textContent = t(granted ? '浏览器书签' : '连接浏览器书签');
+      if (source.dataset.bmSource === 'browser') source.title = t(!client.supported() ? '独立收藏随此组件保存。安装栖页扩展后可连接浏览器书签。' : granted ? '浏览器收藏' : '连接浏览器书签');
     }
     const writable = view.source === 'local' || entries.some(node => node.url === null && !node.readonly);
     for (const action of ['new-folder','new-bookmark']) find(`[data-bm-action=${action}]`).disabled = !writable || view.loading || switching;
@@ -47,12 +51,13 @@ export function bindBookmarkWorkspace(root, initial, host, client = browserBookm
   function closeEditor(force = false) {
     if (saving && !force) return;
     editor = null; find('.bm-editor-overlay').hidden = true;
-    for (const selector of ['.bm-header','.bm-topbar','.bm-layout']) find(selector).inert = false;
+    for (const selector of ['.bm-header','.bm-layout']) find(selector).inert = false;
     find('[data-bm-action=new-bookmark]').focus({preventScroll:true});
   }
 
   function openEditor(type, id = '', folder = false) {
     if (saving || switching || view.loading) return;
+    closeMenus();
     const entries = nodes(), node = entries.find(entry => entry.id === id);
     if (type !== 'create' && (!node || node.readonly || node.protected)) return;
     let parentId = type === 'move' ? node.parentId : view.folder;
@@ -65,7 +70,7 @@ export function bindBookmarkWorkspace(root, initial, host, client = browserBookm
     }
     find('.bm-editor').innerHTML = bookmarkEditor(entries,view,editor);
     find('.bm-editor-overlay').hidden = false;
-    for (const selector of ['.bm-header','.bm-topbar','.bm-layout']) find(selector).inert = true;
+    for (const selector of ['.bm-header','.bm-layout']) find(selector).inert = true;
     (find('.bm-editor input') || find('.bm-editor select') || find('.bm-editor [data-bm-action=cancel]'))?.focus();
   }
 
@@ -86,6 +91,7 @@ export function bindBookmarkWorkspace(root, initial, host, client = browserBookm
   }
 
   async function selectSource(source) {
+    closeMenus(true);
     if (switching || saving || source === view.source) return;
     // The permission request is deliberately the first asynchronous operation.
     const permission = source === 'browser' && !granted ? client.request() : Promise.resolve(true);
@@ -147,6 +153,25 @@ export function bindBookmarkWorkspace(root, initial, host, client = browserBookm
     }
   }
 
+  function closeMenus(restoreFocus = false) {
+    const open = root.querySelector('[data-bm-menu][open]');
+    for (const menu of root.querySelectorAll('[data-bm-menu]')) menu.open = false;
+    if (restoreFocus) open?.querySelector('summary').focus({preventScroll:true});
+    return !!open;
+  }
+  for (const menu of root.querySelectorAll('[data-bm-menu]')) {
+    menu.addEventListener('toggle', () => {
+      if (menu.open) for (const other of root.querySelectorAll('[data-bm-menu]')) if (other !== menu) other.open = false;
+    }, options);
+  }
+  document.addEventListener('pointerdown', event => {
+    if (!event.target.closest('[data-bm-menu]')) closeMenus();
+  }, options);
+  root.addEventListener('focusout', event => {
+    const menu = event.target.closest('[data-bm-menu]');
+    if (menu && event.relatedTarget && !menu.contains(event.relatedTarget)) menu.open = false;
+  }, options);
+
   root.addEventListener('click', event => {
     const target = event.target.closest('button');
     if (!target || target.hasAttribute('data-close')) return;
@@ -171,23 +196,24 @@ export function bindBookmarkWorkspace(root, initial, host, client = browserBookm
     if (action === 'recent') { view.scope = 'recent'; view.query = ''; find('[data-bm-query]').value = ''; render(); }
     if (action === 'clear-search') { view.query = ''; find('[data-bm-query]').value = ''; render(); find('[data-bm-query]').focus(); }
     if (action === 'more') { view.limit += 100; const scroll = find('.bm-list').scrollTop; render(); find('.bm-list').scrollTop = scroll; }
-    if (action === 'refresh') { feedback(''); void reload({showLoading:true}); }
+    if (action === 'refresh') { closeMenus(true); feedback(''); void reload({showLoading:true}); }
   }, options);
   root.addEventListener('input', event => { if (event.target.matches('[data-bm-query]')) { view.query = event.target.value.trim(); view.limit = 100; render(); } }, options);
   root.addEventListener('change', event => { if (event.target.matches('[data-bm-sort]')) { view.sort = event.target.value; render(); } }, options);
   root.addEventListener('submit', event => { void submit(event); }, options);
   root.closest('dialog').addEventListener('cancel', event => {
-    if (!editor) return;
-    event.preventDefault(); event.stopImmediatePropagation(); closeEditor();
+    if (editor) { event.preventDefault(); event.stopImmediatePropagation(); closeEditor(); }
+    else if (closeMenus(true)) { event.preventDefault(); event.stopImmediatePropagation(); }
   }, {capture:true, signal:controller.signal});
 
   function focusFolder(id) { [...root.querySelectorAll('[role=treeitem]')].find(button => button.dataset.bmFolder === id)?.focus({preventScroll:true}); }
   root.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && ['f','k'].includes(event.key.toLowerCase())) {
       event.preventDefault(); event.stopPropagation();
-      if (!editor) find('[data-bm-query]').focus();
+      if (!editor) { closeMenus(); find('[data-bm-query]').focus(); }
       return;
     }
+    if (!editor && event.key === 'Escape' && closeMenus(true)) { event.preventDefault(); event.stopPropagation(); return; }
     if (editor) {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeEditor(); }
       if (event.key === 'Tab') {

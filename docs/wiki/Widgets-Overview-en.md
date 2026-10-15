@@ -52,11 +52,15 @@ Add **Widgets → Tools → Base converter**. Binary, octal, decimal and hexadec
 
 ## Bookmark manager
 
+The window has one slim title bar above a two-pane content area. Switch between Qiye and browser bookmarks at the upper left; search, settings, maximize and close sit on the right. Settings contain sorting, refresh and source details. The folder tree and totals stay in the left navigation; the right pane displays bookmarks. The title bar stays on one row, 48 px high on desktop and 44 px in narrow windows. Menus support keyboard activation, Escape and outside-click dismissal.
+
+The user's reference and compact-header requirements determine the layout. Folder, search and sorting responsibilities follow the [Firefox Library](https://support.mozilla.org/en-US/kb/bookmarks-firefox). Source and settings use native [details / summary](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details) to preserve keyboard disclosure behavior on the supported Chromium baseline.
+
 Add **Widgets → Productivity → Bookmarks**. The default 4×2 card has folders on the left and links on the right; all five sizes open the full manager. Create, edit, move and delete bookmarks or nested folders, follow breadcrumbs, browse recent additions and sort by name. Search matches names and addresses across folders, displays their paths and can jump to the containing folder. Ctrl / Cmd + F or K focuses search.
 
 Qiye bookmarks are independent per widget and included in JSON backups and WebDAV. Public layout sharing removes their content. Each widget supports up to 5,000 items and paths of 64 levels. New addresses accept HTTP / HTTPS, default to HTTPS when no scheme is supplied, and reject duplicates within a folder. Move destinations exclude the folder itself and its descendants; recursive deletion shows the number of affected bookmarks and subfolders.
 
-In the extension, **Connect browser bookmarks** requests optional permission. Authorized changes directly affect the original browser bookmarks, and external browser changes update the view. The browser tree stays in memory and is not included in desktop backups or WebDAV. Connecting never imports Qiye bookmarks into the browser. Denied or revoked permission leaves Qiye bookmarks available. System folders cannot be renamed, moved or deleted; managed collections are read-only. Existing special-scheme bookmarks remain visible without executing those addresses. See the [Chrome Bookmarks API](https://developer.chrome.com/docs/extensions/reference/api/bookmarks).
+In the extension, choose **Browser bookmarks** from the upper-left source menu to request optional permission. Authorized changes directly affect the original browser bookmarks, and external browser changes update the view. The browser tree stays in memory and is not included in desktop backups or WebDAV. Connecting never imports Qiye bookmarks into the browser. Denied or revoked permission leaves Qiye bookmarks available. System folders cannot be renamed, moved or deleted; managed collections are read-only. Existing special-scheme bookmarks remain visible without executing those addresses. See the [Chrome Bookmarks API](https://developer.chrome.com/docs/extensions/reference/api/bookmarks).
 
 
 ## Pomodoro

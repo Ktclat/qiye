@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 export const englishMessages = {
+  "浏览器收藏": "Browser bookmarks",
+  "切换收藏来源": "Switch bookmark source",
+  "搜索书签": "Search bookmarks",
+  "书签设置": "Bookmark settings",
   "进制转换": "Base converter",
   "粘贴": "Paste",
   "复制": "Copy",
