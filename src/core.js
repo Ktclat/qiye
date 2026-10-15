@@ -142,7 +142,7 @@ export const DEFAULT_STATE = deepFreeze({
       { id: 'habit-read', name: '读十分钟书', dates: [] }
     ] }),
     widget('quote-life', 'quote', '留一点空白', '2x2', {}, 'life'),
-    widget('calculator-life', 'calculator', '随手算', '2x2', {}, 'life')
+    widget('calculator-life', 'converter', '换算器', '2x2', {}, 'life')
   ]
 });
 
@@ -327,6 +327,12 @@ export function validateImport(raw) {
         Object.assign(checked, { widget: 'pomodoro' }, migrateFocusTimer(checked.data.focus));
         if (checked.title === '专注计时') checked.title = '番茄钟';
         else if (checked.title === 'Focus timer') checked.title = 'Pomodoro';
+      }
+      if (checked.widget === 'calculator') {
+        checked.widget = 'converter';
+        checked.data = newWidgetData('converter');
+        if (['计算器','随手算'].includes(checked.title)) checked.title = '换算器';
+        else if (['Calculator','Quick math','Quick calculations'].includes(checked.title)) checked.title = 'Converter';
       }
       if (checked.widget === 'hotlinks') {
         checked.widget = 'hotsearch';

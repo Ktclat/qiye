@@ -28,7 +28,7 @@ Qiye brings websites, search, everyday widgets and wallpapers together on your b
 | Capability | What you can do |
 | --- | --- |
 | Flexible desktop | Arrange websites, folders and widgets; move between groups, use keyboard controls and undo changes |
-| 14 everyday widgets | Weather, calendar, memos, sticky notes, to-dos, focus, countdown, workday countdown, habits, clocks, quotes, calculator, wallpapers and subscribed trending lists; existing trending-page cards upgrade automatically |
+| 14 everyday widgets | Weather, calendar, memos, sticky notes, to-dos, focus, countdown, workday countdown, habits, clocks, quotes, converter, wallpapers and subscribed trending lists; existing trending-page cards upgrade automatically |
 | Search and browser integration | Built-in and custom search engines, local search, optional bookmarks/history access, toolbar and context-menu saving |
 | Appearance | Light/dark themes, accent colors, translucent materials, local image/video wallpapers, online galleries and layout settings |
 | Your data | Local storage, JSON import/export and WebDAV sync with revision and conflict checks |

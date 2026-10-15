@@ -55,8 +55,8 @@ with sync_playwright() as p:
         page.mouse.move(r['x']+20,r['y']+20);page.mouse.down();page.wait_for_timeout(360);page.mouse.move(target['x']+target['width']-3,target['y']+target['height']/2,steps=15);page.wait_for_timeout(100);page.mouse.up()
         page.wait_for_function('(before)=>JSON.parse(localStorage.getItem("qiye.state.v5")).items.map(i=>i.id).join()!==before',arg=original)
         check('wallpaper long-press drop persists new order',not page.locator('#dialog').is_visible())
-        for kind in ['countdown','workday','pomodoro','notes','todo','habit','clock','quote','calculator','hotsearch','weather']:
-            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app,.hotsearch-app,.pomo-app').count()==1 and page.locator('.widget-viewer').count()==0)
+        for kind in ['countdown','workday','pomodoro','notes','todo','habit','clock','quote','converter','hotsearch','weather']:
+            open_widget(kind);check(f'{kind} uses dedicated workspace, not enlarged card',page.locator('.utility-app,.weather-app,.hotsearch-app,.pomo-app,.cv-app').count()==1 and page.locator('.widget-viewer').count()==0)
             if kind=='countdown':
                 page.locator('[data-life-action=countdown-edit]').click();page.locator('[name=eventTitle]').fill('Launch day');page.locator('[name=date]').fill('2027-03-21');page.locator('[data-life-form=countdown] [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="countdown").data.events?.[0]?.title==="Launch day"');check('countdown settings update date and detail',page.locator('.countdown-detail h3').inner_text().startswith('Launch day'))
                 page.screenshot(path=str(OUT/'countdown-dark.png'),animations='disabled')
@@ -68,8 +68,8 @@ with sync_playwright() as p:
                 page.locator('#dialog textarea').fill('Private note remains private');page.locator('[data-note-color=mint]').click();page.wait_for_timeout(750);check('notes edits survive saving style',next(i for i in saved()['items'] if i['widget']=='notes')['data']['notes']=='Private note remains private')
             elif kind=='todo':
                 page.locator('#dialog [data-widget-form=todo] input').fill('Finish review');page.locator('#dialog [data-widget-form=todo] button').click();page.locator('#dialog [data-action=widget-todo-toggle]').check();page.locator('[data-todo-filter]').select_option('active');page.wait_for_timeout(100);check('todo filter hides completed tasks',page.locator('#dialog .w-todo-row:visible').count()==0);page.locator('[data-clear-done]').click();page.wait_for_timeout(100);check('clear completed persists',next(i for i in saved()['items'] if i['widget']=='todo')['data']['todos']==[])
-            elif kind=='calculator':
-                page.locator('#dialog [data-widget-input=calculator]').fill('(7+3)*4');page.locator('#dialog [data-widget-input=calculator]').press('Enter');check('calculator adds session history',page.locator('.calculator-history li').inner_text()=='(7+3)*4 = 40')
+            elif kind=='converter':
+                page.locator('#cv-expression').fill('(7+3)*4');page.locator('#cv-expression').press('Enter');check('calculator adds session history',page.locator('.cv-history li strong').inner_text()=='40')
             elif kind=='weather':
                 page.locator('[data-detail-action=weather-settings]').first.click();page.locator('[name=cityName]').fill('Osaka');page.locator('#weather-settings details:has([name=latitude])').evaluate('node=>node.open=true');page.locator('[name=latitude]').fill('34.69');page.locator('[name=longitude]').fill('135.5');page.locator('[name=unit]').select_option('fahrenheit');page.locator('#weather-settings [type=submit]').click();page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="weather").config.city.name==="Osaka"');check('weather city and units save inside forecast workspace',next(i for i in saved()['items'] if i['widget']=='weather')['config']['unit']=='fahrenheit')
             close()

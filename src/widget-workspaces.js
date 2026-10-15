@@ -8,8 +8,8 @@ import { parseDate, localDateKey } from './calendar.js';
 import { LIFE_WIDGETS, lifeWorkspace } from './widget-life-view.js';
 import { bindLifeWorkspace } from './widget-life-workspace.js';
 
-export const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','calculator','hotlinks'];
-const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',calculator:'calculator',hotlinks:'trending'};
+export const UTILITY_WIDGETS = ['countdown','workday','focus','notes','todo','habit','clock','quote','hotlinks'];
+const glyphs = {countdown:'flag',workday:'briefcase',focus:'timer',notes:'note',todo:'check',habit:'sparkles',clock:'globe',quote:'quote',hotlinks:'trending'};
 const input = (name,label,value,type='text',attributes='') => `<label class="utility-field"><span>${e(label)}</span><input name="${name}" type="${type}" value="${e(value)}" ${attributes}></label>`;
 const zones = ['Asia/Hong_Kong','Asia/Shanghai','Asia/Tokyo','Asia/Singapore','Asia/Kolkata','Australia/Sydney','Europe/London','Europe/Paris','America/New_York','America/Los_Angeles','UTC'];
 const week = () => [t('日'),t('一'),t('二'),t('三'),t('四'),t('五'),t('六')];
@@ -57,7 +57,6 @@ function clockComparison(item) {
 function tools(item) {
   if(item.widget==='notes')return `<div class="utility-toolbar"><span data-utility-count>${t('{count} 字符',{count:item.data.notes.length})}</span><button type="button" data-utility-export>${t('导出 TXT')}</button></div>`;
   if(item.widget==='todo')return `<div class="utility-toolbar"><label>${t('显示任务')}<select data-todo-filter><option value="all">${t('全部')}</option><option value="active">${t('未完成')}</option><option value="done">${t('已完成')}</option></select></label><button type="button" data-clear-done>${t('清除已完成')}</button></div>`;
-  if(item.widget==='calculator')return `<div class="utility-help">${t('支持括号、百分比和键盘输入；Enter 计算，Esc 清空。')}</div><div class="calculator-history" aria-live="polite"><h3>${t('本次计算记录')}</h3><ol></ol></div>`;
   if(item.widget==='habit')return `<section class="utility-habit-week"><h3>${t('最近七天')}</h3><div data-habit-week></div></section>`;
   if(item.widget==='clock')return `<section class="utility-world-list" data-world-list>${clockComparison(item)}</section>`;
   if(item.widget==='hotlinks')return `<label class="utility-field"><span>${t('筛选平台')}</span><input type="search" data-platform-filter></label>`;
@@ -107,13 +106,5 @@ export function bindUtilityWorkspace(root,item,host) {
     if(event.target.matches('[data-widget-input=notes]'))root.querySelector('[data-utility-count]').textContent=t('{count} 字符',{count:event.target.value.length});
     if(event.target.hasAttribute('data-platform-filter'))for(const link of root.querySelectorAll('.w-hotlink'))link.hidden=!link.textContent.toLocaleLowerCase().includes(event.target.value.trim().toLocaleLowerCase());
   },options);
-  const record=event=>{
-    if(item.widget!=='calculator')return;
-    const control=event.target.closest('[data-value="="],[data-widget-input=calculator]');
-    if(!control||event.type==='keydown'&&!['Enter','='].includes(event.key))return;
-    const expression=root.querySelector('[data-widget-input=calculator]').value;
-    setTimeout(()=>{if(!root.isConnected)return;const result=root.querySelector('[data-widget-input=calculator]').value;const list=root.querySelector('.calculator-history ol');if(expression&&result!==expression){const row=document.createElement('li');row.textContent=expression+' = '+result;list.prepend(row);while(list.children.length>20)list.lastElementChild.remove();}},0);
-  };
-  root.addEventListener('click',record,{...options,capture:true});root.addEventListener('keydown',record,{...options,capture:true});
   return ()=>{controller.abort();clearInterval(timer);cleanup();};
 }

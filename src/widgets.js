@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { calculateArithmetic } from './arithmetic.js';
+import { converterCard } from './converter-view.js';
 import { codecCard } from './codec-workspace.js';
 import { mapCard } from './map-view.js';
 import { baseConverterCard } from './base-converter-view.js';
@@ -69,6 +71,7 @@ const icons = {
   briefcase: '<rect x="3" y="6" width="18" height="15" rx="3"/><path d="M8 6V3h8v3M3 11a20 20 0 0 0 18 0m-9 1v3"/>',
   quote: '<path d="M10 6H4v7h4c0 3-2 5-4 5m16-12h-6v7h4c0 3-2 5-4 5"/>',
   trending: '<path d="m3 17 6-6 4 4 8-10m-6 0h6v6"/>',
+  converter: '<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>',
   calculator: '<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 10h1m6 0h1m-8 4h1m6 0h1m-8 4h1m6 0h1"/>',
   sparkles: '<path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7ZM19 2v4m-2-2h4"/>',
   globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
@@ -189,65 +192,7 @@ function renderHotlinks(state) {
   return `${header(t("热门 · 快捷入口"), 'trending', `<span class="w-hotlinks-tag">${t("直达平台")}</span>`)}<div class="w-hotlinks-grid">${hotlinks.map((link) => `<a href="${link.url}"${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer" class="w-hotlink"><span class="w-hotlink-logo" style="--platform-color:${link.color}">${link.letter}</span><span>${t(link.name)}</span>${icon('arrow')}</a>`).join('')}</div><div class="w-hotlinks-footer">${t("打开平台，查看实时榜单")}</div>`;
 }
 
-/** A deliberately small arithmetic parser: no eval, Function, or executable input. */
-export function calculateExpression(source) {
-  const text = String(source).replace(/[×x]/g, '*').replace(/[÷]/g, '/').replace(/[−]/g, '-').replace(/\s+/g, '');
-  if (!text || text.length > 256 || /[^\d.+\-*/()%]/.test(text)) throw new Error(t("请输入有效算式"));
-  let position = 0;
-  let depth = 0;
-  function number() {
-    const match = /^(?:\d+(?:\.\d*)?|\.\d+)/.exec(text.slice(position));
-    if (!match) throw new Error(t("算式还没有写完整"));
-    position += match[0].length;
-    return Number(match[0]);
-  }
-  function primary() {
-    if (++depth > 48) throw new Error(t("括号层数过多"));
-    let value;
-    if (text[position] === '(') {
-      position += 1;
-      value = expression();
-      if (text[position] !== ')') throw new Error(t("请检查括号"));
-      position += 1;
-    } else value = number();
-    depth -= 1;
-    while (text[position] === '%') { value /= 100; position += 1; }
-    return value;
-  }
-  function unary() {
-    let sign = 1;
-    while (text[position] === '+' || text[position] === '-') { if (text[position] === '-') sign *= -1; position += 1; }
-    return sign * primary();
-  }
-  function term() {
-    let value = unary();
-    while (text[position] === '*' || text[position] === '/') {
-      const operator = text[position++];
-      const right = unary();
-      if (operator === '/' && right === 0) throw new Error(t("不能除以 0"));
-      value = operator === '*' ? value * right : value / right;
-    }
-    return value;
-  }
-  function expression() {
-    let value = term();
-    while (text[position] === '+' || text[position] === '-') {
-      const operator = text[position++];
-      const right = term();
-      value = operator === '+' ? value + right : value - right;
-    }
-    return value;
-  }
-  const value = expression();
-  if (position !== text.length) throw new Error(t("请检查算式"));
-  if (!Number.isFinite(value)) throw new Error(t("结果超出计算范围"));
-  return Number(value.toPrecision(12));
-}
-
-function renderCalculator() {
-  const keys = ['C', '(', ')', '÷', '7', '8', '9', '×', '4', '5', '6', '−', '1', '2', '3', '+', '0', '.', '⌫', '='];
-  return `<div class="w-calculator-screen"><input class="w-calculator-input" data-widget-input="calculator" inputmode="decimal" maxlength="256" autocomplete="off" aria-label="${t("计算算式")}" placeholder="0"><span class="w-calculator-error" data-live="calculator-error" role="status"></span></div><div class="w-calculator-keys">${keys.map((key) => `<button type="button" data-action="widget-calc" data-value="${key}" class="w-calculator-key${key === '=' ? ' is-equal' : ['÷', '×', '−', '+', 'C'].includes(key) ? ' is-operator' : ''}" aria-label="${({ C: t("清空"), '⌫': t("删除一位"), '=': t("计算结果"), '÷': t("除以"), '×': t("乘以"), '−': t("减去"), '+': t("加上") })[key] || key}">${key}</button>`).join('')}</div>`;
-}
+export const calculateExpression = calculateArithmetic;
 
 export function habitStreak(dates, now = new Date()) {
   const records = new Set(Array.isArray(dates) ? dates : []);
@@ -343,7 +288,7 @@ function compactModel(item) {
   } else if (type === 'wallpaper') { caption = t('壁纸'); detail = t('换一片风景'); meta = t('打开壁纸中心'); }
   else if (type === 'hotlinks') { caption = t('热搜入口'); detail = t('直达平台'); meta = 'GitHub · B站'; }
   else if (type === 'hotsearch') { value = String(config.subscriptions.length); caption = t('热搜榜'); detail = t(hotsearchSource(config.activeSource).name); meta = t('我的订阅'); }
-  else if (type === 'calculator') { caption = t('计算器'); detail = '+ − × ÷'; meta = t('点击打开'); }
+  else if (type === 'calculator' || type === 'converter') { value = '⇄'; caption = t('换算器'); detail = t('计算 · 单位 · 汇率'); meta = t('19 类常用换算'); }
   else if (type === 'base-converter') {
     const integer = data.mode === 'signed' || data.mode === 'unsigned', bits = data.bits || 32;
     value = integer ? `${data.mode === 'signed' ? 'i' : 'u'}${bits}` : '2↔16';
@@ -358,6 +303,7 @@ function renderCompact(item) {
 }
 
 export function renderWidgetContent(item, state) {
+  if (item.widget === 'converter') return converterCard(item);
   if (item.widget === 'map') return mapCard(item);
   if (item.widget === 'base-converter') return baseConverterCard(item);
   if (item.widget === 'bookmarks') return bookmarkCard(item, state);
@@ -365,7 +311,7 @@ export function renderWidgetContent(item, state) {
   if (item.widget === 'codec') return codecCard(item);
   if (item.widget === 'hotsearch') return hotsearchCard(item, state);
   const now = new Date();
-  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), calculator: () => renderCalculator(), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
+  const renderers = { wallpaper: () => renderWallpaper(item, state), weather: () => renderWeather(item, state), calendar: () => renderCalendar(now, now, item), memo: () => memoCard(item), notes: () => renderNotes(item.data), todo: () => renderTodo(item.data), countdown: () => renderCountdown(item), focus: () => renderFocus(item.data), workday: () => renderWorkday(item), quote: () => renderQuote(item), hotlinks: () => renderHotlinks(state), habit: () => renderHabit(item.data), clock: () => renderClock(item, now) };
   return renderers[item.widget]();
 }
 
@@ -442,28 +388,6 @@ function updateHabitCards(binding) {
     setText(root,'habit-summary',`${t('今天')} ${item.data.habits.filter(h=>h.dates.includes(localDateKey())).length}/${item.data.habits.length}`);
     root.dataset.widgetDay = localDateKey();
   }
-}
-
-function calculatorAction(root, key) {
-  const input = root.querySelector('[data-widget-input="calculator"]');
-  if (!input) return;
-  setText(root, 'calculator-error', '');
-  if (key === 'C') { input.value = ''; input.dataset.result = ''; }
-  else if (key === '⌫') { input.value = input.value.slice(0, -1); input.dataset.result = ''; }
-  else if (key === '=') {
-    try { input.value = String(calculateExpression(input.value)); input.dataset.result = 'true'; }
-    catch (error) { setText(root, 'calculator-error', error.message); }
-  } else if (input.value.length < 256) {
-    if (input.dataset.result === 'true' && /[\d.(]/.test(key)) input.value = '';
-    if (input.dataset.result === 'true' && /[eE]/.test(input.value)) {
-      const expanded = Number(input.value).toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
-      input.value = expanded;
-    }
-    input.value += key;
-    input.dataset.result = '';
-  }
-  input.focus({ preventScroll: true });
-  input.setSelectionRange(input.value.length, input.value.length);
 }
 
 export function bindWidgets(container, context) {
@@ -545,7 +469,6 @@ export function bindWidgets(container, context) {
       await persist();
       return;
     }
-    if (action === 'widget-calc') { calculatorAction(root, target.dataset.value); return; }
     if (action === 'widget-habit-toggle') {
       const habit = data.habits.find((entry) => entry.id === target.dataset.habitId);
       if (habit) {
@@ -581,7 +504,6 @@ export function bindWidgets(container, context) {
         if (binding.alive) for (const root of widgetRoots(container, 'notes')) setText(root, 'notes-status', saved ? t("已保存在本机") : t("保存失败，请重试"));
       }, 400);
     }
-    if (target.dataset.widgetInput === 'calculator') { target.dataset.result = ''; setText(target.closest('[data-widget]'), 'calculator-error', ''); }
   }
 
   async function submit(event) {
@@ -610,14 +532,6 @@ export function bindWidgets(container, context) {
     await persist();
   }
 
-  function keydown(event) {
-    if (event.target.dataset.widgetInput === 'calculator') {
-      event.stopPropagation();
-      if (event.key === 'Enter' || event.key === '=') { event.preventDefault(); calculatorAction(event.target.closest('[data-widget]'), '='); }
-      if (event.key === 'Escape') { event.preventDefault(); calculatorAction(event.target.closest('[data-widget]'), 'C'); }
-    }
-  }
-
   function flushNotes() {
     if (!binding.notePending) return;
     clearTimeout(binding.noteTimer);
@@ -628,7 +542,6 @@ export function bindWidgets(container, context) {
   container.addEventListener('click', click);
   container.addEventListener('input', input);
   container.addEventListener('submit', submit);
-  container.addEventListener('keydown', keydown);
   globalThis.addEventListener?.('pagehide', flushNotes);
   const cleanup = () => {
     if (!binding.alive) return;
@@ -642,7 +555,6 @@ export function bindWidgets(container, context) {
     container.removeEventListener('click', click);
     container.removeEventListener('input', input);
     container.removeEventListener('submit', submit);
-    container.removeEventListener('keydown', keydown);
     globalThis.removeEventListener?.('pagehide', flushNotes);
     if (bindings.get(container) === binding) bindings.delete(container);
   };

@@ -103,3 +103,7 @@ U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
 - 原生 `deflate-raw` API 的兼容性见 [MDN CompressionStream](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream/CompressionStream) 与 [浏览器兼容数据](https://github.com/mdn/browser-compat-data/blob/main/api/CompressionStream.json)：Chrome / Edge 103 起支持，低于扩展要求的最低 116 版本。
 
 以上格式参数公开，属于趣味文本混淆，无用户密码保护。详细格式边界见[小组件说明](wiki/Widgets-Overview.md#编码工具)。
+
+## 换算器参考资料
+
+单位因子参考 NIST SI / 二进制前缀文档，成人 BMI 分级参考 CDC；汇率来自 Frankfurter 每日参考数据。仅参考公开规范，未复制 Microsoft Calculator 或 iTab 代码、图片、私有接口。完整链接及实现决定见 [换算器](CONVERTER.md)。

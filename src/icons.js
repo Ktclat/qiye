@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
+ converter:'<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>',
  mapPin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
  layers:'<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
  sliders:'<path d="M4 21v-7M4 10V3M12 21v-3M12 14V3M20 21V10M20 6V3M1 10h6M9 18h6M17 6h6"/>',

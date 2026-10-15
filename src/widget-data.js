@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { newConverterData, validateConverterData } from './converter.js';
 import { newMapData, validateMapData } from './map-model.js';
 import { newPomodoroData, validatePomodoroData } from './pomodoro.js';
 import { validateCountdownData } from './widget-life.js';
@@ -14,6 +15,7 @@ const dataKeys = Object.freeze({ notes: 'notes', todo: 'todos', habit: 'habits',
 const defaults = { notes: '', todos: [], habits: [], focus: { duration: 25, remaining: 1500, running: false, endAt: null } };
 
 export function newWidgetData(type) {
+  if (type === 'converter') return newConverterData();
   if (type === 'map') return newMapData();
   if (type === 'base-converter') return newBaseConverterData();
   if (type === 'pomodoro') return newPomodoroData();
@@ -35,6 +37,7 @@ export function widgetContentSummary(items) {
 }
 
 export function validateWidgetData(type, raw, path) {
+  if (type === 'converter') return validateConverterData(raw, path);
   if (type === 'map') return validateMapData(raw, path);
   if (type === 'base-converter') return validateBaseConverterData(raw, path);
   if (type === 'pomodoro') return validatePomodoroData(raw, path);

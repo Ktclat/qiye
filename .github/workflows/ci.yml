@@ -65,6 +65,8 @@ jobs:
           python3 tests/bookmarks-native-e2e.py
           python3 tests/pomodoro-e2e.py
           python3 tests/pomodoro-e2e.py --preview
+          python3 tests/converter-e2e.py
+          python3 tests/converter-e2e.py --preview
           python3 tests/codec-e2e.py
           python3 tests/codec-e2e.py --preview
           python3 tests/map-e2e.py

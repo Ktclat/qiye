@@ -51,9 +51,9 @@ with sync_playwright() as p:
         for item in state['items']:
             widget=item['widget'];page.locator(f'[data-item={widget}] [data-action=widget-open]').click()
             check(f'{widget} compact opens interactive content',page.locator('#dialog').is_visible())
-            if widget=='calculator':
-                page.locator('#dialog [data-widget-input=calculator]').fill('6*7');page.locator('#dialog [data-widget-input=calculator]').press('Enter')
-                check('compact calculator evaluates in viewer',page.locator('#dialog [data-widget-input=calculator]').input_value()=='42')
+            if widget=='converter':
+                page.locator('#cv-expression').fill('6*7');page.locator('#cv-expression').press('Enter')
+                check('compact calculator evaluates in viewer',page.locator('#cv-expression').input_value()=='42')
             if widget=='notes':page.locator('#dialog textarea').fill('Compact note survives closing')
             close()
         page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="notes").data.notes.includes("survives")')
@@ -80,11 +80,11 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/'settings.png'),animations='disabled');close()
         page.locator('.top-tools [data-action=add]').click();check('add defaults to widget showcase',page.locator('[data-catalog-card]').count()==len(state['items']))
         page.screenshot(path=str(OUT/'catalog.png'),animations='disabled')
-        page.locator('[data-catalog-category="工具"]').click();check('category filters actual catalog',page.locator('[data-catalog-card]:visible').evaluate_all('nodes=>nodes.every(node=>node.dataset.category==="工具")') and page.locator('[data-catalog-widget=calculator]').is_visible())
+        page.locator('[data-catalog-category="工具"]').click();check('category filters actual catalog',page.locator('[data-catalog-card]:visible').evaluate_all('nodes=>nodes.every(node=>node.dataset.category==="工具")') and page.locator('[data-catalog-widget=converter]').is_visible())
         page.locator('#widget-query').fill('nothing-matches');check('combined search shows empty state',page.locator('#widget-catalog-empty').is_visible())
         page.locator('[data-add-tab=sites]').click();page.locator('#widget-query').fill('github');page.locator('#catalog-group').select_option('code')
         page.locator('[data-catalog-card]:visible [data-add-site]').first.click();page.locator('#dialog').wait_for(state='hidden');check('website picker honors target group',saved()['items'][-1]['groupId']=='code')
-        page.locator('.top-tools [data-action=add]').click();page.locator('#catalog-group').select_option('life');page.locator('[data-catalog-widget=calculator] [data-catalog-size="1x1"]').click();page.locator('[data-add-widget=calculator]').click();page.locator('#dialog').wait_for(state='hidden')
+        page.locator('.top-tools [data-action=add]').click();page.locator('#catalog-group').select_option('life');page.locator('[data-catalog-widget=converter] [data-catalog-size="1x1"]').click();page.locator('[data-add-widget=converter]').click();page.locator('#dialog').wait_for(state='hidden')
         check('widget picker honors size and group',saved()['items'][-1]['size']=='1x1' and saved()['items'][-1]['groupId']=='life')
         page.locator('#dialog').wait_for(state='hidden')
         page.locator(f'[data-item="{saved()["items"][-1]["id"]}"]').wait_for()
