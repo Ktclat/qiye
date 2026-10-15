@@ -826,7 +826,7 @@ function settingsDialog(tab) {
   {id:'general',name:t("打开方式"),icon:'link'}, {id:'search',name:t("搜索栏"),icon:'search'},
   {id:'icons',name:t("图标"),icon:'grid'}, {id:'clock',name:t("时间 / 日期"),icon:'clock'},
   {id:'appearance',name:t("主题与材质"),icon:'sun'}, {id:'layout',name:t("布局"),icon:'move'},
-  {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("WebDAV 同步"),icon:'sync'},
+  {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("同步"),icon:'sync'},
   {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
  ];
  if (!tabs.some(item=>item.id===tab)) tab='general';

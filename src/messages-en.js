@@ -374,6 +374,7 @@ export const englishMessages = {
   "布局": "Layout",
   "侧边栏": "Sidebar",
   "WebDAV 同步": "WebDAV sync",
+  "同步": "Sync",
   "备份与恢复": "Backup & restore",
   "关于栖页": "About Qiye",
   "语言 / Language": "Language",

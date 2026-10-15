@@ -4,7 +4,7 @@ import { icon } from './icons.js';
 import { requestPublicOrigin } from './public-json.js';
 import { hotsearchApiBase, hotsearchSource, filterHotsearchSources, moveHotsearchSubscription } from './hotsearch-sources.js';
 import { hotsearchClient } from './hotsearch-data.js';
-import { hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchCard } from './hotsearch-view.js';
+import { hotsearchSidebar, hotsearchMain, hotsearchManager, hotsearchCard, bindHotsearchLogos } from './hotsearch-view.js';
 
 export function bindHotsearchWorkspace(root, initial, host) {
   const events = new AbortController(), options = {signal:events.signal};
@@ -23,6 +23,7 @@ export function bindHotsearchWorkspace(root, initial, host) {
     const main = find('.hotsearch-main'), scroll = main.scrollTop;
     const positions = new Map([...main.querySelectorAll('[data-hot-board]')].map(board => [board.dataset.hotBoard, board.querySelector('.hotsearch-board-content').scrollTop]));
     main.innerHTML=hotsearchMain(current(),host.getState(),view);
+    bindHotsearchLogos(main);
     main.scrollTop=scroll;
     for (const board of main.querySelectorAll('[data-hot-board]')) board.querySelector('.hotsearch-board-content').scrollTop=positions.get(board.dataset.hotBoard) || 0;
   }
@@ -32,6 +33,7 @@ export function bindHotsearchWorkspace(root, initial, host) {
     const form = panel.querySelector('#hotsearch-settings');
     const draft = form && {apiBase:form.elements.apiBase.value, enabled:form.elements.enabled.checked, open:panel.querySelector('details').open};
     panel.innerHTML=hotsearchManager(current(),view);
+    bindHotsearchLogos(panel);
     panel.scrollTop=scroll;
     if (draft) { panel.querySelector('details').open=draft.open; panel.querySelector('[name=apiBase]').value=draft.apiBase; panel.querySelector('[name=enabled]').checked=draft.enabled; }
     if (queryFocused) panel.querySelector('[data-hot-manage-query]').focus();
@@ -40,6 +42,7 @@ export function bindHotsearchWorkspace(root, initial, host) {
     if (!alive()) return;
     selectVisible();
     find('.hotsearch-sidebar').innerHTML=hotsearchSidebar(current(),view);
+    bindHotsearchLogos(find('.hotsearch-sidebar'));
     find('.hotsearch-layout').classList.toggle('is-grid',current().config.layout==='grid');
     for (const button of root.querySelectorAll('[data-hot-category]')) button.setAttribute('aria-pressed',String(button.dataset.hotCategory===view.category));
     const grid=current().config.layout==='grid', layout=find('[data-hot-action=layout]');
@@ -201,7 +204,7 @@ export function bindHotsearchCards(container,host) {
   const roots=()=>container.querySelectorAll('[data-widget=hotsearch]:not([data-compact])');
   const current=root=>host.getState().items.find(item=>item.id===root.dataset.widgetId);
   const alive=root=>!controller.signal.aborted && root.isConnected && !!current(root);
-  function render(root) { if(alive(root))root.innerHTML=hotsearchCard(current(root),host.getState()); }
+  function render(root) { if(alive(root)){root.innerHTML=hotsearchCard(current(root),host.getState());bindHotsearchLogos(root);} }
   async function load(root,manual=false) {
     if(!alive(root))return;
     const item=current(root);if(!item.config.enabled&&!manual||!item.config.subscriptions.length)return;

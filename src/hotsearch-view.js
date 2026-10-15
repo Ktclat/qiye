@@ -2,13 +2,15 @@
 import { t, formatDate } from './i18n.js';
 import { escapeText as esc } from './html.js';
 import { icon } from './icons.js';
+import { bindFaviconImages } from './favicon-view.js';
 import { windowControls } from './widget-app-controls.js';
 import { HOTSEARCH_CATEGORIES, hotsearchSource, filterHotsearchSources } from './hotsearch-sources.js';
 import { hotsearchClient, hotsearchHeat, HOTSEARCH_TTL } from './hotsearch-data.js';
 
 export function hotsearchLogo(source) {
-  return `<span class="hotsearch-logo" style="--source-color:${source.color}" aria-hidden="true">${esc(source.mark)}</span>`;
+  return `<span class="hotsearch-logo site-visual" data-favicon-site="${esc(source.url)}" data-favicon-selected="${esc(source.iconUrl)}" aria-hidden="true"><span class="site-fallback">${icon('globe')}</span><img class="site-favicon" alt="" referrerpolicy="no-referrer" decoding="async" draggable="false" hidden></span>`;
 }
+export function bindHotsearchLogos(root) { bindFaviconImages(root,{autoDiscover:false,targetSize:24}); }
 const linkAttrs = state => `${state.settings?.openNewTab !== false ? ' target="_blank"' : ''} rel="noopener noreferrer"`;
 export function hotsearchRows(data, source, state, limit = 100) {
   return `<ol class="hotsearch-rows">${data.items.slice(0,limit).map(row => `<li>${row.url?`<a href="${esc(row.url)}"${linkAttrs(state)} title="${esc(row.title)}">`:`<span class="hotsearch-unlinked" title="${esc(row.title+' · '+t('平台未提供原文链接'))}">`}<span class="hotsearch-rank rank-${Math.min(row.rank,4)}">${row.rank}</span><span class="hotsearch-title">${esc(row.title)}</span><span class="hotsearch-heat">${source.github && row.heat ? '★ ' : ''}${esc(hotsearchHeat(row.heat))}</span>${row.url?'</a>':'</span>'}</li>`).join('')}</ol>`;
@@ -68,12 +70,12 @@ export function hotsearchCard(item, state) {
     : status.data?.items.length ? hotsearchRows(status.data,source,state,5)
     : `<button type="button" class="hotsearch-card-empty" data-action="widget-open"><strong>${t(status.status==='error'?'榜单暂不可用':status.data?'这个榜单暂时没有内容。':status.status==='loading'||item.config.enabled?'正在加载榜单…':'点击查看实时榜单')}</strong><span>${t('打开热搜榜')}</span></button>`;
   const picker = sources.length ? `<select class="hotsearch-card-picker" data-hot-card-select aria-label="${t('榜单平台')}">${sources.map(entry=>`<option value="${entry.id}" ${entry.id===source.id?'selected':''}>${esc(t(entry.name))}</option>`).join('')}</select>` : '';
-  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${esc(t(entry.name))}</button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
+  return `<header class="hotsearch-card-header"><button type="button" data-action="widget-open">${icon('trending')}<strong>${t('热搜榜')}</strong></button><button type="button" data-action="widget-open" aria-label="${t('打开热搜榜')}">${icon('right')}</button></header><div class="hotsearch-card-tabs">${sources.map(entry=>`<button type="button" data-hot-card-source="${entry.id}" aria-pressed="${entry.id===source.id}">${hotsearchLogo(entry)}<span>${esc(t(entry.name))}</span></button>`).join('')}</div>${picker}<div class="hotsearch-card-content">${content}</div><footer class="hotsearch-card-footer">${status.data&&sources.length?esc(timestamp(status.data))+(status.status==='error'?' · '+t('缓存'):''):t('订阅你关心的每一份热榜')}</footer>`;
 }
 
 export function refreshHotsearchCards(container, state) {
   for (const root of container.querySelectorAll('[data-widget=hotsearch]:not([data-compact])')) {
     const item=state.items.find(item=>item.id===root.dataset.widgetId);
-    if (item) root.innerHTML=hotsearchCard(item,state);
+    if (item) { root.innerHTML=hotsearchCard(item,state); bindHotsearchLogos(root); }
   }
 }

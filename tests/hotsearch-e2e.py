@@ -18,7 +18,8 @@ parser.add_argument('--preview', action='store_true')
 args = parser.parse_args()
 OUT = ROOT / 'output/playwright/hotsearch'
 OUT.mkdir(parents=True, exist_ok=True)
-seed = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', "import {DEFAULT_STATE} from './src/core.js';import {newWidgetConfig} from './src/widget-registry.js';console.log(JSON.stringify({state:DEFAULT_STATE,config:newWidgetConfig('hotsearch')}))"], cwd=ROOT))
+seed = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', "import {DEFAULT_STATE} from './src/core.js';import {newWidgetConfig} from './src/widget-registry.js';import {HOTSEARCH_SOURCES} from './src/hotsearch-sources.js';console.log(JSON.stringify({state:DEFAULT_STATE,config:newWidgetConfig('hotsearch'),icons:Object.fromEntries(HOTSEARCH_SOURCES.map(s=>[s.id,s.iconUrl]))}))"], cwd=ROOT))
+icon_fixture = (ROOT / 'icons/icon32.png').read_bytes()
 checks = []
 
 def check(name, condition):
@@ -50,6 +51,9 @@ with sync_playwright() as p:
             page.on('pageerror', lambda error: errors.append(str(error)))
             def route_api(route):
                 url = route.request.url
+                if url in seed['icons'].values():
+                    if url == seed['icons']['v2ex']: return route.abort()
+                    return route.fulfill(content_type='image/png', body=icon_fixture)
                 if 'uapis.cn/api/v1/misc/hotboard' in url or 'api.github.com/search/repositories' in url or 'hot.example.com' in url:
                     requests.append(url)
                     if offline[0]: return route.abort()
@@ -74,15 +78,20 @@ with sync_playwright() as p:
             def open_widget():
                 page.locator('[data-widget-id="hot-4x2"] [data-action=widget-open]').first.click()
                 page.locator('#hotsearch-workspace').wait_for()
-            check(language+' all sizes render without network', page.locator('[data-widget=hotsearch]').count()==5 and not requests)
+            check(language+' all sizes render without list requests', page.locator('[data-widget=hotsearch]').count()==5 and not requests)
             open_widget()
             expect(page.locator('[data-hot-board=zhihu] .hotsearch-rows li')).to_have_count(30)
             check(language+' opening directly loads the list with automatic updates off', len(requests)==1 and not saved()['enabled'])
             check(language+' no enable screen is shown',page.locator('[data-hot-action=enable]').count()==0)
             expect(page.locator('#dialog')).to_have_css('transform','none')
-            check(language+' reading window matches the reference proportions',page.locator('#dialog').evaluate('n=>n.getBoundingClientRect().width===1260&&n.getBoundingClientRect().height===840'))
+            check(language+' reading window matches the reference proportions',page.locator('#dialog').evaluate('n=>n.getBoundingClientRect().width===1000&&n.getBoundingClientRect().height===660'))
             check(language+' thirteen ranks are visible without scrolling',page.locator('[data-hot-board=zhihu] .hotsearch-board-content').evaluate('n=>n.querySelectorAll("li")[12].getBoundingClientRect().bottom<=n.getBoundingClientRect().bottom'))
+            # Playwright aborts URLs ending in /favicon.ico before route handlers.
+            # Exercise successful hydration with GitHub's PNG and failed images below.
+            expect(page.locator('[data-hot-source=github] .hotsearch-logo.is-loaded img')).to_be_visible()
+            check(language+' sidebar hydrates the selected site icon',page.locator('[data-hot-source=github] .site-favicon').get_attribute('src')==seed['icons']['github'])
             expect(card.locator('.hotsearch-rows li')).to_have_count(5)
+            expect(card.locator('[data-hot-card-source=github] .hotsearch-logo.is-loaded img')).to_be_visible()
             check(language+' desktop shows read headlines while automatic updates are off',True)
             page.locator('#dialog').screenshot(path=str(OUT/f'direct-view-{language}.png'),animations='disabled')
             check(language+' list fills the reading area',page.locator('.hotsearch-main').evaluate('n=>parseFloat(getComputedStyle(n).paddingTop)===0&&n.firstElementChild.getBoundingClientRect().height>=n.getBoundingClientRect().height-2'))
@@ -90,6 +99,11 @@ with sync_playwright() as p:
             page.locator('[data-hot-source=weibo]').click()
             expect(page.locator('[data-hot-board=weibo] .hotsearch-rows li')).to_have_count(30)
             check(language+' source choice persists',saved()['activeSource']=='weibo')
+            page.locator('[data-hot-source=github]').click()
+            expect(page.locator('[data-hot-board=github] .hotsearch-rows li')).to_have_count(30)
+            expect(page.locator('[data-hot-board=github] .hotsearch-logo.is-loaded img')).to_be_visible()
+            check(language+' switching lists also switches the site icon',page.locator('[data-hot-board=github] .site-favicon').get_attribute('src')==seed['icons']['github'])
+            page.locator('[data-hot-source=weibo]').click()
             page.locator('[data-hot-collapse=weibo]').click()
             expect(page.locator('[data-hot-board=weibo] .hotsearch-board-content')).not_to_be_visible()
             page.locator('[data-hot-collapse=weibo]').click()
@@ -109,6 +123,9 @@ with sync_playwright() as p:
             page.locator('[data-hot-action=layout]').click()
             page.locator('[data-hot-action=manage]').first.click()
             manager=page.locator('#hotsearch-manager')
+            expect(manager.locator('[data-hot-subscribe=github-ai] .hotsearch-logo.is-loaded img')).to_be_visible()
+            failed_icon=manager.locator('[data-hot-subscribe=v2ex] .hotsearch-logo')
+            check(language+' unavailable icons keep a clean fallback',failed_icon.locator('.site-fallback').is_visible() and not failed_icon.locator('img').get_attribute('src'))
             manager.locator('[data-hot-manage-query]').fill('百度')
             check(language+' manager filters without losing input focus', page.locator('[data-hot-manage-query]').evaluate('n=>n===document.activeElement'))
             manager.locator('[data-hot-subscribe=baidu]').click()
