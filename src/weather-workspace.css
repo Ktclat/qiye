@@ -33,10 +33,10 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-app .weather-window-bar .widget-app-button { width:30px; height:30px; padding:6px; border-radius:9px; background:transparent; }
 .weather-app .weather-window-bar .widget-app-button:hover { background:var(--weather-field); }
 .weather-app .weather-tools .widget-app-button[aria-expanded=true]:not([data-detail-action=weather-add-city]) { background:var(--weather-selection); color:var(--weather-fg); }
-.weather-content { display:grid; grid-template-columns:minmax(0,1fr); flex:1; min-height:0; }
+.weather-content { display:grid; grid-template-columns:minmax(0,1fr) 0px; grid-template-rows:minmax(0,1fr); flex:1; min-height:0; overflow:hidden; }
 .weather-app:not([data-panel=""]) .weather-content { grid-template-columns:minmax(0,1fr) var(--weather-side-width); }
 .weather-main { min-width:0; min-height:0; display:flex; flex-direction:column; margin:0; padding:0; container-type:inline-size; container-name:weather-main; }
-.weather-toolbar { display:flex; align-items:center; padding:16px 28px 0; flex:none; }
+.weather-toolbar { display:flex; align-items:center; gap:6px; padding:16px 28px 0; flex:none; }
 #weather-location { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:13px; min-width:0; overflow-wrap:anywhere; }
 #weather-location strong { font-weight:500; } #weather-location small { color:var(--weather-muted); font-size:11px; }
 .weather-search-field { display:flex; border-radius:10px; background:var(--weather-field); }
@@ -48,14 +48,19 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-hero { padding:0 0 18px; }
 .weather-hero-current { display:flex; align-items:center; gap:26px; }
 .weather-temperature { font-size:88px; font-weight:300; line-height:1.3; letter-spacing:-5px; white-space:nowrap; }
-.weather-temperature small { font-size:15px; letter-spacing:0; margin-left:0; font-weight:400; color:var(--weather-muted); }
+.weather-temperature-unit { font:inherit; letter-spacing:0; }
 .weather-condition { display:flex; flex-direction:column; gap:9px; font-size:13px; }
 .weather-condition>span,.weather-condition>span>span { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .weather-condition .icon { width:17px; height:17px; }
 .weather-condition .w-weather-art { width:30px; height:29px; }
 .weather-condition .weather-air { font-size:12px; }
-.weather-app .weather-refresh { margin-left:auto; background:transparent; display:grid; padding:8px; color:var(--weather-muted); }
-.weather-refresh .icon { width:18px; height:18px; }
+.weather-app .weather-refresh { flex:none; width:28px; height:28px; border-radius:8px; background:transparent; display:grid; place-items:center; padding:5px; color:var(--weather-muted); }
+.weather-app .weather-refresh:hover { color:var(--weather-fg); background:var(--weather-field); }
+.weather-refresh .icon { width:16px; height:16px; }
+.weather-refresh[aria-busy=true] .icon { animation:weather-refresh-spin .85s linear infinite; }
+@keyframes weather-refresh-spin { to { transform:rotate(360deg); } }
+body.reduce-effects .weather-refresh .icon { animation:none; }
+@media(prefers-reduced-motion:reduce) { .weather-refresh .icon { animation:none; } }
 .weather-outlook { margin:10px 0 12px; font-size:13px; }
 .weather-outlook span { margin-left:20px; color:var(--weather-muted); }
 .weather-app .weather-metrics { display:flex; flex-wrap:wrap; gap:8px 20px; margin:0; font-size:12px; }
@@ -112,7 +117,8 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-empty-state { min-height:350px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; }
 .weather-empty-state>.icon { width:64px; height:64px; opacity:.75; }.weather-empty-state p,.weather-empty-state h3 { margin:0; }
 .weather-empty-state p { font-size:13px; color:var(--weather-muted); }
-.weather-side-panel { min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; background:linear-gradient(155deg,var(--weather-sidebar-top),var(--weather-sidebar)); border-left:1px solid var(--weather-border); }
+.weather-side-slot { grid-column:2; grid-row:1; min-width:0; min-height:0; overflow:hidden; }
+.weather-side-panel { width:var(--weather-side-width); height:100%; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; transform-origin:right center; background:linear-gradient(155deg,var(--weather-sidebar-top),var(--weather-sidebar)); border-left:1px solid var(--weather-border); }
 .weather-side-panel>header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 14px 10px; flex:none; }
 .weather-side-panel h3 { font-size:17px; font-weight:500; margin:0; }
 .weather-side-panel h3:focus { outline:none; }
@@ -144,7 +150,7 @@ html[data-theme=light] .weather-app .w-weather-art { filter:drop-shadow(0 1px 1p
 }
 @container weather-main (max-width:380px) {
   .weather-temperature { font-size:60px; }.weather-hero-current { flex-wrap:wrap; gap:8px 16px; }
-  .weather-condition { flex:1; }.weather-app .weather-refresh { margin:0; }.weather-outlook { font-size:12px; }
+  .weather-condition { flex:1; }.weather-outlook { font-size:12px; }
   .weather-outlook span { margin-left:8px; }.weather-forecast-panel h3 { font-size:12px; }
   .weather-app .weather-metric-switch button { padding:3px 6px; }
 }
@@ -185,8 +191,10 @@ html[data-theme=light] .weather-app .w-weather-art { filter:drop-shadow(0 1px 1p
 }
 @container(max-width:760px) {
   .weather-window-bar { padding-left:16px; }
+  .weather-content { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) 0px; }
   .weather-app:not([data-panel=""]) .weather-content { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1.15fr); }
-  .weather-side-panel { border-left:0; border-top:1px solid var(--weather-border); }
+  .weather-side-slot { grid-column:1; grid-row:2; }
+  .weather-side-panel { width:100%; border-left:0; border-top:1px solid var(--weather-border); transform-origin:center bottom; }
   .weather-side-panel>header { padding:10px 16px 6px; }
   .weather-panel-body { padding:4px 16px 14px; }
 }

@@ -191,6 +191,8 @@ flowchart LR
 
 天气窗口按用户提供的 iTab 截图调整：默认收起搜索与侧栏，添加城市、列表、设置与放大、关闭按钮共用标题栏；“＋”打开并聚焦城市搜索。列表和设置共用颜色更清晰的右侧栏，主区与侧栏分别滚动，不使用遮罩；空间充足时窗口向外扩展并保持主区宽度，窄屏改为上下排列。切换侧栏保留预报及滚动位置，Esc 收起面板并返回触发按钮。布局采用 [CSS Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Basic_concepts)；键盘焦点遵循 [:focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible)，打开设置时先聚焦面板标题，避免鼠标点击后直接突出表单控件。
 
+刷新按钮紧跟城市与更新时间，实况温度按相同字号、同一基线显示 °C / °F。列表与设置展开采用 [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Element/animate)：窗口和侧栏同步过渡 460 ms，面板轻微回弹；收起用 280 ms，结束前保持面板绘制并禁用其交互。连续切换从当前动画位置接续，调整窗口大小时回到稳定布局，预报与滚动位置保留。应用“减少动态效果”和系统 [prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) 均跳过动画。
+
 [下一篇：原生组件 API →](Native-Widgets.md) · [社区组件 →](Community-Widgets.md)
 
 ## 页底一言

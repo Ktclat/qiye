@@ -2,7 +2,7 @@
 import { t } from './i18n.js';
 import { escapeText } from './html.js';
 import { icon } from './icons.js';
-import { cityKey, requestWeather, searchCities } from './weather.js';
+import { cityKey, weatherState, requestWeather, searchCities } from './weather.js';
 import { readWeatherCredentials, validateWeatherCredentials, saveWeatherCredentials, requestWeatherPermission } from './weather-sources.js';
 import { readWeatherCities, saveWeatherCities, weatherCityList } from './weather-cities.js';
 import { weatherDetail, weatherLocation, weatherSettings, weatherCityCards } from './weather-view.js';
@@ -15,6 +15,8 @@ export function bindWeatherWorkspace(root, initial, host) {
   let baseline = JSON.stringify([initial.title,initial.config]), busy = false;
   let cities = weatherCityList(readWeatherCities(),initial.config.city), metric = 'temperature';
   let panel='', expanded=false, search=null, results=[], returnFocus=null;
+  let visiblePanel='', panelMotion=[];
+  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function feedback(message = '') {
     if (!alive()) return;
@@ -32,6 +34,10 @@ export function bindWeatherWorkspace(root, initial, host) {
     const scroll = find('.weather-horizontal-scroll')?.scrollLeft || 0;
     find('#weather-forecast').innerHTML = weatherDetail(current(),metric);
     find('#weather-location').innerHTML = weatherLocation(current());
+    const item=current(), state=weatherState(item.config.city,item.config), refresh=find('#weather-refresh');
+    refresh.hidden=!item.config.enabled || !state.data;
+    refresh.disabled=state.status==='loading';
+    refresh.setAttribute('aria-busy',String(state.status==='loading'));
     if (!reset && find('.weather-horizontal-scroll')) find('.weather-horizontal-scroll').scrollLeft = scroll;
     if (reset) find('.weather-scroll').scrollTop = 0;
     renderCities();
@@ -53,12 +59,59 @@ export function bindWeatherWorkspace(root, initial, host) {
     search?.abort(); search=null;
     root.querySelectorAll('.weather-search-results').forEach(node=>node.hidden=true);
   }
-  function updatePanels() {
+  function updatePanels(visible=panel) {
     find('.weather-app').dataset.panel=panel;
-    find('#weather-city-panel').hidden=panel!=='cities';
-    find('#weather-settings-panel').hidden=panel!=='settings';
+    visiblePanel=visible;
+    for(const [name,id] of [['cities','#weather-city-panel'],['settings','#weather-settings-panel']]) {
+      const node=find(id);
+      node.hidden=visible!==name;
+      node.inert=panel!==name;
+      node.setAttribute('aria-hidden',String(panel!==name));
+    }
     for(const action of ['weather-cities','weather-add-city']) find(`[data-detail-action=${action}]`).setAttribute('aria-expanded',String(panel==='cities'));
     find('[data-detail-action=weather-settings]').setAttribute('aria-expanded',String(panel==='settings'));
+  }
+  function cancelPanelMotion() {
+    panelMotion.forEach(animation=>animation.cancel());
+    panelMotion=[];
+  }
+  function settlePanels() {
+    cancelPanelMotion(); updatePanels();
+  }
+  function movePanel(next) {
+    if(next===panel) return;
+    const dialog=root.closest('dialog'), content=find('.weather-content'), slot=find('.weather-side-slot');
+    const old=find('.weather-side-panel:not([hidden])');
+    const before={width:getComputedStyle(dialog).width,slotWidth:getComputedStyle(slot).width,slotHeight:getComputedStyle(slot).height};
+    const previousStyle=old?{opacity:getComputedStyle(old).opacity,transform:getComputedStyle(old).transform}:null;
+    const previous=visiblePanel;
+    // Sample before cancelling, so a rapid reversal starts at the current visual position.
+    cancelPanelMotion(); panel=next;
+    updatePanels(next || previous);
+    if(reducedMotion.matches || document.body.classList.contains('reduce-effects')) {updatePanels();return;}
+    const side=find('.weather-side-panel:not([hidden])');
+    if(!side) return;
+    const stacked=getComputedStyle(slot).gridColumnStart==='1';
+    const property=stacked?'gridTemplateRows':'gridTemplateColumns';
+    const from=stacked?before.slotHeight:before.slotWidth;
+    const to=stacked?getComputedStyle(slot).height:getComputedStyle(slot).width;
+    const timing={duration:next?460:280,easing:'cubic-bezier(.22,1,.36,1)'};
+    const motion=[content.animate([{[property]:`minmax(0,1fr) ${from}`},{[property]:`minmax(0,1fr) ${to}`}],timing)];
+    const width=getComputedStyle(dialog).width;
+    if(width!==before.width) motion.push(dialog.animate([{width:before.width},{width}],timing));
+    const shift=stacked?'translateY(18px)':'translateX(18px)';
+    const start=old===side?previousStyle:{opacity:0,transform:`${shift} scale(.975)`};
+    motion.push(side.animate(next?[
+      {...start,offset:0},
+      {opacity:1,transform:'scale(1.012)',offset:.64},
+      {opacity:1,transform:'scale(.997)',offset:.84},
+      {opacity:1,transform:'none',offset:1}
+    ]:[start,{opacity:0,transform:`${shift} scale(.985)`}],{...timing,easing:'cubic-bezier(.25,.8,.25,1)'}));
+    panelMotion=motion;
+    Promise.all(motion.map(animation=>animation.finished)).then(()=>{
+      if(panelMotion!==motion) return;
+      panelMotion=[]; updatePanels();
+    },()=>{}); // Cancelling an interrupted or disposed animation rejects finished.
   }
   function loadCities() {
     if(!alive()||!current().config.enabled) return;
@@ -66,8 +119,7 @@ export function bindWeatherWorkspace(root, initial, host) {
   }
   function togglePanel(next,trigger,searchInput=false) {
     if(trigger) returnFocus=trigger;
-    panel=next;
-    hideSearch(); updatePanels();
+    hideSearch(); movePanel(next);
     if(next==='settings') find('#weather-settings-title').focus({preventScroll:true});
     else if(next==='cities') {find(searchInput?'#weather-list-query':'#weather-city-title').focus({preventScroll:true});loadCities();}
     else returnFocus?.focus({preventScroll:true});
@@ -152,6 +204,7 @@ export function bindWeatherWorkspace(root, initial, host) {
     else if (action === 'weather-refresh') void loadForecast(true);
     else if (action === 'weather-enable') void save({title:current().title,config:{...current().config,enabled:true}});
     else if (action === 'window-expand') {
+      settlePanels();
       expanded = !expanded;
       root.closest('dialog').classList.toggle('widget-app-expanded',expanded);
       target.setAttribute('aria-pressed',String(expanded));
@@ -183,8 +236,10 @@ export function bindWeatherWorkspace(root, initial, host) {
   root.addEventListener('pointerdown',event=>{
     if(!event.target.closest('.weather-city-search')) hideSearch();
   },options);
+  window.addEventListener('resize',settlePanels,options);
+  reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches) settlePanels();},options);
   updatePanels();
   renderForecast();
   void loadForecast();
-  return () => { events.abort(); search?.abort(); };
+  return () => { events.abort(); search?.abort(); cancelPanelMotion(); };
 }

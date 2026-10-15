@@ -2194,10 +2194,10 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-app .weather-window-bar .widget-app-button { width:30px; height:30px; padding:6px; border-radius:9px; background:transparent; }
 .weather-app .weather-window-bar .widget-app-button:hover { background:var(--weather-field); }
 .weather-app .weather-tools .widget-app-button[aria-expanded=true]:not([data-detail-action=weather-add-city]) { background:var(--weather-selection); color:var(--weather-fg); }
-.weather-content { display:grid; grid-template-columns:minmax(0,1fr); flex:1; min-height:0; }
+.weather-content { display:grid; grid-template-columns:minmax(0,1fr) 0px; grid-template-rows:minmax(0,1fr); flex:1; min-height:0; overflow:hidden; }
 .weather-app:not([data-panel=""]) .weather-content { grid-template-columns:minmax(0,1fr) var(--weather-side-width); }
 .weather-main { min-width:0; min-height:0; display:flex; flex-direction:column; margin:0; padding:0; container-type:inline-size; container-name:weather-main; }
-.weather-toolbar { display:flex; align-items:center; padding:16px 28px 0; flex:none; }
+.weather-toolbar { display:flex; align-items:center; gap:6px; padding:16px 28px 0; flex:none; }
 #weather-location { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:13px; min-width:0; overflow-wrap:anywhere; }
 #weather-location strong { font-weight:500; } #weather-location small { color:var(--weather-muted); font-size:11px; }
 .weather-search-field { display:flex; border-radius:10px; background:var(--weather-field); }
@@ -2209,14 +2209,19 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-hero { padding:0 0 18px; }
 .weather-hero-current { display:flex; align-items:center; gap:26px; }
 .weather-temperature { font-size:88px; font-weight:300; line-height:1.3; letter-spacing:-5px; white-space:nowrap; }
-.weather-temperature small { font-size:15px; letter-spacing:0; margin-left:0; font-weight:400; color:var(--weather-muted); }
+.weather-temperature-unit { font:inherit; letter-spacing:0; }
 .weather-condition { display:flex; flex-direction:column; gap:9px; font-size:13px; }
 .weather-condition>span,.weather-condition>span>span { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .weather-condition .icon { width:17px; height:17px; }
 .weather-condition .w-weather-art { width:30px; height:29px; }
 .weather-condition .weather-air { font-size:12px; }
-.weather-app .weather-refresh { margin-left:auto; background:transparent; display:grid; padding:8px; color:var(--weather-muted); }
-.weather-refresh .icon { width:18px; height:18px; }
+.weather-app .weather-refresh { flex:none; width:28px; height:28px; border-radius:8px; background:transparent; display:grid; place-items:center; padding:5px; color:var(--weather-muted); }
+.weather-app .weather-refresh:hover { color:var(--weather-fg); background:var(--weather-field); }
+.weather-refresh .icon { width:16px; height:16px; }
+.weather-refresh[aria-busy=true] .icon { animation:weather-refresh-spin .85s linear infinite; }
+@keyframes weather-refresh-spin { to { transform:rotate(360deg); } }
+body.reduce-effects .weather-refresh .icon { animation:none; }
+@media(prefers-reduced-motion:reduce) { .weather-refresh .icon { animation:none; } }
 .weather-outlook { margin:10px 0 12px; font-size:13px; }
 .weather-outlook span { margin-left:20px; color:var(--weather-muted); }
 .weather-app .weather-metrics { display:flex; flex-wrap:wrap; gap:8px 20px; margin:0; font-size:12px; }
@@ -2273,7 +2278,8 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-empty-state { min-height:350px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; }
 .weather-empty-state>.icon { width:64px; height:64px; opacity:.75; }.weather-empty-state p,.weather-empty-state h3 { margin:0; }
 .weather-empty-state p { font-size:13px; color:var(--weather-muted); }
-.weather-side-panel { min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; background:linear-gradient(155deg,var(--weather-sidebar-top),var(--weather-sidebar)); border-left:1px solid var(--weather-border); }
+.weather-side-slot { grid-column:2; grid-row:1; min-width:0; min-height:0; overflow:hidden; }
+.weather-side-panel { width:var(--weather-side-width); height:100%; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; transform-origin:right center; background:linear-gradient(155deg,var(--weather-sidebar-top),var(--weather-sidebar)); border-left:1px solid var(--weather-border); }
 .weather-side-panel>header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 14px 10px; flex:none; }
 .weather-side-panel h3 { font-size:17px; font-weight:500; margin:0; }
 .weather-side-panel h3:focus { outline:none; }
@@ -2305,7 +2311,7 @@ html[data-theme=light] .weather-app .w-weather-art { filter:drop-shadow(0 1px 1p
 }
 @container weather-main (max-width:380px) {
   .weather-temperature { font-size:60px; }.weather-hero-current { flex-wrap:wrap; gap:8px 16px; }
-  .weather-condition { flex:1; }.weather-app .weather-refresh { margin:0; }.weather-outlook { font-size:12px; }
+  .weather-condition { flex:1; }.weather-outlook { font-size:12px; }
   .weather-outlook span { margin-left:8px; }.weather-forecast-panel h3 { font-size:12px; }
   .weather-app .weather-metric-switch button { padding:3px 6px; }
 }
@@ -2346,8 +2352,10 @@ html[data-theme=light] .weather-app .w-weather-art { filter:drop-shadow(0 1px 1p
 }
 @container(max-width:760px) {
   .weather-window-bar { padding-left:16px; }
+  .weather-content { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) 0px; }
   .weather-app:not([data-panel=""]) .weather-content { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1.15fr); }
-  .weather-side-panel { border-left:0; border-top:1px solid var(--weather-border); }
+  .weather-side-slot { grid-column:1; grid-row:2; }
+  .weather-side-panel { width:100%; border-left:0; border-top:1px solid var(--weather-border); transform-origin:center bottom; }
   .weather-side-panel>header { padding:10px 16px 6px; }
   .weather-panel-body { padding:4px 16px 14px; }
 }
@@ -23555,9 +23563,11 @@ function weatherWorkspace(item) {
       ${appButton('weather-cities',t('城市列表'),'list','aria-expanded="false" aria-controls="weather-city-panel"')}
       ${appButton('weather-settings',t('天气设置'),'settings','aria-expanded="false" aria-controls="weather-settings-panel"')}
     </div>${windowControls()}</div></header>
-    <div class="weather-content"><div class="weather-main"><div class="weather-toolbar"><div id="weather-location"></div></div><p id="weather-feedback" role="status" hidden></p><div class="weather-scroll"><section id="weather-forecast">${weatherDetail(item)}</section></div></div>
+    <div class="weather-content"><div class="weather-main"><div class="weather-toolbar"><div id="weather-location"></div><button type="button" id="weather-refresh" class="weather-refresh" data-detail-action="weather-refresh" aria-label="${t('刷新')}" title="${t('刷新')}" hidden>${icon('refresh')}</button></div><p id="weather-feedback" role="status" hidden></p><div class="weather-scroll"><section id="weather-forecast">${weatherDetail(item)}</section></div></div>
+      <div class="weather-side-slot">
       <aside id="weather-city-panel" class="weather-side-panel weather-city-panel" aria-labelledby="weather-city-title" hidden><header><h3 id="weather-city-title" tabindex="-1">${t('天气列表')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header><div class="weather-panel-body">${citySearch()}<div id="weather-city-list"></div><p class="weather-panel-help">${t('切换城市查看天气，最多保留 8 个城市。')}</p></div></aside>
       <aside id="weather-settings-panel" class="weather-side-panel" aria-labelledby="weather-settings-title" hidden><header><h3 id="weather-settings-title" tabindex="-1">${t('天气设置')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header><div class="weather-panel-body">${weatherSettings(item)}</div></aside>
+      </div>
     </div></div>`;
 }
 
@@ -23597,7 +23607,7 @@ function weatherDetail(item, metric = 'temperature') {
   if (!weather) return `<div class="weather-empty-state">${icon('cloud')}<p role="status">${e(state.error || t('正在获取天气'))}</p><button type="button" data-detail-action="weather-refresh" ${state.status==='loading'?'disabled':''}>${t('重新加载')}</button></div>`;
   const temp = value => temperature(value,unit), day = weather.daily[0];
   const stale = Date.now()-weather.fetchedAt >= WEATHER_TTL || state.status === 'error';
-  return `<div class="weather-detail"><section class="weather-hero"><div class="weather-hero-current"><strong class="weather-temperature">${temp(weather.temperature)}<small>${unit==='fahrenheit'?'F':'C'}</small></strong><div class="weather-condition"><span class="weather-air" title="${t('空气质量使用 CAMS 美国 AQI 标准')}">${icon('leaf')}${weather.air?.aqi!==null&&weather.air?.aqi!==undefined?`${t(aqiLabel(weather.air.aqi))} ${measurement(weather.air.aqi)} · AQI (US)`:'AQI —'}</span><span>${art(weather.code,weather.isDay)}${e(weather.description||weatherDescription(weather.code))}<span>${icon('wind')}${measurement(weather.wind,' km/h')} ${Number.isFinite(weather.wind)?e(t('{n}级',{n:windLevel(weather.wind)})):''}</span></span></div><button type="button" class="weather-refresh" data-detail-action="weather-refresh" aria-label="${t('刷新')}" title="${t('刷新')}" ${state.status==='loading'?'disabled':''}>${icon('refresh')}</button></div><p class="weather-source-line">${icon('cloud')}${t('实况')} · ${e(t(weatherSource(weather.sources?.current).name))}${weather.station?` · ${e(weather.station)}`:''}</p><p class="weather-outlook">${t('今日温度')} ${temp(weather.min)} – ${temp(weather.max)}<span>${t('体感')} ${temp(weather.feelsLike)}</span></p><dl class="weather-metrics">${[[t('湿度'),measurement(weather.humidity,'%')],[t('气压'),measurement(weather.pressure,' hPa')],[t(weather.precipitationPeriod==='day'?'今日降水':'降水'),measurement(weather.precipitation,' mm')],[t('日出'),day?.sunrise?.slice(11,16)||'—'],[t('日落'),day?.sunset?.slice(11,16)||'—'],[t('紫外线'),measurement(day?.uv)],['PM2.5',measurement(weather.air?.pm25,' μg/m³')]].map(([label,value])=>`<div><dt>${label}</dt><dd>${e(value)}</dd></div>`).join('')}</dl>${weather.notice?`<p class="weather-source-notice" role="status">${e(weather.notice)}</p>`:''}${stale?`<p class="weather-cache-message" role="status">${e(state.error)} ${t('缓存')} · ${e(formatDate(new Date(weather.fetchedAt),{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</p>`:''}</section>${hourlyForecast(weather,unit,metric)}${dailyForecast(weather,unit)}${weatherAttribution(weather)}</div>`;
+  return `<div class="weather-detail"><section class="weather-hero"><div class="weather-hero-current"><strong class="weather-temperature">${temp(weather.temperature)}<span class="weather-temperature-unit">${unit==='fahrenheit'?'F':'C'}</span></strong><div class="weather-condition"><span class="weather-air" title="${t('空气质量使用 CAMS 美国 AQI 标准')}">${icon('leaf')}${weather.air?.aqi!==null&&weather.air?.aqi!==undefined?`${t(aqiLabel(weather.air.aqi))} ${measurement(weather.air.aqi)} · AQI (US)`:'AQI —'}</span><span>${art(weather.code,weather.isDay)}${e(weather.description||weatherDescription(weather.code))}<span>${icon('wind')}${measurement(weather.wind,' km/h')} ${Number.isFinite(weather.wind)?e(t('{n}级',{n:windLevel(weather.wind)})):''}</span></span></div></div><p class="weather-source-line">${icon('cloud')}${t('实况')} · ${e(t(weatherSource(weather.sources?.current).name))}${weather.station?` · ${e(weather.station)}`:''}</p><p class="weather-outlook">${t('今日温度')} ${temp(weather.min)} – ${temp(weather.max)}<span>${t('体感')} ${temp(weather.feelsLike)}</span></p><dl class="weather-metrics">${[[t('湿度'),measurement(weather.humidity,'%')],[t('气压'),measurement(weather.pressure,' hPa')],[t(weather.precipitationPeriod==='day'?'今日降水':'降水'),measurement(weather.precipitation,' mm')],[t('日出'),day?.sunrise?.slice(11,16)||'—'],[t('日落'),day?.sunset?.slice(11,16)||'—'],[t('紫外线'),measurement(day?.uv)],['PM2.5',measurement(weather.air?.pm25,' μg/m³')]].map(([label,value])=>`<div><dt>${label}</dt><dd>${e(value)}</dd></div>`).join('')}</dl>${weather.notice?`<p class="weather-source-notice" role="status">${e(weather.notice)}</p>`:''}${stale?`<p class="weather-cache-message" role="status">${e(state.error)} ${t('缓存')} · ${e(formatDate(new Date(weather.fetchedAt),{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</p>`:''}</section>${hourlyForecast(weather,unit,metric)}${dailyForecast(weather,unit)}${weatherAttribution(weather)}</div>`;
 }
 
 function windLevel(speed) { return [1,6,12,20,29,39,50,62,75,89,103,118].filter(v=>speed>=v).length; }
@@ -23644,7 +23654,7 @@ const __weather_workspace = (() => {
 const { t } = __i18n;
 const { escapeText } = __html;
 const { icon } = __icons;
-const { cityKey, requestWeather, searchCities } = __weather;
+const { cityKey, weatherState, requestWeather, searchCities } = __weather;
 const { readWeatherCredentials, validateWeatherCredentials, saveWeatherCredentials, requestWeatherPermission } = __weather_sources;
 const { readWeatherCities, saveWeatherCities, weatherCityList } = __weather_cities;
 const { weatherDetail, weatherLocation, weatherSettings, weatherCityCards } = __weather_view;
@@ -23657,6 +23667,8 @@ function bindWeatherWorkspace(root, initial, host) {
   let baseline = JSON.stringify([initial.title,initial.config]), busy = false;
   let cities = weatherCityList(readWeatherCities(),initial.config.city), metric = 'temperature';
   let panel='', expanded=false, search=null, results=[], returnFocus=null;
+  let visiblePanel='', panelMotion=[];
+  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function feedback(message = '') {
     if (!alive()) return;
@@ -23674,6 +23686,10 @@ function bindWeatherWorkspace(root, initial, host) {
     const scroll = find('.weather-horizontal-scroll')?.scrollLeft || 0;
     find('#weather-forecast').innerHTML = weatherDetail(current(),metric);
     find('#weather-location').innerHTML = weatherLocation(current());
+    const item=current(), state=weatherState(item.config.city,item.config), refresh=find('#weather-refresh');
+    refresh.hidden=!item.config.enabled || !state.data;
+    refresh.disabled=state.status==='loading';
+    refresh.setAttribute('aria-busy',String(state.status==='loading'));
     if (!reset && find('.weather-horizontal-scroll')) find('.weather-horizontal-scroll').scrollLeft = scroll;
     if (reset) find('.weather-scroll').scrollTop = 0;
     renderCities();
@@ -23695,12 +23711,59 @@ function bindWeatherWorkspace(root, initial, host) {
     search?.abort(); search=null;
     root.querySelectorAll('.weather-search-results').forEach(node=>node.hidden=true);
   }
-  function updatePanels() {
+  function updatePanels(visible=panel) {
     find('.weather-app').dataset.panel=panel;
-    find('#weather-city-panel').hidden=panel!=='cities';
-    find('#weather-settings-panel').hidden=panel!=='settings';
+    visiblePanel=visible;
+    for(const [name,id] of [['cities','#weather-city-panel'],['settings','#weather-settings-panel']]) {
+      const node=find(id);
+      node.hidden=visible!==name;
+      node.inert=panel!==name;
+      node.setAttribute('aria-hidden',String(panel!==name));
+    }
     for(const action of ['weather-cities','weather-add-city']) find(`[data-detail-action=${action}]`).setAttribute('aria-expanded',String(panel==='cities'));
     find('[data-detail-action=weather-settings]').setAttribute('aria-expanded',String(panel==='settings'));
+  }
+  function cancelPanelMotion() {
+    panelMotion.forEach(animation=>animation.cancel());
+    panelMotion=[];
+  }
+  function settlePanels() {
+    cancelPanelMotion(); updatePanels();
+  }
+  function movePanel(next) {
+    if(next===panel) return;
+    const dialog=root.closest('dialog'), content=find('.weather-content'), slot=find('.weather-side-slot');
+    const old=find('.weather-side-panel:not([hidden])');
+    const before={width:getComputedStyle(dialog).width,slotWidth:getComputedStyle(slot).width,slotHeight:getComputedStyle(slot).height};
+    const previousStyle=old?{opacity:getComputedStyle(old).opacity,transform:getComputedStyle(old).transform}:null;
+    const previous=visiblePanel;
+    // Sample before cancelling, so a rapid reversal starts at the current visual position.
+    cancelPanelMotion(); panel=next;
+    updatePanels(next || previous);
+    if(reducedMotion.matches || document.body.classList.contains('reduce-effects')) {updatePanels();return;}
+    const side=find('.weather-side-panel:not([hidden])');
+    if(!side) return;
+    const stacked=getComputedStyle(slot).gridColumnStart==='1';
+    const property=stacked?'gridTemplateRows':'gridTemplateColumns';
+    const from=stacked?before.slotHeight:before.slotWidth;
+    const to=stacked?getComputedStyle(slot).height:getComputedStyle(slot).width;
+    const timing={duration:next?460:280,easing:'cubic-bezier(.22,1,.36,1)'};
+    const motion=[content.animate([{[property]:`minmax(0,1fr) ${from}`},{[property]:`minmax(0,1fr) ${to}`}],timing)];
+    const width=getComputedStyle(dialog).width;
+    if(width!==before.width) motion.push(dialog.animate([{width:before.width},{width}],timing));
+    const shift=stacked?'translateY(18px)':'translateX(18px)';
+    const start=old===side?previousStyle:{opacity:0,transform:`${shift} scale(.975)`};
+    motion.push(side.animate(next?[
+      {...start,offset:0},
+      {opacity:1,transform:'scale(1.012)',offset:.64},
+      {opacity:1,transform:'scale(.997)',offset:.84},
+      {opacity:1,transform:'none',offset:1}
+    ]:[start,{opacity:0,transform:`${shift} scale(.985)`}],{...timing,easing:'cubic-bezier(.25,.8,.25,1)'}));
+    panelMotion=motion;
+    Promise.all(motion.map(animation=>animation.finished)).then(()=>{
+      if(panelMotion!==motion) return;
+      panelMotion=[]; updatePanels();
+    },()=>{}); // Cancelling an interrupted or disposed animation rejects finished.
   }
   function loadCities() {
     if(!alive()||!current().config.enabled) return;
@@ -23708,8 +23771,7 @@ function bindWeatherWorkspace(root, initial, host) {
   }
   function togglePanel(next,trigger,searchInput=false) {
     if(trigger) returnFocus=trigger;
-    panel=next;
-    hideSearch(); updatePanels();
+    hideSearch(); movePanel(next);
     if(next==='settings') find('#weather-settings-title').focus({preventScroll:true});
     else if(next==='cities') {find(searchInput?'#weather-list-query':'#weather-city-title').focus({preventScroll:true});loadCities();}
     else returnFocus?.focus({preventScroll:true});
@@ -23794,6 +23856,7 @@ function bindWeatherWorkspace(root, initial, host) {
     else if (action === 'weather-refresh') void loadForecast(true);
     else if (action === 'weather-enable') void save({title:current().title,config:{...current().config,enabled:true}});
     else if (action === 'window-expand') {
+      settlePanels();
       expanded = !expanded;
       root.closest('dialog').classList.toggle('widget-app-expanded',expanded);
       target.setAttribute('aria-pressed',String(expanded));
@@ -23825,10 +23888,12 @@ function bindWeatherWorkspace(root, initial, host) {
   root.addEventListener('pointerdown',event=>{
     if(!event.target.closest('.weather-city-search')) hideSearch();
   },options);
+  window.addEventListener('resize',settlePanels,options);
+  reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches) settlePanels();},options);
   updatePanels();
   renderForecast();
   void loadForecast();
-  return () => { events.abort(); search?.abort(); };
+  return () => { events.abort(); search?.abort(); cancelPanelMotion(); };
 }
 
 return {bindWeatherWorkspace};

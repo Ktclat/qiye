@@ -45,29 +45,66 @@ with sync_playwright() as p:
             page.add_init_script('if(window===top&&!localStorage.getItem("qiye.state.v5"))localStorage.setItem("qiye.state.v5",'+json.dumps(json.dumps(state))+')')
             url=f'http://127.0.0.1:{server.server_port}/'+('Qiye-preview.html' if args.preview else '')
             page.goto(url)
+            def settle_motion():
+                page.locator('#dialog').evaluate('async node=>{await Promise.allSettled(node.getAnimations({subtree:true}).filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished))}')
             def open_weather():
-                page.locator('[data-action=widget-weather-detail]').click();page.locator('.daily-weather>div').first.wait_for()
+                page.locator('[data-action=widget-weather-detail]').click();page.locator('.daily-weather>div').first.wait_for();settle_motion()
             def saved():return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.widget==="weather")')
             def close():page.locator('#dialog [data-close]').click();page.locator('#dialog').wait_for(state='hidden')
             def show_cities():
                 if not page.locator('#weather-city-panel').is_visible():page.locator('[data-detail-action=weather-cities]').click()
+                settle_motion()
             def adjacent(panel):
                 return page.locator('.weather-content').evaluate('(node,id)=>{const main=node.querySelector(".weather-main").getBoundingClientRect(),side=node.querySelector(id).getBoundingClientRect();return main.right<=side.left+1&&Math.abs(main.top-side.top)<1}',panel)
             open_weather()
             check(f'{language} default canvas has no search bar or open panel',not page.locator('#weather-city-panel').is_visible() and not page.locator('#weather-settings-panel').is_visible() and page.locator('.weather-main input').count()==0)
             check(f'{language} five controls share the title bar',page.locator('.weather-window-bar button').evaluate_all('buttons=>buttons.length===5&&Math.max(...buttons.map(b=>b.getBoundingClientRect().y))-Math.min(...buttons.map(b=>b.getBoundingClientRect().y))<1'))
+            check(f'{language} refresh sits beside observation time',page.locator('.weather-toolbar').evaluate('node=>{const location=node.querySelector("#weather-location").getBoundingClientRect(),refresh=node.querySelector("#weather-refresh").getBoundingClientRect();return refresh.left>=location.right&&refresh.left-location.right<12&&Math.abs((refresh.top+refresh.bottom-location.top-location.bottom)/2)<2}') and page.locator('.weather-hero .weather-refresh').count()==0)
+            check(f'{language} Celsius unit matches the temperature size',page.locator('.weather-temperature').evaluate('node=>getComputedStyle(node).fontSize===getComputedStyle(node.querySelector(".weather-temperature-unit")).fontSize') and page.locator('.weather-temperature').inner_text()=='27°C')
             main_width=page.locator('.weather-main').evaluate('node=>node.clientWidth')
             page.locator('#dialog').screenshot(path=str(OUT/f'{language}-default.png'),animations='disabled')
-            page.locator('[data-detail-action=weather-add-city]').click()
+            motion=page.evaluate('''async()=>{
+              document.querySelector('[data-detail-action=weather-add-city]').click();
+              const samples=[],dialog=document.querySelector('#dialog'),main=document.querySelector('.weather-main'),slot=document.querySelector('.weather-side-slot'),side=document.querySelector('#weather-city-panel');
+              const start=performance.now();
+              while(performance.now()-start<520){
+                await new Promise(requestAnimationFrame);
+                samples.push({width:dialog.clientWidth,main:main.clientWidth,slot:slot.clientWidth,scale:new DOMMatrix(getComputedStyle(side).transform).a,adjacent:main.getBoundingClientRect().right<=slot.getBoundingClientRect().left+1});
+              }
+              return samples;
+            }''')
+            check(f'{language} sidebar reveals progressively with a small rebound',len(set(s['slot'] for s in motion))>4 and max(s['scale'] for s in motion)>1.002 and abs(motion[-1]['scale']-1)<.001)
+            check(f'{language} window and rail animate without covering or squeezing the main canvas',len(set(s['width'] for s in motion))>4 and all(s['adjacent'] and abs(s['main']-main_width)<2 for s in motion))
             check(f'{language} add city opens and focuses sidebar search',adjacent('#weather-city-panel') and page.locator('#weather-list-query').evaluate('node=>document.activeElement===node'))
             check(f'{language} sidebar expansion preserves available main width',abs(page.locator('.weather-main').evaluate('node=>node.clientWidth')-main_width)<2)
             page.locator('#dialog').screenshot(path=str(OUT/f'{language}-rail.png'),animations='disabled')
             page.locator('[data-detail-action=weather-settings]').click()
+            settle_motion()
             check(f'{language} settings replace cities in the same nonmodal rail',adjacent('#weather-settings-panel') and not page.locator('#weather-city-panel').is_visible() and page.locator('.weather-panel-shade').count()==0)
             check(f'{language} opening settings keeps focus off form controls',page.locator('#weather-settings-title').evaluate('node=>document.activeElement===node'))
             page.locator('#dialog').screenshot(path=str(OUT/f'{language}-settings.png'),animations='disabled')
             page.keyboard.press('Escape')
+            check(f'{language} closing panel remains painted but cannot receive input',page.locator('#weather-settings-panel').evaluate('node=>!node.hidden&&node.inert&&node.getAttribute("aria-hidden")==="true"'))
+            expect(page.locator('#weather-settings-panel')).to_be_hidden()
             check(f'{language} closing sidebar returns focus to its title action',not page.locator('#weather-settings-panel').is_visible() and page.locator('[data-detail-action=weather-settings]').evaluate('node=>document.activeElement===node'))
+            page.evaluate('''async()=>{
+              const cities=document.querySelector('[data-detail-action=weather-cities]'),settings=document.querySelector('[data-detail-action=weather-settings]');
+              cities.click();await new Promise(resolve=>setTimeout(resolve,90));
+              cities.click();await new Promise(resolve=>setTimeout(resolve,55));
+              settings.click();await new Promise(resolve=>setTimeout(resolve,70));
+              cities.click();
+            }''')
+            settle_motion()
+            check(f'{language} rapid reversal and panel switching settle correctly',adjacent('#weather-city-panel') and page.locator('#weather-settings-panel').is_hidden() and page.locator('#weather-city-panel').evaluate('node=>!node.inert&&node.getAttribute("aria-hidden")==="false"') and page.locator('#dialog').evaluate('node=>node.getAnimations({subtree:true}).length===0'))
+            page.keyboard.press('Escape');expect(page.locator('#weather-city-panel')).to_be_hidden()
+            for preference in ['system','app']:
+                if preference=='system':page.emulate_media(reduced_motion='reduce')
+                else:page.evaluate('document.body.classList.add("reduce-effects")')
+                page.locator('[data-detail-action=weather-cities]').click()
+                check(f'{language} {preference} reduced motion opens immediately',adjacent('#weather-city-panel') and page.locator('#dialog').evaluate('node=>node.getAnimations({subtree:true}).length===0'))
+                page.keyboard.press('Escape');expect(page.locator('#weather-city-panel')).to_be_hidden()
+                if preference=='system':page.emulate_media(reduced_motion='no-preference')
+                else:page.evaluate('document.body.classList.remove("reduce-effects")')
             check(f'{language} dedicated weather canvas',page.locator('.weather-app').count()==1 and page.locator('.utility-layout').count()==0)
             check(f'{language} 24 hours and seven dates',page.locator('.hourly-weather>div').count()==24 and page.locator('.daily-weather>div').count()==7)
             check(f'{language} real pressure and precipitation', '999 hPa' in page.locator('.weather-metrics').inner_text() and '0 mm' in page.locator('.weather-metrics').inner_text())
@@ -93,9 +130,10 @@ with sync_playwright() as p:
             check(f'{language} searching changes active city',saved()['config']['city']['latitude']==48.85)
             show_cities();check(f'{language} both cities retained',page.locator('.weather-city-card').count()==2)
             page.screenshot(path=str(OUT/f'{language}-cities.png'),animations='disabled')
-            page.keyboard.press('Escape');check(f'{language} Escape closes city panel only',page.locator('#dialog').is_visible() and not page.locator('#weather-city-panel').is_visible())
+            page.keyboard.press('Escape');expect(page.locator('#weather-city-panel')).to_be_hidden();check(f'{language} Escape closes city panel only',page.locator('#dialog').is_visible())
             page.locator('[data-detail-action=weather-settings]').first.click();check(f'{language} six source modes available',page.locator('#weather-settings [name=source] option').count()==6);page.locator('#weather-settings [name=unit]').select_option('fahrenheit');page.locator('#weather-settings [type=submit]').click()
             expect(page.locator('.weather-temperature')).to_contain_text('81°')
+            check(f'{language} Fahrenheit unit matches the temperature size',page.locator('.weather-temperature').evaluate('node=>getComputedStyle(node).fontSize===getComputedStyle(node.querySelector(".weather-temperature-unit")).fontSize') and page.locator('.weather-temperature').inner_text()=='81°F')
             check(f'{language} chart switches to Fahrenheit',page.locator('.weather-hour-track .weather-chart-point').first.inner_text()=='81°' and saved()['config']['unit']=='fahrenheit')
             offline[0]=True;page.locator('[data-detail-action=weather-refresh]').click();expect(page.locator('[data-detail-action=weather-refresh]')).to_be_enabled();page.locator('.weather-cache-message').wait_for()
             check(f'{language} offline keeps forecast',page.locator('.daily-weather>div').count()==7)
@@ -108,9 +146,11 @@ with sync_playwright() as p:
             check(f'{language} narrow viewport contains layout',page.locator('.weather-app').evaluate('node=>node.scrollWidth<=node.clientWidth+1'))
             page.screenshot(path=str(OUT/f'{language}-mobile.png'),animations='disabled')
             page.locator('[data-detail-action=weather-settings]').first.click()
+            settle_motion()
             check(f'{language} narrow settings stack without covering the forecast',page.locator('.weather-content').evaluate('node=>node.querySelector(".weather-main").getBoundingClientRect().bottom<=node.querySelector("#weather-settings-panel").getBoundingClientRect().top+1') and page.locator('.weather-app').evaluate('node=>node.scrollWidth<=node.clientWidth+1'))
             page.locator('#dialog').screenshot(path=str(OUT/f'{language}-mobile-settings.png'),animations='disabled')
             page.locator('[data-detail-action=weather-add-city]').click()
+            settle_motion()
             check(f'{language} narrow cities stack without covering the forecast',page.locator('.weather-content').evaluate('node=>node.querySelector(".weather-main").getBoundingClientRect().bottom<=node.querySelector("#weather-city-panel").getBoundingClientRect().top+1'))
             page.locator('[data-detail-action=weather-settings]').click();page.locator('[name=enabled]').uncheck();page.locator('#weather-settings [type=submit]').click();page.locator('[data-detail-action=weather-enable]').wait_for()
             check(f'{language} disabled weather displays enable state',not saved()['config']['enabled'])
