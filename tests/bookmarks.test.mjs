@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bookmarkUrl, validateBookmarks, bookmarkPath, bookmarkDescendants, changeLocalBookmarks, listBookmarks, flattenBrowserBookmarks, createBrowserBookmarkClient, BOOKMARK_DEPTH } from '../src/bookmarks.js';
+import { bookmarkUrl, validateBookmarks, bookmarkPath, bookmarkDescendants, bookmarkSelection, bookmarkChanges, changeLocalBookmarkBatch, changeLocalBookmarks, listBookmarks, flattenBrowserBookmarks, createBrowserBookmarkClient, BOOKMARK_DEPTH } from '../src/bookmarks.js';
 import { bookmarkRows, bookmarkSidebar, bookmarkEditor } from '../src/bookmarks-view.js';
 import { newWidgetData, validateWidgetData } from '../src/widget-data.js';
 import { newWidgetConfig, validateWidgetConfig, getWidgetDefinition } from '../src/widget-registry.js';
@@ -170,4 +170,42 @@ test('all bookmark card sizes render without requesting permission or networking
     const html = renderWidget({id:'test',type:'widget',widget:'bookmarks',title:'<img src=x>',config:{source:'local'},data:sample(),size},DEFAULT_STATE);
     assert.match(html,/data-widget="bookmarks"/); assert.match(html,/widget-open/); assert.doesNotMatch(html,/<img/);
   }
+});
+
+test('drag ordering preserves exact sibling order, identity and descendants in both directions', () => {
+  let data = {nodes:[link('a'),folder('f'),link('child','f'),link('b'),link('c')]};
+  const move = (id,beforeId) => { data = changeLocalBookmarks(data,{type:'move',id,parentId:'',...(beforeId ? {beforeId} : {})}); return listBookmarks(data.nodes).map(node => node.id); };
+  assert.deepEqual(move('a','c'),['f','b','a','c']);
+  assert.deepEqual(move('c','f'),['c','f','b','a']);
+  assert.deepEqual(move('f'),['c','b','a','f']);
+  assert.equal(data.nodes.find(node => node.id === 'child').parentId,'f');
+  assert.throws(() => move('a','missing'),/位置已改变/);
+  assert.throws(() => move('a','a'),/位置已改变/);
+});
+
+test('batch operations collapse selected descendants and reject an invalid batch without changing input', () => {
+  const data = sample(), before = structuredClone(data);
+  assert.deepEqual(bookmarkSelection(data.nodes,['work','docs','guide','home']).map(node => node.id),['work','home']);
+  const changes = bookmarkChanges(data.nodes,['work','docs','guide','home'],'delete');
+  assert.deepEqual(changeLocalBookmarkBatch(data,changes).nodes.map(node => node.id),['personal']);
+  assert.deepEqual(data,before);
+  const moves = bookmarkChanges(data.nodes,['home','docs'],'move',{parentId:'personal'});
+  assert.equal(changeLocalBookmarkBatch(data,moves).nodes.filter(node => node.parentId === 'personal').length,2);
+  assert.throws(() => changeLocalBookmarkBatch(data,bookmarkChanges(data.nodes,['home','work'],'move',{parentId:'docs'})),/自身/);
+  assert.deepEqual(data,before);
+});
+
+test('batch duplicate detection prevents any persistent partial local move', () => {
+  const data = {nodes:[folder('a'),folder('b'),folder('dest'),link('one','a','https://same.example/'),link('two','b','https://same.example/')]};
+  assert.throws(() => changeLocalBookmarkBatch(data,bookmarkChanges(data.nodes,['one','two'],'move',{parentId:'dest'})),/已收藏/);
+  assert.deepEqual(data.nodes.slice(-2).map(node => node.parentId),['a','b']);
+});
+
+test('native reorder passes an index anchored to the current browser siblings', async () => {
+  const {client,calls,setGranted,tree} = browserFixture(); setGranted(true);
+  tree[0].children[0].children[0].children.push({id:'12',title:'Next',url:'https://next.example/'},{id:'13',title:'Last',url:'https://last.example/'});
+  await client.mutate({type:'move',id:'11',parentId:'10',beforeId:'13'});
+  await client.mutate({type:'move',id:'13',parentId:'10',beforeId:'11'});
+  assert.deepEqual(calls.filter(Array.isArray),[['move','11',{parentId:'10',index:2}],['move','13',{parentId:'10',index:0}]]);
+  await assert.rejects(client.mutate({type:'move',id:'11',parentId:'2',beforeId:'13'}),/位置已改变/);
 });

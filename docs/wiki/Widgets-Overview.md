@@ -67,16 +67,17 @@ MD 实现按 [RFC 1319](https://www.rfc-editor.org/rfc/rfc1319)、[RFC 1320](htt
 
 ## 书签管理
 
-窗口只分为细窄标题栏和左右内容区。标题栏左侧切换“独立收藏 / 浏览器收藏”，右侧依次为全库搜索、设置、放大、关闭；设置收纳排序、刷新和来源说明。文件夹树与收藏统计留在左侧导航，右侧直接浏览和管理书签。标题栏在桌面高 48 px，窄屏高 44 px，并保持单行；菜单支持键盘打开、Esc 收起及点击外部关闭。
+窗口采用用户提供的 iTab 参考：48 px 单行标题栏（窄屏 44 px），下方直接是左侧文件夹树与右侧紧凑列表，不保留“最近添加”入口和内容区大标题。标题栏左侧切换“独立收藏 / 浏览器收藏”并显示当前路径；路径过长时省略，展开可逐级返回。右侧为全库搜索、排序、操作、管理、设置和窗口按钮。加号操作菜单提供新建文件夹、添加书签，以及当前文件夹或单个选中项目的重命名 / 编辑、移动、删除。窄屏用图标、按需展开搜索与路径菜单保持单行。
 
-布局按用户提供的参考与窄标题栏要求调整；文件夹、搜索和排序的职责参考 [Firefox 收藏库](https://support.mozilla.org/en-US/kb/bookmarks-firefox)。来源和设置采用 [原生 details / summary](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details)，在现有 Chromium 基线上保留原生键盘展开行为。
+从“添加 → 小组件 → 效率 → 书签”添加。默认 4×2 卡片左右分栏，可以进入文件夹和直接打开网页；五种尺寸均可进入完整管理窗口。搜索跨全部文件夹匹配名称及网址，显示所在路径并可定位回原目录。Ctrl / ⌘ + F 或 K 聚焦组件搜索；菜单支持键盘展开、Esc 及点击外部关闭。界面参考 [Firefox 收藏库](https://support.mozilla.org/en-US/kb/bookmarks-firefox)，菜单使用 [原生 details / summary](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details)。
 
-从“添加 → 小组件 → 效率 → 书签”添加。默认 4×2 卡片采用左右分栏，可以进入文件夹和直接打开网页；五种尺寸均可进入完整管理窗口。左侧展开多层文件夹，右侧提供新增、编辑、移动、删除、面包屑路径、最近添加和名称排序。搜索跨全部文件夹匹配名称及网址，结果显示所在路径，并可定位回原目录。Ctrl / ⌘ + F 或 K 聚焦组件搜索。
+拖动书签或文件夹到左侧目录、右侧文件夹中部或路径菜单，可移动整个项目。在“原始顺序”下拖到行间可调整同级顺序，边线显示插入位置；文件夹高亮表示移入。名称和添加时间排序只改变显示，搜索与这些排序下不接受行间排序。此交互参考 [Firefox 手动排列书签](https://support.mozilla.org/en-US/kb/sort-bookmarks-quickly-find-ones-you-want) 与 [HTML Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API)；只处理组件内部开始的拖动。
 
-默认使用“独立收藏”，每张组件独立保存，随 JSON 备份和 WebDAV 同步；公开桌面分享会清空收藏内容。每张组件最多 5,000 个项目、64 层项目路径。网址仅接受 HTTP / HTTPS，省略协议时补为 HTTPS，同目录重复网址会提示。移动会排除自身及子文件夹，删除文件夹前显示将删除的书签和子文件夹数量。
+点击“管理”后，文件夹树和列表显示复选框，标题栏提供当前列表全选、批量移动和删除；可跨目录保留选择，也可拖动整组选中项目。Ctrl / ⌘ + A 全选当前列表，Esc 退出管理。行尾省略号选中该项并打开标题栏操作菜单。父文件夹和后代同时勾选时按父文件夹处理一次；移动排除自身及所有后代，递归删除前展示实际受影响数量。独立收藏整批校验后一次保存，存储失败保留选择和草稿。浏览器写入按 [bookmarks.move](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/bookmarks/move) 的异步顺序逐项执行；中途失败说明完成数并保留未完成选择，不重做已完成操作。
 
-在扩展中从左上角来源菜单选择“浏览器收藏”按需申请权限；获准后直接操作浏览器中的原始收藏，并监听浏览器外部修改。浏览器收藏树只保留在内存，不复制进桌面备份或 WebDAV，独立收藏也不会自动导入浏览器。拒绝或撤销权限后可继续使用独立收藏。系统目录不可改名、移动或删除；管理员收藏只读。原有特殊协议书签保留展示，但不在组件内执行。原生接口边界参见 [Chrome Bookmarks API](https://developer.chrome.com/docs/extensions/reference/api/bookmarks)。
+独立收藏按组件保存，随 JSON 备份和 WebDAV 同步；公开桌面分享会清空内容。每张组件最多 5,000 个项目、64 层项目路径。网址仅接受 HTTP / HTTPS，省略协议时补为 HTTPS，同目录重复网址会提示。手动顺序保存后刷新仍保留。
 
+在扩展中从来源菜单选择“浏览器收藏”按需申请权限，获准后直接管理原始收藏并监听外部修改；每次写入重新检查权限和待修改内容。浏览器树只在内存中，不复制进桌面备份或 WebDAV，两种来源互不导入。拒绝或撤销权限可继续使用独立收藏。系统目录不可改名、移动或删除，管理员收藏只读，不可被批量勾选；原有特殊协议地址保留展示但不执行。边界参见 [Chrome Bookmarks API](https://developer.chrome.com/docs/extensions/reference/api/bookmarks)。
 
 ## 番茄钟
 

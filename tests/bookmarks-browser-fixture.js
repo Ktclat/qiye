@@ -15,7 +15,7 @@
     if (state.acceptRequest) { state.granted = true; permissions.onAdded.emit({permissions:['bookmarks']}); }
     return state.granted;
   }};
-  const assertAccess = () => { if (!state.granted) throw new Error('Missing bookmark permission'); if (state.failWrite) throw new Error('Simulated browser write failure'); };
+  const assertAccess = () => { if (!state.granted) throw new Error('Missing bookmark permission'); if (state.failWrite || state.failAfter === 0) throw new Error('Simulated browser write failure'); if (state.failAfter > 0) state.failAfter--; };
   const bookmarks = {getTree:async () => {
     state.calls.push(['read']);
     if (!state.granted) throw new Error('Missing bookmark permission');
@@ -25,7 +25,7 @@
   for (const name of ['onCreated','onChanged','onRemoved','onMoved','onChildrenReordered','onImportEnded']) bookmarks[name] = event();
   bookmarks.create = async value => { assertAccess(); state.calls.push(['create',value]); const node = {...value,id:String(state.nextId++),dateAdded:Date.now()}; state.nodes.push(node); bookmarks.onCreated.emit(node.id,node); return node; };
   bookmarks.update = async (id,value) => { assertAccess(); state.calls.push(['update',id,value]); const node = state.nodes.find(node => node.id === id); Object.assign(node,value); bookmarks.onChanged.emit(id,value); return node; };
-  bookmarks.move = async (id,value) => { assertAccess(); state.calls.push(['move',id,value]); const node = state.nodes.find(node => node.id === id); Object.assign(node,value); bookmarks.onMoved.emit(id,value); return node; };
+  bookmarks.move = async (id,value) => { assertAccess(); state.calls.push(['move',id,value]); const node = state.nodes.find(node => node.id === id); const siblings = state.nodes.filter(entry => entry.parentId === value.parentId); const before = siblings[value.index]; state.nodes.splice(state.nodes.indexOf(node),1); node.parentId = value.parentId; const at = before && before !== node ? state.nodes.indexOf(before) : state.nodes.length; state.nodes.splice(at,0,node); bookmarks.onMoved.emit(id,value); return node; };
   bookmarks.remove = async id => { assertAccess(); state.calls.push(['remove',id]); state.nodes = state.nodes.filter(node => node.id !== id); bookmarks.onRemoved.emit(id,{}); };
   bookmarks.removeTree = async id => { assertAccess(); const ids = new Set([id]); let count = 0; while (count !== ids.size) { count = ids.size; for (const node of state.nodes) if (ids.has(node.parentId)) ids.add(node.id); } state.calls.push(['removeTree',id]); state.nodes = state.nodes.filter(node => !ids.has(node.id)); bookmarks.onRemoved.emit(id,{}); };
   Object.assign(globalThis.chrome ||= {},{permissions,bookmarks});

@@ -44,6 +44,39 @@ export function bookmarkDescendants(nodes, nodeId) {
   return result;
 }
 
+// A selected folder owns its selected descendants for a single operation.
+export function bookmarkSelection(nodes, ids) {
+  const selected = new Set(ids), byId = new Map(nodes.map(node => [node.id,node]));
+  return nodes.filter(node => {
+    if (!selected.has(node.id)) return false;
+    const seen = new Set([node.id]);
+    let parent = byId.get(node.parentId);
+    while (parent && !seen.has(parent.id)) {
+      if (selected.has(parent.id)) return false;
+      seen.add(parent.id); parent = byId.get(parent.parentId);
+    }
+    return true;
+  });
+}
+
+export function bookmarkChanges(nodes, ids, type, destination = {}) {
+  return bookmarkSelection(nodes, ids).map(node => {
+    const subtree = type === 'delete' && node.url === null ? bookmarkDescendants(nodes,node.id) : null;
+    return {type, id:node.id, ...destination,
+      expectedNode:JSON.stringify({title:node.title,url:node.url,parentId:node.parentId}),
+      ...(subtree ? {expectedSubtree:JSON.stringify(nodes.filter(entry => subtree.has(entry.id)))} : {}),
+    };
+  });
+}
+
+function moveIndex(nodes, change) {
+  const siblings = nodes.filter(node => node.parentId === change.parentId);
+  if (change.beforeId === undefined) return siblings.length;
+  const index = siblings.findIndex(node => node.id === change.beforeId);
+  if (index < 0 || change.beforeId === change.id) throw new Error(t('拖放位置已改变，请重试'));
+  return index;
+}
+
 export function validateBookmarks(raw, path = 'bookmarks') {
   keys(raw, ['nodes'], path);
   const nodes = array(raw.nodes, path + '.nodes', BOOKMARK_LIMIT).map((node, i) => {
@@ -83,6 +116,7 @@ export function checkBookmarkChange(nodes, change, source = 'local') {
     if (change.parentId !== '' && (!parent || parent.url !== null)) throw new Error(t('目标文件夹不存在'));
     if (parent?.readonly || source === 'browser' && change.parentId === '') throw new Error(t('请选择可写入的文件夹'));
     if (node && bookmarkDescendants(nodes, node.id).has(change.parentId)) throw new Error(t('不能将文件夹移入自身或子文件夹'));
+    if (change.type === 'move') moveIndex(nodes, change);
   }
   if (change.type === 'create' || change.type === 'update') {
     string(change.title, 'bookmark.title', 300);
@@ -106,9 +140,19 @@ export function changeLocalBookmarks(data, change) {
   const node = checkBookmarkChange(nodes, change);
   if (change.type === 'create') nodes.push({id:change.id, parentId:change.parentId, title:change.title.trim(), url:change.url === null ? null : bookmarkUrl(change.url), dateAdded:change.dateAdded});
   if (change.type === 'update') { node.title = change.title.trim(); node.url = change.url === null ? null : bookmarkUrl(change.url); }
-  if (change.type === 'move') { nodes.splice(nodes.indexOf(node), 1); node.parentId = change.parentId; nodes.push(node); }
+  if (change.type === 'move') {
+    nodes.splice(nodes.indexOf(node), 1); node.parentId = change.parentId;
+    const siblings = nodes.filter(entry => entry.parentId === change.parentId), index = moveIndex(nodes, change);
+    const at = siblings[index] ? nodes.indexOf(siblings[index]) : siblings.length ? nodes.indexOf(siblings.at(-1)) + 1 : nodes.length;
+    nodes.splice(at, 0, node);
+  }
   const deleted = change.type === 'delete' ? bookmarkDescendants(nodes, node.id) : new Set();
   return validateBookmarks({nodes:nodes.filter(entry => !deleted.has(entry.id))});
+}
+
+// Validate the complete batch before the caller performs one persistent write.
+export function changeLocalBookmarkBatch(data, changes) {
+  return changes.reduce((next, change) => changeLocalBookmarks(next, change), data);
 }
 
 export function listBookmarks(nodes, {folder = '', query = '', sort = 'manual', scope = 'folder'} = {}) {
@@ -118,7 +162,7 @@ export function listBookmarks(nodes, {folder = '', query = '', sort = 'manual', 
   return result.sort((a, b) => {
     if (sort === 'recent' || scope === 'recent' && sort === 'manual' && !terms.length) return b.dateAdded - a.dateAdded;
     const foldersFirst = Number(a.url !== null) - Number(b.url !== null);
-    return foldersFirst || (sort === 'title' ? a.title.localeCompare(b.title) : 0);
+    return sort === 'title' ? foldersFirst || a.title.localeCompare(b.title) : 0;
   });
 }
 
@@ -163,7 +207,8 @@ export function createBrowserBookmarkClient(api = globalThis.chrome) {
       if (node && change.expectedNode && JSON.stringify({title:node.title,url:node.url,parentId:node.parentId}) !== change.expectedNode) throw new Error(t('这条收藏已改变，请关闭编辑后重试'));
       if (change.type === 'create') return api.bookmarks.create({parentId:change.parentId, title:change.title.trim(), ...(change.url === null ? {} : {url:bookmarkUrl(change.url)})});
       if (change.type === 'update') return api.bookmarks.update(change.id, {title:change.title.trim(), ...(node.url === null ? {} : {url:bookmarkUrl(change.url) || change.url})});
-      if (change.type === 'move') return api.bookmarks.move(change.id, {parentId:change.parentId});
+      if (change.type === 'move') return api.bookmarks.move(change.id, {parentId:change.parentId,
+        ...(change.beforeId === undefined ? {} : {index:moveIndex(latest.nodes,change)})});
       // Empty-folder deletion must fail if a child arrived after confirmation.
       if (node.url === null && change.expectedSubtree) {
         const ids = bookmarkDescendants(latest.nodes, node.id);

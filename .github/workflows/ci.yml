@@ -60,6 +60,8 @@ jobs:
           python3 tests/hotsearch-e2e.py --preview
           python3 tests/bookmarks-e2e.py
           python3 tests/bookmarks-e2e.py --preview
+          python3 tests/bookmarks-organize-e2e.py
+          python3 tests/bookmarks-organize-e2e.py --preview
           python3 tests/bookmarks-native-e2e.py
           python3 tests/pomodoro-e2e.py
           python3 tests/pomodoro-e2e.py --preview
