@@ -19,13 +19,13 @@ export async function requestPublicOrigin(value) {
   return url;
 }
 
-export async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch}={}) {
+export async function fetchPublicJson(value,{signal,maxBytes=2*1024*1024,fetcher=globalThis.fetch,cache='no-cache'}={}) {
   const url=publicHttpsUrl(value), controller=new AbortController();
   const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
   if(signal?.aborted)controller.abort();
   const timer=setTimeout(abort,12000);
   try {
-    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache:'no-cache',headers:{Accept:'application/json'}});
+    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache,headers:{Accept:'application/json'}});
     if(!response.ok)throw new Error(t('来源返回 HTTP {status}',{status:response.status}));
     if(Number(response.headers.get('content-length'))>maxBytes)throw new Error(t('文件超过大小限制。'));
     const reader=response.body?.getReader();let text='';

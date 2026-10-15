@@ -51,7 +51,17 @@ html.hide-content-scrollbar,html.hide-content-scrollbar body{scrollbar-width:non
 html.hide-content-scrollbar::-webkit-scrollbar,html.hide-content-scrollbar body::-webkit-scrollbar{display:none;width:0;height:0}
 /* Stable quote position and enough bottom space for the last row to clear it. */
 main{padding-bottom:112px}
-.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:64px;overflow:hidden;line-height:1.5;text-wrap:balance}
+.daily-quote{position:fixed;left:calc(var(--sidebar-width) + 24px);right:24px;bottom:max(24px,env(safe-area-inset-bottom));display:flex;gap:10px;margin:0;padding:14px 16px 6px;z-index:9;text-align:center;pointer-events:none;max-height:80px;overflow:hidden;line-height:1.5;text-wrap:balance}
+.daily-quote>span:first-child{min-width:0}
+.daily-quote>span:first-child:before,.daily-quote>span:first-child:after{content:none}
+.daily-quote [data-quote-refresh]{pointer-events:auto;padding:0;max-width:100%;line-height:inherit;letter-spacing:inherit;text-shadow:inherit;vertical-align:bottom;text-wrap:balance;overflow-wrap:anywhere}
+.daily-quote [data-quote-refresh]:before{content:'「 ';opacity:.7}
+.daily-quote [data-quote-refresh]:after{content:' 」';opacity:.7}
+.daily-quote [data-quote-refresh]:hover{color:#fff}
+.daily-quote [data-quote-refresh]:disabled{opacity:1}
+.daily-quote-source{pointer-events:auto;flex-shrink:0;font-size:.8em;opacity:.65;white-space:nowrap}
+.daily-quote-source:not([href]){pointer-events:none}
+.daily-quote-source[href]:hover,.daily-quote-source:focus-visible{opacity:1;text-decoration:underline}
 html[data-sidebar-position=right] .daily-quote{left:24px;right:calc(var(--sidebar-width) + 24px)}
 html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .daily-quote,.minimal .daily-quote{left:24px;right:24px}
 .wallpaper-credit{max-width:33vw;bottom:8px;z-index:10}

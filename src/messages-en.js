@@ -1525,5 +1525,15 @@ export const englishMessages = {
   "城市列表未能保存，当前城市设置已保存。": "Could not save the city list. Your current city was saved.",
   "请输入至少两个字符": "Enter at least two characters",
   "选择城市查看天气": "Select a city to view its weather",
-  "城市列表未能保存，请重试。": "Could not save the city list. Please try again."
+  "城市列表未能保存，请重试。": "Could not save the city list. Please try again.",
+  "正在获取一言…": "Loading a quote…",
+  "固定在底部；每次打开或刷新时获取一言，点击短句可换一句。": "Fixed at the bottom. Fetches a new Hitokoto quote on each visit or reload; click the text for another.",
+  "本地短句": "Local quote",
+  "换一句：{text}": "Another quote: {text}",
+  "点击换一句": "Click for another quote",
+  "一言暂时无法连接，显示本地短句，点击重试。": "Hitokoto is unavailable. Showing a local quote; click to retry.",
+  "当前为缓存的一言，点击重试。": "Showing a cached Hitokoto quote; click to retry.",
+  "一言 · 缓存": "Hitokoto · Cached",
+  "一言": "Hitokoto",
+  "查看一言来源": "View the quote on Hitokoto"
 };
