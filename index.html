@@ -2149,18 +2149,25 @@ html[data-theme=light] .countdown-card-face .countdown-card-days strong{color:#3
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
 #dialog.weather-app-dialog {
-  --weather-fg:#f7f8ff; --weather-muted:#c9d2e4; --weather-panel:#ffffff0e;
+  --weather-main-width:var(--window-width,980px); --weather-side-width:300px;
+  --weather-fg:#f7f8ff; --weather-muted:#c9d2e4; --weather-panel:#ffffff12;
   --weather-line:#ffffffc9; --weather-low:#c4d6f4; --weather-field:#ffffff1c;
   --weather-selection:#ffffff24; --weather-drawer:#2c364d; --weather-border:#ffffff12;
+  --weather-sidebar:#465875; --weather-sidebar-top:#526580; --weather-sidebar-muted:#e2eafa;
   --app-fg:var(--weather-fg); --app-muted:var(--weather-muted); --app-field:var(--weather-field);
   --app-selection:var(--weather-selection); --app-blue:#afcbff;
   color:var(--weather-fg); border-color:var(--weather-border);
-  background:radial-gradient(ellipse at top right,#506582 0,transparent 74%),linear-gradient(120deg,#26273d,#191a2d 65%);
+  width:min(var(--weather-main-width),var(--dialog-width));
+  background:radial-gradient(ellipse at top right,#3b4d69 0,transparent 74%),linear-gradient(120deg,#26273d,#191a2d 65%);
 }
+#dialog.weather-app-dialog:not(.widget-app-expanded):has(.weather-app[data-panel=cities]),
+#dialog.weather-app-dialog:not(.widget-app-expanded):has(.weather-app[data-panel=settings]) { width:min(calc(var(--weather-main-width) + var(--weather-side-width)),var(--dialog-width)); }
+#dialog.weather-app-dialog.widget-app-expanded { width:var(--dialog-width); }
 html[data-theme=light] #dialog.weather-app-dialog {
   --weather-fg:#1f3554; --weather-muted:#4d6584; --weather-panel:#ffffff70;
   --weather-line:#3a5d8e; --weather-low:#6887ae; --weather-field:#ffffff9c;
   --weather-selection:#fff; --weather-drawer:#e8f0fb; --weather-border:#244f7d18;
+  --weather-sidebar:#d5e1f1; --weather-sidebar-top:#e1eaf7; --weather-sidebar-muted:#405979;
   --app-fg:var(--weather-fg); --app-muted:var(--weather-muted); --app-field:var(--weather-field);
   --app-selection:var(--weather-selection); --app-blue:#2169dd;
   background:radial-gradient(ellipse at top right,#cfdef4 0,transparent 78%),linear-gradient(130deg,#e3ecfa,#f2f5fb);
@@ -2168,23 +2175,23 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-app { height:100%; min-height:0; display:flex; flex-direction:column; position:relative; color:var(--weather-fg); }
 .weather-app [hidden] { display:none!important; }
 .weather-app .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
-.weather-window-bar { display:flex; align-items:center; justify-content:space-between; padding:8px 12px 0 28px; flex:none; }
-.weather-window-bar h2 { font-size:12px; font-weight:500; letter-spacing:.06em; color:var(--weather-muted); margin:0; }
-.weather-window-bar .widget-app-button { background:var(--weather-field); width:25px; height:25px; padding:4px; }
-.weather-toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:8px 28px 0; flex:none; position:relative; z-index:3; }
+.weather-window-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px 8px 28px; min-height:48px; flex:none; border-bottom:1px solid var(--weather-border); background:#ffffff04; }
+.weather-window-bar h2 { font-size:13px; font-weight:500; letter-spacing:.04em; color:var(--weather-muted); margin:0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.weather-header-actions,.weather-tools { display:flex; align-items:center; gap:4px; flex:none; }
+.weather-tools { padding-right:8px; margin-right:4px; border-right:1px solid var(--weather-border); }
+.weather-app .weather-window-bar .widget-app-button { width:30px; height:30px; padding:6px; border-radius:9px; background:transparent; }
+.weather-app .weather-window-bar .widget-app-button:hover { background:var(--weather-field); }
+.weather-app .weather-tools .widget-app-button[aria-expanded=true]:not([data-detail-action=weather-add-city]) { background:var(--weather-selection); color:var(--weather-fg); }
+.weather-content { display:grid; grid-template-columns:minmax(0,1fr); flex:1; min-height:0; }
+.weather-app:not([data-panel=""]) .weather-content { grid-template-columns:minmax(0,1fr) var(--weather-side-width); }
+.weather-main { min-width:0; min-height:0; display:flex; flex-direction:column; margin:0; padding:0; container-type:inline-size; container-name:weather-main; }
+.weather-toolbar { display:flex; align-items:center; padding:16px 28px 0; flex:none; }
 #weather-location { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:13px; min-width:0; overflow-wrap:anywhere; }
 #weather-location strong { font-weight:500; } #weather-location small { color:var(--weather-muted); font-size:11px; }
-.weather-actions { display:flex; align-items:center; gap:6px; flex:none; }
-#weather-search { position:relative; width:200px; }
 .weather-search-field { display:flex; border-radius:10px; background:var(--weather-field); }
 .weather-search-field input { width:100%; padding:7px 10px; font-size:12px; background:transparent; }
 .weather-search-field button { background:transparent; padding:6px; flex:none; display:grid; place-items:center; }
 .weather-search-field .icon { width:17px; height:17px; }
-.weather-actions .widget-app-button { background:var(--weather-field); border-radius:10px; }
-#weather-search-results { position:absolute; top:calc(100% + 8px); right:0; width:300px; max-width:80vw; max-height:300px; overflow:auto; padding:8px; background:var(--weather-drawer); border:1px solid var(--weather-border); border-radius:14px; box-shadow:0 12px 40px #0004; font-size:12px; }
-#weather-search-results p { padding:4px 8px; margin:0 0 4px; color:var(--weather-muted); }
-#weather-search-results button { display:block; width:100%; text-align:left; margin:3px 0; background:transparent; }
-#weather-search-results span { display:block; color:var(--weather-muted); font-size:11px; margin-top:4px; }
 #weather-feedback { margin:8px 28px 0; padding:8px 12px; font-size:12px; background:var(--weather-field); border-radius:8px; flex:none; overflow-wrap:anywhere; }
 .weather-scroll { overflow:auto; flex:1; min-height:0; padding:12px 28px 20px; scrollbar-width:thin; scrollbar-color:var(--weather-field) transparent; }
 .weather-hero { padding:0 0 18px; }
@@ -2254,18 +2261,18 @@ html[data-theme=light] #dialog.weather-app-dialog {
 .weather-empty-state { min-height:350px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; }
 .weather-empty-state>.icon { width:64px; height:64px; opacity:.75; }.weather-empty-state p,.weather-empty-state h3 { margin:0; }
 .weather-empty-state p { font-size:13px; color:var(--weather-muted); }
-.weather-panel-shade { position:absolute; inset:34px 0 0; background:#0003; z-index:4; }
-.weather-side-panel { position:absolute; inset:40px 10px 10px auto; width:min(330px,calc(100% - 20px)); z-index:5; background:var(--weather-drawer); border:1px solid var(--weather-border); box-shadow:0 15px 50px #0005; border-radius:17px; padding:18px; overflow:auto; scrollbar-width:thin; animation:weather-panel-enter .2s ease-out; }
-.weather-side-panel>header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }.weather-side-panel h3 { font-size:18px; margin:0; }
+.weather-side-panel { min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; background:linear-gradient(155deg,var(--weather-sidebar-top),var(--weather-sidebar)); border-left:1px solid var(--weather-border); }
+.weather-side-panel>header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 14px 10px; flex:none; }
+.weather-side-panel h3 { font-size:17px; font-weight:500; margin:0; }
+.weather-side-panel h3:focus { outline:none; }
+.weather-side-panel>header .widget-app-button { width:26px; height:26px; padding:4px; border-radius:8px; background:transparent; }
+.weather-panel-body { flex:1; min-height:0; padding:4px 14px 18px; overflow:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:var(--weather-field) transparent; }
+.weather-side-panel .weather-panel-help,.weather-side-panel #weather-settings label>span,.weather-side-panel #weather-settings summary { color:var(--weather-sidebar-muted); }
 .weather-panel-help { font-size:12px; color:var(--weather-muted); margin:0 0 14px; line-height:1.7; }
-.weather-city-card { position:relative; border-radius:14px; background:var(--weather-panel); margin-bottom:10px; border:1px solid transparent; }
-.weather-city-card.active { border-color:var(--app-blue); }
-.weather-app .weather-city-card>button:first-child { width:100%; display:flex; align-items:center; gap:6px; text-align:left; padding:16px 12px 30px; background:transparent; }
+.weather-city-card { position:relative; }
 .weather-city-card strong { font-size:14px; font-weight:500; overflow-wrap:anywhere; }.weather-city-card small { display:block; color:var(--weather-muted); font-size:11px; margin-top:5px; }
 .weather-city-card .w-weather-art,.weather-city-card .icon { width:35px; height:34px; margin-left:auto; flex:none; }.weather-city-card b { font-size:28px; font-weight:400; }
-.weather-city-current { position:absolute; bottom:9px; left:12px; font-size:10px; color:var(--weather-muted); }
 .weather-app .weather-city-remove { position:absolute; bottom:4px; right:5px; padding:4px; background:transparent; }.weather-city-remove .icon { width:14px; height:14px; }
-.weather-app .weather-add-city { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; font-size:13px; padding:11px; }.weather-add-city .icon { width:16px; height:16px; }
 #weather-settings { display:flex; flex-direction:column; gap:16px; font-size:13px; }
 #weather-settings label { display:flex; flex-direction:column; gap:6px; }#weather-settings label>span { color:var(--weather-muted); }
 #weather-settings input,#weather-settings select { width:100%; }#weather-settings select { color-scheme:dark; background:var(--weather-field); }#weather-settings select option { background:var(--weather-drawer); color:var(--weather-fg); }
@@ -2277,42 +2284,27 @@ html[data-theme=light] #weather-settings select { color-scheme:light; }
 html[data-theme=light] .weather-app .weather-primary { color:#fff; }
 html[data-accent=custom] .weather-app .weather-primary { color:var(--accent-ink); }
 html[data-theme=light] .weather-app .w-weather-art { filter:drop-shadow(0 1px 1px #47618090); }
-@container(max-width:680px) {
-  .weather-toolbar { align-items:flex-start; flex-direction:column; gap:10px; padding:8px 16px 0; }
-  .weather-actions { width:100%; } #weather-search { flex:1; width:auto; }#weather-search-results { left:0; right:auto; width:100%; }
-  .weather-scroll { padding:10px 16px 16px; }.weather-window-bar { padding-left:16px; }
+@container weather-main (max-width:680px) {
+  .weather-toolbar { padding:12px 16px 0; }
+  .weather-scroll { padding:10px 16px 16px; }
   .weather-temperature { font-size:70px; }.weather-hero-current { gap:15px; }.weather-condition { font-size:12px; }
   .weather-forecast-panel { padding:12px 10px 6px; }.weather-week-panel { padding-bottom:10px; }
   .weather-app .weather-metrics { gap:9px 16px; font-size:11px; }.weather-hero { padding-bottom:16px; }
 }
-@container(max-width:380px) {
+@container weather-main (max-width:380px) {
   .weather-temperature { font-size:60px; }.weather-hero-current { flex-wrap:wrap; gap:8px 16px; }
   .weather-condition { flex:1; }.weather-app .weather-refresh { margin:0; }.weather-outlook { font-size:12px; }
   .weather-outlook span { margin-left:8px; }.weather-forecast-panel h3 { font-size:12px; }
   .weather-app .weather-metric-switch button { padding:3px 6px; }
 }
-@keyframes weather-panel-enter { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
-@media(prefers-reduced-motion:reduce) { .weather-side-panel { animation:none; } }
-body.reduce-effects .weather-side-panel { animation:none; }
-
-/* The city rail shares the canvas; opening it never covers the desktop forecast. */
-.weather-content { display:grid; grid-template-columns:minmax(0,1fr) clamp(240px,24%,300px); flex:1; min-height:0; }
-.weather-content:has(#weather-city-panel[hidden]) { grid-template-columns:minmax(0,1fr); }
-.weather-main { min-width:0; min-height:0; display:flex; flex-direction:column; margin:0; padding:0; }
-.weather-city-panel { background:#b9cbe521; padding:18px 12px; min-width:0; overflow:auto; scrollbar-width:thin; }
-.weather-city-panel>header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.weather-city-panel h3 { margin:0; font-size:17px; font-weight:500; }
-.weather-city-panel>header .widget-app-button { width:24px; height:24px; padding:4px; background:transparent; }
 .weather-city-panel .weather-panel-help { margin:12px 2px; font-size:11px; }
 .weather-city-search { position:relative; }
 #weather-list-search { margin-bottom:14px; }
-.weather-search-results { position:absolute; top:calc(100% + 6px); right:0; width:300px; max-width:100%; max-height:280px; overflow:auto; padding:8px; background:var(--weather-drawer); border:1px solid var(--weather-border); border-radius:12px; box-shadow:0 12px 40px #0004; z-index:6; font-size:12px; }
+.weather-search-results { position:relative; margin-top:8px; width:100%; max-height:260px; overflow:auto; padding:8px; background:var(--weather-drawer); border:1px solid var(--weather-border); border-radius:12px; font-size:12px; }
 .weather-search-results p { margin:4px 6px 8px; }
 .weather-search-results button { width:100%; text-align:left; background:transparent; }
 .weather-search-results button:hover { background:var(--weather-field); }
 .weather-search-results span { display:block; font-size:11px; color:var(--weather-muted); margin-top:4px; }
-.weather-app .weather-source-settings { display:flex; align-items:center; justify-content:center; gap:6px; padding:8px; width:100%; font-size:12px; background:transparent; color:var(--weather-muted); }
-.weather-source-settings .icon { width:15px; height:15px; }
 .weather-source-line { display:flex; align-items:center; gap:6px; margin:0 0 14px; font-size:11px; color:var(--weather-muted); }
 .weather-source-line .icon { width:14px; height:14px; }
 .weather-source-notice { margin:12px 0 0; padding:8px 10px; border-radius:8px; background:var(--weather-field); color:var(--weather-muted); font-size:11px; }
@@ -2324,32 +2316,28 @@ body.reduce-effects .weather-side-panel { animation:none; }
 .weather-city-heading strong { font-size:15px; }.weather-city-heading b { font-size:27px; font-weight:600; }
 .weather-city-summary { display:flex; align-items:center; justify-content:space-between; width:100%; gap:6px; font-size:11px; }
 .weather-city-summary>span { display:flex; align-items:center; min-width:0; gap:3px; }
-.weather-city-summary small { color:#e2edff; font-size:10px; margin:0; flex:none; }
+.weather-city-summary small { color:#e2edff; font-size:11px; margin:0; flex:none; }
 .weather-city-summary .w-weather-art,.weather-city-summary .icon { width:21px; height:21px; margin:0; }
-.weather-city-origin { align-self:flex-start; font-size:9px; color:#e2edff; padding-right:12px; }
+.weather-city-origin { align-self:flex-start; font-size:10px; color:#e2edff; padding-right:12px; }
 .weather-city-pin { position:absolute; left:-5px; top:-5px; color:#fff; pointer-events:none; }
 .weather-city-pin .icon { width:14px; height:14px; }
 .weather-app .weather-city-remove { color:#fff; }
 .weather-app .w-weather-art [fill] { fill:currentColor; }.weather-app .w-weather-art [stroke] { stroke:currentColor; }
-.weather-app .weather-add-city { background:var(--weather-field); padding:8px; font-size:12px; }
 .weather-week-track { min-width:580px; }.weather-week-track .weather-chart { height:130px; }
-.weather-forecast-panel { border:0; background:#ffffff12; border-radius:16px; }
+.weather-forecast-panel { border:1px solid var(--weather-border); background:var(--weather-panel); border-radius:16px; }
 .weather-credentials a { display:inline-block; margin:8px 0; color:var(--app-blue); font-size:11px; }
 .weather-credentials .weather-panel-help { margin-top:10px!important; }
-@container(min-width:761px) {
+@container weather-main (min-width:761px) {
   .weather-temperature { font-size:100px; }
   .weather-condition { font-size:14px; }
   .weather-app .weather-metrics { font-size:13px; }
-  .weather-city-summary small { font-size:11px; }
-}
-@container(max-width:1000px) {
-  .weather-toolbar { align-items:flex-start; flex-direction:column; gap:8px; }
-  .weather-actions { width:100%; } #weather-search { flex:1; }
 }
 @container(max-width:760px) {
-  .weather-content { display:flex; }.weather-main { flex:1; }
-  .weather-city-panel { position:absolute; z-index:5; inset:40px 8px 8px auto; width:min(300px,calc(100% - 16px)); border-radius:16px; background:var(--weather-drawer); box-shadow:0 10px 40px #0004; }
-  .weather-city-panel:not([hidden])~* { pointer-events:auto; }
+  .weather-window-bar { padding-left:16px; }
+  .weather-app:not([data-panel=""]) .weather-content { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1.15fr); }
+  .weather-side-panel { border-left:0; border-top:1px solid var(--weather-border); }
+  .weather-side-panel>header { padding:10px 16px 6px; }
+  .weather-panel-body { padding:4px 16px 14px; }
 }
 
 </style>
@@ -22350,11 +22338,20 @@ const art = (code, isDay = true) => Number.isFinite(code) && code>=0 ? weatherAr
 function weatherSourceFields(config) {
   return `<label><span>${t('天气源')}</span><select name="source">${WEATHER_SOURCES.map(source=>`<option value="${source.id}" ${(config.source||'auto')===source.id?'selected':''}>${t(source.name)}</option>`).join('')}</select></label><label class="weather-enable"><input name="fallback" type="checkbox" ${config.fallback!==false?'checked':''}>${t('故障时自动切换天气源')}</label>`;
 }
-function citySearch(sidebar=false) {
-  return `<form id="${sidebar?'weather-list-search':'weather-search'}" class="weather-city-search" role="search"><div class="weather-search-field"><input id="${sidebar?'weather-list-query':'weather-city-query'}" aria-label="${t('搜索全球城市')}" placeholder="${t('输入城市、乡镇')}" maxlength="100" autocomplete="off"><button type="submit" aria-label="${t('搜索城市')}" title="${t('搜索城市')}">${icon('search')}</button></div><div id="${sidebar?'weather-list-results':'weather-search-results'}" class="weather-search-results" hidden></div></form>`;
+function citySearch() {
+  return `<form id="weather-list-search" class="weather-city-search" role="search"><div class="weather-search-field"><input id="weather-list-query" aria-label="${t('搜索全球城市')}" placeholder="${t('输入城市、乡镇')}" maxlength="100" autocomplete="off"><button type="submit" aria-label="${t('搜索城市')}" title="${t('搜索城市')}">${icon('search')}</button></div><div id="weather-list-results" class="weather-search-results" hidden></div></form>`;
 }
 function weatherWorkspace(item) {
-  return `<div class="weather-app"><header class="weather-window-bar"><h2 id="dialog-title">${e(item.title)}</h2>${windowControls()}</header><div class="weather-content"><div class="weather-main"><div class="weather-toolbar"><div id="weather-location"></div><div class="weather-actions">${citySearch()}${appButton('weather-cities',t('城市列表'),'list','aria-expanded="true" aria-controls="weather-city-panel"')}${appButton('weather-settings',t('天气设置'),'settings','aria-expanded="false" aria-controls="weather-settings-panel"')}</div></div><p id="weather-feedback" role="status" hidden></p><div class="weather-scroll"><section id="weather-forecast">${weatherDetail(item)}</section></div></div><aside id="weather-city-panel" class="weather-city-panel" aria-label="${t('城市列表')}"><header><h3>${t('天气列表')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header>${citySearch(true)}<div id="weather-city-list"></div><button type="button" class="weather-add-city" data-detail-action="weather-add-city">${icon('plus')}${t('添加城市')}</button><p class="weather-panel-help">${t('切换城市查看天气，最多保留 8 个城市。')}</p><button type="button" class="weather-source-settings" data-detail-action="weather-settings">${icon('settings')}${t('天气源与设置')}</button></aside></div><div class="weather-panel-shade" data-weather-dismiss hidden></div><aside id="weather-settings-panel" class="weather-side-panel" aria-label="${t('天气设置')}" hidden><header><h3>${t('天气设置')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header>${weatherSettings(item)}</aside></div>`;
+  return `<div class="weather-app" data-panel="">
+    <header class="weather-window-bar"><h2 id="dialog-title">${e(item.title)}</h2><div class="weather-header-actions"><div class="weather-tools">
+      ${appButton('weather-add-city',t('添加城市'),'plus','aria-expanded="false" aria-controls="weather-city-panel"')}
+      ${appButton('weather-cities',t('城市列表'),'list','aria-expanded="false" aria-controls="weather-city-panel"')}
+      ${appButton('weather-settings',t('天气设置'),'settings','aria-expanded="false" aria-controls="weather-settings-panel"')}
+    </div>${windowControls()}</div></header>
+    <div class="weather-content"><div class="weather-main"><div class="weather-toolbar"><div id="weather-location"></div></div><p id="weather-feedback" role="status" hidden></p><div class="weather-scroll"><section id="weather-forecast">${weatherDetail(item)}</section></div></div>
+      <aside id="weather-city-panel" class="weather-side-panel weather-city-panel" aria-labelledby="weather-city-title" hidden><header><h3 id="weather-city-title" tabindex="-1">${t('天气列表')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header><div class="weather-panel-body">${citySearch()}<div id="weather-city-list"></div><p class="weather-panel-help">${t('切换城市查看天气，最多保留 8 个城市。')}</p></div></aside>
+      <aside id="weather-settings-panel" class="weather-side-panel" aria-labelledby="weather-settings-title" hidden><header><h3 id="weather-settings-title" tabindex="-1">${t('天气设置')}</h3>${appButton('weather-panel-close',t('收起面板'),'close')}</header><div class="weather-panel-body">${weatherSettings(item)}</div></aside>
+    </div></div>`;
 }
 
 function weatherSettings(item) {
@@ -22452,7 +22449,7 @@ function bindWeatherWorkspace(root, initial, host) {
   const alive = () => !events.signal.aborted && root.isConnected && current();
   let baseline = JSON.stringify([initial.title,initial.config]), busy = false;
   let cities = weatherCityList(readWeatherCities(),initial.config.city), metric = 'temperature';
-  let cityOpen=(root.clientWidth||window.innerWidth)>760, panel=cityOpen?'cities':'', expanded=false, search=null, results=[], returnFocus=null;
+  let panel='', expanded=false, search=null, results=[], returnFocus=null;
 
   function feedback(message = '') {
     if (!alive()) return;
@@ -22492,24 +22489,22 @@ function bindWeatherWorkspace(root, initial, host) {
     root.querySelectorAll('.weather-search-results').forEach(node=>node.hidden=true);
   }
   function updatePanels() {
-    find('#weather-city-panel').hidden=!cityOpen;
+    find('.weather-app').dataset.panel=panel;
+    find('#weather-city-panel').hidden=panel!=='cities';
     find('#weather-settings-panel').hidden=panel!=='settings';
-    find('.weather-panel-shade').hidden=!(panel==='settings'||cityOpen&&root.clientWidth<=760);
-    find('[data-detail-action=weather-cities]').setAttribute('aria-expanded',String(cityOpen));
-    root.querySelectorAll('[data-detail-action=weather-settings]').forEach(button=>button.setAttribute('aria-expanded',String(panel==='settings')));
+    for(const action of ['weather-cities','weather-add-city']) find(`[data-detail-action=${action}]`).setAttribute('aria-expanded',String(panel==='cities'));
+    find('[data-detail-action=weather-settings]').setAttribute('aria-expanded',String(panel==='settings'));
   }
   function loadCities() {
     if(!alive()||!current().config.enabled) return;
     for(const city of cities) void requestWeather(city,false,current().config).then(renderCities);
   }
-  function togglePanel(next,trigger) {
+  function togglePanel(next,trigger,searchInput=false) {
     if(trigger) returnFocus=trigger;
-    if(next==='cities') cityOpen=true;
-    else if(!next&&panel!=='settings') cityOpen=false;
-    panel=next||(cityOpen?'cities':'');
+    panel=next;
     hideSearch(); updatePanels();
-    if(next==='settings') find('#weather-settings [name=source]').focus();
-    else if(next==='cities') {find('#weather-list-query').focus();loadCities();}
+    if(next==='settings') find('#weather-settings-title').focus({preventScroll:true});
+    else if(next==='cities') {find(searchInput?'#weather-list-query':'#weather-city-title').focus({preventScroll:true});loadCities();}
     else returnFocus?.focus({preventScroll:true});
   }
   async function save(changes, credentials) {
@@ -22527,8 +22522,8 @@ function bindWeatherWorkspace(root, initial, host) {
       find('#dialog-title').textContent = updated.title;
       find('#weather-settings').outerHTML = weatherSettings(updated);
       renderForecast(true);
-      if(panel==='settings') {panel=cityOpen?'cities':'';updatePanels();returnFocus?.focus({preventScroll:true});}
-      void loadForecast();loadCities();
+      if(panel==='settings') togglePanel('');
+      void loadForecast();if(panel==='cities') loadCities();
       return true;
     } catch (error) {
       feedback(error.message);
@@ -22544,8 +22539,8 @@ function bindWeatherWorkspace(root, initial, host) {
     const clean = {name:city.name,latitude:city.latitude,longitude:city.longitude,...(city.countryCode?{countryCode:city.countryCode}:{})};
     if (await save({title:current().title,config:{...current().config,city:clean,enabled:true}})) {
       hideSearch();
-      find('#weather-city-query').value=''; find('#weather-list-query').value='';
-      if(root.clientWidth<=760) {cityOpen=false;panel='';updatePanels();}
+      find('#weather-list-query').value='';
+      if(root.clientWidth<=760) togglePanel('');
       find('[data-detail-action=weather-cities]').focus({preventScroll:true});
     }
   }
@@ -22569,7 +22564,7 @@ function bindWeatherWorkspace(root, initial, host) {
   }
 
   root.addEventListener('click', event => {
-    const target = event.target.closest('button,[data-weather-dismiss]');
+    const target = event.target.closest('button');
     if (!target) return;
     if (target.dataset.weatherMetric) {
       metric = target.dataset.weatherMetric; renderForecast();
@@ -22583,13 +22578,12 @@ function bindWeatherWorkspace(root, initial, host) {
       catch { feedback(t('城市列表未能保存，请重试。')); }
       return;
     }
-    if (target.hasAttribute('data-weather-dismiss')) { togglePanel(''); return; }
     const action = target.dataset.detailAction;
     if (action === 'weather-cities' || action === 'weather-settings') {
       const next = action === 'weather-cities' ? 'cities' : 'settings';
-      togglePanel((next==='cities'?cityOpen:panel===next)?'':next,target);
+      togglePanel(panel===next?'':next,target);
     } else if (action === 'weather-panel-close') togglePanel('');
-    else if (action === 'weather-add-city') { togglePanel('cities');find('#weather-list-query').focus(); }
+    else if (action === 'weather-add-city') togglePanel('cities',target,true);
     else if (action === 'weather-refresh') void loadForecast(true);
     else if (action === 'weather-enable') void save({title:current().title,config:{...current().config,enabled:true}});
     else if (action === 'window-expand') {
@@ -22624,11 +22618,10 @@ function bindWeatherWorkspace(root, initial, host) {
   root.addEventListener('pointerdown',event=>{
     if(!event.target.closest('.weather-city-search')) hideSearch();
   },options);
-  const resize=new ResizeObserver(updatePanels);resize.observe(root);
   updatePanels();
   renderForecast();
-  void loadForecast(); loadCities();
-  return () => { events.abort(); search?.abort();resize.disconnect(); };
+  void loadForecast();
+  return () => { events.abort(); search?.abort(); };
 }
 
 return {bindWeatherWorkspace};
