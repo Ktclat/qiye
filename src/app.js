@@ -1195,7 +1195,6 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
- if(action==='icon-settings')return openDialog('settings',{tab:'icons'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
@@ -1436,7 +1435,6 @@ async function init() {
  await faviconCacheReady;
  $$('[data-action=add-group]').forEach(e=>e.innerHTML=icon('plus'));
  $$('.sidebar-bottom [data-action=local-search]').forEach(e=>e.innerHTML=icon('search'));
- $$('.sidebar-bottom [data-action=icon-settings]').forEach(e=>e.innerHTML=icon('grid'));
  $$('.sidebar-bottom [data-action=settings]').forEach(e=>e.innerHTML=icon('settings'));
  $$('.top-tools [data-action=wallpaper]').forEach(e=>e.innerHTML=icon('wallpaper'));
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));

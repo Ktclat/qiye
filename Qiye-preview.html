@@ -1013,7 +1013,9 @@ html[data-navigation=sidebar] .group-button .icon{width:19px;height:19px}
 html[data-navigation=sidebar] .group-button span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:12px}
 html[data-navigation=sidebar] .group-button.active{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
 .group-button.active:before{display:none!important}
-.sidebar-bottom{gap:4px;padding-bottom:14px}
+.sidebar-bottom{padding-bottom:14px}
+html[data-navigation] .sidebar-bottom{align-items:center;gap:6px}
+html[data-navigation] .sidebar-bottom>.side-button{margin:0;flex-shrink:0}
 .groups{flex:1;max-height:none;min-height:0}
 .brand{flex:none}
 /* Two-column content chooser. No tab is nested inside a form. */
@@ -1820,15 +1822,16 @@ html[data-theme=light] .calendar-app-tabs button[aria-selected=true] { backgroun
   height:min(var(--hotsearch-height,660px),var(--dialog-height));
 }
 .workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
-.context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
-.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:18px; min-height:39px; padding:9px 10px; border-radius:9px; font-size:13px; }
-.context-menu>button>.icon { order:2; width:17px; height:17px; opacity:.86; }
+.context-menu { width:176px; min-width:0; padding:5px; border-radius:10px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 12px 32px #0005; backdrop-filter:blur(24px); transform-origin:top left; }
+.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px; min-height:30px; padding:5px 8px; border-radius:6px; font-size:12px; line-height:20px; }
+.context-menu>button>.icon { order:2; width:15px; height:15px; flex-shrink:0; opacity:.86; }
 .context-menu>button:hover { background:#ffffff13; }
-.context-menu hr { margin:4px 6px; border:0; border-top:1px solid #ffffff13; }
-.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; }
-.context-menu .size-options button { padding:6px 2px; font-size:11px; }
+.context-menu hr { margin:3px 4px; border:0; border-top:1px solid #ffffff13; }
+.context-menu .menu-label { padding:4px 8px 2px; font-size:10px; line-height:16px; }
+.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
+.context-menu .size-options button { justify-content:center; min-height:26px; padding:3px 2px; font-size:11px; line-height:18px; border-radius:5px; }
 .context-menu .size-options .selected { color:var(--accent); background:var(--accent-soft); }
-html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 16px 48px #0002; }
+html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 12px 32px #0002; }
 html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 .widget-viewer { padding:20px; }
 .widget-viewer .widget-inner { height:380px; width:100%; min-height:0; container-type:inline-size; border-radius:20px; padding:22px; font-size:14px; }
@@ -2967,10 +2970,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   <aside class="sidebar" aria-label="桌面分组" data-i18n-aria-label="桌面分组">
     <button class="brand" id="brand-button" title="打开设置 · 可自定义头像" data-i18n-title="打开设置 · 可自定义头像" aria-label="打开设置" data-i18n-aria-label="打开设置"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iODYiIHkxPSI2MiIgeDI9IjQzMCIgeTI9IjQ1MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjMTYzNjRBIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMC41MiIgc3RvcC1jb2xvcj0iIzEwMkIzQyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjIyMzEiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJxTWFpbiIgeDE9IjE1MCIgeTE9IjEzMCIgeDI9IjM3MiIgeTI9IjM4NiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjQzlGRkYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMC41MiIgc3RvcC1jb2xvcj0iIzhFRThENSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2N0NGQkMiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJmb2xkIiB4MT0iMzE5IiB5MT0iMjQxIiB4Mj0iNDAxIiB5Mj0iMzYyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIHN0b3AtY29sb3I9IiM2NENCQkIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjM0NCNEExIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgoKICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ibGVhZiIgeDE9IjI5MiIgeTE9IjI4NiIgeDI9IjM5MCIgeTI9IjM4NyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjRDVGRkYzIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzg3RThENiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KCiAgICA8ZmlsdGVyIGlkPSJzaGFkb3ciIHg9Ii0zMCUiIHk9Ii0zMCUiIHdpZHRoPSIxNjAlIiBoZWlnaHQ9IjE2MCUiPgogICAgICA8ZmVEcm9wU2hhZG93IGR4PSIwIiBkeT0iMTYiIHN0ZERldmlhdGlvbj0iMjIiIGZsb29kLWNvbG9yPSIjMDAxMDE5IiBmbG9vZC1vcGFjaXR5PSIwLjI2Ii8+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CgogIDxyZWN0IHg9IjMyIiB5PSIzMiIgd2lkdGg9IjQ0OCIgaGVpZ2h0PSI0NDgiIHJ4PSIxMTIiIGZpbGw9InVybCgjYmcpIiBmaWx0ZXI9InVybCgjc2hhZG93KSIvPgoKICA8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIKICAgICAgICBkPSJNMTY0IDEyNwogICAgICAgICAgIEMxMjAgMTI3IDkxIDE1NyA5MSAyMDIKICAgICAgICAgICBWMzEyCiAgICAgICAgICAgQzkxIDM1NyAxMjAgMzg2IDE2NCAzODYKICAgICAgICAgICBIMzA5CiAgICAgICAgICAgQzM1NCAzODYgMzgzIDM1NyAzODMgMzEyCiAgICAgICAgICAgVjIwMgogICAgICAgICAgIEMzODMgMTU3IDM1NCAxMjcgMzA5IDEyNwogICAgICAgICAgIEgxNjRaTTE3NyAxOTgKICAgICAgICAgICBDMTYwIDE5OCAxNDkgMjA5IDE0OSAyMjYKICAgICAgICAgICBWMjg4CiAgICAgICAgICAgQzE0OSAzMDUgMTYwIDMxNiAxNzcgMzE2CiAgICAgICAgICAgSDI5NgogICAgICAgICAgIEMzMTMgMzE2IDMyNCAzMDUgMzI0IDI4OAogICAgICAgICAgIFYyMjYKICAgICAgICAgICBDMzI0IDIwOSAzMTMgMTk4IDI5NiAxOTgKICAgICAgICAgICBIMTc3WiIKICAgICAgICBmaWxsPSJ1cmwoI3FNYWluKSIvPgoKICA8cGF0aCBkPSJNMzAxIDE5OAogICAgICAgICAgIEMzMjIgMTk4IDM0NiAyMDMgMzY2IDIxNAogICAgICAgICAgIEwzODMgMjI0CiAgICAgICAgICAgVjMxMgogICAgICAgICAgIEMzODMgMzM1IDM3NCAzNTQgMzU3IDM2OAogICAgICAgICAgIEMzNTcgMzM4IDM0NCAzMDkgMzIxIDI4OAogICAgICAgICAgIEMzMDkgMjc3IDI5OSAyNjIgMjk5IDI0MwogICAgICAgICAgIFYyMDgKICAgICAgICAgICBDMjk5IDIwNCAzMDAgMjAxIDMwMSAxOThaIgogICAgICAgIGZpbGw9InVybCgjZm9sZCkiCiAgICAgICAgb3BhY2l0eT0iMC45NiIvPgoKICA8cGF0aCBkPSJNMjcyIDI4NgogICAgICAgICAgIEMzMTYgMjg0IDM1MCAyOTUgMzc1IDMyMAogICAgICAgICAgIEMzOTQgMzM5IDQwMCAzNjEgMzk5IDM4NQogICAgICAgICAgIEMzNzAgMzg3IDM0NCAzODMgMzIzIDM3MAogICAgICAgICAgIEMyOTQgMzUyIDI3NiAzMjYgMjcyIDI4NloiCiAgICAgICAgZmlsbD0idXJsKCNsZWFmKSIvPgoKICA8cGF0aCBkPSJNMjczIDI4NwogICAgICAgICAgIEMyNzggMzI2IDI5NSAzNTIgMzIzIDM3MAogICAgICAgICAgIEMzMDcgMzY4IDI5MiAzNjEgMjgwIDM1MAogICAgICAgICAgIEMyNjEgMzMyIDI1NCAzMTAgMjU3IDI4NQogICAgICAgICAgIEMyNjIgMjg2IDI2NyAyODYgMjczIDI4N1oiCiAgICAgICAgZmlsbD0iIzJDOUY5MCIKICAgICAgICBvcGFjaXR5PSIwLjQ1Ii8+Cjwvc3ZnPgo=" alt="" width="32" height="32" draggable="false"></button>
     <nav id="groups" class="groups"></nav>
-    <button class="side-button add-group" data-action="add-group" title="添加分组" data-i18n-title="添加分组" aria-label="添加分组" data-i18n-aria-label="添加分组"></button>
     <div class="sidebar-bottom">
+      <button class="side-button add-group" data-action="add-group" title="添加分组" data-i18n-title="添加分组" aria-label="添加分组" data-i18n-aria-label="添加分组"></button>
       <button class="side-button" data-action="local-search" title="本地搜索 · Ctrl / ⌘ K" data-i18n-title="本地搜索 · Ctrl / ⌘ K" aria-label="本地搜索" data-i18n-aria-label="本地搜索"></button>
-      <button class="side-button" data-action="icon-settings" title="图标外观与提取" data-i18n-title="图标外观与提取" aria-label="图标外观与提取" data-i18n-aria-label="图标外观与提取"></button>
       <button class="side-button" data-action="settings" title="设置" data-i18n-title="设置" aria-label="设置" data-i18n-aria-label="设置"></button>
     </div>
   </aside>
@@ -5058,7 +5060,6 @@ const englishMessages = {
   "打开设置 · 可自定义头像": "Open Settings · Customize avatar",
   "打开设置": "Open Settings",
   "本地搜索 · Ctrl / ⌘ K": "Local search · Ctrl / ⌘ K",
-  "图标外观与提取": "Icon appearance and extraction",
   "展开分组导航": "Expand group navigation",
   "快捷键说明": "Keyboard shortcut help",
   "切换搜索引擎": "Switch search engine",
@@ -27038,7 +27039,6 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
- if(action==='icon-settings')return openDialog('settings',{tab:'icons'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
@@ -27279,7 +27279,6 @@ async function init() {
  await faviconCacheReady;
  $$('[data-action=add-group]').forEach(e=>e.innerHTML=icon('plus'));
  $$('.sidebar-bottom [data-action=local-search]').forEach(e=>e.innerHTML=icon('search'));
- $$('.sidebar-bottom [data-action=icon-settings]').forEach(e=>e.innerHTML=icon('grid'));
  $$('.sidebar-bottom [data-action=settings]').forEach(e=>e.innerHTML=icon('settings'));
  $$('.top-tools [data-action=wallpaper]').forEach(e=>e.innerHTML=icon('wallpaper'));
  $$('.top-tools [data-action=edit]').forEach(e=>e.innerHTML=icon('edit'));

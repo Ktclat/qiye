@@ -17,6 +17,14 @@ Native source can access its execution environment; its API is not a permission 
 
 ## Built-in catalog
 
+### Desktop context menus
+
+The compact visual reference is the [public iTab desktop](https://go.itab.link/) and its [right-click add instructions](https://www.itab.link/guide/skills.html). At 100% scale, Qiye uses a 176 px menu width, 30 px action rows, 12 px text, 15 px icons, 5 px padding and 10 px corners. Card-size buttons are 26 px tall and retain all sizes and actions. These are Qiye's adaptation values, not an official iTab size specification. Desktop, website, folder, widget and group menus share these styles and retain viewport bounds. The sidebar footer groups Add group, Local search and Settings in one container, using a shared 6 px [CSS `gap`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/gap) at 100% scale. This prevents extra spacing between a separate button and the button group, and applies to left/right sidebars and top navigation. Icon appearance and extraction options remain under Settings → Icons.
+
+Implementation references: [WAI-ARIA menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/) and [MDN `:focus-visible`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible). Existing buttons, keyboard focus and Escape dismissal remain available. Styling does not remove keyboard focus indicators or focus settings controls when opening with the pointer. This change only adjusts menu density and the sidebar shortcut; it does not change card data, persistence formats or date/time logic.
+
+### Widget list
+
 The registry provides the user-facing built-in widgets below. `community` is a separate internal type. Legacy `hotlinks` and `focus` types remain only to validate and migrate existing data; neither appears in the catalog. All built-ins support the five sizes.
 
 | Type | Name | Behavior and limits |

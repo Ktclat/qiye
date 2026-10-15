@@ -17,6 +17,14 @@
 
 ## 内置组件目录
 
+### 桌面右键菜单
+
+右键菜单以 [iTab 公开桌面](https://go.itab.link/)及其[右键添加说明](https://www.itab.link/guide/skills.html)为紧凑视觉参考。栖页在 100% 比例下采用 176 px 菜单宽度、30 px 常规行高、12 px 字号、15 px 图标、5 px 内边距和 10 px 圆角；卡片尺寸按钮为 26 px 高，保留全部尺寸与操作。以上为本项目的适配尺寸，并非 iTab 官方尺寸规格。桌面、网站、文件夹、组件及分组共用这套样式，继续按可用视口限制菜单边界。侧边栏底部依次排列添加分组、本地搜索与设置，三个按钮放在同一容器内，以 [CSS `gap`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/gap) 统一为 6 px 间距（100% 比例），避免独立按钮与按钮组的边距叠加；左右侧栏与顶部导航共用该间距。图标外观及提取选项仍位于“设置 → 图标”。
+
+实现参考 [WAI-ARIA 菜单模式](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)和 [MDN `:focus-visible`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:focus-visible)：保留原有按钮、键盘聚焦与 Esc 关闭行为，样式调整不移除键盘焦点提示，也不因鼠标打开菜单额外聚焦设置控件。此次只调整菜单密度与侧边栏入口，不修改卡片数据、持久化格式或日期时间逻辑。
+
+### 组件列表
+
 注册表提供下列用户可选内置组件；`community` 是单独的内部类型，旧 `hotlinks` 和 `focus` 类型仅用于校验并迁移已有数据，不再提供添加入口。全部内置组件支持五种尺寸。
 
 | 类型 | 名称 | 内容与边界 |

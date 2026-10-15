@@ -1820,7 +1820,6 @@ export const englishMessages = {
   "打开设置 · 可自定义头像": "Open Settings · Customize avatar",
   "打开设置": "Open Settings",
   "本地搜索 · Ctrl / ⌘ K": "Local search · Ctrl / ⌘ K",
-  "图标外观与提取": "Icon appearance and extraction",
   "展开分组导航": "Expand group navigation",
   "快捷键说明": "Keyboard shortcut help",
   "切换搜索引擎": "Switch search engine",

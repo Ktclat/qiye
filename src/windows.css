@@ -31,15 +31,16 @@
   height:min(var(--hotsearch-height,660px),var(--dialog-height));
 }
 .workspace-expand { position:absolute; right:48px; top:12px; z-index:10; width:30px; height:30px; border:0; border-radius:50%; background:var(--control-surface); color:var(--muted); }
-.context-menu { width:204px; min-width:0; padding:9px; border-radius:17px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 16px 48px #0006; backdrop-filter:blur(24px); transform-origin:top left; }
-.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:18px; min-height:39px; padding:9px 10px; border-radius:9px; font-size:13px; }
-.context-menu>button>.icon { order:2; width:17px; height:17px; opacity:.86; }
+.context-menu { width:176px; min-width:0; padding:5px; border-radius:10px; background:rgb(23 23 27 / .91); color:#f1f1f3; border:1px solid #ffffff26; box-shadow:0 12px 32px #0005; backdrop-filter:blur(24px); transform-origin:top left; }
+.context-menu>button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px; min-height:30px; padding:5px 8px; border-radius:6px; font-size:12px; line-height:20px; }
+.context-menu>button>.icon { order:2; width:15px; height:15px; flex-shrink:0; opacity:.86; }
 .context-menu>button:hover { background:#ffffff13; }
-.context-menu hr { margin:4px 6px; border:0; border-top:1px solid #ffffff13; }
-.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; }
-.context-menu .size-options button { padding:6px 2px; font-size:11px; }
+.context-menu hr { margin:3px 4px; border:0; border-top:1px solid #ffffff13; }
+.context-menu .menu-label { padding:4px 8px 2px; font-size:10px; line-height:16px; }
+.context-menu .size-options { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
+.context-menu .size-options button { justify-content:center; min-height:26px; padding:3px 2px; font-size:11px; line-height:18px; border-radius:5px; }
 .context-menu .size-options .selected { color:var(--accent); background:var(--accent-soft); }
-html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 16px 48px #0002; }
+html[data-theme=light] .context-menu { background:rgb(252 252 254 / .94); color:#242429; border-color:#0002; box-shadow:0 12px 32px #0002; }
 html[data-theme=light] .context-menu>button:hover { background:#00000008; }
 .widget-viewer { padding:20px; }
 .widget-viewer .widget-inner { height:380px; width:100%; min-height:0; container-type:inline-size; border-radius:20px; padding:22px; font-size:14px; }

@@ -63,7 +63,9 @@ html[data-navigation=sidebar] .group-button .icon{width:19px;height:19px}
 html[data-navigation=sidebar] .group-button span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:12px}
 html[data-navigation=sidebar] .group-button.active{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
 .group-button.active:before{display:none!important}
-.sidebar-bottom{gap:4px;padding-bottom:14px}
+.sidebar-bottom{padding-bottom:14px}
+html[data-navigation] .sidebar-bottom{align-items:center;gap:6px}
+html[data-navigation] .sidebar-bottom>.side-button{margin:0;flex-shrink:0}
 .groups{flex:1;max-height:none;min-height:0}
 .brand{flex:none}
 /* Two-column content chooser. No tab is nested inside a form. */
