@@ -35,7 +35,7 @@ export const CONVERTER_CATEGORIES = Object.freeze([
   category('frequency', '频率', 'Frequency', 'Hz', 'science', [unit('hz','赫兹','Hertz','Hz',1), unit('khz','千赫','Kilohertz','kHz',1000), unit('mhz','兆赫','Megahertz','MHz',1e6), unit('ghz','吉赫','Gigahertz','GHz',1e9), unit('rpm','转 / 分钟','Revolutions per minute','rpm',1/60)]),
   category('timestamp', '时间戳', 'Timestamp', '#', 'science'),
 ]);
-export const CURRENCY_CODES = Object.freeze(['CNY','USD','EUR','HKD','TWD','MOP','GBP','JPY','KRW','AUD','CAD','CHF','SGD','NZD','THB','MYR','IDR','PHP','VND','INR','AED','SAR','TRY','RUB','BRL','MXN','ZAR','SEK','NOK','DKK','PLN','CZK','HUF','ISK','ILS','RON','BGN','PKR','BDT','EGP']);
+export const CURRENCY_CODES = Object.freeze(['CNY','USD','EUR','HKD','TWD','MOP','GBP','JPY','KRW','AUD','CAD','CHF','SGD','NZD','THB','MYR','IDR','PHP','VND','INR','AED','SAR','TRY','RUB','BRL','MXN','ZAR','SEK','NOK','DKK','PLN','CZK','HUF','ISK','ILS','RON','CLP','PKR','BDT','EGP']);
 export const converterCategory = id => CONVERTER_CATEGORIES.find(entry => entry.id === id);
 export const converterLabel = entry => getLocale() === 'en' ? entry.en : entry.name;
 
