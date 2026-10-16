@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { converterWorkspace, bindConverterWorkspace } from './converter-view.js';
+import { fileConverterWorkspace, bindFileConverterWorkspace } from './file-converter-workspace.js';
 import { codecWorkspace, bindCodecWorkspace } from './codec-workspace.js';
 import { mapWorkspace } from './map-view.js';
 import { bindMapWorkspace } from './map-workspace.js';
@@ -706,7 +707,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['converter','file-converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
@@ -717,6 +718,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
  dialog.classList.toggle('converter-app-dialog',detailWidget === 'converter');
+ dialog.classList.toggle('file-converter-app-dialog',detailWidget === 'file-converter');
  dialog.classList.toggle('pomodoro-app-dialog',detailWidget === 'pomodoro');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
@@ -731,6 +733,7 @@ function openDialog(kind,data={}) {
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='map'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="map-workspace" class="widget-app-body">${mapWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="converter-workspace" class="widget-app-body">${converterWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='file-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="file-converter-workspace" class="widget-app-body">${fileConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
@@ -770,6 +773,7 @@ function openDialog(kind,data={}) {
   else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
   else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
+  else if(detailWidget==='file-converter')viewerCleanup=bindFileConverterWorkspace($('#file-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,toast});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
