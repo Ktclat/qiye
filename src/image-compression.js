@@ -220,7 +220,7 @@ export async function compressImage(file, options = {}) {
       const blob = await canvasBlob(canvas, targetType, q);
       cancelled(signal);
       if (blob.size < best.outputBytes) best = result(file, blob, targetType, 'lossy');
-      if (best.outputBytes <= maxBytes && mode === 'smart') break;
+      if (best.changed && best.outputBytes <= maxBytes && mode === 'smart') break;
     }
     if (best.outputBytes > maxBytes) throw new Error('高画质压缩后仍超出 4 MiB 限制；请使用图片压缩工具手动调整');
     return best;

@@ -68,6 +68,8 @@ html[data-theme=light] .bm-source-note.is-browser{color:#936127}
  .bm-selection-count{position:absolute;right:-3px;top:-4px;font-size:9px;min-width:12px;padding:0 2px}.bm-path .bm-breadcrumb{width:240px}.bm-header .widget-app-controls{gap:0}
 }
 @container(max-width:520px){
+ /* When selecting bookmarks, keep batch actions and window controls reachable. */
+ .bookmarks-app.is-managing .bm-commands,.bookmarks-app.is-managing .bm-settings{display:none}
  .bm-header{height:44px;padding:6px;gap:3px}.bm-search:focus-within{top:6px}.bm-layout{grid-template-columns:112px minmax(0,1fr)}.bm-sidebar{padding:9px 3px}.bm-sidebar-label{padding-left:5px;font-size:9px}
  .bm-tree-row{padding-left:calc(min(var(--depth,0),20) * 9px)}.bookmarks-app .bm-tree-row>[role=treeitem]{font-size:11px;gap:5px;padding:6px 4px}.bm-tree-row small{display:none}.bm-tree-row .icon{width:13px}.bm-tree-toggle,.bm-tree-spacer{width:12px!important}
  .bookmarks-app .bm-main{padding:0 6px}.bm-list li{gap:3px;padding:3px 0}.bookmarks-app .bm-row-open{gap:6px}.bm-row-copy strong{font-size:11px}.bm-row-copy small{font-size:10px}.bookmarks-app .bm-row-actions button{padding:4px}.bm-row-actions .icon{width:14px;height:14px}
