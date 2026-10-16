@@ -135,12 +135,10 @@ export function bindImageCompressorWorkspace(root) {
       downloadButton.disabled = false;
       note(t(processed.changed ? '压缩完成，原图未修改。' : '保持原图：重新编码没有减少文件大小。'));
     } catch (error) {
-      if (active(token)) note(error.message || t('图片压缩失败'), true);
+      if (active(token)) note(t(error.message || '图片压缩失败'), true);
     } finally {
-      if (active(token)) {
-        busy = false;
-        runButton.disabled = false;
-      }
+      busy = false;
+      if (!signal.aborted) runButton.disabled = !original;
     }
   }
 
