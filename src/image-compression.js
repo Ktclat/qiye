@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import { t } from './i18n.js';
 // A local-only, visually lossless-oriented encoder shared by the compression
 // workspace and wallpaper upload. Browser canvas WebP is NOT pixel-lossless.
 export const MAX_IMAGE_INPUT_BYTES = 32 * 1024 * 1024;
@@ -32,12 +33,12 @@ export async function isAnimatedImage(file) {
   const bytes = new Uint8Array(await file.slice(0, Math.min(file.size, 2 * 1024 * 1024)).arrayBuffer());
   const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
   if (bytes.length < 8 || !pngSignature.every((byte, index) => bytes[index] === byte)) {
-    throw new Error('PNG 图片格式无效');
+    throw new Error(t('PNG 图片格式无效'));
   }
   for (let offset = 8; offset + 12 <= bytes.length;) {
     const length = (bytes[offset] * 0x1000000 +
       (bytes[offset + 1] << 16) + (bytes[offset + 2] << 8) + bytes[offset + 3]) >>> 0;
-    if (length > file.size - offset - 12) throw new Error('PNG 图片数据损坏');
+    if (length > file.size - offset - 12) throw new Error(t('PNG 图片数据损坏'));
     const name = chunkName(bytes, offset + 4);
     if (name === 'acTL') return true;
     if (name === 'IDAT' || name === 'IEND') return false;
@@ -45,21 +46,21 @@ export async function isAnimatedImage(file) {
     offset += length + 12;
   }
   // An uninspected PNG header is unsafe to flatten.
-  throw new Error('无法确认 PNG 是否包含动画');
+  throw new Error(t('无法确认 PNG 是否包含动画'));
 }
 
 export function chooseCompressedBlob(original, candidates, {maxBytes = Infinity, minimumSaving = 0.02} = {}) {
   if (!original || !Number.isFinite(original.size) || original.size < 1 ||
       !(maxBytes === Infinity || Number.isFinite(maxBytes) && maxBytes > 0) ||
       !Number.isFinite(minimumSaving) || minimumSaving < 0 || minimumSaving >= 1) {
-    throw new TypeError('图片压缩参数无效');
+    throw new TypeError(t('图片压缩参数无效'));
   }
   const eligible = candidates.find(blob => blob?.type === 'image/webp' &&
     blob.size > 0 && blob.size <= maxBytes &&
     blob.size <= original.size * (1 - minimumSaving));
   if (eligible) return eligible;
   if (original.size <= maxBytes) return original;
-  throw new Error('压缩后仍超过壁纸大小上限，请选择更小的图片');
+  throw new Error(t('压缩后仍超过壁纸大小上限，请选择更小的图片'));
 }
 
 function encodeWebP(canvas, quality) {
@@ -67,7 +68,7 @@ function encodeWebP(canvas, quality) {
     try {
       canvas.toBlob(blob => {
         if (!blob || blob.type !== 'image/webp') {
-          reject(new Error('当前浏览器无法编码 WebP 图片'));
+          reject(new Error(t('当前浏览器无法编码 WebP 图片')));
         } else {
           resolve(blob);
         }
@@ -89,28 +90,28 @@ export async function compressImage(file, {
   decode = globalThis.createImageBitmap,
   createCanvas = () => document.createElement('canvas'),
 } = {}) {
-  if (!isCompressibleImage(file)) throw new Error('仅支持 PNG、JPEG、WebP 静态图片');
-  if (!file.size || file.size > MAX_IMAGE_INPUT_BYTES) throw new Error('图片须在 32 MiB 以内');
+  if (!isCompressibleImage(file)) throw new Error(t('仅支持 PNG、JPEG、WebP 静态图片'));
+  if (!file.size || file.size > MAX_IMAGE_INPUT_BYTES) throw new Error(t('图片须在 32 MiB 以内'));
   const levels = qualityLevels || [quality];
   if (!Array.isArray(levels) || !levels.length ||
       levels.some(value => !Number.isFinite(value) || value < 0.7 || value > 0.98)) {
-    throw new TypeError('画质应介于 70% 和 98% 之间');
+    throw new TypeError(t('画质应介于 70% 和 98% 之间'));
   }
   checkNotAborted(signal);
-  if (await isAnimatedImage(file)) throw new Error('暂不支持动画图片压缩，以免丢失动画帧');
+  if (await isAnimatedImage(file)) throw new Error(t('暂不支持动画图片压缩，以免丢失动画帧'));
   checkNotAborted(signal);
-  if (typeof decode !== 'function') throw new Error('当前浏览器无法读取图片');
+  if (typeof decode !== 'function') throw new Error(t('当前浏览器无法读取图片'));
   const bitmap = await decode(file, {imageOrientation: 'from-image'});
   try {
     checkNotAborted(signal);
     const width = bitmap?.width, height = bitmap?.height;
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 ||
-        width * height > MAX_IMAGE_PIXELS) throw new Error('图片分辨率过大，最多 3200 万像素');
+        width * height > MAX_IMAGE_PIXELS) throw new Error(t('图片分辨率过大，最多 3200 万像素'));
     const canvas = createCanvas();
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext?.('2d', {alpha: true});
-    if (!context || typeof canvas.toBlob !== 'function') throw new Error('当前浏览器无法处理图片');
+    if (!context || typeof canvas.toBlob !== 'function') throw new Error(t('当前浏览器无法处理图片'));
     context.drawImage(bitmap, 0, 0, width, height);
     const candidates = [];
     for (const level of levels) {
