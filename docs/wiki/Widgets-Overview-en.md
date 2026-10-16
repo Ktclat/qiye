@@ -44,6 +44,7 @@ The registry provides the user-facing built-in widgets below. `community` is a s
 | `quote` | Quotes | Custom text/author or built-in quotes |
 | `hotsearch` | Trending | 22 sources, categories/search, subscription ordering, single/multiple lists, refresh and local cache; opens directly to rankings |
 | `codec` | Encoding tools | Base64 / URL and other conversions, MD / SHA hashes, and Buddha, Beast and Bear formats |
+| `file-converter` | File converter | Batch PNG / JPG / WebP conversion, processed locally with no uploads; [details](../FILE_CONVERTER.md) |
 | `converter` | Converter | 19 tools, 117 units and 40 currencies; [details](../CONVERTER.md) |
 | `base-converter` | Base converter | Simultaneous results for bases 2–36, large integers, negatives, fractions, recurring digits and precision controls |
 | `habit` | Habits | Daily records and streaks |
