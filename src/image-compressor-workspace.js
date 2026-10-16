@@ -11,7 +11,7 @@ const formatBytes = n => n < miB ? formatNumber(n / 1024, {maximumFractionDigits
 
 export function imageCompressorWorkspace(item) {
   return '<div class="image-tool">' +
-    '<header class="image-tool-header"><h2 id="dialog-title">' + icon('image') + esc(item.title) + '</h2>' + windowControls() + '</header>' +
+    '<header class="image-tool-header"><h2 id="dialog-title">' + icon('wallpaper') + esc(item.title) + '</h2>' + windowControls() + '</header>' +
     '<div class="image-tool-layout">' +
       '<aside class="image-tool-sidebar">' +
         '<div class="image-tool-intro"><strong>' + t('压缩设置') + '</strong><span>' + t('图片只在当前浏览器中处理，关闭窗口后清空。') + '</span></div>' +
@@ -27,12 +27,12 @@ export function imageCompressorWorkspace(item) {
         '<label class="image-tool-range-label"><span>' + t('画质参数') + ' <output data-image-quality-value>90</output></span>' +
           '<input type="range" data-image-quality min="60" max="100" step="1" value="90"></label>' +
         '<p class="image-tool-tip" data-image-mode-hint>' + t('保留原始分辨率，优先尝试高画质编码；输出变大时保留原图。') + '</p>' +
-        '<button type="button" class="image-tool-run" data-image-run disabled>' + icon('arrow-right') + t('开始压缩') + '</button>' +
+        '<button type="button" class="image-tool-run" data-image-run disabled>' + icon('right') + t('开始压缩') + '</button>' +
         '<div class="image-tool-privacy">' + icon('shield') + t('图片不会上传服务器，也不会写入桌面备份或 WebDAV。') + '</div>' +
       '</aside>' +
       '<main class="image-tool-main">' +
         '<input type="file" data-image-files accept="image/png,image/jpeg,image/webp" multiple hidden>' +
-        '<button type="button" class="image-tool-drop" data-image-drop>' + icon('image-plus') +
+        '<button type="button" class="image-tool-drop" data-image-drop>' + icon('upload') +
           '<strong>' + t('选择图片或拖放到这里') + '</strong><span>PNG · JPEG · WebP · ' + t('最多 10 张') + '</span></button>' +
         '<div class="image-tool-feedback" data-image-status role="status" aria-live="polite">' + t('等待选择图片') + '</div>' +
         '<div class="image-tool-results" data-image-results hidden>' +
@@ -48,7 +48,7 @@ export function imageCompressorWorkspace(item) {
               '<input type="range" min="0" max="100" value="50" data-image-split aria-label="' + t('压缩前后画质对比') + '"></label>' +
             '<div class="image-tool-result-actions">' +
               '<button type="button" class="image-tool-button" data-image-download>' + icon('download') + t('下载图片') + '</button>' +
-              '<button type="button" class="image-tool-button" data-image-apply>' + icon('image') + t('设为壁纸') + '</button>' +
+              '<button type="button" class="image-tool-button" data-image-apply>' + icon('wallpaper') + t('设为壁纸') + '</button>' +
               '<button type="button" class="image-tool-button" data-image-zip hidden>' + icon('download') + t('下载全部 ZIP') + '</button>' +
             '</div>' +
           '</div>' +
