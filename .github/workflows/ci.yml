@@ -77,7 +77,8 @@ jobs:
       - name: Package extension, source and standalone preview
         run: |
           python3 scripts/package-release.py
-          git diff --exit-code -- Qiye-preview.html src/version.js community/index.json
+          git diff --exit-code -- src/version.js community/index.json
+          # Qiye-preview.html is regenerated and committed by publish_web after verification.
       - uses: actions/upload-artifact@v4
         with:
           name: qiye-release
@@ -136,3 +137,46 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/publish-release.py dist
+
+
+  publish_web:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: qiye-publish-web
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Commit verified standalone preview to main
+        run: |
+          python3 scripts/build-preview.py
+          node scripts/build-community.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Qiye-preview.html src/version.js community/index.json
+          if ! git diff --cached --quiet; then
+            git commit -m "build: synchronize verified standalone preview [skip ci]"
+            git push origin HEAD:main
+          fi
+      - name: Publish same-source GitHub Pages
+        run: |
+          git fetch origin gh-pages
+          git worktree add --detach "$RUNNER_TEMP/qiye-public" origin/gh-pages
+          python3 scripts/build-pages.py "$RUNNER_TEMP/qiye-public"
+          git -C "$RUNNER_TEMP/qiye-public" add -A
+          if ! git -C "$RUNNER_TEMP/qiye-public" diff --cached --quiet; then
+            git -C "$RUNNER_TEMP/qiye-public" commit -m "deploy: update Qiye Pages from verified main"
+            git -C "$RUNNER_TEMP/qiye-public" push origin HEAD:gh-pages
+          fi
