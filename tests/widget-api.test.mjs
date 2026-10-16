@@ -45,7 +45,7 @@ test('packaged extension registration supplies defaults without changing builtin
   assert.ok(listWidgetDefinitions().some(widget => widget.type === 'base-converter'));
   assert.ok(listWidgetDefinitions().some(entry => entry.type === 'bookmarks'));
   assert.ok(listWidgetDefinitions().some(entry => entry.type === 'pomodoro'));
-  assert.equal(registry.list().length, listWidgetDefinitions().length + 1);
+  assert.equal(registry.list().length, createWidgetRegistry().list().length + 1);
   assert.deepEqual(registry.newConfig('counter'), { label: '今天的小进步', count: 0 });
   assert.ok(Object.isFrozen(registry.get('counter').fields[0]));
   assert.deepEqual(registry.get('counter').sizes, ['1x1', '2x2']);
