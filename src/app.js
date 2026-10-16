@@ -695,6 +695,7 @@ function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(
 let viewerCleanup=()=>{};
 let wallpaperUploadRevision = 0;
 function openDialog(kind,data={}) {
+  if(dialogKind==='wallpaper'&&kind!=='wallpaper')wallpaperUploadRevision++;
  if(kind==='widget-config'&&['countdown','workday','notes','clock','habit'].includes(data.item?.widget))kind='widget-detail';
  if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
  viewerCleanup(); viewerCleanup=()=>{};
@@ -1336,6 +1337,7 @@ document.addEventListener('change',async event=>{
    const oldChoice=JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]);
    let candidate=file,saving=0;
    if(isCompressibleImage(file)){
+    toast(t('正在本机优化壁纸…'));
     try {
      const result=await compressWallpaperImage(file,{maxBytes:MAX_MEDIA_BYTES});
      candidate=result.blob;saving=result.changed?result.saving:0;
