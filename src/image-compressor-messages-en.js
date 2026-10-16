@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Image compressor translations; source keys are Simplified Chinese.
 export const imageCompressorEnglishMessages = {
+  'PNG、JPEG、WebP 静态图片在本机自动尝试高画质压缩；保存结果最大 4 MiB。GIF、AVIF 和视频不自动压缩。应用后参与备份与 WebDAV 同步。': 'Static PNG, JPEG and WebP images are automatically optimized on your device. The saved file must fit within 4 MiB. GIF, AVIF and videos are not automatically compressed. Wallpapers are included in backups and WebDAV sync.',
   '图片压缩': 'Image compression',
   '本机高画质压缩 PNG、JPEG 和 WebP 图片': 'Compress PNG, JPEG and WebP locally with high visual quality',
   '打开图片压缩工具': 'Open image compressor',
