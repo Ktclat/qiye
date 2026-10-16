@@ -44,5 +44,6 @@ export const imageCompressorEnglishMessages = {
   '当前浏览器无法读取图片': 'This browser cannot decode the image',
   '图片分辨率过大，最多 3200 万像素': 'Image resolution exceeds the 32-megapixel limit',
   '当前浏览器无法处理图片': 'This browser cannot process the image',
+  '正在本机优化壁纸…': 'Optimizing wallpaper locally…',
   '壁纸压缩完成，节省 {percent}% 空间': 'Wallpaper compressed, saving {percent}% of space',
 };
