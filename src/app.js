@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { converterWorkspace, bindConverterWorkspace } from './converter-view.js';
 import { codecWorkspace, bindCodecWorkspace } from './codec-workspace.js';
+import { imageCompressorWorkspace, bindImageCompressorWorkspace } from './image-compressor-workspace.js';
+import { isCompressibleImage, compressWallpaperImage } from './image-compression.js';
 import { mapWorkspace } from './map-view.js';
 import { bindMapWorkspace } from './map-workspace.js';
 import { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } from './pomodoro-view.js';
@@ -8,7 +10,7 @@ import { configurePomodoro, validatePomodoroConfig } from './pomodoro.js';
 import { bindPomodoro } from './pomodoro-runtime.js';
 import { renderCatalog, filterCatalog, changeCatalogSize } from './widget-catalog.js';
 import { TILE_SIZES, sizeLabel, gridMetrics } from './widget-sizes.js';
-import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
+import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory, MAX_MEDIA_BYTES } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
 import { chineseLunarDate } from './calendar.js';
 import { createWidgetDetails } from './widget-details.js';
@@ -691,6 +693,7 @@ function formActions(label=t("保存")) { return `<div id="form-error" class="in
 function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})); }
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="${t("图标颜色 {v0}", {v0: c})}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="${t("自定义图标颜色")}" value="${esc(selected || COLORS[0])}"></div>`; }
 let viewerCleanup=()=>{};
+let wallpaperUploadRevision = 0;
 function openDialog(kind,data={}) {
  if(kind==='widget-config'&&['countdown','workday','notes','clock','habit'].includes(data.item?.widget))kind='widget-detail';
  if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
@@ -706,9 +709,10 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks','image-compressor'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
+ dialog.classList.toggle('image-compressor-app-dialog',detailWidget === 'image-compressor');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
@@ -734,6 +738,7 @@ function openDialog(kind,data={}) {
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='image-compressor'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="image-compressor-workspace" class="widget-app-body">${imageCompressorWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
@@ -769,6 +774,7 @@ function openDialog(kind,data={}) {
   if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
   else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
+  else if(detailWidget==='image-compressor')viewerCleanup=bindImageCompressorWorkspace($('#image-compressor-workspace'));
   else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -1324,12 +1330,30 @@ document.addEventListener('change',async event=>{
    const restored=validateImport(await file.text());openDialog('restore-preview',{state:restored});return;
   }
   if(input.id==='wallpaper-file'){
-   const file=input.files?.[0];input.value='';if(!file)return;if(file.size>4*1024*1024)throw new Error(t("壁纸最大支持 4 MB，请先压缩图片或视频。"));
+   const file=input.files?.[0];input.value='';if(!file)return;
    if(!/^(image\/(png|jpeg|webp|gif|avif)|video\/(mp4|webm))$/.test(file.type))throw new Error(t("请使用 PNG、JPEG、WebP、GIF、AVIF 图片或 MP4、WebM 视频。"));
-   const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error(t("文件读取失败")));reader.readAsDataURL(file);});
-   const old=clone(state.settings);state.settings.customWallpaper=url;state.settings.customWallpaperType=file.type.startsWith('video/')?'video':'image';state.settings.remoteWallpaper=null;
+   const request=++wallpaperUploadRevision;
+   const oldChoice=JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]);
+   let candidate=file,saving=0;
+   if(isCompressibleImage(file)){
+    try {
+     const result=await compressWallpaperImage(file,{maxBytes:MAX_MEDIA_BYTES});
+     candidate=result.blob;saving=result.changed?result.saving:0;
+    }catch(error){
+     // Keep valid originals intact if this browser cannot encode the file.
+     if(file.size>MAX_MEDIA_BYTES)throw error;
+    }
+   }
+   if(candidate.size>MAX_MEDIA_BYTES)throw new Error(t("壁纸最大支持 4 MB，请先压缩图片或视频。"));
+   if(request!==wallpaperUploadRevision || dialogKind!=='wallpaper' ||
+      oldChoice!==JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]))return;
+   const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error(t("文件读取失败")));reader.readAsDataURL(candidate);});
+   if(request!==wallpaperUploadRevision || dialogKind!=='wallpaper' ||
+      oldChoice!==JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]))return;
+   const old=clone(state.settings);state.settings.customWallpaper=url;state.settings.customWallpaperType=candidate.type.startsWith('video/')?'video':'image';state.settings.remoteWallpaper=null;
    try{await persist();}catch(err){state.settings=old;throw err;}
-   applySettings();openDialog('wallpaper');toast(t("本地壁纸已保存。"));
+   applySettings();openDialog('wallpaper');
+   toast(saving>0?t("壁纸压缩完成，节省 {percent}% 空间",{percent:(saving*100).toFixed(1)}):t("本地壁纸已保存。"));
   }
  }catch(err){if(input.dataset.setting||input.dataset.range||input.dataset.preference||input.dataset.settingColor)renderDesktop();if(!err.notified)toast(err.message || t("操作没有完成。"));}
 });
