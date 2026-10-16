@@ -99,6 +99,7 @@ with sync_playwright() as playwright:
             page.locator('#dialog').wait_for(state='hidden')
             page.locator('#desktop [data-image-compressor-open]').first.click()
             page.locator('#image-compressor-workspace').wait_for()
+            before_compression_requests = len(outside)
 
             page.locator('[data-image-file]').set_input_files({
                 'name': 'test-photo.png', 'mimeType': 'image/png', 'buffer': asset,
@@ -124,6 +125,7 @@ with sync_playwright() as playwright:
             check(f'{language} transient compression did not persist image',
                   not any('data:image' in str(item) for item in
                           json.loads(page.evaluate('localStorage.getItem("qiye.state.v5")'))['items']))
+            check(f'{language} no external image compression request', len(outside) == before_compression_requests)
             page.screenshot(path=str(OUT / f'workspace-{language}{"-preview" if args.preview else ""}.png'))
             page.locator('#dialog [data-close]').click()
             page.locator('#dialog').wait_for(state='hidden')
@@ -155,7 +157,6 @@ with sync_playwright() as playwright:
             check(f'{language} oversized animation cannot overwrite wallpaper',
                   json.loads(page.evaluate('localStorage.getItem("qiye.state.v5")'))['settings']['customWallpaper'] == wallpaper)
             check(f'{language} no browser exceptions', not errors)
-            check(f'{language} no unexpected third-party compression requests', not outside)
             context.close()
     finally:
         browser.close()
