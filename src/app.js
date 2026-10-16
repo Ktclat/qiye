@@ -1022,7 +1022,7 @@ const wallpaperLibrary = createWallpaperLibrary({
  },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
- renderCustom:()=>`<h3>${t("自定义背景")}</h3><p class="help-text">${t("仅在本机读取照片或视频，最大 4 MB。支持 PNG、JPEG、WebP、GIF、AVIF、MP4、WebM。应用后会进入桌面备份与 WebDAV 同步。")}</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t("选择本地图片或视频")}</strong><small>${t("不上传到栖页服务器")}</small></span></button>${state.settings.customWallpaper?`<p class="help-text">${t("当前已使用本地背景。选择任意官方背景可切换回来。")}</p>`:''}`,
+ renderCustom:()=>`<h3>${t("自定义背景")}</h3><p class="help-text">${t("PNG、JPEG、WebP 静态图片在本机自动尝试高画质压缩；保存结果最大 4 MiB。GIF、AVIF 和视频不自动压缩。应用后参与备份与 WebDAV 同步。")}</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t("选择本地图片或视频")}</strong><small>${t("不上传到栖页服务器")}</small></span></button>${state.settings.customWallpaper?`<p class="help-text">${t("当前已使用本地背景。选择任意官方背景可切换回来。")}</p>`:''}`,
  renderParameters:()=>`<h3>${t("壁纸参数")}</h3><p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
 });
 function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
