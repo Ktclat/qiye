@@ -47,3 +47,5 @@ html[data-theme=dark] .w-extension[data-widget="image-compressor"]{--w-bg:linear
 .image-compressor-privacy{display:flex;align-items:center;gap:7px;margin:0;font-size:10px;line-height:1.5;color:var(--app-muted)}
 .image-compressor-privacy .icon{width:13px;height:13px;flex:none}
 @container window (max-width:520px){.image-compressor-main{padding:14px;gap:11px}.image-compressor-stats strong{font-size:12px}.image-compressor-actions button{flex:1}.image-compressor-compare{height:220px}}
+
+#dialog.image-compressor-app-dialog:not(.widget-app-expanded){width:min(780px,var(--dialog-width))}
