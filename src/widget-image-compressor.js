@@ -14,16 +14,10 @@ export const imageCompressorWidget = {
   fields: [],
   render({size}) {
     const small = size === '1x1';
-    return `<button class="image-compressor-card" type="button" data-image-compressor-open
+    return `<button class="image-compressor-card" type="button" data-image-compressor-open data-action="widget-open"
       aria-label="${t('打开图片压缩工具')}">
       <span class="image-compressor-card-art" aria-hidden="true">${icon('image')}</span>
       ${small ? '' : `<strong>${t('图片压缩')}</strong><span>${t('拖入图片 · 本机处理')}</span><small>PNG · JPEG · WebP</small>`}
     </button>`;
-  },
-  mount({root, signal, openDetail}) {
-    root.querySelector('[data-image-compressor-open]')?.addEventListener('click', event => {
-      event.stopPropagation();
-      openDetail();
-    }, {signal});
   },
 };
