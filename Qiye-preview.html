@@ -2776,6 +2776,60 @@ html[data-theme=dark] .codec-app{--codec-accent:#8eb8ff;--codec-soft:#8eb8ff15;-
 @container(max-width:520px){.codec-layout{display:flex}.codec-nav{display:none}.codec-main{width:100%;padding:16px;gap:12px}.codec-mobile-select{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--app-muted)}.codec-mobile-select select{width:100%;color:var(--app-fg)}.codec-header{padding:0 12px}.codec-method h3{font-size:21px}.codec-app .codec-direction button{padding:5px 12px}.codec-editor-meta{font-size:10px}.codec-options label{flex-wrap:wrap}.codec-footer{align-items:flex-start}}
 
 </style>
+   <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+.w-extension[data-widget="image-compressor"]{--w-bg:linear-gradient(140deg,#edf5fb,#e7eaf7);--w-fg:#294f6d;--w-muted:#4f718b}
+html[data-theme=dark] .w-extension[data-widget="image-compressor"]{--w-bg:linear-gradient(140deg,#273849,#253149);--w-fg:#dbe9fb;--w-muted:#a7bdd3}
+.w-extension .image-compressor-card{display:flex;flex:1;min-height:0;width:100%;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;border:0;background:transparent;color:var(--w-fg);padding:3px;cursor:pointer;border-radius:10px}
+.w-extension .image-compressor-card:focus-visible{outline:2px solid var(--w-fg);outline-offset:2px}
+.image-compressor-card-art{display:grid;place-items:center;width:40px;height:40px;border:1px solid currentColor;border-radius:12px;opacity:.72}
+.image-compressor-card-art .icon{width:22px;height:22px}
+.image-compressor-card strong{font-size:13px;font-weight:650}
+.image-compressor-card span:not(.image-compressor-card-art){font-size:10px;color:var(--w-muted)}
+.image-compressor-card small{font-size:9px;opacity:.75}
+.w-extension[data-display-size="1x1"] .image-compressor-card-art{width:31px;height:31px;border-radius:8px}
+.w-extension[data-display-size="1x1"] .image-compressor-card-art .icon{width:19px;height:19px}
+@container(max-width:130px){.image-compressor-card small{display:none}}
+
+.image-compressor-app{display:flex;flex-direction:column;height:100%;min-height:0;color:var(--app-fg)}
+.image-compressor-app [hidden]{display:none!important}
+.image-compressor-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;height:46px;padding:0 16px;border-bottom:1px solid var(--app-border)}
+.image-compressor-heading{display:flex;align-items:center;gap:9px;min-width:0}
+.image-compressor-heading .icon{width:18px;height:18px;color:var(--app-blue)}
+.image-compressor-heading h2{font-size:14px;margin:0;line-height:1.4;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.image-compressor-main{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow:auto;padding:20px 25px}
+.image-compressor-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;flex:none;min-height:102px;border:1.5px dashed var(--app-border);border-radius:12px;background:var(--app-pane);cursor:pointer;text-align:center;padding:13px}
+.image-compressor-drop>.icon{width:23px;height:23px;color:var(--app-blue)}
+.image-compressor-drop strong{font-size:13px;font-weight:600}
+.image-compressor-drop span{font-size:11px;color:var(--app-muted)}
+.image-compressor-drop.is-dragging,.image-compressor-drop:focus-visible{outline:2px solid var(--app-blue);outline-offset:2px}
+.image-compressor-settings{display:flex;flex-direction:column;gap:8px;flex:none}
+.image-compressor-settings label{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.image-compressor-settings label strong{font-variant-numeric:tabular-nums}
+.image-compressor-settings input{width:100%;accent-color:var(--app-blue)}
+.image-compressor-settings>span{font-size:11px;color:var(--app-muted)}
+.image-compressor-result{display:flex;flex-direction:column;gap:12px;min-width:0;flex:none}
+.image-compressor-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.image-compressor-stats>div{display:flex;flex-direction:column;gap:4px;min-width:0;padding:9px 11px;border:1px solid var(--app-border);border-radius:9px;background:var(--app-pane)}
+.image-compressor-stats small{font-size:10px;color:var(--app-muted)}
+.image-compressor-stats strong{font-size:15px;font-weight:600;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.image-compressor-compare{position:relative;overflow:hidden;width:100%;height:clamp(180px,34vh,320px);border:1px solid var(--app-border);border-radius:12px;background:var(--app-pane)}
+.image-compressor-compare img{position:absolute;inset:0;height:100%;width:100%;object-fit:contain}
+.image-compressor-divider{position:absolute;top:0;bottom:0;width:1px;background:var(--app-blue);pointer-events:none;left:50%}
+.image-compressor-compare-control{display:flex;align-items:center;gap:13px;font-size:11px;color:var(--app-muted)}
+.image-compressor-compare-control input{flex:1;min-width:0;accent-color:var(--app-blue)}
+.image-compressor-status{margin:0;flex:none;min-height:20px;font-size:12px;color:var(--app-muted);overflow-wrap:anywhere}
+.image-compressor-status.is-error{color:var(--app-error,#c34b52)}
+.image-compressor-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:none;flex-wrap:wrap}
+.image-compressor-actions button{min-height:35px;font-size:12px}
+.image-compressor-actions button:disabled{opacity:.4;cursor:default}
+.image-compressor-privacy{display:flex;align-items:center;gap:7px;margin:0;font-size:10px;line-height:1.5;color:var(--app-muted)}
+.image-compressor-privacy .icon{width:13px;height:13px;flex:none}
+@container window (max-width:520px){.image-compressor-main{padding:14px;gap:11px}.image-compressor-stats strong{font-size:12px}.image-compressor-actions button{flex:1}.image-compressor-compare{height:220px}}
+
+#dialog.image-compressor-app-dialog:not(.widget-app-expanded){width:min(780px,var(--dialog-width))}
+
+</style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
 .w-converter{display:flex;flex-direction:column;overflow:hidden}
@@ -3282,13 +3336,67 @@ const mapEnglishMessages = {
 
 return {mapEnglishMessages};
 })();
+const __image_compressor_messages_en = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Image compressor translations; source keys are Simplified Chinese.
+const imageCompressorEnglishMessages = {
+  'PNG、JPEG、WebP 静态图片在本机自动尝试高画质压缩；保存结果最大 4 MiB。GIF、AVIF 和视频不自动压缩。应用后参与备份与 WebDAV 同步。': 'Static PNG, JPEG and WebP images are automatically optimized on your device. The saved file must fit within 4 MiB. GIF, AVIF and videos are not automatically compressed. Wallpapers are included in backups and WebDAV sync.',
+  '图片压缩': 'Image compression',
+  '本机高画质压缩 PNG、JPEG 和 WebP 图片': 'Compress PNG, JPEG and WebP locally with high visual quality',
+  '打开图片压缩工具': 'Open image compressor',
+  '拖入图片 · 本机处理': 'Drop an image · Local processing',
+  '选择或拖放需要压缩的图片': 'Choose or drop an image to compress',
+  '选择图片，或拖到这里': 'Choose an image or drop it here',
+  '最多 32 MiB': 'Up to 32 MiB',
+  '画质优先': 'Quality',
+  '分辨率不变 · WebP 输出 · 可能有轻微像素变化': 'Original resolution · WebP output · Minor pixel changes are possible',
+  '原始大小': 'Original size',
+  '输出大小': 'Output size',
+  '节省空间': 'Space saved',
+  '原始图片预览': 'Original image preview',
+  '压缩后图片预览': 'Compressed image preview',
+  '对比压缩前后': 'Compare before and after',
+  '图片只在此窗口处理，不上传到服务器。': 'Images are processed only in this window; nothing is uploaded.',
+  '选择图片': 'Choose image',
+  '下载图片': 'Download image',
+  '开始压缩': 'Compress',
+  '原图不会被覆盖，关闭窗口后临时图片立即清除。': 'The original is never overwritten. Temporary images are cleared when this window closes.',
+  '仅支持 32 MiB 以内的 PNG、JPEG 和 WebP 图片。': 'Choose a PNG, JPEG or WebP under 32 MiB.',
+  '未命名图片': 'Untitled image',
+  '可开始压缩': 'Ready to compress',
+  '正在本机压缩图片…': 'Compressing locally…',
+  '压缩完成，原图未修改。': 'Compression complete. Original unchanged.',
+  '保持原图：重新编码没有减少文件大小。': 'Keeping the original: re-encoding did not make it smaller.',
+  '图片压缩失败': 'Image compression failed',
+  '画质已调整，请重新压缩。': 'Quality changed. Compress again.',
+  '图片压缩已取消': 'Image compression cancelled',
+  '图片须在 32 MiB 以内': 'Image must be 32 MiB or smaller',
+  'PNG 图片格式无效': 'Invalid PNG signature',
+  'PNG 图片数据损坏': 'Corrupt PNG data',
+  '无法确认 PNG 是否包含动画': 'Cannot determine whether the PNG is animated',
+  '画质应介于 70% 和 98% 之间': 'Quality must be between 70% and 98%',
+  '图片压缩参数无效': 'Invalid compression parameters',
+  '仅支持 PNG、JPEG、WebP 静态图片': 'Only static PNG, JPEG and WebP images are supported',
+  '暂不支持动画图片压缩，以免丢失动画帧': 'Animated images are not compressed to avoid losing frames',
+  '当前浏览器无法编码 WebP 图片': 'This browser cannot encode WebP',
+  '压缩后仍超过壁纸大小上限，请选择更小的图片': 'The image still exceeds the wallpaper size limit; choose a smaller image',
+  '当前浏览器无法读取图片': 'This browser cannot decode the image',
+  '图片分辨率过大，最多 3200 万像素': 'Image resolution exceeds the 32-megapixel limit',
+  '当前浏览器无法处理图片': 'This browser cannot process the image',
+  '壁纸压缩完成，节省 {percent}% 空间': 'Wallpaper compressed, saving {percent}% of space',
+};
+
+return {imageCompressorEnglishMessages};
+})();
 const __messages_en = (() => {
 const { baseConverterEnglishMessages } = __base_converter_messages_en;
 // SPDX-License-Identifier: GPL-3.0-only
 const { converterEnglishMessages } = __converter_messages_en;
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const { mapEnglishMessages } = __map_messages_en;
+const { imageCompressorEnglishMessages } = __image_compressor_messages_en;
 const englishMessages = {
+  ...imageCompressorEnglishMessages,
   ...baseConverterEnglishMessages,
   ...converterEnglishMessages,
   ...mapEnglishMessages,
@@ -6790,6 +6898,370 @@ function bindCodecWorkspace(root, initialAlgorithm = 'base64') {
 
 return {codecCard, codecWorkspace, bindCodecWorkspace};
 })();
+const __image_compression = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+// A local-only, visually lossless-oriented encoder shared by the compression
+// workspace and wallpaper upload. Browser canvas WebP is NOT pixel-lossless.
+const MAX_IMAGE_INPUT_BYTES = 32 * 1024 * 1024;
+const MAX_IMAGE_PIXELS = 32_000_000;
+const COMPRESSIBLE_IMAGE_TYPES = Object.freeze(['image/png', 'image/jpeg', 'image/webp']);
+
+function isCompressibleImage(file) {
+  return !!file && typeof file.size === 'number' &&
+    COMPRESSIBLE_IMAGE_TYPES.includes(file.type);
+}
+
+function checkNotAborted(signal) {
+  if (signal?.aborted) throw new DOMException('图片压缩已取消', 'AbortError');
+}
+
+function chunkName(bytes, offset) {
+  return String.fromCharCode(bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3]);
+}
+
+/** Reject APNG and animated WebP rather than silently flattening to one frame. */
+async function isAnimatedImage(file) {
+  if (file.type === 'image/webp') {
+    const bytes = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+    return bytes.length >= 21 &&
+      chunkName(bytes, 0) === 'RIFF' &&
+      chunkName(bytes, 8) === 'WEBP' &&
+      chunkName(bytes, 12) === 'VP8X' &&
+      !!(bytes[20] & 0x02);
+  }
+  if (file.type !== 'image/png') return false;
+  const bytes = new Uint8Array(await file.slice(0, Math.min(file.size, 2 * 1024 * 1024)).arrayBuffer());
+  const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+  if (bytes.length < 8 || !pngSignature.every((byte, index) => bytes[index] === byte)) {
+    throw new Error(t('PNG 图片格式无效'));
+  }
+  for (let offset = 8; offset + 12 <= bytes.length;) {
+    const length = (bytes[offset] * 0x1000000 +
+      (bytes[offset + 1] << 16) + (bytes[offset + 2] << 8) + bytes[offset + 3]) >>> 0;
+    if (length > file.size - offset - 12) throw new Error(t('PNG 图片数据损坏'));
+    const name = chunkName(bytes, offset + 4);
+    if (name === 'acTL') return true;
+    if (name === 'IDAT' || name === 'IEND') return false;
+    if (offset + length + 12 > bytes.length) break;
+    offset += length + 12;
+  }
+  // An uninspected PNG header is unsafe to flatten.
+  throw new Error(t('无法确认 PNG 是否包含动画'));
+}
+
+function chooseCompressedBlob(original, candidates, {maxBytes = Infinity, minimumSaving = 0.02} = {}) {
+  if (!original || !Number.isFinite(original.size) || original.size < 1 ||
+      !(maxBytes === Infinity || Number.isFinite(maxBytes) && maxBytes > 0) ||
+      !Number.isFinite(minimumSaving) || minimumSaving < 0 || minimumSaving >= 1) {
+    throw new TypeError(t('图片压缩参数无效'));
+  }
+  const eligible = candidates.find(blob => blob?.type === 'image/webp' &&
+    blob.size > 0 && blob.size <= maxBytes &&
+    blob.size <= original.size * (1 - minimumSaving));
+  if (eligible) return eligible;
+  if (original.size <= maxBytes) return original;
+  throw new Error(t('压缩后仍超过壁纸大小上限，请选择更小的图片'));
+}
+
+function encodeWebP(canvas, quality) {
+  return new Promise((resolve, reject) => {
+    try {
+      canvas.toBlob(blob => {
+        if (!blob || blob.type !== 'image/webp') {
+          reject(new Error(t('当前浏览器无法编码 WebP 图片')));
+        } else {
+          resolve(blob);
+        }
+      }, 'image/webp', quality);
+    } catch (error) { reject(error); }
+  });
+}
+
+/**
+ * Preserve dimensions and use high-quality WebP. Revert to the original
+ * binary if the result does not save space. Never store an output in state.
+ */
+async function compressImage(file, {
+  quality = 0.92,
+  qualityLevels = null,
+  maxBytes = Infinity,
+  minimumSaving = 0.02,
+  signal,
+  decode = globalThis.createImageBitmap,
+  createCanvas = () => document.createElement('canvas'),
+} = {}) {
+  if (!isCompressibleImage(file)) throw new Error(t('仅支持 PNG、JPEG、WebP 静态图片'));
+  if (!file.size || file.size > MAX_IMAGE_INPUT_BYTES) throw new Error(t('图片须在 32 MiB 以内'));
+  const levels = qualityLevels || [quality];
+  if (!Array.isArray(levels) || !levels.length ||
+      levels.some(value => !Number.isFinite(value) || value < 0.7 || value > 0.98)) {
+    throw new TypeError(t('画质应介于 70% 和 98% 之间'));
+  }
+  checkNotAborted(signal);
+  if (await isAnimatedImage(file)) throw new Error(t('暂不支持动画图片压缩，以免丢失动画帧'));
+  checkNotAborted(signal);
+  if (typeof decode !== 'function') throw new Error(t('当前浏览器无法读取图片'));
+  const bitmap = await decode(file, {imageOrientation: 'from-image'});
+  try {
+    checkNotAborted(signal);
+    const width = bitmap?.width, height = bitmap?.height;
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 ||
+        width * height > MAX_IMAGE_PIXELS) throw new Error(t('图片分辨率过大，最多 3200 万像素'));
+    const canvas = createCanvas();
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext?.('2d', {alpha: true});
+    if (!context || typeof canvas.toBlob !== 'function') throw new Error(t('当前浏览器无法处理图片'));
+    context.drawImage(bitmap, 0, 0, width, height);
+    const candidates = [];
+    for (const level of levels) {
+      checkNotAborted(signal);
+      const encoded = await encodeWebP(canvas, level);
+      candidates.push(encoded);
+      // Levels are ordered from best visual quality to most aggressive.
+      if (encoded.size <= maxBytes && encoded.size <= file.size * (1 - minimumSaving)) break;
+    }
+    checkNotAborted(signal);
+    const blob = chooseCompressedBlob(file, candidates, {maxBytes, minimumSaving});
+    return {
+      blob, changed: blob !== file, originalBytes: file.size, outputBytes: blob.size,
+      saving: Math.max(0, 1 - blob.size / file.size),
+      width, height, type: blob.type,
+    };
+  } finally {
+    bitmap?.close?.();
+  }
+}
+
+/** Auto-optimize local wallpaper uploads before converting to base64 storage. */
+function compressWallpaperImage(file, {maxBytes, signal} = {}) {
+  return compressImage(file, {
+    qualityLevels: [0.94, 0.90, 0.86, 0.82, 0.78],
+    maxBytes, minimumSaving: 0.03, signal,
+  });
+}
+
+return {MAX_IMAGE_INPUT_BYTES, MAX_IMAGE_PIXELS, COMPRESSIBLE_IMAGE_TYPES, isCompressibleImage, isAnimatedImage, chooseCompressedBlob, compressImage, compressWallpaperImage};
+})();
+const __image_compressor_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { icon } = __icons;
+const { escapeText: esc } = __html;
+const { windowControls } = __widget_app_controls;
+const { compressImage, isCompressibleImage, MAX_IMAGE_INPUT_BYTES } = __image_compression;
+
+const asSize = size => size >= 1024 * 1024
+  ? `${(size / (1024 * 1024)).toFixed(2)} MiB`
+  : `${(size / 1024).toFixed(1)} KiB`;
+
+function imageCompressorWorkspace(item) {
+  return `<div class="image-compressor-app">
+    <header class="image-compressor-header">
+      <div class="image-compressor-heading">${icon('image')}<h2 id="dialog-title">${esc(item.title)}</h2></div>
+      ${windowControls()}
+    </header>
+    <div class="image-compressor-main">
+      <div class="image-compressor-drop" role="button" tabindex="0" data-image-drop
+        aria-label="${t('选择或拖放需要压缩的图片')}">
+        ${icon('image')}
+        <strong>${t('选择图片，或拖到这里')}</strong>
+        <span>PNG · JPEG · WebP　·　${t('最多 32 MiB')}</span>
+      </div>
+      <input type="file" accept="image/png,image/jpeg,image/webp" data-image-file hidden>
+      <div class="image-compressor-settings">
+        <label for="image-compressor-quality">${t('画质优先')}　<strong data-image-quality>92%</strong></label>
+        <input id="image-compressor-quality" type="range" min="70" max="98" value="92" step="1" data-image-slider>
+        <span>${t('分辨率不变 · WebP 输出 · 可能有轻微像素变化')}</span>
+      </div>
+      <section class="image-compressor-result" data-image-result hidden>
+        <div class="image-compressor-stats">
+          <div><small>${t('原始大小')}</small><strong data-image-original-size></strong></div>
+          <div><small>${t('输出大小')}</small><strong data-image-output-size></strong></div>
+          <div><small>${t('节省空间')}</small><strong data-image-saving></strong></div>
+        </div>
+        <div class="image-compressor-compare">
+          <img data-image-original alt="${t('原始图片预览')}">
+          <img data-image-optimized alt="${t('压缩后图片预览')}">
+          <span class="image-compressor-divider" aria-hidden="true"></span>
+        </div>
+        <label class="image-compressor-compare-control">${t('对比压缩前后')}
+          <input type="range" min="0" max="100" value="50" data-image-compare aria-label="${t('对比压缩前后')}">
+        </label>
+      </section>
+      <p class="image-compressor-status" data-image-status role="status" aria-live="polite">
+        ${t('图片只在此窗口处理，不上传到服务器。')}
+      </p>
+      <div class="image-compressor-actions">
+        <button type="button" class="secondary-button" data-image-pick>${t('选择图片')}</button>
+        <button type="button" class="secondary-button" data-image-download disabled>${t('下载图片')}</button>
+        <button type="button" class="primary-button" data-image-run disabled>${t('开始压缩')}</button>
+      </div>
+      <p class="image-compressor-privacy">${icon('shield')}${t('原图不会被覆盖，关闭窗口后临时图片立即清除。')}</p>
+    </div>
+  </div>`;
+}
+
+function bindImageCompressorWorkspace(root) {
+  const controller = new AbortController(), {signal} = controller;
+  const query = selector => root.querySelector(selector);
+  const input = query('[data-image-file]');
+  const drop = query('[data-image-drop]');
+  const slider = query('[data-image-slider]');
+  const before = query('[data-image-original]'), after = query('[data-image-optimized]');
+  const resultPanel = query('[data-image-result]');
+  const downloadButton = query('[data-image-download]'), runButton = query('[data-image-run]');
+  const compare = query('[data-image-compare]'), divider = query('.image-compressor-divider');
+  const status = query('[data-image-status]');
+  let original = null, result = null, originalUrl = '', outputUrl = '', revision = 0, busy = false;
+  const active = token => !signal.aborted && revision === token;
+
+  function note(message, error = false) {
+    status.textContent = message;
+    status.classList.toggle('is-error', error);
+  }
+  function releaseOutput() {
+    if (outputUrl && outputUrl !== originalUrl) URL.revokeObjectURL(outputUrl);
+    outputUrl = '';
+  }
+  function releasePreview() {
+    releaseOutput();
+    if (originalUrl) URL.revokeObjectURL(originalUrl);
+    originalUrl = '';
+    before.removeAttribute('src');
+    after.removeAttribute('src');
+  }
+  function clearResult() {
+    result = null;
+    resultPanel.hidden = true;
+    downloadButton.disabled = true;
+    releaseOutput();
+    after.removeAttribute('src');
+  }
+  function selectFile(file) {
+    revision++;
+    original = null;
+    clearResult();
+    releasePreview();
+    runButton.disabled = true;
+    if (!file) return;
+    if (!isCompressibleImage(file) || !file.size || file.size > MAX_IMAGE_INPUT_BYTES) {
+      note(t('仅支持 32 MiB 以内的 PNG、JPEG 和 WebP 图片。'), true);
+      return;
+    }
+    original = file;
+    originalUrl = URL.createObjectURL(file);
+    before.src = originalUrl;
+    runButton.disabled = false;
+    note(`${file.name || t('未命名图片')} · ${asSize(file.size)} · ${t('可开始压缩')}`);
+  }
+
+  async function run() {
+    if (!original || busy) return;
+    clearResult();
+    const token = ++revision;
+    busy = true;
+    runButton.disabled = true;
+    note(t('正在本机压缩图片…'));
+    try {
+      const processed = await compressImage(original, {
+        quality: Number(slider.value) / 100,
+        signal,
+      });
+      if (!active(token)) return;
+      result = processed;
+      outputUrl = processed.changed ? URL.createObjectURL(processed.blob) : originalUrl;
+      after.src = outputUrl;
+      query('[data-image-original-size]').textContent = asSize(processed.originalBytes);
+      query('[data-image-output-size]').textContent = asSize(processed.outputBytes);
+      query('[data-image-saving]').textContent = `${(processed.saving * 100).toFixed(1)}%`;
+      resultPanel.hidden = false;
+      compare.value = '50';
+      updateCompare();
+      downloadButton.disabled = false;
+      note(t(processed.changed ? '压缩完成，原图未修改。' : '保持原图：重新编码没有减少文件大小。'));
+    } catch (error) {
+      if (active(token)) note(t(error.message || '图片压缩失败'), true);
+    } finally {
+      busy = false;
+      if (!signal.aborted) runButton.disabled = !original;
+    }
+  }
+
+  function updateCompare() {
+    const value = Number(compare.value);
+    after.style.clipPath = `inset(0 ${100 - value}% 0 0)`;
+    divider.style.left = `${value}%`;
+  }
+
+  root.addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || !root.contains(button)) return;
+    if (button.dataset.detailAction === 'window-expand') {
+      const expanded = root.closest('dialog').classList.toggle('widget-app-expanded');
+      button.setAttribute('aria-pressed', String(expanded));
+      button.setAttribute('aria-label', t(expanded ? '还原窗口' : '最大化窗口'));
+      button.title = button.getAttribute('aria-label');
+      button.innerHTML = icon(expanded ? 'minimize' : 'maximize');
+    } else if (button.matches('[data-image-pick]')) {
+      input.click();
+    } else if (button.matches('[data-image-run]')) {
+      void run();
+    } else if (button.matches('[data-image-download]') && result) {
+      const blob = result.blob;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const name = original?.name || 'image.png';
+      link.href = url;
+      link.download = result.changed ? `${name.replace(/\.[^.]*$/, '')}-qiye.webp` : name;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+  }, {signal});
+
+  drop.addEventListener('click', () => input.click(), {signal});
+  drop.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      input.click();
+    }
+  }, {signal});
+  drop.addEventListener('dragover', event => {
+    event.preventDefault();
+    drop.classList.add('is-dragging');
+  }, {signal});
+  drop.addEventListener('dragleave', () => drop.classList.remove('is-dragging'), {signal});
+  drop.addEventListener('drop', event => {
+    event.preventDefault();
+    drop.classList.remove('is-dragging');
+    selectFile(event.dataTransfer?.files?.[0]);
+  }, {signal});
+  input.addEventListener('change', () => {
+    const file = input.files?.[0];
+    input.value = '';
+    selectFile(file);
+  }, {signal});
+  slider.addEventListener('input', () => {
+    query('[data-image-quality]').textContent = `${slider.value}%`;
+    revision++;
+    clearResult();
+    if (original) note(t('画质已调整，请重新压缩。'));
+  }, {signal});
+  compare.addEventListener('input', updateCompare, {signal});
+  updateCompare();
+  return () => {
+    controller.abort();
+    revision++;
+    releasePreview();
+    original = null;
+    result = null;
+    input.value = '';
+  };
+}
+
+return {imageCompressorWorkspace, bindImageCompressorWorkspace};
+})();
 const __map_model = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t } = __i18n;
@@ -8287,10 +8759,44 @@ function habitWeek(offset=0, now=new Date()) {
 
 return {COUNTDOWN_CATEGORIES, LIFE_TONES, CLOCK_CITIES, WORKDAY_COLORS, WORKDAY_FONTS, countdownEntries, validateCountdownData, countdownOccurrence, orderedCountdowns, countdownPrimary, workdayTimeline, zoneClock, offsetLabel, clockCities, validateClockCities, habitStats, habitWeek};
 })();
+const __widget_image_compressor = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { icon } = __icons;
+
+// A native, bundled API v3 widget: uploaded bytes are never persisted.
+const imageCompressorWidget = {
+  apiVersion: 3,
+  type: 'image-compressor',
+  title: '图片压缩',
+  description: '本机高画质压缩 PNG、JPEG 和 WebP 图片',
+  icon: 'image',
+  size: '2x2',
+  sizes: ['1x1', '2x2', '4x2'],
+  fields: [],
+  render({size}) {
+    const small = size === '1x1';
+    return `<button class="image-compressor-card" type="button" data-image-compressor-open
+      aria-label="${t('打开图片压缩工具')}">
+      <span class="image-compressor-card-art" aria-hidden="true">${icon('image')}</span>
+      ${small ? '' : `<strong>${t('图片压缩')}</strong><span>${t('拖入图片 · 本机处理')}</span><small>PNG · JPEG · WebP</small>`}
+    </button>`;
+  },
+  mount({root, signal, openDetail}) {
+    root.querySelector('[data-image-compressor-open]')?.addEventListener('click', event => {
+      event.stopPropagation();
+      openDetail();
+    }, {signal});
+  },
+};
+
+return {imageCompressorWidget};
+})();
 const __widget_extensions = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Import packaged widget definitions here. See docs/WIDGETS.md and widget-example.js.
-const widgetExtensions = [];
+const { imageCompressorWidget } = __widget_image_compressor;
+const widgetExtensions = [imageCompressorWidget];
 
 return {widgetExtensions};
 })();
@@ -26155,6 +26661,8 @@ return {createDailyQuoteClient, createDailyQuote};
 // SPDX-License-Identifier: GPL-3.0-only
 const { converterWorkspace, bindConverterWorkspace } = __converter_view;
 const { codecWorkspace, bindCodecWorkspace } = __codec_workspace;
+const { imageCompressorWorkspace, bindImageCompressorWorkspace } = __image_compressor_workspace;
+const { isCompressibleImage, compressWallpaperImage } = __image_compression;
 const { mapWorkspace } = __map_view;
 const { bindMapWorkspace } = __map_workspace;
 const { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } = __pomodoro_view;
@@ -26162,7 +26670,7 @@ const { configurePomodoro, validatePomodoroConfig } = __pomodoro;
 const { bindPomodoro } = __pomodoro_runtime;
 const { renderCatalog, filterCatalog, changeCatalogSize } = __widget_catalog;
 const { TILE_SIZES, sizeLabel, gridMetrics } = __widget_sizes;
-const { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } = __core;
+const { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory, MAX_MEDIA_BYTES } = __core;
 const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } = __widgets;
 const { chineseLunarDate } = __calendar;
 const { createWidgetDetails } = __widget_details;
@@ -26845,6 +27353,7 @@ function formActions(label=t("保存")) { return `<div id="form-error" class="in
 function groupOptions() { return state.groups.map(g=>({value:g.id,label:g.name})); }
 function colorsHtml(selected) { return `<div class="color-options">${COLORS.map(c=>`<button class="color-option ${c===selected?'selected':''}" style="background:${c}" data-color="${c}" type="button" aria-label="${t("图标颜色 {v0}", {v0: c})}">${c===selected?icon('check'):''}</button>`).join('')}<input class="color-input" type="color" name="color" aria-label="${t("自定义图标颜色")}" value="${esc(selected || COLORS[0])}"></div>`; }
 let viewerCleanup=()=>{};
+let wallpaperUploadRevision = 0;
 function openDialog(kind,data={}) {
  if(kind==='widget-config'&&['countdown','workday','notes','clock','habit'].includes(data.item?.widget))kind='widget-detail';
  if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
@@ -26860,9 +27369,10 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks','image-compressor'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
+ dialog.classList.toggle('image-compressor-app-dialog',detailWidget === 'image-compressor');
  dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
  dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
  dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
@@ -26888,6 +27398,7 @@ function openDialog(kind,data={}) {
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='image-compressor'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="image-compressor-workspace" class="widget-app-body">${imageCompressorWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
@@ -26923,6 +27434,7 @@ function openDialog(kind,data={}) {
   if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
   else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
+  else if(detailWidget==='image-compressor')viewerCleanup=bindImageCompressorWorkspace($('#image-compressor-workspace'));
   else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -27170,7 +27682,7 @@ const wallpaperLibrary = createWallpaperLibrary({
  },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
- renderCustom:()=>`<h3>${t("自定义背景")}</h3><p class="help-text">${t("仅在本机读取照片或视频，最大 4 MB。支持 PNG、JPEG、WebP、GIF、AVIF、MP4、WebM。应用后会进入桌面备份与 WebDAV 同步。")}</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t("选择本地图片或视频")}</strong><small>${t("不上传到栖页服务器")}</small></span></button>${state.settings.customWallpaper?`<p class="help-text">${t("当前已使用本地背景。选择任意官方背景可切换回来。")}</p>`:''}`,
+ renderCustom:()=>`<h3>${t("自定义背景")}</h3><p class="help-text">${t("PNG、JPEG、WebP 静态图片在本机自动尝试高画质压缩；保存结果最大 4 MiB。GIF、AVIF 和视频不自动压缩。应用后参与备份与 WebDAV 同步。")}</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t("选择本地图片或视频")}</strong><small>${t("不上传到栖页服务器")}</small></span></button>${state.settings.customWallpaper?`<p class="help-text">${t("当前已使用本地背景。选择任意官方背景可切换回来。")}</p>`:''}`,
  renderParameters:()=>`<h3>${t("壁纸参数")}</h3><p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
 });
 function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
@@ -27478,12 +27990,30 @@ document.addEventListener('change',async event=>{
    const restored=validateImport(await file.text());openDialog('restore-preview',{state:restored});return;
   }
   if(input.id==='wallpaper-file'){
-   const file=input.files?.[0];input.value='';if(!file)return;if(file.size>4*1024*1024)throw new Error(t("壁纸最大支持 4 MB，请先压缩图片或视频。"));
+   const file=input.files?.[0];input.value='';if(!file)return;
    if(!/^(image\/(png|jpeg|webp|gif|avif)|video\/(mp4|webm))$/.test(file.type))throw new Error(t("请使用 PNG、JPEG、WebP、GIF、AVIF 图片或 MP4、WebM 视频。"));
-   const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error(t("文件读取失败")));reader.readAsDataURL(file);});
-   const old=clone(state.settings);state.settings.customWallpaper=url;state.settings.customWallpaperType=file.type.startsWith('video/')?'video':'image';state.settings.remoteWallpaper=null;
+   const request=++wallpaperUploadRevision;
+   const oldChoice=JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]);
+   let candidate=file,saving=0;
+   if(isCompressibleImage(file)){
+    try {
+     const result=await compressWallpaperImage(file,{maxBytes:MAX_MEDIA_BYTES});
+     candidate=result.blob;saving=result.changed?result.saving:0;
+    }catch(error){
+     // Keep valid originals intact if this browser cannot encode the file.
+     if(file.size>MAX_MEDIA_BYTES)throw error;
+    }
+   }
+   if(candidate.size>MAX_MEDIA_BYTES)throw new Error(t("壁纸最大支持 4 MB，请先压缩图片或视频。"));
+   if(request!==wallpaperUploadRevision || dialogKind!=='wallpaper' ||
+      oldChoice!==JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]))return;
+   const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error(t("文件读取失败")));reader.readAsDataURL(candidate);});
+   if(request!==wallpaperUploadRevision || dialogKind!=='wallpaper' ||
+      oldChoice!==JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]))return;
+   const old=clone(state.settings);state.settings.customWallpaper=url;state.settings.customWallpaperType=candidate.type.startsWith('video/')?'video':'image';state.settings.remoteWallpaper=null;
    try{await persist();}catch(err){state.settings=old;throw err;}
-   applySettings();openDialog('wallpaper');toast(t("本地壁纸已保存。"));
+   applySettings();openDialog('wallpaper');
+   toast(saving>0?t("壁纸压缩完成，节省 {percent}% 空间",{percent:(saving*100).toFixed(1)}):t("本地壁纸已保存。"));
   }
  }catch(err){if(input.dataset.setting||input.dataset.range||input.dataset.preference||input.dataset.settingColor)renderDesktop();if(!err.notified)toast(err.message || t("操作没有完成。"));}
 });
