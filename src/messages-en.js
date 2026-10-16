@@ -3,7 +3,9 @@ import { baseConverterEnglishMessages } from './base-converter-messages-en.js';
 import { converterEnglishMessages } from './converter-messages-en.js';
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 import { mapEnglishMessages } from './map-messages-en.js';
+import { imageCompressorEnglishMessages } from './image-compressor-messages-en.js';
 export const englishMessages = {
+  ...imageCompressorEnglishMessages,
   ...baseConverterEnglishMessages,
   ...converterEnglishMessages,
   ...mapEnglishMessages,

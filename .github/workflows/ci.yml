@@ -69,6 +69,8 @@ jobs:
           python3 tests/converter-e2e.py --preview
           python3 tests/codec-e2e.py
           python3 tests/codec-e2e.py --preview
+          python3 tests/image-compressor-e2e.py
+          python3 tests/image-compressor-e2e.py --preview
           python3 tests/map-e2e.py
           python3 tests/map-e2e.py --preview
           python3 tests/map-extension-e2e.py
@@ -95,6 +97,7 @@ jobs:
             output/playwright/hotsearch
             output/playwright/pomodoro
             output/playwright/codec
+            output/playwright/image-compressor
           retention-days: 14
       - name: Source archive
         run: git archive --format=zip --output="$RUNNER_TEMP/qiye-source.zip" HEAD
