@@ -50,6 +50,7 @@ with sync_playwright() as pw:
   page.screenshot(path=str(OUT/'failure.png'))
   raise
  card=page.frame_locator('#desktop iframe')
+ assert card.locator('body').evaluate("()=>document.featurePolicy.allowsFeature('clipboard-write')&&!document.featurePolicy.allowsFeature('clipboard-read')")
  card.locator('[data-widget-input="notes"]').fill('分仓后的独立数据 🪴')
  page.wait_for_function("JSON.parse(localStorage.getItem('qiye.state.v5')).items.some(i=>i.widget==='community'&&i.data.value.includes('分仓后的独立数据'))")
  card.locator('[data-action="widget-open"]').first.click()
@@ -58,6 +59,11 @@ with sync_playwright() as pw:
  assert '分仓后的独立数据' in workspace.locator('body').inner_text() or workspace.locator('textarea').first.input_value()=='分仓后的独立数据 🪴'
  page.screenshot(path=str(OUT/'notes-window-dark.png'))
  workspace.locator('[data-close]').first.click()
+ page.wait_for_function("!document.querySelector('#dialog').open")
+ # A broken plugin cannot trap the user in its window; confirmed data stays intact.
+ card.locator('[data-action="widget-open"]').first.click();page.locator('#dialog iframe[data-ready=true]').wait_for()
+ page.frame_locator('#dialog iframe').locator('body').evaluate("()=>{if(window.qiyeBridge)qiyeBridge.flush=async()=>{throw Error('Test save failure')};else window.rejectFlush=true;}")
+ page.locator('#dialog').press('Escape');page.locator('[data-plugin-force-close]').wait_for();page.locator('[data-plugin-force-close]').click()
  page.wait_for_function("!document.querySelector('#dialog').open")
  page.reload();page.locator('#desktop iframe[data-ready="true"]').wait_for()
  assert page.frame_locator('#desktop iframe').locator('[data-widget-input="notes"]').input_value()=='分仓后的独立数据 🪴'

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 export const englishMessages = {
+  "强制关闭": "Force close",
+  "放弃未保存内容并关闭": "Discard unsaved changes and close",
   "授权定位": "Allow location",
   "请先点击窗口标题栏的“授权定位”。": "First click Allow location in the window header.",
   "已授权，请在组件中重新点击定位。": "Access granted. Try locating again in the widget.",

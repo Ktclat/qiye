@@ -29,6 +29,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   page.locator('[data-community-query]').fill('便签');page.locator('[data-community-add]').click();page.locator('#dialog [data-close]').first.click()
   page.locator('#desktop iframe[data-ready=true]').wait_for();card=page.frame_locator('#desktop iframe')
   assert card.locator('body').evaluate('()=>{try{void parent.document;return false}catch{return true}}')
+  assert card.locator('body').evaluate("()=>document.featurePolicy.allowsFeature('clipboard-write')&&!document.featurePolicy.allowsFeature('clipboard-read')")
   card.locator('[data-widget-input=notes]').fill('MV3 independent widget')
   page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5'].items.some(i=>i.widget==='community'&&i.data.value.includes('MV3 independent widget'))")
   card.locator('[data-action=widget-open]').first.click();page.locator('#dialog iframe[data-ready=true]').wait_for()

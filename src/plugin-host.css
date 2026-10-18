@@ -13,7 +13,7 @@ body.editing .plugin-slot iframe{pointer-events:none}
 .plugin-window-header button{min-width:30px;min-height:30px;background:transparent;color:inherit;border:0;border-radius:6px;cursor:pointer}
 .plugin-window-header svg{width:18px;height:18px}.plugin-window-header [data-plugin-grant]{font-size:12px}
 .plugin-dialog .plugin-slot{flex:1;border-radius:0}.plugin-dialog.widget-app-expanded{width:calc(100vw - 16px);height:calc(100dvh - 16px)}
-.plugin-dialog:has(iframe[data-api="2"][data-ready="true"]) .plugin-window-header:not(.needs-grant){display:none}
+.plugin-dialog:has(iframe[data-api="2"][data-ready="true"]) .plugin-window-header:not(.needs-grant):not(.needs-recovery){display:none}
 .community-view{display:grid;gap:16px;padding:16px;min-width:0}.community-view p{font-size:13px;line-height:1.6;margin:0}.community-view input,.community-view select{max-width:100%;min-height:32px;color:inherit;background:var(--input-bg,rgba(128,128,128,.1));border:1px solid var(--border,rgba(128,128,128,.25));border-radius:6px;padding:6px}
 .community-view button{font:inherit;color:inherit;border:1px solid var(--border,rgba(128,128,128,.25));background:var(--input-bg,rgba(128,128,128,.1));border-radius:6px;min-height:32px;padding:5px 10px;cursor:pointer}.community-view button:disabled{opacity:.4;cursor:default}
 .community-view button:focus:not(:focus-visible){outline:none}.community-view button:focus-visible,.plugin-window-header button:focus-visible{outline:2px solid var(--accent,#79d7b4);outline-offset:2px}

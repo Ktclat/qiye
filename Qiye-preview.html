@@ -1198,7 +1198,7 @@ body.editing .plugin-slot iframe{pointer-events:none}
 .plugin-window-header button{min-width:30px;min-height:30px;background:transparent;color:inherit;border:0;border-radius:6px;cursor:pointer}
 .plugin-window-header svg{width:18px;height:18px}.plugin-window-header [data-plugin-grant]{font-size:12px}
 .plugin-dialog .plugin-slot{flex:1;border-radius:0}.plugin-dialog.widget-app-expanded{width:calc(100vw - 16px);height:calc(100dvh - 16px)}
-.plugin-dialog:has(iframe[data-api="2"][data-ready="true"]) .plugin-window-header:not(.needs-grant){display:none}
+.plugin-dialog:has(iframe[data-api="2"][data-ready="true"]) .plugin-window-header:not(.needs-grant):not(.needs-recovery){display:none}
 .community-view{display:grid;gap:16px;padding:16px;min-width:0}.community-view p{font-size:13px;line-height:1.6;margin:0}.community-view input,.community-view select{max-width:100%;min-height:32px;color:inherit;background:var(--input-bg,rgba(128,128,128,.1));border:1px solid var(--border,rgba(128,128,128,.25));border-radius:6px;padding:6px}
 .community-view button{font:inherit;color:inherit;border:1px solid var(--border,rgba(128,128,128,.25));background:var(--input-bg,rgba(128,128,128,.1));border-radius:6px;min-height:32px;padding:5px 10px;cursor:pointer}.community-view button:disabled{opacity:.4;cursor:default}
 .community-view button:focus:not(:focus-visible){outline:none}.community-view button:focus-visible,.plugin-window-header button:focus-visible{outline:2px solid var(--accent,#79d7b4);outline-offset:2px}
@@ -1708,6 +1708,8 @@ const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const englishMessages = {
+  "强制关闭": "Force close",
+  "放弃未保存内容并关闭": "Discard unsaved changes and close",
   "授权定位": "Allow location",
   "请先点击窗口标题栏的“授权定位”。": "First click Allow location in the window header.",
   "已授权，请在组件中重新点击定位。": "Access granted. Try locating again in the widget.",
@@ -4257,7 +4259,7 @@ function mountPlugin(root,item,host,mode='card') {
  let plugin;try{plugin=resolveWidgetSource(item);}catch(error){root.title=error.message;}
  if(!plugin)return ()=>{};
  const controller=new AbortController();let port,timer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
- const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox='allow-scripts allow-forms allow-downloads';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
+ const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox='allow-scripts allow-forms allow-downloads';frame.allow='clipboard-write *';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
  const active=()=>!closed&&root.isConnected&&!!host.getState().items.find(entry=>entry.id===item.id)&&!!resolveWidgetSource(item);
  const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!!globalThis.chrome?.runtime?.id,mode,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
@@ -4309,6 +4311,7 @@ function bindPluginWorkspace(root,item,host) {
  const controller=new AbortController();
  const cleanup=mountPlugin(root.querySelector('[data-plugin-slot]'),item,host,'window');
  root.addEventListener('click',async event=>{
+  if(event.target.closest('[data-plugin-force-close]')){controller.abort();cleanup();void host.closeDialog();return;}
   if(event.target.closest('[data-plugin-expand]'))root.closest('dialog').classList.toggle('widget-app-expanded');
   if(event.target.closest('[data-plugin-location]')){
    try{const plugin=resolveWidgetSource(item);if(plugin&&(!globalThis.chrome?.permissions?.request||await chrome.permissions.request({permissions:['geolocation']}))){localStorage.setItem(grantKey(plugin)+'|geolocation','true');root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权，请在组件中重新点击定位。'));}}
@@ -4318,7 +4321,17 @@ function bindPluginWorkspace(root,item,host) {
    try{const plugin=resolveWidgetSource(item);if(plugin&&globalThis.chrome?.permissions?.request&&await chrome.permissions.request({permissions:['bookmarks']})){localStorage.setItem(grantKey(plugin),'true');root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权，请在组件中重新选择浏览器书签。'));}else host.toast(t('此功能需要 Chrome / Edge 扩展版。'));}catch(error){host.toast(error.message);}
   }
  },{signal:controller.signal});
- return async()=>{await sessions.get(root.querySelector('[data-plugin-slot]'))?.flush();controller.abort();cleanup();};
+ return async()=>{
+  try{await sessions.get(root.querySelector('[data-plugin-slot]'))?.flush();}
+  catch(error){
+   const header=root.querySelector('.plugin-window-header');header?.classList.add('needs-recovery');
+   if(header&&!header.querySelector('[data-plugin-force-close]')){
+    const button=document.createElement('button');button.dataset.pluginForceClose='';button.textContent=t('强制关闭');button.title=t('放弃未保存内容并关闭');button.setAttribute('aria-label',button.title);header.append(button);
+   }
+   throw error;
+  }
+  controller.abort();cleanup();
+ };
 }
 
 return {pluginCard, pluginWorkspace, performPluginCall, mountPlugin, updatePluginFrames, bindPluginWorkspace};

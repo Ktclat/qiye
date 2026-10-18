@@ -93,7 +93,7 @@ export function mountPlugin(root,item,host,mode='card') {
  let plugin;try{plugin=resolveWidgetSource(item);}catch(error){root.title=error.message;}
  if(!plugin)return ()=>{};
  const controller=new AbortController();let port,timer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
- const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox='allow-scripts allow-forms allow-downloads';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
+ const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox='allow-scripts allow-forms allow-downloads';frame.allow='clipboard-write *';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
  const active=()=>!closed&&root.isConnected&&!!host.getState().items.find(entry=>entry.id===item.id)&&!!resolveWidgetSource(item);
  const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!!globalThis.chrome?.runtime?.id,mode,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
@@ -145,6 +145,7 @@ export function bindPluginWorkspace(root,item,host) {
  const controller=new AbortController();
  const cleanup=mountPlugin(root.querySelector('[data-plugin-slot]'),item,host,'window');
  root.addEventListener('click',async event=>{
+  if(event.target.closest('[data-plugin-force-close]')){controller.abort();cleanup();void host.closeDialog();return;}
   if(event.target.closest('[data-plugin-expand]'))root.closest('dialog').classList.toggle('widget-app-expanded');
   if(event.target.closest('[data-plugin-location]')){
    try{const plugin=resolveWidgetSource(item);if(plugin&&(!globalThis.chrome?.permissions?.request||await chrome.permissions.request({permissions:['geolocation']}))){localStorage.setItem(grantKey(plugin)+'|geolocation','true');root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权，请在组件中重新点击定位。'));}}
@@ -154,5 +155,15 @@ export function bindPluginWorkspace(root,item,host) {
    try{const plugin=resolveWidgetSource(item);if(plugin&&globalThis.chrome?.permissions?.request&&await chrome.permissions.request({permissions:['bookmarks']})){localStorage.setItem(grantKey(plugin),'true');root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权，请在组件中重新选择浏览器书签。'));}else host.toast(t('此功能需要 Chrome / Edge 扩展版。'));}catch(error){host.toast(error.message);}
   }
  },{signal:controller.signal});
- return async()=>{await sessions.get(root.querySelector('[data-plugin-slot]'))?.flush();controller.abort();cleanup();};
+ return async()=>{
+  try{await sessions.get(root.querySelector('[data-plugin-slot]'))?.flush();}
+  catch(error){
+   const header=root.querySelector('.plugin-window-header');header?.classList.add('needs-recovery');
+   if(header&&!header.querySelector('[data-plugin-force-close]')){
+    const button=document.createElement('button');button.dataset.pluginForceClose='';button.textContent=t('强制关闭');button.title=t('放弃未保存内容并关闭');button.setAttribute('aria-label',button.title);header.append(button);
+   }
+   throw error;
+  }
+  controller.abort();cleanup();
+ };
 }
