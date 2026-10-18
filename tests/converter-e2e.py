@@ -162,6 +162,8 @@ with sync_playwright() as p:
             check(f'{language} maximize remains within viewport',page.locator('#dialog').evaluate('el=>el.getBoundingClientRect().right<=innerWidth && el.getBoundingClientRect().bottom<=innerHeight'))
             page.locator('[data-detail-action=window-expand]').click()
             page.set_viewport_size({'width':390,'height':844})
+            # Wait for the responsive controls before deciding how to switch categories.
+            page.locator('[data-cv-select]').wait_for(state='visible')
             for name in ['calculator','length','currency','bmi','date','volume','angle','force','timestamp','data']:
                 mode(name)
                 check(f'{language} narrow {name} fits',page.locator('#dialog').evaluate('el=>el.scrollWidth<=el.clientWidth+1') and page.locator('.cv-main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'))
