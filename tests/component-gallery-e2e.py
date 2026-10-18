@@ -81,6 +81,9 @@ with sync_playwright() as pw:
   check('Closing gallery releases its frames',page.locator('.community-preview iframe').count()==0)
   check('Desktop cards retain 20px clipping',page.locator('#desktop .tile-widget .tile-body').first.evaluate("e=>getComputedStyle(e).borderRadius==='20px'&&getComputedStyle(e).overflow==='hidden'"))
   page.screenshot(path=str(OUT/'rounded-desktop-dark.png'))
+  # Exercise a real cold/slow request. A prepared document intentionally skips
+  # this loading surface; its reuse is covered by plugin-window-e2e.
+  page.evaluate("()=>{Object.defineProperty(navigator,'connection',{configurable:true,value:{saveData:true}});dispatchEvent(new Event('qiye:widget-sources-changed'));}")
   for theme in ['dark','light']:
    if theme=='light':
     page.locator('#brand-button').click();page.locator('[data-settings-tab=appearance]').click();page.locator('[data-theme=light]').click();page.locator('#dialog [data-close]').first.click()
@@ -94,6 +97,7 @@ with sync_playwright() as pw:
    for route in held:fulfill(route)
    held.clear();page.locator('#dialog iframe[data-ready=true]').wait_for();check('Ready frame replaces loading surface',page.locator('#dialog .plugin-loading').count()==0)
    page.frame_locator('#dialog iframe').locator('[data-close]').first.click();expect(page.locator('#dialog')).not_to_be_visible()
+  page.evaluate('delete navigator.connection')
   # Refreshing source metadata leaves installed data pinned until explicit update.
   page.locator('#brand-button').click();page.locator('[data-settings-tab=sources]').click();page.locator('[data-source-details]').first.click()
   latest=next(m for m in official['widgets'] if m['id']=='qiye.notes');old=latest['release'];latest['release']='9.0.0'
