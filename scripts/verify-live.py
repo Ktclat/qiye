@@ -10,11 +10,11 @@ def check(name,value):
  assert value,name
  report['checks'].append(name);print('PASS',name,flush=True)
 try:
- for path in ['index.html','LICENSE',*[p.relative_to(args.expected).as_posix() for p in (args.expected/'icons').glob('*') if p.is_file()]]:
+ for path in ['index.html','LICENSE','README.md',*[p.relative_to(args.expected).as_posix() for p in (args.expected/'icons').glob('*') if p.is_file()]]:
   request=urllib.request.Request(args.url+path,headers={'Cache-Control':'no-cache'})
   with urllib.request.urlopen(request,timeout=30) as response:raw=response.read()
   expected=(args.expected/path).read_bytes()
-  if path.endswith(('.html','.svg')):expected=expected.replace(b'\r\n',b'\n')
+  if path.endswith(('.html','.svg','.md')):expected=expected.replace(b'\r\n',b'\n')
   check('Published '+path+' equals local build',raw==expected)
   report['assets'][path]=hashlib.sha256(raw).hexdigest()
  with sync_playwright() as pw:
