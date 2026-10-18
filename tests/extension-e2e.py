@@ -32,12 +32,18 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   assert card.locator('body').evaluate("()=>document.featurePolicy.allowsFeature('clipboard-write')&&!document.featurePolicy.allowsFeature('clipboard-read')")
   card.locator('[data-widget-input=notes]').fill('MV3 independent widget')
   page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5'].items.some(i=>i.widget==='community'&&i.data.value.includes('MV3 independent widget'))")
+  # Use keyboard intent in the full headless Chromium extension process;
+  # pointer preparation is exercised by plugin-window-e2e in the web renderer.
+  page.bring_to_front();page.locator('#desktop .tile-widget').focus()
+  page.locator('.plugin-preload-stage iframe').wait_for(state='attached')
+  page.locator('.plugin-preload-stage iframe').evaluate("e=>e.dataset.mv3Prepared='yes'")
   card.locator('[data-action=widget-open]').first.click();page.locator('#dialog iframe[data-ready=true]').wait_for()
+  assert page.locator('#dialog iframe[data-mv3-prepared=yes]').count()==1
   page.frame_locator('#dialog iframe').locator('[data-close]').first.click();expect(page.locator('#dialog')).not_to_be_visible()
   page.reload();page.locator('#desktop iframe[data-ready=true]').wait_for();assert page.frame_locator('#desktop iframe').locator('[data-widget-input=notes]').input_value()=='MV3 independent widget'
   page.screenshot(path=str(OUT/'mv3-widgets.png'))
   assert not errors,errors
-  print('PASS real MV3: blank defaults, disabled public source, no unnecessary host permission, isolated remote frame, chrome.storage save, close flush, reload, search and manifest')
+  print('PASS real MV3: blank defaults, disabled public source, isolated prepared frame, chrome.storage save, close flush, reload, search and manifest')
  except Exception:
   page.screenshot(path=str(OUT/'failure.png'));print('ERRORS',errors,'REQUESTS',requests,flush=True);print(page.locator('body').inner_text()[-3500:],flush=True);raise
  finally:context.close()

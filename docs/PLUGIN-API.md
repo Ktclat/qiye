@@ -44,6 +44,22 @@
 
 首次启用和加载网页需要网络；浏览器缓存不是保证离线可用的安装包。组件内的天气、地图和汇率等请求遵循网页 CORS，不能继承主程序的跨域特权。原生浏览器书签通过单独授权的宿主桥接提供；网页版仍仅支持独立收藏。窗口、卡片、深浅主题和原有组件布局保留在独立运行包中。
 
+## 窗口打开与圆角覆盖（主程序 v0.10.2）
+
+鼠标在已就绪的桌面卡片停留 60ms 或键盘聚焦卡片时，宿主在不可聚焦的隐藏容器中准备该实例的网页。此时没有 `qiye:init`、实例数据或 MessagePort，组件不能通过宿主读取、保存或请求权限。真正打开窗口后才发送最新状态和端口。页面保留移动使用 `Element.moveBefore()`，避免普通 DOM 插入导致 iframe 再次导航；尚未加载完成的页面也保留原请求。关闭仍先等待 `flush`，然后销毁会话，不复用旧窗口的草稿或计时器。
+
+全桌面最多保留一个待用页面，10 秒后回收；换卡片、来源改变、实例卸载或标签页进入后台会提前回收。编辑桌面、触屏触摸、节省流量、未启用来源和不支持 `moveBefore()` 的浏览器不主动准备。准备失败或无法保留移动时，使用原来的隔离加载与重试流程。此优化减少点击后的页面加载工作，不承诺首次联网或慢速网络下无等待。
+
+组件窗口外层使用 `overflow: hidden` 与 `scrollbar-gutter: auto`，只负责铺满、边框与圆角裁剪。组件内部负责滚动；外层不再为不可见滚动条留出 6px 的宿主底色。卡片和窗口均保留原沙箱权限。
+
+研究来源与决策：
+
+- [MDN：scrollbar-gutter](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/scrollbar-gutter)：经典滚动条模式下 `stable` 即使配合 `overflow: hidden` 也占位，因此必须在组件窗口显式设为 `auto`。
+- [Chrome：Preserve state during DOM mutations with moveBefore()](https://developer.chrome.com/blog/movebefore-api) 与 [MDN 的 iframe 状态保留示例](https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore)：采用有界的、用户操作意图触发的页面准备；使用功能检测与失败回退，维持 Chrome 116 的最低兼容要求。
+- [V8：The cost of JavaScript](https://v8.dev/blog/cost-of-javascript-2019)：缓存命中不等于没有解析与执行成本；保留已准备的文档，而不是只隐藏加载提示。视觉继续沿用用户提供的 iTab 式紧凑圆角窗口。
+
+回归入口：`python tests/plugin-window-e2e.py` 和 `--preview`，覆盖数据延迟授予、最新状态、单实例上限、准备中打开、关闭保存、超时回收、导航撤销、来源停用、功能回退，以及深浅主题 / 窄屏 / 100–150% CSS 缩放下的边缘对齐。
+
 ## 研究依据与决策（2026-10-18）
 
 - [Chrome：Manifest V3 Additional Requirements](https://developer.chrome.com/docs/webstore/program-policies/mv3-requirements)：区分扩展上下文与不接触扩展 API 的隔离上下文，因此选择 iframe 插件边界，不把组件代码导入宿主。该架构不是商店审核通过的保证。

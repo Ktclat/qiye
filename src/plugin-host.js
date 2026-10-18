@@ -6,6 +6,7 @@ import { resolveWidgetSource } from './widget-sources.js';
 import { validatePluginData } from './plugin-data.js';
 import { validateCommunityData } from './community-format.js';
 import { publicHttpsUrl } from './public-json.js';
+import { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPreparedWindow } from './plugin-preload.js';
 
 const sessions = new Map();
 const appearanceKeys = ['theme','themeColor','useThemeColor','surfaceStyle','surfaceOpacity','surfaceBlur','reducedEffects','uiFont','gridSize','gap','radius','showSeconds','hour12'];
@@ -93,10 +94,11 @@ export async function performPluginCall(method,params,{item,plugin,host,active,m
 export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch(error){root.title=error.message;}
  if(!plugin)return ()=>{};
- const controller=new AbortController();let port,timer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
- const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox=preview?'allow-scripts':'allow-scripts allow-forms allow-downloads';if(!preview)frame.allow='clipboard-write *';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
- frame.className='plugin-frame';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
+ const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
  const loading=document.createElement('div');loading.className='plugin-loading';loading.setAttribute('role','status');loading.innerHTML=`<span class="plugin-loading-mark">${icon('grid')}</span><strong>${e(item.title)}</strong><span>${t('正在打开组件…')}</span><i aria-hidden="true"></i>`;
+ root.replaceChildren(loading);
+ const prepared=mode==='window'&&!preview?takePreparedWindow(root,item,plugin):null;
+ const frame=prepared?.frame||createPluginFrame(item,plugin,{preview});
  root.setAttribute('aria-busy','true');
  const active=()=>!closed&&root.isConnected&&!!host.getState().items.find(entry=>entry.id===item.id)&&!!resolveWidgetSource(item);
  const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
@@ -106,10 +108,10 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const next={type:'state',...payload(current()),environment:environment()};const signature=JSON.stringify(next);
   if(signature!==lastSignature){lastSignature=signature;port.postMessage(next);}
  };
- const dispose=()=>{closed=true;clearTimeout(timer);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();root.removeAttribute('aria-busy');if(sessions.get(root)?.frame===frame)sessions.delete(root);};
+ const dispose=()=>{closed=true;clearTimeout(timer);clearTimeout(prepareTimer);if(mode==='card'&&!preview)discardPreparedWindow(item.id);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();root.removeAttribute('aria-busy');if(sessions.get(root)?.frame===frame)sessions.delete(root);};
  const fail=message=>{dispose();root.innerHTML=`<button class="plugin-placeholder" data-plugin-retry><strong>${e(item.title)}</strong><small>${e(message)}</small><span>${t('重试')}</span></button>`;root.addEventListener('click',onRetry,{once:true});};
  const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode,{preview});};
- frame.addEventListener('load',()=>{
+ const initialize=()=>{
   // Never transfer a new capability after an untrusted frame navigates itself.
   if(loaded){fail(t('组件页面已跳转，请重试。'));return;}loaded=true;
   const channel=new MessageChannel();port=channel.port1;
@@ -136,12 +138,27 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   frame.contentWindow.postMessage(init,'*',[channel.port2]);
   observer=new ResizeObserver(update);observer.observe(root);
   themeObserver=new MutationObserver(update);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','lang']});
- },{signal:controller.signal});
+ };
+ frame.addEventListener('load',initialize,{signal:controller.signal});
+ if(mode==='card'&&!preview){
+  const target=root.closest('.tile-widget')||root;
+  const prepare=()=>{
+   clearTimeout(prepareTimer);
+   if(!ready||!active()||document.querySelector('#dialog[open]')||document.body.classList.contains('editing'))return;
+   const item=current(),plugin=resolveWidgetSource(item);
+   if(plugin)preparePluginWindow(item,plugin);
+  };
+  target.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')prepareTimer=setTimeout(prepare,60);},{signal:controller.signal});
+  target.addEventListener('pointerleave',()=>clearTimeout(prepareTimer),{signal:controller.signal});
+  target.addEventListener('focusin',prepare,{signal:controller.signal});
+ }
  timer=setTimeout(()=>fail(t('组件未响应，请检查网络后重试。')),15000);
  const flush=()=>!ready||plugin.manifest.version!==2||!active()?Promise.resolve():flushPromise||(flushPromise=new Promise((resolve,reject)=>{
   flushJob={resolve,reject,timer:setTimeout(()=>{flushJob=null;reject(new Error(t('组件没有确认保存，请稍后重试关闭。')));},5000)};port.postMessage({type:'flush'});
  }).finally(()=>{flushPromise=null;}));
- frame.src=plugin.manifest.entry;root.replaceChildren(loading,frame);sessions.set(root,{update,dispose,flush,frame});
+ sessions.set(root,{update,dispose,flush,frame});
+ if(prepared?.loaded)initialize();
+ if(!prepared){frame.src=plugin.manifest.entry;root.append(frame);}
  return ()=>{dispose();root.removeEventListener('click',onRetry);retryCleanup();};
 }
 export function updatePluginFrames(container) { for(const [root,session] of sessions)if(container.contains(root))session.update(); }

@@ -1201,8 +1201,10 @@ html[data-accent=custom] .calendar-tool-nav button[aria-current=page]::before { 
 .tile-widget .tile-body{padding:0;height:100%;overflow:hidden}
 .tile-widget .tile-body:has(.plugin-slot){background:var(--panel-bg,rgba(30,40,50,.65))}
 body.editing .plugin-slot iframe{pointer-events:none}
-.plugin-dialog{width:min(1080px,calc(100vw - 32px));height:min(760px,calc(100dvh - 32px));max-width:none;max-height:none;padding:0}
-.plugin-dialog #dialog-content{height:100%;display:flex;flex-direction:column;min-height:0}
+.plugin-preload-stage{position:fixed;left:-10000px;top:0;width:min(1080px,100vw);height:min(760px,100dvh);visibility:hidden;pointer-events:none;contain:strict}
+.plugin-preload-stage iframe{width:100%;height:100%;border:0}
+.app-dialog.plugin-dialog{width:min(1080px,calc(100vw - 32px));height:min(760px,calc(100dvh - 32px));max-width:none;max-height:none;padding:0;overflow:hidden;scrollbar-gutter:auto}
+.plugin-dialog #dialog-content{width:100%;height:100%;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
 .plugin-window-header{height:46px;min-height:46px;display:flex;gap:8px;align-items:center;padding:0 12px;border-bottom:1px solid var(--border,rgba(128,128,128,.2))}
 .plugin-window-header h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;flex:1}
 .plugin-window-header button{min-width:30px;min-height:30px;background:transparent;color:inherit;border:0;border-radius:6px;cursor:pointer}
@@ -4205,6 +4207,70 @@ function resolveWidgetSource(item, sources = readWidgetSources()) {
 
 return {SOURCE_STORAGE_KEY, OFFICIAL_WIDGET_SOURCE, SOURCES_CHANGED, readWidgetSources, saveWidgetSources, resolveWidgetSource};
 })();
+const __plugin_preload = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { SOURCES_CHANGED } = __widget_sources;
+
+// Prepare only the document. Instance data and the capability port are supplied
+// by mountPlugin when the user actually opens the window, never while parked.
+let prepared;
+let listening=false;
+const keyFor=(item,plugin)=>JSON.stringify([item.id,plugin.source,plugin.manifest]);
+
+function createPluginFrame(item,plugin,{preview=false}={}) {
+ const frame=document.createElement('iframe');
+ frame.title=item.title;frame.dataset.api=plugin.manifest.version;
+ frame.sandbox=preview?'allow-scripts':'allow-scripts allow-forms allow-downloads';
+ if(!preview)frame.allow='clipboard-write *';
+ frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
+ frame.className='plugin-frame';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
+ return frame;
+}
+
+function discardPreparedWindow(itemId) {
+ if(!prepared||(itemId!==undefined&&prepared.itemId!==itemId))return;
+ const entry=prepared;prepared=null;
+ clearTimeout(entry.timer);entry.controller.abort();entry.stage.remove();
+}
+
+function preparePluginWindow(item,plugin) {
+ if(!document.body.moveBefore||document.hidden||navigator.connection?.saveData)return;
+ const key=keyFor(item,plugin);
+ if(prepared?.key===key)return;
+ discardPreparedWindow();
+ if(!listening){
+  listening=true;
+  window.addEventListener(SOURCES_CHANGED,()=>discardPreparedWindow());
+  window.addEventListener('pagehide',()=>discardPreparedWindow());
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)discardPreparedWindow();});
+ }
+ const stage=document.createElement('div');stage.className='plugin-preload-stage';stage.inert=true;stage.setAttribute('aria-hidden','true');
+ const frame=createPluginFrame(item,plugin),controller=new AbortController();
+ const entry={key,itemId:item.id,stage,frame,controller,loaded:false,timer:0};
+ prepared=entry;
+ frame.addEventListener('load',()=>{
+  // A parked page that navigates itself must never receive a host session.
+  if(entry.loaded){if(prepared===entry)discardPreparedWindow();return;}
+  entry.loaded=true;
+ },{signal:controller.signal});
+ entry.timer=setTimeout(()=>{if(prepared===entry)discardPreparedWindow();},10000);
+ frame.src=plugin.manifest.entry;stage.append(frame);document.body.append(stage);
+}
+
+function takePreparedWindow(root,item,plugin) {
+ if(!prepared)return null;
+ const entry=prepared;
+ if(entry.key!==keyFor(item,plugin)||!root.isConnected||!entry.frame.isConnected||!root.moveBefore){discardPreparedWindow();return null;}
+ // append()/replaceChildren() would reload the iframe and defeat preparation.
+ // moveBefore preserves the document, but is still feature-detected for older
+ // browsers. A failed move falls back to the usual fresh sandboxed frame.
+ try{root.moveBefore(entry.frame,null);}catch{discardPreparedWindow();return null;}
+ prepared=null;clearTimeout(entry.timer);entry.controller.abort();entry.stage.remove();
+ return {frame:entry.frame,loaded:entry.loaded};
+}
+
+return {createPluginFrame, discardPreparedWindow, preparePluginWindow, takePreparedWindow};
+})();
 const __plugin_host = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { t, getLocale } = __i18n;
@@ -4214,6 +4280,7 @@ const { resolveWidgetSource } = __widget_sources;
 const { validatePluginData } = __plugin_data;
 const { validateCommunityData } = __community_format;
 const { publicHttpsUrl } = __public_json;
+const { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPreparedWindow } = __plugin_preload;
 
 const sessions = new Map();
 const appearanceKeys = ['theme','themeColor','useThemeColor','surfaceStyle','surfaceOpacity','surfaceBlur','reducedEffects','uiFont','gridSize','gap','radius','showSeconds','hour12'];
@@ -4301,10 +4368,11 @@ async function performPluginCall(method,params,{item,plugin,host,active,mode='ca
 function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch(error){root.title=error.message;}
  if(!plugin)return ()=>{};
- const controller=new AbortController();let port,timer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
- const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox=preview?'allow-scripts':'allow-scripts allow-forms allow-downloads';if(!preview)frame.allow='clipboard-write *';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
- frame.className='plugin-frame';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
+ const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
  const loading=document.createElement('div');loading.className='plugin-loading';loading.setAttribute('role','status');loading.innerHTML=`<span class="plugin-loading-mark">${icon('grid')}</span><strong>${e(item.title)}</strong><span>${t('正在打开组件…')}</span><i aria-hidden="true"></i>`;
+ root.replaceChildren(loading);
+ const prepared=mode==='window'&&!preview?takePreparedWindow(root,item,plugin):null;
+ const frame=prepared?.frame||createPluginFrame(item,plugin,{preview});
  root.setAttribute('aria-busy','true');
  const active=()=>!closed&&root.isConnected&&!!host.getState().items.find(entry=>entry.id===item.id)&&!!resolveWidgetSource(item);
  const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
@@ -4314,10 +4382,10 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const next={type:'state',...payload(current()),environment:environment()};const signature=JSON.stringify(next);
   if(signature!==lastSignature){lastSignature=signature;port.postMessage(next);}
  };
- const dispose=()=>{closed=true;clearTimeout(timer);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();root.removeAttribute('aria-busy');if(sessions.get(root)?.frame===frame)sessions.delete(root);};
+ const dispose=()=>{closed=true;clearTimeout(timer);clearTimeout(prepareTimer);if(mode==='card'&&!preview)discardPreparedWindow(item.id);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();root.removeAttribute('aria-busy');if(sessions.get(root)?.frame===frame)sessions.delete(root);};
  const fail=message=>{dispose();root.innerHTML=`<button class="plugin-placeholder" data-plugin-retry><strong>${e(item.title)}</strong><small>${e(message)}</small><span>${t('重试')}</span></button>`;root.addEventListener('click',onRetry,{once:true});};
  const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode,{preview});};
- frame.addEventListener('load',()=>{
+ const initialize=()=>{
   // Never transfer a new capability after an untrusted frame navigates itself.
   if(loaded){fail(t('组件页面已跳转，请重试。'));return;}loaded=true;
   const channel=new MessageChannel();port=channel.port1;
@@ -4344,12 +4412,27 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   frame.contentWindow.postMessage(init,'*',[channel.port2]);
   observer=new ResizeObserver(update);observer.observe(root);
   themeObserver=new MutationObserver(update);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','lang']});
- },{signal:controller.signal});
+ };
+ frame.addEventListener('load',initialize,{signal:controller.signal});
+ if(mode==='card'&&!preview){
+  const target=root.closest('.tile-widget')||root;
+  const prepare=()=>{
+   clearTimeout(prepareTimer);
+   if(!ready||!active()||document.querySelector('#dialog[open]')||document.body.classList.contains('editing'))return;
+   const item=current(),plugin=resolveWidgetSource(item);
+   if(plugin)preparePluginWindow(item,plugin);
+  };
+  target.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')prepareTimer=setTimeout(prepare,60);},{signal:controller.signal});
+  target.addEventListener('pointerleave',()=>clearTimeout(prepareTimer),{signal:controller.signal});
+  target.addEventListener('focusin',prepare,{signal:controller.signal});
+ }
  timer=setTimeout(()=>fail(t('组件未响应，请检查网络后重试。')),15000);
  const flush=()=>!ready||plugin.manifest.version!==2||!active()?Promise.resolve():flushPromise||(flushPromise=new Promise((resolve,reject)=>{
   flushJob={resolve,reject,timer:setTimeout(()=>{flushJob=null;reject(new Error(t('组件没有确认保存，请稍后重试关闭。')));},5000)};port.postMessage({type:'flush'});
  }).finally(()=>{flushPromise=null;}));
- frame.src=plugin.manifest.entry;root.replaceChildren(loading,frame);sessions.set(root,{update,dispose,flush,frame});
+ sessions.set(root,{update,dispose,flush,frame});
+ if(prepared?.loaded)initialize();
+ if(!prepared){frame.src=plugin.manifest.entry;root.append(frame);}
  return ()=>{dispose();root.removeEventListener('click',onRetry);retryCleanup();};
 }
 function updatePluginFrames(container) { for(const [root,session] of sessions)if(container.contains(root))session.update(); }
@@ -6573,7 +6656,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.1";
+const APP_VERSION = "0.10.2";
 
 return {APP_VERSION};
 })();
