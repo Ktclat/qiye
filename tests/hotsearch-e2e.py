@@ -143,6 +143,9 @@ with sync_playwright() as p:
             def begin_drag(source, target):
                 handle=manager.locator(f'[data-hot-drag={source}]')
                 handle.scroll_into_view_if_needed()
+                # Keyboard reordering animates rows for 200ms; raw mouse coordinates
+                # must be captured after those rows stop moving.
+                manager.evaluate('e=>Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))')
                 start=handle.bounding_box()
                 end=manager.locator(f'[data-hot-sort={target}]').bounding_box()
                 page.mouse.move(start['x']+start['width']/2,start['y']+start['height']/2)
