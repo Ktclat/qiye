@@ -38,10 +38,13 @@ with sync_playwright() as pw:
  assert not requests,requests
  page.screenshot(path=str(OUT/'sources-disabled.png'))
  page.locator('[data-source-toggle]').first.click()
- page.wait_for_function("count=>document.querySelectorAll('[data-community-card]').length===count",arg=len(catalog['widgets']))
+ page.locator('[data-source-toggle][aria-checked=true]').wait_for()
+ assert page.locator('[data-community-card]').count()==0
  assert len(requests)==1,requests
+ page.locator('[data-source-details]').first.click();page.locator('[data-source-browse]').click()
+ page.wait_for_function("count=>document.querySelectorAll('[data-community-card]').length===count",arg=len(catalog['widgets']))
  page.locator('[data-community-query]').fill('便签')
- page.locator('[data-community-add]').click()
+ page.locator('[data-community-card]:visible [data-community-add]').click()
  page.locator('#dialog [data-close]').first.click()
  try:page.locator('#desktop iframe[data-ready="true"]').wait_for()
  except Exception:
@@ -70,7 +73,7 @@ with sync_playwright() as pw:
  # Theme changes and adding a sibling must retain an existing editor's frame.
  page.locator('#desktop iframe').evaluate("frame=>frame.dataset.retained='yes'")
  page.locator('#brand-button').click();page.locator('[data-settings-tab=appearance]').click();page.locator('button[data-theme=light]').click()
- page.locator('[data-settings-tab=sources]').click();page.locator('[data-community-query]').fill('便签');page.locator('[data-community-add]').click()
+ page.locator('[data-settings-tab=sources]').click();page.locator('[data-source-details]').first.click();page.locator('[data-source-browse]').click();page.locator('[data-community-query]').fill('便签');page.locator('[data-community-card]:visible [data-community-add]').click()
  page.locator('#dialog [data-close]').first.click();page.wait_for_function("document.querySelectorAll('#desktop iframe[data-ready=true]').length===2")
  assert page.locator('#desktop iframe[data-retained=yes]').count()==1
  # A source switch stops existing frames without deleting their data.

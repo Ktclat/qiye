@@ -54,6 +54,15 @@ test('a stopped session cannot write or call a privileged host capability',async
  await assert.rejects(performPluginCall('save',{value:{}},{active:()=>false,host:{savePlugin:()=>writes++}}));
  assert.equal(writes,0);
 });
+
+test('a gallery preview cannot persist, open windows or invoke host capabilities',async()=>{
+ let calls=0;
+ const host=new Proxy({}, {get(){calls++;throw new Error('Host accessed');}});
+ for(const method of ['save','storage','open','settings','close','expand','toast','openUrl','wallpaper','bookmarks','geolocation']){
+  await assert.rejects(performPluginCall(method,{}, {active:()=>true,preview:true,host}),/预览/);
+ }
+ assert.equal(calls,0);
+});
 test('stale plugin writes are refused before persistence and cannot change a sibling',async()=>{
  const item={id:'a',widget:'community',config:{source:OFFICIAL_WIDGET_SOURCE,manifest},data:{value:'{"data":1}'}};
  let writes=0;const host={getState:()=>({items:[item,{id:'b',data:{secret:true}}]}),savePlugin:()=>writes++};

@@ -6,7 +6,7 @@ import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, sa
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
 import { chineseLunarDate } from './desktop-date.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
-import { communityView, bindCommunity } from './community-ui.js';
+import { communityView, communityToolbar, bindCommunity } from './community-ui.js';
 import { pluginWorkspace, bindPluginWorkspace } from './plugin-host.js';
 import { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } from './widget-sources.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
@@ -754,8 +754,7 @@ function openDialog(kind,data={}) {
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
  if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
- if(kind==='add' && ['widgets','community'].includes(data.tab||'widgets'))viewerCleanup=bindCommunity($('#add-content'),{getState:()=>state,apply:applyExchange});
- if(kind==='settings' && data.tab==='sources')viewerCleanup=bindCommunity($('.settings-content'),{getState:()=>state,apply:applyExchange});
+ if((kind==='add' && ['widgets','community'].includes(data.tab||'widgets')) || (kind==='settings' && data.tab==='sources'))viewerCleanup=bindCommunity($('#dialog-content'),{getState:()=>state,apply:applyExchange,openSources:source=>openDialog('settings',{tab:'sources',source}),openCatalog:source=>openDialog('add',{tab:'widgets',source})},data);
  if(kind==='widget-detail')viewerCleanup=bindPluginWorkspace($('#dialog-content'),state.items.find(i=>i.id===data.item?.id),pluginHost());
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
@@ -802,17 +801,17 @@ function linkEditorForm(item){
 }
 function addDialog(tab,data) {
  const item = data.item;
- const catalog = tab === 'sites';
+ const catalog = tab === 'sites', widgetCatalog = ['widgets','community'].includes(tab);
  let content = '';
  if (catalog) content = renderCatalog({state,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
  else if(tab==='sharing')content=sharingView(state,data.url||'');
  else if(['widgets','community'].includes(tab))content=communityView({catalogOnly:true});
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title',t("文件夹名称"),item?.title || '',{required:true,maxlength:24,placeholder:t("例如：灵感收藏")})}${selectField('groupId',t("所在分组"),item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">${t("把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。")}</p>${formActions(item?t("保存文件夹"):t("创建文件夹"))}</form>`;
  else content = linkEditorForm(item);
- const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):`<header class="add-header"><h2 id="workspace-title" tabindex="-1">${t('添加')}</h2>${catalog?renderCatalogToolbar({state,groupId:data.groupId||currentGroup().id}):''}<div class="add-window-actions"><button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>${dialogCloseButton()}</div></header>`;
+ const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):`<header class="add-header"><h2 id="workspace-title" tabindex="-1">${t('添加')}</h2>${catalog?renderCatalogToolbar({state,groupId:data.groupId||currentGroup().id}):widgetCatalog?communityToolbar(state,data.groupId||currentGroup().id):''}<div class="add-window-actions"><button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>${dialogCloseButton()}</div></header>`;
  if(item)return head+`<div class="dialog-body">${content}</div>`;
  const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'},{id:'sharing',name:t('分享与导入'),icon:'download'}];
- return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content${catalog?' catalog-content':''}" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div><p class="add-feedback" data-add-feedback role="status" aria-live="polite" aria-atomic="true"></p>`;
+ return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content${catalog||widgetCatalog?' catalog-content':''}" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div><p class="add-feedback" data-add-feedback role="status" aria-live="polite" aria-atomic="true"></p>`;
 
 }
 function groupDialog(id) {
@@ -835,7 +834,7 @@ function settingsDialog(tab) {
   {id:'icons',name:t("图标"),icon:'grid'}, {id:'clock',name:t("时间 / 日期"),icon:'clock'},
   {id:'appearance',name:t("主题与材质"),icon:'sun'}, {id:'layout',name:t("布局"),icon:'move'},
   {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("同步"),icon:'sync'},
-  {id:'sources',name:t('小组件源'),icon:'grid'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
+  {id:'sources',name:t('组件源'),icon:'grid'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
  ];
  if (!tabs.some(item=>item.id===tab)) tab='general';
  let content = '';

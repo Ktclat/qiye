@@ -10,11 +10,11 @@ import { publicHttpsUrl } from './public-json.js';
 const sessions = new Map();
 const appearanceKeys = ['theme','themeColor','useThemeColor','surfaceStyle','surfaceOpacity','surfaceBlur','reducedEffects','uiFont','gridSize','gap','radius','showSeconds','hour12'];
 export function pluginCard(item) {
- return `<section class="plugin-slot" data-plugin-slot data-widget-id="${e(item.id)}"><button class="plugin-placeholder" data-action="widget-sources"><strong>${e(item.title)}</strong><small>${t('启用小组件源')}</small></button></section>`;
+ return `<section class="plugin-slot" data-plugin-slot data-widget-id="${e(item.id)}"><button class="plugin-placeholder" data-action="widget-sources"><strong>${e(item.title)}</strong><small>${t('启用组件源')}</small></button></section>`;
 }
 export function pluginWorkspace(item) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch{}
- return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>`:''}<button data-action="widget-sources" aria-label="${t('小组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
+ return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
 }
 function payload(item) {
  return item.widget==='community'?{value:item.data.value||'null',revision:item.data.value||'null'}
@@ -23,8 +23,9 @@ function payload(item) {
 function scopedKey(item,plugin) { return 'qiye.plugin.'+encodeURIComponent(plugin.source+'|'+plugin.manifest.id+'|'+item.id); }
 function grantKey(plugin) { return 'qiye.plugin.grant.'+encodeURIComponent(plugin.source+'|'+plugin.manifest.id); }
 
-export async function performPluginCall(method,params,{item,plugin,host,active,mode='card'}) {
+export async function performPluginCall(method,params,{item,plugin,host,active,mode='card',preview=false}) {
  if(!active())throw new Error(t('组件已停止'));
+ if(preview)throw new Error(t('预览不会修改桌面数据'));
  if(method==='save'){
   const value=validatePluginData(params.value);
   const current=host.getState().items.find(entry=>entry.id===item.id);
@@ -89,22 +90,25 @@ export async function performPluginCall(method,params,{item,plugin,host,active,m
  throw new Error('Unsupported plugin API');
 }
 
-export function mountPlugin(root,item,host,mode='card') {
+export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch(error){root.title=error.message;}
  if(!plugin)return ()=>{};
  const controller=new AbortController();let port,timer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
- const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox='allow-scripts allow-forms allow-downloads';frame.allow='clipboard-write *';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
+ const frame=document.createElement('iframe');frame.title=item.title;frame.dataset.api=plugin.manifest.version;frame.sandbox=preview?'allow-scripts':'allow-scripts allow-forms allow-downloads';if(!preview)frame.allow='clipboard-write *';frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
+ frame.className='plugin-frame';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
+ const loading=document.createElement('div');loading.className='plugin-loading';loading.setAttribute('role','status');loading.innerHTML=`<span class="plugin-loading-mark">${icon('grid')}</span><strong>${e(item.title)}</strong><span>${t('正在打开组件…')}</span><i aria-hidden="true"></i>`;
+ root.setAttribute('aria-busy','true');
  const active=()=>!closed&&root.isConnected&&!!host.getState().items.find(entry=>entry.id===item.id)&&!!resolveWidgetSource(item);
- const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!!globalThis.chrome?.runtime?.id,mode,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
+ const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
  const update=()=>{
   if(!ready||!active())return;
   const next={type:'state',...payload(current()),environment:environment()};const signature=JSON.stringify(next);
   if(signature!==lastSignature){lastSignature=signature;port.postMessage(next);}
  };
- const dispose=()=>{closed=true;clearTimeout(timer);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();if(sessions.get(root)?.frame===frame)sessions.delete(root);};
+ const dispose=()=>{closed=true;clearTimeout(timer);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();root.removeAttribute('aria-busy');if(sessions.get(root)?.frame===frame)sessions.delete(root);};
  const fail=message=>{dispose();root.innerHTML=`<button class="plugin-placeholder" data-plugin-retry><strong>${e(item.title)}</strong><small>${e(message)}</small><span>${t('重试')}</span></button>`;root.addEventListener('click',onRetry,{once:true});};
- const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode);};
+ const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode,{preview});};
  frame.addEventListener('load',()=>{
   // Never transfer a new capability after an untrusted frame navigates itself.
   if(loaded){fail(t('组件页面已跳转，请重试。'));return;}loaded=true;
@@ -112,10 +116,10 @@ export function mountPlugin(root,item,host,mode='card') {
   port.onmessage=async event=>{
    const message=event.data;if(!active())return;
    if(message?.type==='flushed'&&flushJob){const job=flushJob;flushJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
-   if(message?.type==='ready'&&message.version===plugin.manifest.version){ready=true;clearTimeout(timer);frame.dataset.ready='true';update();return;}
+   if(message?.type==='ready'&&message.version===plugin.manifest.version){ready=true;clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
    if(plugin.manifest.version===1&&message?.type==='save'){
-    try{if(busy)throw new Error('Save in progress');busy=true;const data=validateCommunityData({value:message.value});await host.saveData(item.id,data,JSON.stringify(current().data));if(active())port.postMessage({type:'saved',id:message.id,ok:true});}
+    try{if(preview)throw new Error(t('预览不会修改桌面数据'));if(busy)throw new Error('Save in progress');busy=true;const data=validateCommunityData({value:message.value});await host.saveData(item.id,data,JSON.stringify(current().data));if(active())port.postMessage({type:'saved',id:message.id,ok:true});}
     catch(error){if(active())port.postMessage({type:'saved',id:message.id,error:error.message});}finally{busy=false;}return;
    }
    if(message?.type!=='call'||typeof message.id!=='string'||message.id.length>80)return;
@@ -123,10 +127,10 @@ export function mountPlugin(root,item,host,mode='card') {
    const writing=['save','bookmarks'].includes(message.method);
    if(writing&&busy){reply({error:'Operation in progress'});return;}
    if(writing)busy=true;
-   try{reply({value:await performPluginCall(message.method,message.params||{},{item,plugin,host,active,mode})});}
+   try{reply({value:await performPluginCall(message.method,message.params||{},{item,plugin,host,active,mode,preview})});}
    catch(error){reply({error:error.message});}finally{if(writing)busy=false;}
   };
-  let storage={};try{storage=validatePluginData(JSON.parse(localStorage.getItem(scopedKey(item,plugin))||'{}'));}catch{}
+  let storage={};try{if(!preview)storage=validatePluginData(JSON.parse(localStorage.getItem(scopedKey(item,plugin))||'{}'));}catch{}
   const init={type:'qiye:init',version:plugin.manifest.version,...payload(current()),data:current().data.value||'null',item:{id:item.id,title:item.title,size:item.size},environment:environment(),storage};
   // Opaque sandbox origin requires '*'; the channel is sent only to this frame.
   frame.contentWindow.postMessage(init,'*',[channel.port2]);
@@ -137,7 +141,7 @@ export function mountPlugin(root,item,host,mode='card') {
  const flush=()=>!ready||plugin.manifest.version!==2||!active()?Promise.resolve():flushPromise||(flushPromise=new Promise((resolve,reject)=>{
   flushJob={resolve,reject,timer:setTimeout(()=>{flushJob=null;reject(new Error(t('组件没有确认保存，请稍后重试关闭。')));},5000)};port.postMessage({type:'flush'});
  }).finally(()=>{flushPromise=null;}));
- frame.src=plugin.manifest.entry;root.replaceChildren(frame);sessions.set(root,{update,dispose,flush,frame});
+ frame.src=plugin.manifest.entry;root.replaceChildren(loading,frame);sessions.set(root,{update,dispose,flush,frame});
  return ()=>{dispose();root.removeEventListener('click',onRetry);retryCleanup();};
 }
 export function updatePluginFrames(container) { for(const [root,session] of sessions)if(container.contains(root))session.update(); }

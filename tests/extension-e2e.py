@@ -25,8 +25,8 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   page.locator('#engine-button').click();page.locator('#engine-menu [data-engine=google]').click()
   page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.settings.searchEngine==='google'")
   page.locator('#brand-button').click();page.locator('[data-settings-tab=sources]').click();assert page.locator('[data-source-toggle]').first.get_attribute('aria-checked')=='false'
-  page.locator('[data-source-toggle]').first.click();page.wait_for_function("n=>document.querySelectorAll('[data-community-card]').length===n",arg=len(catalog['widgets']))
-  page.locator('[data-community-query]').fill('便签');page.locator('[data-community-add]').click();page.locator('#dialog [data-close]').first.click()
+  page.locator('[data-source-toggle]').first.click();page.locator('[data-source-toggle][aria-checked=true]').wait_for();page.locator('[data-source-details]').first.click();page.locator('[data-source-browse]').click();page.wait_for_function("n=>document.querySelectorAll('[data-community-card]').length===n",arg=len(catalog['widgets']))
+  page.locator('[data-community-query]').fill('便签');page.locator('[data-community-card]:visible [data-community-add]').click();page.locator('#dialog [data-close]').first.click()
   page.locator('#desktop iframe[data-ready=true]').wait_for();card=page.frame_locator('#desktop iframe')
   assert card.locator('body').evaluate('()=>{try{void parent.document;return false}catch{return true}}')
   assert card.locator('body').evaluate("()=>document.featurePolicy.allowsFeature('clipboard-write')&&!document.featurePolicy.allowsFeature('clipboard-read')")
