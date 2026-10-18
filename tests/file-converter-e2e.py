@@ -76,6 +76,7 @@ window.holdRead=()=>{window.readEntered=false;const original=Blob.prototype.arra
             def open_tool():
                 page.locator('[data-item=f3] .fc-launch').click()
                 page.locator('[data-fc-input]').wait_for(state='attached')
+                page.locator('#dialog').evaluate('e=>Promise.all(e.getAnimations().map(animation=>animation.finished))')
 
             def close():
                 page.locator('#dialog [data-close]').click()
@@ -98,10 +99,9 @@ window.holdRead=()=>{window.readEntered=false;const original=Blob.prototype.arra
             check('maximize works',expand.get_attribute('aria-pressed')=='true')
             expand.click()
             check('restore works',expand.get_attribute('aria-pressed')=='false')
-            page.locator('[data-fc-drop]').focus()
             with page.expect_file_chooser():
-                page.keyboard.press('Enter')
-            check('drop zone supports keyboard file selection',True)
+                page.locator('[data-fc-action=pick]').press('Enter')
+            check('file picker supports keyboard selection',True)
             add([upload('same.png',transparent=True),upload('same.png'),{'name':'fake.png','mimeType':'image/png','buffer':b'not an image'}])
             check('valid files accepted and forged file rejected',page.locator('.fc-row').count()==2)
             check('uploader becomes compact after files are added',page.locator('[data-fc-drop]').bounding_box()['height']<120)
@@ -175,6 +175,11 @@ return original.call(this,k,v);};}""")
             page.locator('[data-item=f3]').wait_for()
             open_tool()
             check('reload restores settings but never stores file data',page.locator('.fc-row').count()==0 and page.locator('[data-fc-format]').input_value()=='png' and page.locator('[data-fc-quality]').input_value()=='83' and not any(item['data'] for item in saved()['items']))
+            close()
+            page.evaluate('''()=>{const s=JSON.parse(localStorage.getItem("qiye.state.v5"));s.settings.windowSize=75;localStorage.setItem("qiye.state.v5",JSON.stringify(s));}''')
+            page.reload();page.locator('[data-item=f3]').wait_for();open_tool()
+            bounds=page.locator('#dialog').bounding_box()
+            check(f'window follows the saved 75 percent size preference ({bounds})',abs(bounds['width']-min(735,width-24))<1 and abs(bounds['height']-480)<1)
             # Returned byte sizes are bounded even for unexpectedly large encoder output.
             add(upload())
             page.evaluate("""() => {const original=HTMLCanvasElement.prototype.toBlob;HTMLCanvasElement.prototype.toBlob=function(cb,...args){
