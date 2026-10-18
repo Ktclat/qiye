@@ -100,3 +100,7 @@ Edit `index.html`, styles and `src/`, then regenerate `Qiye-preview.html`. See t
 ## License
 
 Copyright © 2026 Ktclat and Qiye contributors. Qiye is licensed under [GPL-3.0-only](LICENSE). Fonts, the calendar engine and external assets retain their own licenses; see [third-party notices](docs/THIRD_PARTY.md). Interactions take inspiration from iTab; Qiye's branding, interface icons and code are independently implemented.
+
+### Local image compression
+
+The Image Compressor widget runs entirely in your browser. It supports lossless PNG recompression, high-quality WebP/JPEG, batch comparison, ZIP downloads and applying an image as wallpaper. Static PNG/JPEG/WebP wallpaper uploads are automatically compressed locally when helpful (up to 32 MiB input and 4 MiB stored output); animated images and video are not re-encoded.

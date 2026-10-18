@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-"""Image compression widget and automatic wallpaper upload, on HTTP and preview."""
+"""Compression, cancellation, wallpaper races and lifecycle on HTTP/standalone."""
 import argparse
-import base64
 import copy
-from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import io
 import json
 import os
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-import struct
 import subprocess
 import threading
-import zlib
-
+import zipfile
 from playwright.sync_api import sync_playwright
+from image_fixtures import upload
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
@@ -21,34 +20,12 @@ parser.add_argument('--preview', action='store_true')
 args = parser.parse_args()
 OUT = ROOT / 'output/playwright/image-compressor'
 OUT.mkdir(parents=True, exist_ok=True)
-initial = json.loads(subprocess.check_output(
-    ['node', '--input-type=module', '-e',
-     "import {DEFAULT_STATE} from './src/core.js';console.log(JSON.stringify(DEFAULT_STATE))"],
-    cwd=ROOT,
-))
-
-
-def png_photo(width=720, height=480):
-    """Deterministic patterned PNG; lossy WebP should be smaller."""
-    rows = bytearray()
-    for y in range(height):
-        rows.append(0)  # PNG "None" filter
-        for x in range(width):
-            rows.extend((
-                (x * 13 + y * 17 + (x * y) % 27) % 256,
-                (x * 3 + y * 11 + (x * y) % 71) % 256,
-                (x * 7 + y * 5 + ((x + y) % 17) * 9) % 256,
-                255,
-            ))
-
-    def chunk(kind, payload):
-        data = kind + payload
-        return struct.pack('>I', len(payload)) + data + struct.pack('>I', zlib.crc32(data) & 0xffffffff)
-
-    return (b'\x89PNG\r\n\x1a\n'
-            + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
-            + chunk(b'IDAT', zlib.compress(bytes(rows), 6))
-            + chunk(b'IEND', b''))
+initial = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', """
+import {DEFAULT_STATE} from './src/core.js';
+const s=structuredClone(DEFAULT_STATE);s.settings.autoExtractIcons=false;
+s.items=['1x1','1x2','2x1','2x2','4x2'].map((size,i)=>({id:'c'+i,groupId:'home',type:'widget',widget:'image-compressor',title:'图片压缩',size,config:{},data:{}}));
+console.log(JSON.stringify(s));
+"""], cwd=ROOT))
 
 
 class Quiet(SimpleHTTPRequestHandler):
@@ -56,110 +33,135 @@ class Quiet(SimpleHTTPRequestHandler):
         pass
 
 
+checks = []
+
+
+def check(name, ok):
+    assert ok, name
+    checks.append(name)
+    print('PASS', name, flush=True)
+
+
 server = ThreadingHTTPServer(('127.0.0.1', 0), partial(Quiet, directory=str(ROOT)))
 threading.Thread(target=server.serve_forever, daemon=True).start()
-base = f'http://127.0.0.1:{server.server_port}/' + ('Qiye-preview.html' if args.preview else '')
-asset = png_photo()
-check_count = 0
-
-
-def check(label, ok):
-    global check_count
-    assert ok, label
-    check_count += 1
-    print('PASS', label, flush=True)
-
-
-with sync_playwright() as playwright:
-    chromium_path = os.environ.get('CHROMIUM_PATH')
-    browser = playwright.chromium.launch(**({'executable_path': chromium_path} if chromium_path else {}))
+with sync_playwright() as p:
+    executable = os.environ.get('CHROMIUM_PATH')
+    browser = p.chromium.launch(**({'executable_path': executable} if executable else {}))
     try:
         for language, theme, width in [('zh-CN', 'light', 1440), ('en', 'dark', 390)]:
             state = copy.deepcopy(initial)
-            state['items'] = []
-            state['settings'].update(language=language, theme=theme, autoExtractIcons=False)
-            context = browser.new_context(viewport={'width':width, 'height':850}, accept_downloads=True)
+            state['settings'].update(language=language, theme=theme)
+            context = browser.new_context(viewport={'width': width, 'height': 850}, accept_downloads=True)
             page = context.new_page()
             page.set_default_timeout(15000)
             errors = []
-            outside = []
             page.on('pageerror', lambda error: errors.append(str(error)))
-            page.on('request', lambda request: outside.append(request.url) if request.url.startswith('https://') else None)
             page.route('https://**/*', lambda route: route.abort())
-            payload = json.dumps(state, ensure_ascii=False)
             page.add_init_script('if(!localStorage.getItem("qiye.state.v5"))localStorage.setItem("qiye.state.v5",'
-                                 + json.dumps(payload) + ')')
-            page.goto(base, wait_until='domcontentloaded')
-            page.locator('#groups [data-group]').first.wait_for()
+                                 + json.dumps(json.dumps(state)) + ')')
+            page.add_init_script("""window.imageURLs=new Set();
+const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);
+URL.createObjectURL=blob=>{const url=create(blob);imageURLs.add(url);return url;};
+URL.revokeObjectURL=url=>{imageURLs.delete(url);revoke(url);};
+window.realBitmap=createImageBitmap;
+window.holdDecode=()=>{window.decodeEntered=false;window.decodeReleased=false;createImageBitmap=async(...args)=>{
+  createImageBitmap=realBitmap;decodeEntered=true;await new Promise(r=>window.releaseDecode=r);
+  const result=await realBitmap(...args);decodeReleased=true;return result;};};""")
+            page.goto(f'http://127.0.0.1:{server.server_port}/' + ('Qiye-preview.html' if args.preview else ''))
+            page.locator('[data-item=c3]').wait_for()
 
-            page.locator('.top-tools [data-action=add]').click()
-            page.locator('[data-add-tab=widgets]').click()
-            check(f'{language} widget visible', page.locator('[data-catalog-widget="image-compressor"]').is_visible())
-            page.locator('[data-add-widget="image-compressor"]').click()
-            page.locator('#dialog').wait_for(state='hidden')
-            page.locator('#desktop [data-image-compressor-open]').first.click()
-            page.locator('#image-compressor-workspace').wait_for()
-            before_compression_requests = len(outside)
+            def saved():
+                return page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v5"))')
 
-            page.locator('[data-image-file]').set_input_files({
-                'name': 'test-photo.png', 'mimeType': 'image/png', 'buffer': asset,
-            })
-            page.locator('[data-image-slider]').evaluate(
-                "e=>{e.value='92';e.dispatchEvent(new Event('input',{bubbles:true}));}"
-            )
+            def open_tool():
+                page.locator('[data-item=c3] [data-image-compressor-open]').click()
+                page.locator('[data-image-files]').wait_for(state='attached')
+
+            def close():
+                page.locator('#dialog [data-close]').first.click()
+                page.locator('#dialog').wait_for(state='hidden')
+
+            check(f'{language}: all five compact card sizes render', page.locator('#desktop [data-image-compressor-open]').count() == 5)
+            open_tool()
+            check('single-row 46px header', abs(page.locator('.image-tool-header').bounding_box()['height'] - 46) < 1)
+            check('initial focus is on title, not a settings control', page.evaluate('document.activeElement.id') == 'dialog-title')
+            expand = page.locator('[data-detail-action=window-expand]')
+            expand.click()
+            check('maximize works', expand.get_attribute('aria-pressed') == 'true')
+            expand.click()
+            check('restore works', expand.get_attribute('aria-pressed') == 'false')
+            page.locator('[data-image-files]').set_input_files([upload('first.png'), upload('second.png')])
             page.locator('[data-image-run]').click()
-            page.locator('[data-image-result]').wait_for(state='visible', timeout=20000)
-            page.wait_for_function(
-                '() => [...document.querySelectorAll(".image-compressor-compare img")].every(i => i.complete && i.naturalWidth > 0)'
-            )
-            check(f'{language} compressed result is downloadable',
-                  page.locator('[data-image-download]').is_enabled())
-            check(f'{language} preview dimensions are unchanged',
-                  page.locator('.image-compressor-compare').evaluate(
-                      'n=>n.querySelectorAll("img")[0].naturalWidth===n.querySelectorAll("img")[1].naturalWidth && '
-                      'n.querySelectorAll("img")[0].naturalHeight===n.querySelectorAll("img")[1].naturalHeight'
-                  ))
-            with page.expect_download() as received:
+            page.locator('[data-image-compare]').wait_for(state='visible')
+            check('two files complete', page.locator('[data-image-row]').count() == 2)
+            page.wait_for_function('[...document.querySelectorAll(".image-tool-preview img")].every(i=>i.complete&&i.naturalWidth===256)')
+            with page.expect_download() as download:
                 page.locator('[data-image-download]').click()
-            check(f'{language} compression download', received.value.suggested_filename.startswith('test-photo'))
-            check(f'{language} transient compression did not persist image',
-                  not any('data:image' in str(item) for item in
-                          json.loads(page.evaluate('localStorage.getItem("qiye.state.v5")'))['items']))
-            check(f'{language} no external image compression request', len(outside) == before_compression_requests)
-            page.screenshot(path=str(OUT / f'workspace-{language}{"-preview" if args.preview else ""}.png'))
-            page.locator('#dialog [data-close]').click()
-            page.locator('#dialog').wait_for(state='hidden')
+            check('downloads actual WebP output', download.value.suggested_filename.endswith('.webp') and download.value.path().read_bytes()[8:12] == b'WEBP')
+            with page.expect_download() as download:
+                page.locator('[data-image-zip]').click()
+            with zipfile.ZipFile(io.BytesIO(download.value.path().read_bytes())) as archive:
+                check('ZIP contains both results with valid deterministic dates', len(archive.infolist()) == 2 and all(i.date_time == (1980, 1, 1, 0, 0, 0) for i in archive.infolist()) and archive.testzip() is None)
+            check('files do not enter persistent widget data', saved()['items'] == state['items'])
+            page.locator('[data-image-split]').focus()
+            page.keyboard.press('ArrowRight')
+            check('comparison slider is keyboard accessible', page.locator('[data-image-split]').input_value() == '51')
+            check('workspace fits narrow and wide windows', page.locator('.image-tool').evaluate('e=>e.scrollWidth<=e.clientWidth+1'))
+            check('desktop navigation margins do not leak into image preview', page.locator('.image-tool-main').evaluate('e=>getComputedStyle(e).marginLeft==="0px"'))
+            page.screenshot(path=str(OUT / f'{language}{"-preview" if args.preview else ""}.png'))
+            page.locator('[data-image-mode]').select_option('lossless')
+            page.locator('[data-image-run]').click()
+            page.locator('[data-image-compare]').wait_for(state='visible')
+            with page.expect_download() as download:
+                page.locator('[data-image-download]').click()
+            check('lossless mode retains PNG', download.value.path().read_bytes().startswith(b'\x89PNG'))
+            page.locator('[data-image-files]').set_input_files(upload('animated.png', animated=True))
+            page.locator('[data-image-run]').click()
+            page.locator('.image-tool-row-error').wait_for()
+            check('animated PNG is rejected in both languages', ('Animated' if language == 'en' else '动画') in page.locator('.image-tool-row-error').inner_text())
+            page.locator('[data-image-mode]').select_option('smart')
+            page.locator('[data-image-files]').set_input_files(upload())
+            page.evaluate('holdDecode()')
+            page.locator('[data-image-run]').click()
+            page.wait_for_function('decodeEntered')
+            page.locator('[data-image-cancel]').click()
+            page.evaluate('releaseDecode()')
+            page.wait_for_function('decodeReleased')
+            check('canceled decode cannot publish output', page.locator('[data-image-results]').is_hidden() and page.locator('[data-image-run]').is_enabled())
+            close()
+            page.wait_for_function('imageURLs.size===0')
+            check('all temporary URLs released after close', True)
+            open_tool()
+            check('reopen clears file queue', page.locator('[data-image-results]').is_hidden() and page.locator('[data-image-run]').is_disabled())
+            close()
 
             page.locator('.top-tools [data-action=wallpaper]').click()
-            page.locator('#wallpaper-file').set_input_files({
-                'name': 'wallpaper.png', 'mimeType': 'image/png', 'buffer': asset,
-            })
-            page.wait_for_function(
-                '() => !!JSON.parse(localStorage.getItem("qiye.state.v5")).settings.customWallpaper',
-                timeout=30000
-            )
-            saved = json.loads(page.evaluate('localStorage.getItem("qiye.state.v5")'))
-            wallpaper = saved['settings']['customWallpaper']
-            check(f'{language} wallpaper is saved from local upload', wallpaper.startswith('data:image/'))
-            if wallpaper.startswith('data:image/webp;base64,'):
-                check(f'{language} auto-compressed wallpaper is smaller',
-                      len(base64.b64decode(wallpaper.split(',', 1)[1])) < len(asset))
-            else:
-                check(f'{language} keeping original is allowed',
-                      wallpaper.startswith('data:image/png;base64,'))
-            check(f'{language} wallpaper type is image', saved['settings']['customWallpaperType'] == 'image')
-
-            too_big_gif = b'GIF89a' + b'\x00' * (4 * 1024 * 1024 + 1)
-            page.locator('#wallpaper-file').set_input_files({
-                'name': 'oversize.gif', 'mimeType': 'image/gif', 'buffer': too_big_gif,
-            })
-            page.wait_for_timeout(500)
-            check(f'{language} oversized animation cannot overwrite wallpaper',
-                  json.loads(page.evaluate('localStorage.getItem("qiye.state.v5")'))['settings']['customWallpaper'] == wallpaper)
-            check(f'{language} no browser exceptions', not errors)
+            page.evaluate('holdDecode()')
+            page.locator('#wallpaper-file').set_input_files(upload('stale.png'))
+            page.wait_for_function('decodeEntered')
+            close()
+            page.evaluate('releaseDecode()')
+            page.wait_for_function('decodeReleased')
+            page.wait_for_timeout(300)
+            check('closing wallpaper window invalidates pending upload', not page.locator('#dialog').is_visible() and not saved()['settings']['customWallpaper'])
+            page.locator('.top-tools [data-action=wallpaper]').click()
+            page.evaluate('holdDecode()')
+            page.locator('#wallpaper-file').set_input_files(upload('slow.png'))
+            page.wait_for_function('decodeEntered')
+            page.locator('#wallpaper-file').set_input_files(upload('latest.png', width=32, height=24))
+            page.wait_for_function('!!JSON.parse(localStorage.getItem("qiye.state.v5")).settings.customWallpaper')
+            wallpaper = saved()['settings']['customWallpaper']
+            page.evaluate('releaseDecode()')
+            page.wait_for_function('decodeReleased')
+            page.wait_for_timeout(300)
+            check('late upload does not replace the newest wallpaper', saved()['settings']['customWallpaper'] == wallpaper)
+            close()
+            page.reload()
+            page.locator('[data-item=c3]').wait_for()
+            check('wallpaper and cards survive reload', saved()['settings']['customWallpaper'] == wallpaper and len(saved()['items']) == 5)
+            check('no uncaught browser exceptions', not errors)
             context.close()
     finally:
         browser.close()
         server.shutdown()
-
-print(f'Image compression browser checks: {check_count}', flush=True)
+print(f'{len(checks)} image compression browser checks passed.')
