@@ -1,6 +1,7 @@
 import { baseConverterEnglishMessages } from './base-converter-messages-en.js';
 // SPDX-License-Identifier: GPL-3.0-only
 import { converterEnglishMessages } from './converter-messages-en.js';
+import { fileConverterEnglishMessages } from './file-converter-messages-en.js';
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 import { mapEnglishMessages } from './map-messages-en.js';
 import { imageCompressorEnglishMessages } from './image-compressor-messages-en.js';
@@ -8,6 +9,7 @@ export const englishMessages = {
   ...imageCompressorEnglishMessages,
   ...baseConverterEnglishMessages,
   ...converterEnglishMessages,
+  ...fileConverterEnglishMessages,
   ...mapEnglishMessages,
   "编码工具": "Encoding tools",
   "Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道": "Base64, URL, Unicode, MD2 / MD4 / MD5 and SHA, plus Buddha, Beast and Bear codecs",

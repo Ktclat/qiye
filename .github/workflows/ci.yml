@@ -127,6 +127,8 @@ jobs:
             utilities)
               python3 tests/image-compressor-e2e.py
               python3 tests/image-compressor-e2e.py --preview
+              python3 tests/file-converter-e2e.py
+              python3 tests/file-converter-e2e.py --preview
               python3 tests/pomodoro-e2e.py
               python3 tests/pomodoro-e2e.py --preview
               python3 tests/converter-e2e.py
@@ -147,6 +149,7 @@ jobs:
           path: |
             test-results
             output/playwright/image-compressor
+            output/playwright/file-converter
             output/playwright/map
             output/playwright/bookmarks
             output/playwright/hotsearch

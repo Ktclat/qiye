@@ -125,12 +125,17 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/('organize-preview-dark.png' if args.preview else 'organize-dark.png')))
         page.evaluate('document.documentElement.dataset.theme="light"'); page.screenshot(path=str(OUT/('organize-preview-light.png' if args.preview else 'organize-light.png')))
         page.set_viewport_size({'width':390,'height':844})
+        # The app updates window sizing in its asynchronous resize handler.
+        page.wait_for_function('''()=>{const dialog=document.querySelector('#dialog'),header=document.querySelector('.bm-header');
+          return dialog.getBoundingClientRect().width<=innerWidth-24&&header.offsetHeight===44&&header.scrollWidth<=header.clientWidth;}''')
         check('narrow management toolbar remains one 44px row',page.locator('.bm-header').evaluate('n=>n.offsetHeight===44 && n.scrollWidth<=n.clientWidth'))
         for action in ['batch-move','batch-delete','manage']: expect(page.locator('[data-bm-action='+action+']')).to_be_in_viewport()
         page.screenshot(path=str(OUT/('organize-preview-narrow.png' if args.preview else 'organize-narrow.png')))
         page.keyboard.press('Control+f'); expect(page.locator('[data-bm-query]')).to_be_focused(); page.locator('[data-bm-query]').fill('Browser'); expect(page.locator('.bm-list')).to_contain_text('Browser guide')
         check('narrow management keeps keyboard search usable')
         page.keyboard.press('Escape'); page.set_viewport_size({'width':360,'height':780})
+        page.wait_for_function('''()=>{const dialog=document.querySelector('#dialog'),header=document.querySelector('.bm-header');
+          return dialog.getBoundingClientRect().width<=innerWidth-24&&header.scrollWidth<=header.clientWidth;}''')
         check('360px management does not overflow',page.locator('.bm-header').evaluate('n=>n.scrollWidth<=n.clientWidth'))
         check('no uncaught JavaScript errors',not errors)
     except Exception:

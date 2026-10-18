@@ -2932,6 +2932,131 @@ html[data-theme=light] .cv-status{color:#a54f36}.cv-footer{flex:none;display:fle
 </style>
   <style>
 /* SPDX-License-Identifier: GPL-3.0-only */
+/* Qiye file-converter launcher: all five tile sizes. */
+.w-extension[data-widget="file-converter"] { overflow:hidden; }
+.w-extension[data-widget="file-converter"] .fc-launch { flex:1;min-height:0;min-width:0;width:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;padding:6px;border:0;border-radius:inherit;background:transparent;color:var(--w-fg);cursor:pointer;overflow:hidden; }
+.w-extension[data-widget="file-converter"] .fc-launch:hover { background:var(--w-hover); }
+.w-extension[data-widget="file-converter"] .fc-launch:focus-visible { outline:2px solid var(--w-accent);outline-offset:-3px; }
+.w-extension[data-widget="file-converter"] .fc-launch-symbol { display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--w-field,#ffffff12);color:var(--w-accent);font-size:26px;line-height:1;flex:none; }
+.w-extension[data-widget="file-converter"] .fc-launch-info { display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;max-width:100%; }
+.w-extension[data-widget="file-converter"] .fc-launch-info strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;font-size:11px;font-weight:600; }
+.w-extension[data-widget="file-converter"] .fc-launch-info small { color:var(--w-muted);font-size:9px;white-space:nowrap; }
+.w-extension[data-widget="file-converter"] .fc-launch-formats { color:var(--w-muted);font-size:10px;letter-spacing:.03em;white-space:nowrap; }
+.w-extension[data-widget="file-converter"] .fc-launch-foot { display:flex;align-items:center;gap:7px;max-width:100%;color:var(--w-muted);font-size:9px;white-space:nowrap; }
+.w-extension[data-widget="file-converter"] .fc-launch-foot b { color:var(--w-accent);font-size:10px; }
+.w-extension[data-widget="file-converter"][data-display-size="1x1"] { padding:0; }
+.w-extension[data-widget="file-converter"][data-display-size="1x1"] .fc-launch { gap:2px;padding:4px; }
+.w-extension[data-widget="file-converter"][data-display-size="1x1"] .fc-launch-symbol { width:25px;height:25px;border-radius:8px;font-size:18px; }
+.w-extension[data-widget="file-converter"][data-display-size="1x1"] .fc-launch-info strong { font-size:9px; }
+.w-extension[data-widget="file-converter"][data-display-size="1x1"] .fc-launch-info small { display:none; }
+.w-extension[data-widget="file-converter"][data-display-size="1x2"] .fc-launch { gap:7px;padding:3px; }
+.w-extension[data-widget="file-converter"][data-display-size="1x2"] .fc-launch-symbol { width:29px;height:29px;font-size:20px; }
+.w-extension[data-widget="file-converter"][data-display-size="1x2"] .fc-launch-info small { white-space:normal;text-align:center;font-size:8px; }
+.w-extension[data-widget="file-converter"][data-display-size="2x1"] .fc-launch { flex-direction:row;gap:8px;padding:4px 6px; }
+.w-extension[data-widget="file-converter"][data-display-size="2x1"] .fc-launch-symbol { width:27px;height:27px;border-radius:8px;font-size:19px; }
+.w-extension[data-widget="file-converter"][data-display-size="2x1"] .fc-launch-info { align-items:start; }
+.w-extension[data-widget="file-converter"][data-display-size="2x1"] .fc-launch-info small { display:none; }
+.w-extension[data-widget="file-converter"][data-display-size="4x2"] .fc-launch { flex-direction:row;justify-content:space-evenly;gap:15px; }
+.w-extension[data-widget="file-converter"][data-display-size="4x2"] .fc-launch-symbol { width:47px;height:47px;border-radius:14px;font-size:31px; }
+.w-extension[data-widget="file-converter"][data-display-size="4x2"] .fc-launch-info { align-items:start; }
+.w-extension[data-widget="file-converter"][data-display-size="4x2"] .fc-launch-info strong { font-size:15px; }
+.w-extension[data-widget="file-converter"][data-display-size="4x2"] .fc-launch-formats { display:none; }
+.w-extension[data-widget="file-converter"][data-display-size="4x2"] .fc-launch-foot { font-size:10px; }
+
+#dialog.file-converter-app-dialog:not(.widget-app-expanded) { width:var(--window-width);height:var(--window-height);border-radius:18px; }
+.fc-app { --fc-accent:var(--app-blue); height:100%;display:flex;flex-direction:column;color:var(--app-fg);background:var(--app-bg);font-size:13px; }
+.fc-app [hidden] { display:none!important; }
+.fc-app .icon { width:16px;height:16px;flex:none; }
+.fc-app :is(button,input,select):focus:not(:focus-visible) { outline:none;box-shadow:none; }
+.fc-app :is(button,input,select,.fc-drop):focus-visible { outline:2px solid var(--fc-accent);outline-offset:2px; }
+.fc-app button:disabled { cursor:default;opacity:.45; }
+.fc-header { display:flex;align-items:center;justify-content:space-between;flex:none;height:46px;min-height:46px;padding:0 12px 0 18px;gap:12px;border-bottom:1px solid var(--app-border); }
+.fc-brand { display:flex;align-items:center;gap:8px;min-width:0; }
+.fc-brand>.icon { width:17px;height:17px;color:var(--fc-accent); }
+.fc-brand h2 { margin:0;max-width:240px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600; }
+.fc-brand h2:focus { outline:none; }
+.fc-tag { border:1px solid var(--app-border);border-radius:6px;padding:2px 6px;font-size:10px;color:var(--app-muted);white-space:nowrap; }
+.fc-header-actions,.fc-operations { display:flex;align-items:center;gap:8px; }
+.fc-content { flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;overflow:auto;padding:20px 24px 16px; }
+.fc-intro { display:flex;justify-content:space-between;align-items:center;gap:16px; }
+.fc-intro h3 { margin:0 0 4px;font-size:16px;font-weight:650; }
+.fc-intro p { margin:0;color:var(--app-muted);line-height:1.55;font-size:12px; }
+.fc-privacy { display:flex;align-items:center;gap:5px;color:var(--app-muted);font-size:11px;white-space:nowrap; }
+.fc-privacy .icon { color:var(--fc-accent);width:15px;height:15px; }
+.fc-drop { flex:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;min-height:186px;padding:15px;border:1px dashed var(--app-muted);border-radius:13px;background:var(--app-pane);text-align:center;cursor:pointer;transition:border-color .15s,background .15s; }
+.fc-drop:hover,.fc-drop.fc-drop-active { border-color:var(--fc-accent);background:var(--app-selection); }
+.fc-drop-symbol { display:grid;place-items:center;width:37px;height:37px;border-radius:11px;background:var(--app-field);color:var(--fc-accent); }
+.fc-drop-symbol .icon { width:19px;height:19px; }
+.fc-drop strong { font-size:13px;font-weight:600; }
+.fc-drop p,.fc-drop small { margin:0;color:var(--app-muted);font-size:11px; }
+.fc-has-files .fc-drop { min-height:0;flex-direction:row;flex-wrap:wrap;padding:10px;gap:10px; }
+.fc-has-files .fc-drop :is(.fc-drop-symbol,strong,p) { display:none; }
+.fc-app .fc-primary { display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;padding:8px 13px;border:1px solid transparent;background:var(--fc-accent);color:#fff;line-height:1.1;font-size:12px;font-weight:600;cursor:pointer; }
+.fc-app .fc-primary:not(:disabled):hover { filter:brightness(1.12);background:var(--fc-accent); }
+.fc-app .fc-secondary { display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--app-border);border-radius:8px;padding:8px 13px;background:var(--app-field);font-size:12px;cursor:pointer; }
+.fc-options { display:grid;grid-template-columns:150px 220px minmax(0,1fr);align-items:end;gap:14px; }
+.fc-field { display:flex;flex-direction:column;gap:6px;min-width:0;font-size:11px;color:var(--app-muted); }
+.fc-field select { width:100%;min-height:34px;background:var(--app-field);color:var(--app-fg);font-size:12px; }
+.fc-field input[type=range] { display:block;width:100%;padding:0;accent-color:var(--fc-accent);height:34px;background:transparent; }
+.fc-field output { color:var(--app-fg);font-variant-numeric:tabular-nums;margin-left:4px; }
+.fc-option-note { padding-bottom:8px;color:var(--app-muted);font-size:11px;line-height:1.5; }
+.fc-results { flex:1;min-height:110px;border:1px solid var(--app-border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden; }
+.fc-results-head { display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--app-border);font-size:12px; }
+.fc-results-head strong { font-weight:600; }
+.fc-results-head [data-fc-total] { color:var(--app-muted);font-size:11px; }
+.fc-empty { display:flex;flex:1;align-items:center;justify-content:center;gap:7px;color:var(--app-muted);font-size:12px; }
+.fc-empty .icon { width:16px;height:16px; }
+.fc-list { flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:0; }
+.fc-row { display:flex;align-items:center;gap:10px;min-height:57px;padding:7px 12px;border-bottom:1px solid var(--app-border); }
+.fc-row:last-child { border-bottom:0; }
+.fc-file-icon { display:grid;place-items:center;flex:none;width:42px;height:31px;border-radius:6px;background:var(--app-field);font-size:10px;font-weight:700;color:var(--app-muted); }
+.fc-file-info { display:flex;flex:1;min-width:0;flex-direction:column;gap:3px; }
+.fc-file-info strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:550; }
+.fc-file-info small { color:var(--app-muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.fc-state { flex:none;min-width:50px;text-align:center;color:var(--app-muted);font-size:11px; }
+.fc-state-done { color:var(--fc-accent); }
+.fc-state-error { color:#d77c7c; }
+.fc-file-actions { display:flex;flex:none;align-items:center;gap:4px; }
+.fc-file-actions button { display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 7px;border-radius:6px;border:0;background:transparent;font-size:11px;cursor:pointer; }
+.fc-file-actions button:hover { background:var(--app-selection); }
+.fc-file-actions .icon { width:14px;height:14px; }
+.fc-bottom { display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:1px; }
+.fc-progress { display:flex;flex:1;min-width:155px;flex-direction:column;gap:6px; }
+.fc-progress progress { width:100%;height:5px;accent-color:var(--fc-accent); }
+.fc-progress span { font-size:11px;color:var(--app-muted);line-height:1.3; }
+@container (max-width:690px) {
+ .fc-content { padding:14px;gap:12px; }
+ .fc-intro { align-items:start;flex-direction:column;gap:6px; }
+ .fc-drop { min-height:155px;padding:12px; }
+ .fc-options { grid-template-columns:1fr 1.35fr;gap:10px; }
+ .fc-option-note { grid-column:1 / -1;padding-bottom:0; }
+ .fc-bottom { align-items:stretch; }
+ .fc-operations { width:100%;justify-content:flex-end; }
+}
+@container (max-width:420px) {
+ .fc-brand h2 { max-width:150px; }
+ .fc-tag,.fc-privacy { display:none; }
+ .fc-options { grid-template-columns:1fr; }
+ .fc-option-note { grid-column:auto; }
+ .fc-file-icon { width:33px; }
+ .fc-state { min-width:30px; }
+ .fc-file-actions button span { display:none; }
+ .fc-bottom { gap:10px; }
+ .fc-operations { justify-content:space-between;gap:5px; }
+ .fc-operations button { padding:7px 8px;font-size:11px; }
+}
+@media (prefers-reduced-motion:reduce) { .fc-drop { transition:none; } }
+
+/* Keep the conversion actions reachable on short mobile windows. */
+@container (max-width:420px) {
+ .fc-content { gap:10px; padding:12px; }
+ .fc-drop { min-height:135px; }
+ .fc-bottom { position:sticky;bottom:-12px;margin:0 -12px -12px;padding:10px 12px 12px;background:var(--app-bg);border-top:1px solid var(--app-border);z-index:1; }
+}
+
+</style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
 .widget-inner.w-map{--w-bg:#e2eae1;--w-fg:#234a3f;position:relative;padding:0;overflow:hidden;isolation:isolate}
 html[data-theme=dark] .widget-inner.w-map{--w-bg:#223a33;--w-fg:#e2f1e5}
 .map-card-grid{position:absolute;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(110deg,transparent 48%,#91b8c65c 48%,#91b8c65c 64%,transparent 64%),repeating-linear-gradient(22deg,transparent 0 34px,#fff6 35px 38px,transparent 39px 74px)}
@@ -3317,6 +3442,71 @@ const converterEnglishMessages = {
 
 return {converterEnglishMessages};
 })();
+const __file_converter_messages_en = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Local file converter language additions; kept separate from the shared catalogue.
+const fileConverterEnglishMessages = {
+  '暂不支持动画图片转换，以免丢失动画帧': 'Animated images are unsupported to avoid losing animation frames',
+  '转换结果合计超过 120 MiB，请下载并移除部分结果后重试': 'Results exceed 120 MiB. Download and remove some results, then retry',
+  '文件转换': 'File converter',
+  'PNG、JPG、WebP 图片批量转换，纯本地处理': 'Convert PNG, JPG, and WebP images in batches, locally',
+  '打开文件转换': 'Open file converter',
+  '图片格式转换': 'Image conversion',
+  '本地处理 · 点击转换': 'On-device · open converter',
+  '默认目标格式': 'Default output format',
+  '默认输出画质': 'Default image quality',
+  '本地转换': 'Local conversion',
+  '清空文件': 'Clear files',
+  '选择图片、设定格式，即可在浏览器内转换；无需上传到服务器。': 'Choose images and an output format to convert them in your browser. No server upload.',
+  '文件仅在本机处理': 'Files never leave your device',
+  '选择或拖入图片文件': 'Select or drop image files',
+  '拖入文件到这里': 'Drop images here',
+  '或点击下方按钮添加图片': 'Or select files below',
+  '选择文件': 'Choose files',
+  '支持 PNG / JPG / WebP · 最多 20 个文件 · 单个 30 MB': 'PNG / JPG / WebP · up to 20 files · 30 MB each',
+  '转换为': 'Convert to',
+  '目标格式': 'Output format',
+  '输出画质': 'Quality',
+  'JPG 会将透明区域填充为白色；PNG 不使用画质滑块。': 'JPG replaces transparency with white; quality does not apply to PNG.',
+  '待转换文件列表': 'Image conversion queue',
+  '文件列表': 'Files',
+  '尚未添加文件': 'No files yet',
+  '添加文件后将在这里展示转换任务': 'Added files will appear here',
+  '准备就绪 · 不上传文件': 'Ready · files stay on your device',
+  '取消转换': 'Cancel',
+  '下载全部': 'Download all',
+  '开始转换': 'Convert',
+  '已完成': 'completed',
+  '转换中…': 'Converting…',
+  '完成': 'Done',
+  '失败': 'Failed',
+  '待处理': 'Pending',
+  '下载结果': 'Download result',
+  '下载': 'Download',
+  '移除文件': 'Remove file',
+  '已添加 {added} 个文件，跳过 {rejected} 个无效或超限文件。': 'Added {added} files; skipped {rejected} invalid or oversized files.',
+  '已添加 {count} 个文件。': 'Added {count} files.',
+  '操作失败': 'Operation failed',
+  '转换设置已更新，点击开始转换。': 'Options updated. Click Convert to continue.',
+  '正在本地转换文件…': 'Converting locally…',
+  '转换失败': 'Conversion failed',
+  '已取消，尚未完成的文件可重新转换。': 'Canceled. Remaining files can be retried.',
+  '本轮转换结束，可逐个或批量下载。': 'Finished. Download each file or all results.',
+  '文件已清空。': 'Files cleared.',
+  '已请求批量下载；浏览器可能要求允许下载多个文件。': 'Multiple downloads requested. Your browser may ask for permission.',
+  '不支持的输出格式': 'Unsupported output format',
+  '画质必须为 50–100': 'Quality must be between 50 and 100',
+  '单个文件必须大于 0 且不超过 30 MB': 'Each file must be larger than 0 and no more than 30 MB',
+  '已取消转换': 'Conversion canceled',
+  '仅支持有效的 PNG / JPG / WebP 文件': 'Only valid PNG, JPG, and WebP files are supported',
+  '图片像素超出限制（最多 2400 万）': 'Image exceeds the 24-million-pixel limit',
+  '无法初始化图片编码器': 'Could not initialize the image encoder',
+  '图片编码失败': 'Image encoding failed',
+  '当前浏览器不支持所选输出格式': 'Your browser cannot export this format',
+};
+
+return {fileConverterEnglishMessages};
+})();
 const __map_messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const mapEnglishMessages = {
@@ -3462,6 +3652,7 @@ const __messages_en = (() => {
 const { baseConverterEnglishMessages } = __base_converter_messages_en;
 // SPDX-License-Identifier: GPL-3.0-only
 const { converterEnglishMessages } = __converter_messages_en;
+const { fileConverterEnglishMessages } = __file_converter_messages_en;
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const { mapEnglishMessages } = __map_messages_en;
 const { imageCompressorEnglishMessages } = __image_compressor_messages_en;
@@ -3469,6 +3660,7 @@ const englishMessages = {
   ...imageCompressorEnglishMessages,
   ...baseConverterEnglishMessages,
   ...converterEnglishMessages,
+  ...fileConverterEnglishMessages,
   ...mapEnglishMessages,
   "编码工具": "Encoding tools",
   "Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道": "Base64, URL, Unicode, MD2 / MD4 / MD5 and SHA, plus Buddha, Beast and Bear codecs",
@@ -6364,6 +6556,720 @@ function bindConverterWorkspace(root, item, host) {
 
 return {converterCard, converterWorkspace, bindConverterWorkspace};
 })();
+const __image_compression = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Shared, offline image compressor. Temporary blobs never enter desktop state.
+const MAX_IMAGE_INPUT_BYTES = 32 * 1024 * 1024;
+const MAX_IMAGE_PIXELS = 24_000_000;
+const MAX_PNG_RAW_BYTES = 128 * 1024 * 1024;
+const PNG_SIGNATURE = [137,80,78,71,13,10,26,10];
+
+function cancelled(signal) {
+  if (signal?.aborted) throw new DOMException('Image compression cancelled', 'AbortError');
+}
+function pngNumber(bytes, offset) {
+  return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(offset);
+}
+function writeNumber(bytes, offset, value) {
+  new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setUint32(offset, value);
+}
+function crc32(bytes) {
+  let crc = -1;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let i = 0; i < 8; i++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+  }
+  return (crc ^ -1) >>> 0;
+}
+function pngChunk(type, data) {
+  const chunk = new Uint8Array(12 + data.length);
+  writeNumber(chunk, 0, data.length);
+  for (let i = 0; i < 4; i++) chunk[4 + i] = type.charCodeAt(i);
+  chunk.set(data, 8);
+  writeNumber(chunk, chunk.length - 4, crc32(chunk.subarray(4, chunk.length - 4)));
+  return chunk;
+}
+function joinBytes(parts, total) {
+  const joined = new Uint8Array(total);
+  let offset = 0;
+  for (const part of parts) { joined.set(part, offset); offset += part.length; }
+  return joined;
+}
+function parsePng(bytes) {
+  if (bytes.length < 45 || !PNG_SIGNATURE.every((v, i) => bytes[i] === v)) throw new Error('PNG 文件签名无效');
+  const chunks = [];
+  let offset = 8, sawIHDR = false, sawIDAT = false, sawIEND = false, animated = false;
+  let width = 0, height = 0;
+  while (offset < bytes.length) {
+    if (offset + 12 > bytes.length) throw new Error('PNG 数据不完整');
+    const length = pngNumber(bytes, offset), end = offset + 12 + length;
+    if (length > bytes.length - offset - 12 || end > bytes.length) throw new Error('PNG 块越界');
+    const type = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
+    if (!/^[A-Za-z]{4}$/.test(type)) throw new Error('PNG 块类型无效');
+    if (!sawIHDR) {
+      if (type !== 'IHDR' || length !== 13) throw new Error('PNG 缺少有效 IHDR');
+      width = pngNumber(bytes, offset + 8);
+      height = pngNumber(bytes, offset + 12);
+      if (!width || !height || width * height > MAX_IMAGE_PIXELS) throw new Error('图片像素数量超出安全限制');
+      sawIHDR = true;
+    } else if (type === 'IHDR') throw new Error('PNG IHDR 重复');
+    if (type === 'acTL' || type === 'fcTL' || type === 'fdAT') animated = true;
+    if (type === 'IDAT') sawIDAT = true;
+    chunks.push({type, start: offset, end, data: bytes.subarray(offset + 8, end - 4)});
+    offset = end;
+    if (type === 'IEND') {
+      if (length || offset !== bytes.length) throw new Error('PNG 结束块无效');
+      sawIEND = true;
+      break;
+    }
+  }
+  if (!sawIDAT || !sawIEND) throw new Error('PNG 缺少图像数据或结束块');
+  return {chunks, animated, width, height};
+}
+function webpAnimated(bytes) {
+  if (bytes.length < 20) return false;
+  let offset = 12;
+  while (offset + 8 <= bytes.length) {
+    const type = String.fromCharCode(...bytes.subarray(offset, offset + 4));
+    const view = new DataView(bytes.buffer, bytes.byteOffset + offset + 4, 4);
+    const size = view.getUint32(0, true), data = offset + 8;
+    if (data + size > bytes.length) throw new Error('WebP 块越界');
+    if (type === 'ANIM' || type === 'ANMF') return true;
+    if (type === 'VP8X' && size >= 1 && (bytes[data] & 2)) return true;
+    offset = data + size + (size % 2);
+  }
+  return false;
+}
+function identify(bytes, declared) {
+  if (PNG_SIGNATURE.every((v, i) => bytes[i] === v)) return 'image/png';
+  if (bytes.length > 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return 'image/jpeg';
+  if (bytes.length >= 12 && String.fromCharCode(...bytes.subarray(0, 4)) === 'RIFF' &&
+      String.fromCharCode(...bytes.subarray(8, 12)) === 'WEBP') return 'image/webp';
+  throw new Error('仅支持静态 PNG、JPEG 和 WebP 图片');
+}
+async function inspectImage(file, {signal} = {}) {
+  if (!(file instanceof Blob) || !file.size || file.size > MAX_IMAGE_INPUT_BYTES)
+    throw new Error('图片须为不超过 32 MiB 的有效文件');
+  cancelled(signal);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  cancelled(signal);
+  const type = identify(bytes);
+  if (file.type && file.type !== type) throw new Error('图片声明格式与实际格式不一致');
+  let png;
+  if (type === 'image/png') {
+    png = parsePng(bytes);
+    if (png.animated) throw new Error('APNG 动画暂不支持压缩，以免丢失动画帧');
+  } else if (type === 'image/webp' && webpAnimated(bytes))
+    throw new Error('动画 WebP 暂不支持压缩，以免丢失动画帧');
+  if (type !== 'image/png') {
+    const {width, height} = rasterDimensions(bytes, type);
+    if (!width || !height || width * height > MAX_IMAGE_PIXELS)
+      throw new Error('图片像素数量超出安全限制');
+  }
+  return {type, bytes, png};
+}
+// Inspect dimensions before asking the browser to allocate decoded pixel memory.
+function rasterDimensions(bytes, type) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (type === 'image/jpeg') {
+    for (let at = 2; at < bytes.length;) {
+      if (bytes[at++] !== 255) break;
+      while (bytes[at] === 255) at++;
+      const marker = bytes[at++];
+      if (marker === 0xda || marker === 0xd9) break;
+      if (marker === 1 || (marker >= 0xd0 && marker <= 0xd8)) continue;
+      if (at + 2 > bytes.length) break;
+      const length = view.getUint16(at);
+      if (length < 2 || at + length > bytes.length) break;
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4,0xc8,0xcc].includes(marker)) {
+        if (length < 8) break;
+        return {width:view.getUint16(at + 5), height:view.getUint16(at + 3)};
+      }
+      at += length;
+    }
+  } else if (bytes.length >= 20 && view.getUint32(4, true) === bytes.length - 8) {
+    const uint24 = at => bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16);
+    for (let at = 12; at + 8 <= bytes.length;) {
+      const name = String.fromCharCode(...bytes.subarray(at, at + 4));
+      const size = view.getUint32(at + 4, true), start = at + 8;
+      if (start + size > bytes.length) break;
+      if (name === 'VP8X' && size === 10)
+        return {width:1 + uint24(start + 4), height:1 + uint24(start + 7)};
+      if (name === 'VP8 ' && size >= 10 && bytes[start + 3] === 0x9d && bytes[start + 4] === 1 && bytes[start + 5] === 0x2a)
+        return {width:view.getUint16(start + 6, true) & 0x3fff, height:view.getUint16(start + 8, true) & 0x3fff};
+      if (name === 'VP8L' && size >= 5 && bytes[start] === 0x2f) {
+        const bits = view.getUint32(start + 1, true);
+        return {width:1 + (bits & 0x3fff), height:1 + ((bits >>> 14) & 0x3fff)};
+      }
+      at = start + size + size % 2;
+    }
+  }
+  throw new Error('图片尺寸信息无效');
+}
+async function readBounded(stream, limit, signal) {
+  const reader = stream.getReader();
+  let size = 0;
+  const parts = [];
+  try {
+    for (;;) {
+      cancelled(signal);
+      const {done, value} = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > limit) throw new Error('PNG 解压数据超过安全限制');
+      parts.push(value);
+    }
+  } catch (error) {
+    await reader.cancel().catch(() => {});
+    throw error;
+  } finally { reader.releaseLock(); }
+  return joinBytes(parts, size);
+}
+async function recompressPngIdat(chunks, width, height, signal) {
+  if (!globalThis.DecompressionStream || !globalThis.CompressionStream) return null;
+  const parts = chunks.filter(c => c.type === 'IDAT').map(c => c.data);
+  const total = parts.reduce((n, p) => n + p.length, 0);
+  if (total > 16 * 1024 * 1024) return null;
+  const compressed = joinBytes(parts, total);
+  const maxRaw = Math.min(MAX_PNG_RAW_BYTES, width * height * 9 + height * 2 + 65536);
+  const raw = await readBounded(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate')), maxRaw, signal);
+  cancelled(signal);
+  const encoded = await readBounded(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate')), total + 1024 * 1024, signal);
+  return encoded.length < compressed.length ? encoded : null;
+}
+/**
+ * Lossless PNG: preserves every PNG image/color chunk, optionally recompresses
+ * DEFLATE scanlines and removes only textual/time metadata. Never rasterizes pixels.
+ */
+async function optimizePngLossless(file, inspected, {signal} = {}) {
+  const {bytes, png} = inspected || await inspectImage(file, {signal});
+  if (!png) throw new Error('真正无损优化目前仅支持 PNG');
+  cancelled(signal);
+  let recompressed = null;
+  try {
+    recompressed = await recompressPngIdat(png.chunks, png.width, png.height, signal);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    // Encoders may reject some legal PNG variations. Retain the original IDAT.
+  }
+  const parts = [bytes.subarray(0, 8)];
+  let emitted = false;
+  for (const chunk of png.chunks) {
+    cancelled(signal);
+    // Text annotations and timestamps do not participate in image decoding.
+    if (['tEXt','zTXt','iTXt','tIME'].includes(chunk.type)) continue;
+    if (chunk.type === 'IDAT' && recompressed) {
+      if (!emitted) { parts.push(pngChunk('IDAT', recompressed)); emitted = true; }
+      continue;
+    }
+    parts.push(bytes.subarray(chunk.start, chunk.end));
+  }
+  const total = parts.reduce((n, p) => n + p.length, 0);
+  // The standard PNG signature, IDATs and all required image metadata survive.
+  if (total >= bytes.length) return file;
+  // An unchanged IDAT stream is also truly pixel-lossless.
+  const result = new Blob([joinBytes(parts, total)], {type:'image/png'});
+  return result.size < file.size ? result : file;
+}
+function canvasBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
+    if (!canvas.toBlob) { reject(new Error('当前浏览器不支持图片编码')); return; }
+    canvas.toBlob(blob => blob && blob.type === type ? resolve(blob)
+      : reject(new Error('当前浏览器不支持所选编码格式')), type, quality);
+  });
+}
+function result(file, blob, type, method) {
+  return {blob, type, method, originalBytes:file.size, outputBytes:blob.size,
+    savedBytes:Math.max(0, file.size - blob.size), changed:blob !== file};
+}
+async function compressImage(file, options = {}) {
+  const {mode = 'smart', quality = 0.9, format = 'webp', maxBytes = Infinity, signal} = options;
+  if (!['smart','high','compact','lossless'].includes(mode) ||
+      !['webp','jpeg'].includes(format) || !Number.isFinite(quality) ||
+      quality < 0.6 || quality > 1 || !(maxBytes > 0))
+    throw new Error('图片压缩选项无效');
+  const inspected = await inspectImage(file, {signal});
+  const initial = result(file, file, inspected.type, 'original');
+  if (mode === 'lossless') {
+    const blob = await optimizePngLossless(file, inspected, {signal});
+    if (blob.size > maxBytes) throw new Error('无损优化后仍超出文件大小上限，请切换高画质模式');
+    return result(file, blob, 'image/png', blob === file ? 'original' : 'png-lossless');
+  }
+  if (format === 'jpeg' && inspected.type !== 'image/jpeg')
+    throw new Error('为避免透明度丢失，JPEG 输出目前仅接受 JPEG 原图');
+  cancelled(signal);
+  if (!globalThis.createImageBitmap || !globalThis.document)
+    throw new Error('当前环境缺少图片解码或 Canvas 支持');
+  const bitmap = await createImageBitmap(file, {imageOrientation:'from-image'});
+  let canvas;
+  try {
+    cancelled(signal);
+    if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > MAX_IMAGE_PIXELS)
+      throw new Error('图片像素数量超出安全限制');
+    canvas = document.createElement('canvas');
+    canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d', {alpha:true});
+    if (!ctx) throw new Error('无法初始化图片画布');
+    ctx.drawImage(bitmap, 0, 0);
+    const targetType = format === 'jpeg' ? 'image/jpeg' : 'image/webp';
+    const startingQuality = mode === 'compact' ? Math.min(quality, 0.78) : quality;
+    let best = initial;
+    const qualitySteps = mode === 'smart'
+      ? [startingQuality, 0.84, 0.76, 0.68, 0.62]
+      : [startingQuality];
+    for (const q of [...new Set(qualitySteps)]) {
+      cancelled(signal);
+      const blob = await canvasBlob(canvas, targetType, q);
+      cancelled(signal);
+      if (blob.size < best.outputBytes) best = result(file, blob, targetType, 'lossy');
+      if (best.changed && best.outputBytes <= maxBytes && mode === 'smart') break;
+    }
+    if (best.outputBytes > maxBytes) throw new Error('高画质压缩后仍超出 4 MiB 限制；请使用图片压缩工具手动调整');
+    return best;
+  } finally {
+    bitmap.close?.();
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
+  }
+}
+function downloadName(name, type) {
+  const safe = String(name || 'image').replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_').replace(/\.(png|jpe?g|webp)$/i, '').slice(0, 90) || 'image';
+  return safe + (type === 'image/png' ? '.png' : type === 'image/jpeg' ? '.jpg' : '.webp');
+}
+function zipPart(length) { return new Uint8Array(length); }
+function zip16(view, at, n) { view.setUint16(at, n, true); }
+function zip32(view, at, n) { view.setUint32(at, n, true); }
+/** Standards-compliant STORE ZIP of already-compressed images; no dependencies. */
+async function createImageZip(entries, {signal} = {}) {
+  if (!Array.isArray(entries) || !entries.length || entries.length > 10)
+    throw new Error('批量下载支持 1–10 张图片');
+  const encoder = new TextEncoder(), local = [], central = [];
+  let offset = 0, size = 0;
+  for (let i = 0; i < entries.length; i++) {
+    cancelled(signal);
+    const entry = entries[i];
+    if (!(entry.blob instanceof Blob)) throw new Error('ZIP 输入不是图片文件');
+    const name = encoder.encode(String(i + 1).padStart(2, '0') + '-' + downloadName(entry.name, entry.blob.type));
+    const data = new Uint8Array(await entry.blob.arrayBuffer());
+    size += data.length;
+    if (size > 100 * 1024 * 1024) throw new Error('ZIP 总容量不能超过 100 MiB');
+    const crc = crc32(data);
+    const head = zipPart(30 + name.length), hv = new DataView(head.buffer);
+    zip32(hv, 0, 0x04034b50); zip16(hv, 4, 20); zip16(hv, 6, 0x0800);
+    zip16(hv, 12, 33); // Deterministic valid DOS date: 1980-01-01.
+    zip16(hv, 8, 0); zip32(hv, 14, crc); zip32(hv, 18, data.length);
+    zip32(hv, 22, data.length); zip16(hv, 26, name.length); head.set(name, 30);
+    const cent = zipPart(46 + name.length), cv = new DataView(cent.buffer);
+    zip32(cv, 0, 0x02014b50); zip16(cv, 4, 20); zip16(cv, 6, 20);
+    zip16(cv, 14, 33);
+    zip16(cv, 8, 0x0800); zip16(cv, 10, 0); zip32(cv, 16, crc);
+    zip32(cv, 20, data.length); zip32(cv, 24, data.length);
+    zip16(cv, 28, name.length); zip32(cv, 42, offset); cent.set(name, 46);
+    local.push(head, data); central.push(cent);
+    offset += head.length + data.length;
+  }
+  const centralSize = central.reduce((n, c) => n + c.length, 0);
+  const end = zipPart(22), ev = new DataView(end.buffer);
+  zip32(ev, 0, 0x06054b50);
+  zip16(ev, 8, entries.length); zip16(ev, 10, entries.length);
+  zip32(ev, 12, centralSize); zip32(ev, 16, offset);
+  return new Blob([...local, ...central, end], {type:'application/zip'});
+}
+
+return {MAX_IMAGE_INPUT_BYTES, MAX_IMAGE_PIXELS, inspectImage, optimizePngLossless, compressImage, downloadName, createImageZip};
+})();
+const __file_converter = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Local-only image conversion engine. No file bytes leave the browser.
+const { inspectImage, MAX_IMAGE_PIXELS } = __image_compression;
+const FILE_CONVERTER_FORMATS = Object.freeze({
+  png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp',
+});
+const FILE_CONVERTER_MAX_FILES = 20;
+const FILE_CONVERTER_MAX_BYTES = 30 * 1024 * 1024;
+const FILE_CONVERTER_MAX_TOTAL_BYTES = 120 * 1024 * 1024;
+const FILE_CONVERTER_MAX_PIXELS = MAX_IMAGE_PIXELS;
+
+async function detectImageFormat(file) {
+  if (!file || typeof file.slice !== 'function') return null;
+  const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (bytes.length >= 8 && [137,80,78,71,13,10,26,10].every((b,i) => bytes[i] === b)) return 'png';
+  if (bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return 'jpeg';
+  if (bytes.length >= 12 && [82,73,70,70].every((b,i) => bytes[i] === b)
+    && [87,69,66,80].every((b,i) => bytes[i + 8] === b)) return 'webp';
+  return null;
+}
+
+function outputFilename(filename, format, existing = []) {
+  if (!Object.hasOwn(FILE_CONVERTER_FORMATS, format)) throw new Error('不支持的输出格式');
+  const last = String(filename).split(/[\\/]/).pop() || '';
+  const stem = last.replace(/\.[^.]+$/, '').replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '_').trim().replace(/[. ]+$/, '').slice(0, 90) || 'converted';
+  const extension = format === 'jpeg' ? 'jpg' : format;
+  const used = new Set(existing.map(name => name.toLowerCase()));
+  let candidate = `${stem}.${extension}`;
+  for (let suffix = 2; used.has(candidate.toLowerCase()); suffix++) candidate = `${stem} (${suffix}).${extension}`;
+  return candidate;
+}
+
+function readableBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function convertImageFile(file, { format = 'webp', quality = 90, signal } = {}) {
+  if (!Object.hasOwn(FILE_CONVERTER_FORMATS, format)) throw new Error('不支持的输出格式');
+  if (!Number.isInteger(quality) || quality < 50 || quality > 100) throw new Error('画质必须为 50–100');
+  if (!file || !Number.isFinite(file.size) || file.size <= 0 || file.size > FILE_CONVERTER_MAX_BYTES) {
+    throw new Error('单个文件必须大于 0 且不超过 30 MB');
+  }
+  if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
+  const inputFormat = await detectImageFormat(file);
+  if (!inputFormat) throw new Error('仅支持有效的 PNG / JPG / WebP 文件');
+  // Reuse the bounded container/animation/dimension checks. Detect the real
+  // format even if the platform supplied an empty or incorrect MIME type.
+  const source = file.slice(0, file.size, FILE_CONVERTER_FORMATS[inputFormat]);
+  try { await inspectImage(source, {signal}); }
+  catch (error) {
+    if (/动画/.test(error.message)) throw new Error('暂不支持动画图片转换，以免丢失动画帧');
+    throw error;
+  }
+  if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
+
+  let bitmap;
+  let canvas;
+  try {
+    bitmap = await createImageBitmap(source, { imageOrientation: 'from-image' });
+    if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
+    if (!Number.isSafeInteger(bitmap.width) || !Number.isSafeInteger(bitmap.height)
+      || bitmap.width < 1 || bitmap.height < 1
+      || bitmap.width * bitmap.height > FILE_CONVERTER_MAX_PIXELS) {
+      throw new Error('图片像素超出限制（最多 2400 万）');
+    }
+    canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('无法初始化图片编码器');
+    if (format === 'jpeg') {
+      // JPEG cannot store an alpha channel; avoid rendering transparency as black.
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, bitmap.width, bitmap.height);
+    }
+    context.drawImage(bitmap, 0, 0);
+    const requestedType = FILE_CONVERTER_FORMATS[format];
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(value => value ? resolve(value) : reject(new Error('图片编码失败')),
+        requestedType, quality / 100);
+    });
+    if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
+    // Canvas silently falls back to PNG for an unsupported output encoder.
+    if (blob.type !== requestedType || !blob.size) throw new Error('当前浏览器不支持所选输出格式');
+    return { blob, width: bitmap.width, height: bitmap.height, inputFormat };
+  } finally {
+    bitmap?.close();
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
+  }
+}
+
+return {FILE_CONVERTER_FORMATS, FILE_CONVERTER_MAX_FILES, FILE_CONVERTER_MAX_BYTES, FILE_CONVERTER_MAX_TOTAL_BYTES, FILE_CONVERTER_MAX_PIXELS, detectImageFormat, outputFilename, readableBytes, convertImageFile};
+})();
+const __file_converter_workspace = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { windowControls } = __widget_app_controls;
+const {
+  FILE_CONVERTER_MAX_FILES, FILE_CONVERTER_MAX_BYTES, FILE_CONVERTER_MAX_TOTAL_BYTES,
+  detectImageFormat, convertImageFile, outputFilename, readableBytes,
+} = __file_converter;
+const INPUT_ACCEPT = '.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp';
+const labelForFormat = format => format === 'jpeg' ? 'JPG' : format.toUpperCase();
+const formatOptions = selected => ['png','jpeg','webp'].map(format =>
+  `<option value="${format}"${selected === format ? ' selected' : ''}>${labelForFormat(format)}</option>`).join('');
+
+function fileConverterWorkspace(item) {
+  const format = item.config.outputFormat;
+  const quality = item.config.quality;
+  return `<div class="fc-app">
+    <header class="fc-header">
+      <div class="fc-brand">${icon('converter')}<h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2><span class="fc-tag">${t('本地转换')}</span></div>
+      <div class="fc-header-actions"><button type="button" class="widget-app-button" data-fc-action="clear" title="${t('清空文件')}" aria-label="${t('清空文件')}">${icon('trash')}</button>${windowControls()}</div>
+    </header>
+    <div class="fc-content">
+      <section class="fc-intro"><div><h3>${t('图片格式转换')}</h3><p>${t('选择图片、设定格式，即可在浏览器内转换；无需上传到服务器。')}</p></div><span class="fc-privacy">${icon('shield')} ${t('文件仅在本机处理')}</span></section>
+      <section class="fc-drop" data-fc-drop tabindex="0" aria-label="${t('选择或拖入图片文件')}">
+        <div class="fc-drop-symbol">${icon('upload')}</div>
+        <strong>${t('拖入文件到这里')}</strong>
+        <p>${t('或点击下方按钮添加图片')}</p>
+        <button type="button" class="fc-primary" data-fc-action="pick">${icon('plus')}${t('选择文件')}</button>
+        <input type="file" data-fc-input accept="${INPUT_ACCEPT}" multiple hidden>
+        <small>${t('支持 PNG / JPG / WebP · 最多 20 个文件 · 单个 30 MB')}</small>
+      </section>
+      <div class="fc-options">
+        <label class="fc-field"><span>${t('转换为')}</span><select data-fc-format aria-label="${t('目标格式')}">${formatOptions(format)}</select></label>
+        <label class="fc-field fc-quality"><span>${t('输出画质')} <output data-fc-quality-label>${quality}%</output></span><input data-fc-quality type="range" min="50" max="100" step="1" value="${quality}" aria-label="${t('输出画质')}"></label>
+        <div class="fc-option-note">${t('JPG 会将透明区域填充为白色；PNG 不使用画质滑块。')}</div>
+      </div>
+      <section class="fc-results" aria-label="${t('待转换文件列表')}">
+        <div class="fc-results-head"><strong>${t('文件列表')} <span data-fc-count>0</span></strong><span data-fc-total>${t('尚未添加文件')}</span></div>
+        <div class="fc-empty" data-fc-empty>${icon('image')}<span>${t('添加文件后将在这里展示转换任务')}</span></div>
+        <ol class="fc-list" data-fc-list aria-live="polite" hidden></ol>
+      </section>
+      <div class="fc-bottom"><div class="fc-progress"><progress data-fc-progress max="1" value="0"></progress><span data-fc-status role="status" aria-live="polite">${t('准备就绪 · 不上传文件')}</span></div>
+        <div class="fc-operations"><button type="button" data-fc-action="cancel" class="fc-secondary" hidden>${t('取消转换')}</button><button type="button" data-fc-action="download-all" class="fc-secondary" disabled>${icon('download')}${t('下载全部')}</button><button type="button" data-fc-action="run" class="fc-primary" disabled>${icon('converter')}${t('开始转换')}</button></div></div>
+    </div>
+  </div>`;
+}
+
+function bindFileConverterWorkspace(root, item, host) {
+  const controller = new AbortController();
+  const events = { signal:controller.signal };
+  const q = selector => root.querySelector(selector);
+  const input = q('[data-fc-input]');
+  const select = q('[data-fc-format]');
+  const quality = q('[data-fc-quality]');
+  const drop = q('[data-fc-drop]');
+  const list = q('[data-fc-list]');
+  const status = q('[data-fc-status]');
+  let entries = [], serial = 0, busy = false, accepting = false, closed = false;
+  let conversion = null;
+  let saving = Promise.resolve(), optionsRevision = 0;
+  const revoke = entry => {
+    if (entry.url) URL.revokeObjectURL(entry.url);
+    entry.url = null;
+    entry.blob = null;
+    entry.outputName = null;
+  };
+  const live = () => !closed && root.isConnected;
+  const setStatus = message => { if (live()) status.textContent = message; };
+  const failed = error => setStatus(t(error?.message || '操作失败'));
+  const optionSnapshot = () => ({ format:select.value, quality:Number(quality.value) });
+
+  function refresh(message) {
+    if (!live()) return;
+    const count = entries.length;
+    const done = entries.filter(entry => entry.state === 'done').length;
+    const processed = entries.filter(entry => entry.state === 'done' || entry.state === 'error').length;
+    const ready = entries.some(entry => entry.state !== 'done');
+    q('[data-fc-count]').textContent = String(count);
+    q('[data-fc-total]').textContent = count ? `${done} / ${count} ${t('已完成')}` : t('尚未添加文件');
+    q('[data-fc-empty]').hidden = count > 0;
+    list.hidden = count === 0;
+    q('[data-fc-progress]').max = count || 1;
+    q('[data-fc-progress]').value = processed;
+    select.disabled = busy;
+    quality.disabled = busy || select.value === 'png';
+    q('[data-fc-quality-label]').textContent = `${quality.value}%`;
+    q('[data-fc-action="pick"]').disabled = busy || accepting;
+    input.disabled = busy || accepting;
+    q('[data-fc-action="run"]').disabled = busy || accepting || !ready;
+    q('[data-fc-action="download-all"]').disabled = busy || !done;
+    q('[data-fc-action="cancel"]').hidden = !busy;
+    q('[data-fc-action="clear"]').disabled = busy || accepting;
+    drop.setAttribute('aria-busy', String(busy || accepting));
+    root.classList.toggle('fc-has-files', count > 0);
+    list.innerHTML = entries.map(entry => {
+      const tag = entry.state === 'done' ? t('完成') : entry.state === 'running' ? t('转换中…') : entry.state === 'error' ? t('失败') : t('待处理');
+      const description = entry.state === 'done'
+        ? `${entry.width} × ${entry.height} · ${readableBytes(entry.blob.size)}`
+        : entry.state === 'error' ? entry.error : readableBytes(entry.file.size);
+      return `<li class="fc-row" data-fc-id="${entry.id}">
+        <span class="fc-file-icon">${labelForFormat(entry.inputFormat)}</span>
+        <span class="fc-file-info"><strong title="${e(entry.file.name)}">${e(entry.file.name)}</strong><small>${e(description)}</small></span>
+        <span class="fc-state fc-state-${entry.state}" aria-label="${e(tag)}">${e(tag)}</span>
+        <span class="fc-file-actions">${entry.state === 'done' ? `<button type="button" data-fc-action="download" data-fc-id="${entry.id}" title="${t('下载结果')}">${icon('download')}<span>${t('下载')}</span></button>` : ''}
+        <button type="button" data-fc-action="remove" data-fc-id="${entry.id}" title="${t('移除文件')}" aria-label="${t('移除文件')}"${busy || accepting ? ' disabled' : ''}>${icon('close')}</button></span>
+      </li>`;
+    }).join('');
+    if (message) setStatus(message);
+  }
+
+  async function addFiles(files) {
+    if (busy || accepting || closed) return;
+    accepting = true;
+    refresh();
+    let added = 0, rejected = 0;
+    let size = entries.reduce((sum, entry) => sum + entry.file.size, 0);
+    try {
+      for (const file of Array.from(files)) {
+        if (closed) return;
+        if (entries.length >= FILE_CONVERTER_MAX_FILES || !file.size
+          || file.size > FILE_CONVERTER_MAX_BYTES || size + file.size > FILE_CONVERTER_MAX_TOTAL_BYTES) { rejected++; continue; }
+        let detected;
+        try { detected = await detectImageFormat(file); } catch { detected = null; }
+        if (closed) return;
+        if (!detected) { rejected++; continue; }
+        entries.push({ id:++serial, file, inputFormat:detected, state:'queued', blob:null, url:null, outputName:null, error:'' });
+        size += file.size;
+        added++;
+      }
+    } finally {
+      accepting = false;
+      refresh(rejected ? t('已添加 {added} 个文件，跳过 {rejected} 个无效或超限文件。',{added,rejected})
+        : t('已添加 {count} 个文件。',{count:added}));
+    }
+  }
+
+  function clearResults() {
+    for (const entry of entries) {
+      revoke(entry);
+      entry.state = 'queued';
+      entry.error = '';
+    }
+  }
+
+  function saveOptions() {
+    const revision = ++optionsRevision;
+    const {format,quality:value} = optionSnapshot();
+    saving = saving.catch(()=>{}).then(async () => {
+      const current = host.getState().items.find(row => row.id === item.id);
+      if (!current) return;
+      if (current.config.outputFormat === format && current.config.quality === value) return;
+      await host.saveSettings(item.id, {
+        title:current.title, config:{ ...current.config, outputFormat:format, quality:value },
+      }, JSON.stringify([current.title,current.config]));
+    }).catch(error => {
+      if (live() && revision === optionsRevision) {
+        const current = host.getState().items.find(row => row.id === item.id);
+        if (current) { select.value = current.config.outputFormat; quality.value = current.config.quality; }
+        clearResults(); refresh(); failed(error);
+      }
+    });
+  }
+
+  async function start() {
+    if (busy || accepting || !entries.some(entry => entry.state !== 'done')) return;
+    busy = true;
+    conversion = new AbortController();
+    const signal = conversion.signal;
+    const {format,quality:value} = optionSnapshot();
+    refresh(t('正在本地转换文件…'));
+    try {
+      for (const entry of entries) {
+        if (signal.aborted || closed) break;
+        if (entry.state === 'done') continue;
+        entry.state = 'running';
+        entry.error = '';
+        refresh();
+        try {
+          const {blob,width,height} = await convertImageFile(entry.file,{format,quality:value,signal});
+          if (closed || signal.aborted) break;
+          if (entries.reduce((total,row)=>total + (row.blob?.size || 0), 0) + blob.size > FILE_CONVERTER_MAX_TOTAL_BYTES)
+            throw new Error('转换结果合计超过 120 MiB，请下载并移除部分结果后重试');
+          entry.blob = blob;
+          entry.width = width;
+          entry.height = height;
+          entry.outputName = outputFilename(entry.file.name,format,entries.filter(row=>row.state==='done').map(row=>row.outputName));
+          entry.url = URL.createObjectURL(blob);
+          entry.state = 'done';
+        } catch(error) {
+          if (signal.aborted || error?.name === 'AbortError' || closed) break;
+          entry.error = t(error.message || '转换失败');
+          entry.state = 'error';
+        }
+        refresh();
+      }
+    } finally {
+      const canceled = signal.aborted;
+      for (const entry of entries) if (entry.state === 'running') { entry.state = 'queued'; revoke(entry); }
+      conversion = null;
+      busy = false;
+      refresh(canceled ? t('已取消，尚未完成的文件可重新转换。') : t('本轮转换结束，可逐个或批量下载。'));
+    }
+  }
+
+  function download(entry) {
+    if (!entry?.url || !entry.outputName) return;
+    const link = document.createElement('a');
+    link.href = entry.url;
+    link.download = entry.outputName;
+    link.style.display = 'none';
+    root.append(link);
+    link.click();
+    link.remove();
+  }
+
+  root.addEventListener('click', event => {
+    const windowButton = event.target.closest('[data-detail-action="window-expand"]');
+    if (windowButton) {
+      const dialog = root.closest('dialog');
+      const expanded = dialog.classList.toggle('widget-app-expanded');
+      windowButton.setAttribute('aria-pressed', String(expanded));
+      windowButton.setAttribute('aria-label',t(expanded ? '还原窗口' : '最大化窗口'));
+      windowButton.title = t(expanded ? '还原窗口' : '最大化窗口');
+      windowButton.innerHTML = icon(expanded ? 'minimize' : 'maximize');
+      return;
+    }
+    const button = event.target.closest('[data-fc-action]');
+    if (!button) {
+      if (event.target !== input && drop.contains(event.target) && !busy && !accepting) input.click();
+      return;
+    }
+    const action = button.dataset.fcAction;
+    if (action === 'pick' && !busy && !accepting) input.click();
+    else if (action === 'clear' && !busy && !accepting) {
+      for (const entry of entries) revoke(entry);
+      entries = [];
+      refresh(t('文件已清空。'));
+    } else if (action === 'run') void start();
+    else if (action === 'cancel') conversion?.abort();
+    else if (action === 'download-all') {
+      for (const entry of entries) if (entry.state === 'done') download(entry);
+      setStatus(t('已请求批量下载；浏览器可能要求允许下载多个文件。'));
+    } else if (action === 'download') download(entries.find(entry => entry.id === Number(button.dataset.fcId)));
+    else if (action === 'remove' && !busy && !accepting) {
+      const id = Number(button.dataset.fcId);
+      entries = entries.filter(entry => { if (entry.id === id) { revoke(entry); return false; } return true; });
+      refresh();
+    }
+  }, events);
+
+  input.addEventListener('change', () => {
+    const files = Array.from(input.files || []);
+    input.value = ''; // Allow choosing the same file again.
+    void addFiles(files);
+  }, events);
+  drop.addEventListener('dragover', event => {
+    if (!Array.from(event.dataTransfer?.types || []).includes('Files')) return;
+    event.preventDefault(); event.stopPropagation();
+    if (busy || accepting) { event.dataTransfer.dropEffect = 'none'; return; }
+    event.dataTransfer.dropEffect = 'copy';
+    drop.classList.add('fc-drop-active');
+  }, events);
+  drop.addEventListener('dragleave', event => {
+    if (!drop.contains(event.relatedTarget)) drop.classList.remove('fc-drop-active');
+  }, events);
+  drop.addEventListener('drop', event => {
+    event.preventDefault(); event.stopPropagation();
+    drop.classList.remove('fc-drop-active');
+    if (!busy) void addFiles(event.dataTransfer?.files || []);
+  }, events);
+  drop.addEventListener('keydown', event => {
+    if (event.target === drop && !busy && !accepting && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault(); input.click();
+    }
+  }, events);
+  quality.addEventListener('input', () => { q('[data-fc-quality-label]').textContent = `${quality.value}%`; }, events);
+  for (const field of [select,quality]) field.addEventListener('change', () => {
+    if (busy) return;
+    clearResults();
+    refresh(t('转换设置已更新，点击开始转换。'));
+    saveOptions();
+  }, events);
+  refresh();
+  return () => {
+    closed = true;
+    controller.abort();
+    conversion?.abort();
+    for (const entry of entries) revoke(entry);
+    entries = [];
+    input.value = '';
+  };
+}
+
+return {fileConverterWorkspace, bindFileConverterWorkspace};
+})();
 const __codec_hashes = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Independent implementations of the algorithms specified in RFC 1319, 1320
@@ -6967,327 +7873,6 @@ function bindCodecWorkspace(root, initialAlgorithm = 'base64') {
 }
 
 return {codecCard, codecWorkspace, bindCodecWorkspace};
-})();
-const __image_compression = (() => {
-// SPDX-License-Identifier: GPL-3.0-only
-// Shared, offline image compressor. Temporary blobs never enter desktop state.
-const MAX_IMAGE_INPUT_BYTES = 32 * 1024 * 1024;
-const MAX_IMAGE_PIXELS = 24_000_000;
-const MAX_PNG_RAW_BYTES = 128 * 1024 * 1024;
-const PNG_SIGNATURE = [137,80,78,71,13,10,26,10];
-
-function cancelled(signal) {
-  if (signal?.aborted) throw new DOMException('Image compression cancelled', 'AbortError');
-}
-function pngNumber(bytes, offset) {
-  return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(offset);
-}
-function writeNumber(bytes, offset, value) {
-  new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setUint32(offset, value);
-}
-function crc32(bytes) {
-  let crc = -1;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let i = 0; i < 8; i++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
-  }
-  return (crc ^ -1) >>> 0;
-}
-function pngChunk(type, data) {
-  const chunk = new Uint8Array(12 + data.length);
-  writeNumber(chunk, 0, data.length);
-  for (let i = 0; i < 4; i++) chunk[4 + i] = type.charCodeAt(i);
-  chunk.set(data, 8);
-  writeNumber(chunk, chunk.length - 4, crc32(chunk.subarray(4, chunk.length - 4)));
-  return chunk;
-}
-function joinBytes(parts, total) {
-  const joined = new Uint8Array(total);
-  let offset = 0;
-  for (const part of parts) { joined.set(part, offset); offset += part.length; }
-  return joined;
-}
-function parsePng(bytes) {
-  if (bytes.length < 45 || !PNG_SIGNATURE.every((v, i) => bytes[i] === v)) throw new Error('PNG 文件签名无效');
-  const chunks = [];
-  let offset = 8, sawIHDR = false, sawIDAT = false, sawIEND = false, animated = false;
-  let width = 0, height = 0;
-  while (offset < bytes.length) {
-    if (offset + 12 > bytes.length) throw new Error('PNG 数据不完整');
-    const length = pngNumber(bytes, offset), end = offset + 12 + length;
-    if (length > bytes.length - offset - 12 || end > bytes.length) throw new Error('PNG 块越界');
-    const type = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
-    if (!/^[A-Za-z]{4}$/.test(type)) throw new Error('PNG 块类型无效');
-    if (!sawIHDR) {
-      if (type !== 'IHDR' || length !== 13) throw new Error('PNG 缺少有效 IHDR');
-      width = pngNumber(bytes, offset + 8);
-      height = pngNumber(bytes, offset + 12);
-      if (!width || !height || width * height > MAX_IMAGE_PIXELS) throw new Error('图片像素数量超出安全限制');
-      sawIHDR = true;
-    } else if (type === 'IHDR') throw new Error('PNG IHDR 重复');
-    if (type === 'acTL' || type === 'fcTL' || type === 'fdAT') animated = true;
-    if (type === 'IDAT') sawIDAT = true;
-    chunks.push({type, start: offset, end, data: bytes.subarray(offset + 8, end - 4)});
-    offset = end;
-    if (type === 'IEND') {
-      if (length || offset !== bytes.length) throw new Error('PNG 结束块无效');
-      sawIEND = true;
-      break;
-    }
-  }
-  if (!sawIDAT || !sawIEND) throw new Error('PNG 缺少图像数据或结束块');
-  return {chunks, animated, width, height};
-}
-function webpAnimated(bytes) {
-  if (bytes.length < 20) return false;
-  let offset = 12;
-  while (offset + 8 <= bytes.length) {
-    const type = String.fromCharCode(...bytes.subarray(offset, offset + 4));
-    const view = new DataView(bytes.buffer, bytes.byteOffset + offset + 4, 4);
-    const size = view.getUint32(0, true), data = offset + 8;
-    if (data + size > bytes.length) throw new Error('WebP 块越界');
-    if (type === 'ANIM' || type === 'ANMF') return true;
-    if (type === 'VP8X' && size >= 1 && (bytes[data] & 2)) return true;
-    offset = data + size + (size % 2);
-  }
-  return false;
-}
-function identify(bytes, declared) {
-  if (PNG_SIGNATURE.every((v, i) => bytes[i] === v)) return 'image/png';
-  if (bytes.length > 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return 'image/jpeg';
-  if (bytes.length >= 12 && String.fromCharCode(...bytes.subarray(0, 4)) === 'RIFF' &&
-      String.fromCharCode(...bytes.subarray(8, 12)) === 'WEBP') return 'image/webp';
-  throw new Error('仅支持静态 PNG、JPEG 和 WebP 图片');
-}
-async function inspectImage(file, {signal} = {}) {
-  if (!(file instanceof Blob) || !file.size || file.size > MAX_IMAGE_INPUT_BYTES)
-    throw new Error('图片须为不超过 32 MiB 的有效文件');
-  cancelled(signal);
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  cancelled(signal);
-  const type = identify(bytes);
-  if (file.type && file.type !== type) throw new Error('图片声明格式与实际格式不一致');
-  let png;
-  if (type === 'image/png') {
-    png = parsePng(bytes);
-    if (png.animated) throw new Error('APNG 动画暂不支持压缩，以免丢失动画帧');
-  } else if (type === 'image/webp' && webpAnimated(bytes))
-    throw new Error('动画 WebP 暂不支持压缩，以免丢失动画帧');
-  if (type !== 'image/png') {
-    const {width, height} = rasterDimensions(bytes, type);
-    if (!width || !height || width * height > MAX_IMAGE_PIXELS)
-      throw new Error('图片像素数量超出安全限制');
-  }
-  return {type, bytes, png};
-}
-// Inspect dimensions before asking the browser to allocate decoded pixel memory.
-function rasterDimensions(bytes, type) {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (type === 'image/jpeg') {
-    for (let at = 2; at < bytes.length;) {
-      if (bytes[at++] !== 255) break;
-      while (bytes[at] === 255) at++;
-      const marker = bytes[at++];
-      if (marker === 0xda || marker === 0xd9) break;
-      if (marker === 1 || (marker >= 0xd0 && marker <= 0xd8)) continue;
-      if (at + 2 > bytes.length) break;
-      const length = view.getUint16(at);
-      if (length < 2 || at + length > bytes.length) break;
-      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4,0xc8,0xcc].includes(marker)) {
-        if (length < 8) break;
-        return {width:view.getUint16(at + 5), height:view.getUint16(at + 3)};
-      }
-      at += length;
-    }
-  } else if (bytes.length >= 20 && view.getUint32(4, true) === bytes.length - 8) {
-    const uint24 = at => bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16);
-    for (let at = 12; at + 8 <= bytes.length;) {
-      const name = String.fromCharCode(...bytes.subarray(at, at + 4));
-      const size = view.getUint32(at + 4, true), start = at + 8;
-      if (start + size > bytes.length) break;
-      if (name === 'VP8X' && size === 10)
-        return {width:1 + uint24(start + 4), height:1 + uint24(start + 7)};
-      if (name === 'VP8 ' && size >= 10 && bytes[start + 3] === 0x9d && bytes[start + 4] === 1 && bytes[start + 5] === 0x2a)
-        return {width:view.getUint16(start + 6, true) & 0x3fff, height:view.getUint16(start + 8, true) & 0x3fff};
-      if (name === 'VP8L' && size >= 5 && bytes[start] === 0x2f) {
-        const bits = view.getUint32(start + 1, true);
-        return {width:1 + (bits & 0x3fff), height:1 + ((bits >>> 14) & 0x3fff)};
-      }
-      at = start + size + size % 2;
-    }
-  }
-  throw new Error('图片尺寸信息无效');
-}
-async function readBounded(stream, limit, signal) {
-  const reader = stream.getReader();
-  let size = 0;
-  const parts = [];
-  try {
-    for (;;) {
-      cancelled(signal);
-      const {done, value} = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > limit) throw new Error('PNG 解压数据超过安全限制');
-      parts.push(value);
-    }
-  } catch (error) {
-    await reader.cancel().catch(() => {});
-    throw error;
-  } finally { reader.releaseLock(); }
-  return joinBytes(parts, size);
-}
-async function recompressPngIdat(chunks, width, height, signal) {
-  if (!globalThis.DecompressionStream || !globalThis.CompressionStream) return null;
-  const parts = chunks.filter(c => c.type === 'IDAT').map(c => c.data);
-  const total = parts.reduce((n, p) => n + p.length, 0);
-  if (total > 16 * 1024 * 1024) return null;
-  const compressed = joinBytes(parts, total);
-  const maxRaw = Math.min(MAX_PNG_RAW_BYTES, width * height * 9 + height * 2 + 65536);
-  const raw = await readBounded(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate')), maxRaw, signal);
-  cancelled(signal);
-  const encoded = await readBounded(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate')), total + 1024 * 1024, signal);
-  return encoded.length < compressed.length ? encoded : null;
-}
-/**
- * Lossless PNG: preserves every PNG image/color chunk, optionally recompresses
- * DEFLATE scanlines and removes only textual/time metadata. Never rasterizes pixels.
- */
-async function optimizePngLossless(file, inspected, {signal} = {}) {
-  const {bytes, png} = inspected || await inspectImage(file, {signal});
-  if (!png) throw new Error('真正无损优化目前仅支持 PNG');
-  cancelled(signal);
-  let recompressed = null;
-  try {
-    recompressed = await recompressPngIdat(png.chunks, png.width, png.height, signal);
-  } catch (error) {
-    if (error.name === 'AbortError') throw error;
-    // Encoders may reject some legal PNG variations. Retain the original IDAT.
-  }
-  const parts = [bytes.subarray(0, 8)];
-  let emitted = false;
-  for (const chunk of png.chunks) {
-    cancelled(signal);
-    // Text annotations and timestamps do not participate in image decoding.
-    if (['tEXt','zTXt','iTXt','tIME'].includes(chunk.type)) continue;
-    if (chunk.type === 'IDAT' && recompressed) {
-      if (!emitted) { parts.push(pngChunk('IDAT', recompressed)); emitted = true; }
-      continue;
-    }
-    parts.push(bytes.subarray(chunk.start, chunk.end));
-  }
-  const total = parts.reduce((n, p) => n + p.length, 0);
-  // The standard PNG signature, IDATs and all required image metadata survive.
-  if (total >= bytes.length) return file;
-  // An unchanged IDAT stream is also truly pixel-lossless.
-  const result = new Blob([joinBytes(parts, total)], {type:'image/png'});
-  return result.size < file.size ? result : file;
-}
-function canvasBlob(canvas, type, quality) {
-  return new Promise((resolve, reject) => {
-    if (!canvas.toBlob) { reject(new Error('当前浏览器不支持图片编码')); return; }
-    canvas.toBlob(blob => blob && blob.type === type ? resolve(blob)
-      : reject(new Error('当前浏览器不支持所选编码格式')), type, quality);
-  });
-}
-function result(file, blob, type, method) {
-  return {blob, type, method, originalBytes:file.size, outputBytes:blob.size,
-    savedBytes:Math.max(0, file.size - blob.size), changed:blob !== file};
-}
-async function compressImage(file, options = {}) {
-  const {mode = 'smart', quality = 0.9, format = 'webp', maxBytes = Infinity, signal} = options;
-  if (!['smart','high','compact','lossless'].includes(mode) ||
-      !['webp','jpeg'].includes(format) || !Number.isFinite(quality) ||
-      quality < 0.6 || quality > 1 || !(maxBytes > 0))
-    throw new Error('图片压缩选项无效');
-  const inspected = await inspectImage(file, {signal});
-  const initial = result(file, file, inspected.type, 'original');
-  if (mode === 'lossless') {
-    const blob = await optimizePngLossless(file, inspected, {signal});
-    if (blob.size > maxBytes) throw new Error('无损优化后仍超出文件大小上限，请切换高画质模式');
-    return result(file, blob, 'image/png', blob === file ? 'original' : 'png-lossless');
-  }
-  if (format === 'jpeg' && inspected.type !== 'image/jpeg')
-    throw new Error('为避免透明度丢失，JPEG 输出目前仅接受 JPEG 原图');
-  cancelled(signal);
-  if (!globalThis.createImageBitmap || !globalThis.document)
-    throw new Error('当前环境缺少图片解码或 Canvas 支持');
-  const bitmap = await createImageBitmap(file, {imageOrientation:'from-image'});
-  let canvas;
-  try {
-    cancelled(signal);
-    if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > MAX_IMAGE_PIXELS)
-      throw new Error('图片像素数量超出安全限制');
-    canvas = document.createElement('canvas');
-    canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const ctx = canvas.getContext('2d', {alpha:true});
-    if (!ctx) throw new Error('无法初始化图片画布');
-    ctx.drawImage(bitmap, 0, 0);
-    const targetType = format === 'jpeg' ? 'image/jpeg' : 'image/webp';
-    const startingQuality = mode === 'compact' ? Math.min(quality, 0.78) : quality;
-    let best = initial;
-    const qualitySteps = mode === 'smart'
-      ? [startingQuality, 0.84, 0.76, 0.68, 0.62]
-      : [startingQuality];
-    for (const q of [...new Set(qualitySteps)]) {
-      cancelled(signal);
-      const blob = await canvasBlob(canvas, targetType, q);
-      cancelled(signal);
-      if (blob.size < best.outputBytes) best = result(file, blob, targetType, 'lossy');
-      if (best.changed && best.outputBytes <= maxBytes && mode === 'smart') break;
-    }
-    if (best.outputBytes > maxBytes) throw new Error('高画质压缩后仍超出 4 MiB 限制；请使用图片压缩工具手动调整');
-    return best;
-  } finally {
-    bitmap.close?.();
-    if (canvas) { canvas.width = 0; canvas.height = 0; }
-  }
-}
-function downloadName(name, type) {
-  const safe = String(name || 'image').replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_').replace(/\.(png|jpe?g|webp)$/i, '').slice(0, 90) || 'image';
-  return safe + (type === 'image/png' ? '.png' : type === 'image/jpeg' ? '.jpg' : '.webp');
-}
-function zipPart(length) { return new Uint8Array(length); }
-function zip16(view, at, n) { view.setUint16(at, n, true); }
-function zip32(view, at, n) { view.setUint32(at, n, true); }
-/** Standards-compliant STORE ZIP of already-compressed images; no dependencies. */
-async function createImageZip(entries, {signal} = {}) {
-  if (!Array.isArray(entries) || !entries.length || entries.length > 10)
-    throw new Error('批量下载支持 1–10 张图片');
-  const encoder = new TextEncoder(), local = [], central = [];
-  let offset = 0, size = 0;
-  for (let i = 0; i < entries.length; i++) {
-    cancelled(signal);
-    const entry = entries[i];
-    if (!(entry.blob instanceof Blob)) throw new Error('ZIP 输入不是图片文件');
-    const name = encoder.encode(String(i + 1).padStart(2, '0') + '-' + downloadName(entry.name, entry.blob.type));
-    const data = new Uint8Array(await entry.blob.arrayBuffer());
-    size += data.length;
-    if (size > 100 * 1024 * 1024) throw new Error('ZIP 总容量不能超过 100 MiB');
-    const crc = crc32(data);
-    const head = zipPart(30 + name.length), hv = new DataView(head.buffer);
-    zip32(hv, 0, 0x04034b50); zip16(hv, 4, 20); zip16(hv, 6, 0x0800);
-    zip16(hv, 12, 33); // Deterministic valid DOS date: 1980-01-01.
-    zip16(hv, 8, 0); zip32(hv, 14, crc); zip32(hv, 18, data.length);
-    zip32(hv, 22, data.length); zip16(hv, 26, name.length); head.set(name, 30);
-    const cent = zipPart(46 + name.length), cv = new DataView(cent.buffer);
-    zip32(cv, 0, 0x02014b50); zip16(cv, 4, 20); zip16(cv, 6, 20);
-    zip16(cv, 14, 33);
-    zip16(cv, 8, 0x0800); zip16(cv, 10, 0); zip32(cv, 16, crc);
-    zip32(cv, 20, data.length); zip32(cv, 24, data.length);
-    zip16(cv, 28, name.length); zip32(cv, 42, offset); cent.set(name, 46);
-    local.push(head, data); central.push(cent);
-    offset += head.length + data.length;
-  }
-  const centralSize = central.reduce((n, c) => n + c.length, 0);
-  const end = zipPart(22), ev = new DataView(end.buffer);
-  zip32(ev, 0, 0x06054b50);
-  zip16(ev, 8, entries.length); zip16(ev, 10, entries.length);
-  zip32(ev, 12, centralSize); zip32(ev, 16, offset);
-  return new Blob([...local, ...central, end], {type:'application/zip'});
-}
-
-return {MAX_IMAGE_INPUT_BYTES, MAX_IMAGE_PIXELS, inspectImage, optimizePngLossless, compressImage, downloadName, createImageZip};
 })();
 const __image_compressor_workspace = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -9086,6 +9671,37 @@ function habitWeek(offset=0, now=new Date()) {
 
 return {COUNTDOWN_CATEGORIES, LIFE_TONES, CLOCK_CITIES, WORKDAY_COLORS, WORKDAY_FONTS, countdownEntries, validateCountdownData, countdownOccurrence, orderedCountdowns, countdownPrimary, workdayTimeline, zoneClock, offsetLabel, clockCities, validateClockCities, habitStats, habitWeek};
 })();
+const __widget_file_converter = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// Inert API v3 card. The host handles data-action="widget-open"; all files stay in the workspace.
+const fileConverterWidget = {
+  apiVersion: 3,
+  type: 'file-converter',
+  title: '文件转换',
+  description: 'PNG、JPG、WebP 图片批量转换，纯本地处理',
+  icon: 'converter',
+  size: '2x2',
+  sizes: ['1x1', '1x2', '2x1', '2x2', '4x2'],
+  fields: [
+    { key: 'outputFormat', label: '默认目标格式', type: 'select', default: 'webp',
+      options: [ { value: 'png', label: 'PNG' }, { value: 'jpeg', label: 'JPG' }, { value: 'webp', label: 'WebP' } ] },
+    { key: 'quality', label: '默认输出画质', type: 'number', default: 90, min: 50, max: 100, integer: true },
+  ],
+  render({ item, config, size, escapeHtml, t }) {
+    const title = escapeHtml(item.title);
+    const label = escapeHtml(t('打开文件转换'));
+    const target = String(config.outputFormat || 'webp').toUpperCase().replace('JPEG', 'JPG');
+    const compact = size === '1x1' || size === '1x2' || size === '2x1';
+    return `<button type="button" class="fc-launch ${compact ? 'fc-launch-compact' : 'fc-launch-large'}" data-action="widget-open" aria-label="${label}">
+      <span class="fc-launch-symbol" aria-hidden="true">⇄</span>
+      <span class="fc-launch-info"><strong>${title}</strong><small>${escapeHtml(t('图片格式转换'))}</small></span>
+      ${compact ? '' : `<span class="fc-launch-formats" aria-hidden="true">PNG · JPG · WebP</span><span class="fc-launch-foot">${escapeHtml(t('本地处理 · 点击转换'))} <b>${target}</b></span>`}
+    </button>`;
+  },
+};
+
+return {fileConverterWidget};
+})();
 const __image_compressor_widget = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // A stateless local tool: no uploaded image or compression result is persisted.
@@ -9118,8 +9734,9 @@ return {imageCompressorWidget};
 const __widget_extensions = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Import packaged widget definitions here. See docs/WIDGETS.md and widget-example.js.
+const { fileConverterWidget } = __widget_file_converter;
 const { imageCompressorWidget } = __image_compressor_widget;
-const widgetExtensions = [imageCompressorWidget];
+const widgetExtensions = [imageCompressorWidget, fileConverterWidget];
 
 return {widgetExtensions};
 })();
@@ -26983,6 +27600,7 @@ return {createDailyQuoteClient, createDailyQuote};
 })();
 // SPDX-License-Identifier: GPL-3.0-only
 const { converterWorkspace, bindConverterWorkspace } = __converter_view;
+const { fileConverterWorkspace, bindFileConverterWorkspace } = __file_converter_workspace;
 const { codecWorkspace, bindCodecWorkspace } = __codec_workspace;
 const { imageCompressorWorkspace, bindImageCompressorWorkspace } = __image_compressor_workspace;
 const { compressImage, MAX_IMAGE_INPUT_BYTES } = __image_compression;
@@ -27720,7 +28338,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
  const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['image-compressor','converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
+ const dedicatedWidget = ['image-compressor','converter','file-converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
  dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
  dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
  dialog.classList.toggle('image-tool-dialog',detailWidget === 'image-compressor');
@@ -27732,6 +28350,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
  dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
  dialog.classList.toggle('converter-app-dialog',detailWidget === 'converter');
+ dialog.classList.toggle('file-converter-app-dialog',detailWidget === 'file-converter');
  dialog.classList.toggle('pomodoro-app-dialog',detailWidget === 'pomodoro');
  dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
@@ -27746,6 +28365,7 @@ function openDialog(kind,data={}) {
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
  else if(kind==='widget-detail'&&detailWidget==='map'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="map-workspace" class="widget-app-body">${mapWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="converter-workspace" class="widget-app-body">${converterWorkspace(item)}</div>`;}
+ else if(kind==='widget-detail'&&detailWidget==='file-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="file-converter-workspace" class="widget-app-body">${fileConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
  else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
@@ -27787,6 +28407,7 @@ function openDialog(kind,data={}) {
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
   else if(detailWidget==='image-compressor')viewerCleanup=bindImageCompressorWorkspace($('#image-compressor-workspace'),{applyWallpaper:async blob=>{const saved=await storeLocalWallpaper(blob,'image');if(saved)toast(t('壁纸已保存，可在栖页桌面查看。'));return saved;}});
   else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
+  else if(detailWidget==='file-converter')viewerCleanup=bindFileConverterWorkspace($('#file-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,toast});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
   else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -27806,7 +28427,7 @@ function openDialog(kind,data={}) {
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='map')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='converter')$('#dialog-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='image-compressor')$('#dialog-title',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&['image-compressor','file-converter'].includes(detailWidget))$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
