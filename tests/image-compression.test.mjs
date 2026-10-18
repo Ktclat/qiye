@@ -74,8 +74,38 @@ test('ZIP stores file content in a valid local entry and provides a safe filenam
   const buffer=Buffer.from(await zip.arrayBuffer());
   assert.equal(buffer.toString('binary',0,2),'PK');
   assert.equal(buffer.readUInt32LE(0),0x04034b50);
+  assert.equal(buffer.readUInt16LE(12),33); // Valid, deterministic 1980-01-01.
   const nameLength=buffer.readUInt16LE(26);
   const dataOffset=30+nameLength;
   assert.deepEqual(buffer.subarray(dataOffset,dataOffset+PNG.length),Buffer.from(PNG));
   assert.equal(downloadName('a/../../evil.png','image/webp'),'a_.._.._evil.webp');
+});
+
+test('JPEG and WebP dimensions are checked before decoding large images', async () => {
+  const jpeg = new Uint8Array([255,216,255,192,0,8,8,0x27,0x10,0x27,0x10,1]);
+  const webp = new Uint8Array(30);
+  webp.set(Buffer.from('RIFF'),0); webp.set(Buffer.from('WEBPVP8X'),8);
+  const view=new DataView(webp.buffer);view.setUint32(4,22,true);view.setUint32(16,10,true);
+  webp.set([0x0f,0x27,0,0x0f,0x27,0],24);
+  await assert.rejects(inspectImage(file(jpeg,'image/jpeg')),/像素/);
+  await assert.rejects(inspectImage(file(webp,'image/webp')),/像素/);
+  jpeg.set([0,1,0,1],7);
+  assert.equal((await inspectImage(file(jpeg,'image/jpeg'))).type,'image/jpeg');
+  await assert.rejects(inspectImage(file(Uint8Array.of(255,216,255,192),'image/jpeg')),/尺寸/);
+});
+
+test('cancellation and unsupported output release bitmap and canvas memory', async () => {
+  const savedBitmap=globalThis.createImageBitmap, savedDocument=globalThis.document;
+  let closed=0, canvas;
+  const controller=new AbortController();
+  try {
+    globalThis.createImageBitmap=async()=>({width:1,height:1,close(){closed++;}});
+    globalThis.document={createElement(){return canvas={width:0,height:0,getContext:()=>({drawImage(){}}),
+      toBlob(callback){controller.abort();callback(new Blob(['encoded'],{type:'image/webp'}));}};}};
+    await assert.rejects(compressImage(file(PNG),{signal:controller.signal}),{name:'AbortError'});
+    assert.equal(closed,1);assert.equal(canvas.width,0);assert.equal(canvas.height,0);
+    globalThis.document.createElement=()=>canvas={getContext:()=>({drawImage(){}}),toBlob(cb){cb(file(PNG));}};
+    await assert.rejects(compressImage(file(PNG)),/编码格式/);
+    assert.equal(closed,2);assert.equal(canvas.width,0);
+  } finally {globalThis.createImageBitmap=savedBitmap;globalThis.document=savedDocument;}
 });

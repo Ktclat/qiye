@@ -11,7 +11,7 @@ const formatBytes = n => n < miB ? formatNumber(n / 1024, {maximumFractionDigits
 
 export function imageCompressorWorkspace(item) {
   return '<div class="image-tool">' +
-    '<header class="image-tool-header"><h2 id="dialog-title">' + icon('wallpaper') + esc(item.title) + '</h2>' + windowControls() + '</header>' +
+    '<header class="image-tool-header"><h2 id="dialog-title" tabindex="-1">' + icon('wallpaper') + esc(item.title) + '</h2>' + windowControls() + '</header>' +
     '<div class="image-tool-layout">' +
       '<aside class="image-tool-sidebar">' +
         '<div class="image-tool-intro"><strong>' + t('压缩设置') + '</strong><span>' + t('图片只在当前浏览器中处理，关闭窗口后清空。') + '</span></div>' +
@@ -28,6 +28,7 @@ export function imageCompressorWorkspace(item) {
           '<input type="range" data-image-quality min="60" max="100" step="1" value="90"></label>' +
         '<p class="image-tool-tip" data-image-mode-hint>' + t('保留原始分辨率，优先尝试高画质编码；输出变大时保留原图。') + '</p>' +
         '<button type="button" class="image-tool-run" data-image-run disabled>' + icon('right') + t('开始压缩') + '</button>' +
+        '<button type="button" class="image-tool-button" data-image-cancel hidden>' + t('取消压缩') + '</button>' +
         '<div class="image-tool-privacy">' + icon('shield') + t('图片不会上传服务器，也不会写入桌面备份或 WebDAV。') + '</div>' +
       '</aside>' +
       '<main class="image-tool-main">' +
@@ -76,6 +77,7 @@ export function bindImageCompressorWorkspace(root, {applyWallpaper} = {}) {
   const qualityInput = query('[data-image-quality]');
   const status = query('[data-image-status]');
   const runButton = query('[data-image-run]');
+  const cancelButton = query('[data-image-cancel]');
   const resultsNode = query('[data-image-results]');
   const listNode = query('[data-image-list]');
   const compareNode = query('[data-image-compare]');
@@ -108,6 +110,7 @@ export function bindImageCompressorWorkspace(root, {applyWallpaper} = {}) {
     job?.abort();
     job = null;
     runButton.disabled = !files.length;
+    cancelButton.hidden = true;
   }
   function setFiles(list) {
     abortPrevious(); clearOutput();
@@ -178,7 +181,7 @@ export function bindImageCompressorWorkspace(root, {applyWallpaper} = {}) {
     if (!files.length) return;
     abortPrevious(); clearOutput();
     const token = revision, controllerTask = new AbortController();
-    job = controllerTask; runButton.disabled = true;
+    job = controllerTask; runButton.disabled = true; cancelButton.hidden = false;
     const mode = modeInput.value, format = formatInput.value;
     const quality = Number(qualityInput.value) / 100;
     for (let i = 0; i < files.length; i++) {
@@ -192,12 +195,13 @@ export function bindImageCompressorWorkspace(root, {applyWallpaper} = {}) {
         outputs.push({file:files[i],output});
       } catch (error) {
         if (!alive(token) || controllerTask.signal.aborted) return;
-        outputs.push({file:files[i],error:error.message || t('压缩失败')});
+        outputs.push({file:files[i],error:t(error.message || '压缩失败')});
       }
       redraw();
     }
     if (!alive(token)) return;
     job = null;
+    cancelButton.hidden = true;
     runButton.disabled = false;
     const first = outputs.findIndex(o => o.output);
     if (first >= 0) choose(first);
@@ -212,8 +216,23 @@ export function bindImageCompressorWorkspace(root, {applyWallpaper} = {}) {
   root.addEventListener('click', async event => {
     const button = event.target.closest('button');
     if (!button || !root.contains(button)) return;
+    if (button.dataset.detailAction === 'window-expand') {
+      const expanded = root.closest('dialog').classList.toggle('widget-app-expanded');
+      button.setAttribute('aria-pressed', String(expanded));
+      button.title = t(expanded ? '还原窗口' : '最大化窗口');
+      button.setAttribute('aria-label', button.title);
+      button.innerHTML = icon(expanded ? 'minimize' : 'maximize');
+      return;
+    }
     if (button.hasAttribute('data-image-drop')) { filesInput.click(); return; }
     if (button.hasAttribute('data-image-run')) { await processFiles(); return; }
+    if (button.hasAttribute('data-image-cancel')) {
+      abortPrevious();
+      const first = outputs.findIndex(entry => entry.output);
+      if (first >= 0) choose(first);
+      message(t('压缩已取消，可重新开始。'));
+      return;
+    }
     if (button.hasAttribute('data-image-row')) {
       choose(Number(button.dataset.imageRow)); return;
     }
@@ -227,8 +246,8 @@ export function bindImageCompressorWorkspace(root, {applyWallpaper} = {}) {
       if (!entry?.output || entry.output.outputBytes > 4 * miB || typeof applyWallpaper !== 'function') return;
       button.disabled = true; message(t('正在保存壁纸…'));
       try {
-        await applyWallpaper(entry.output.blob);
-        if (!signal.aborted) message(t('壁纸已保存，可在栖页桌面查看。'));
+        const saved = await applyWallpaper(entry.output.blob);
+        if (!signal.aborted && saved !== false) message(t('壁纸已保存，可在栖页桌面查看。'));
       } catch (error) {
         if (!signal.aborted) message(error.message || t('壁纸保存失败'), true);
       } finally { if (!signal.aborted) button.disabled = false; }

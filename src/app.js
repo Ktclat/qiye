@@ -700,10 +700,17 @@ function blobToDataUrl(blob) {
     reader.readAsDataURL(blob);
   });
 }
-async function storeLocalWallpaper(blob,type='image') {
+let wallpaperUploadRevision=0;
+const wallpaperChoice=()=>JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]);
+function wallpaperRequest() {
+  const revision=++wallpaperUploadRevision, choice=wallpaperChoice();
+  return ()=>revision===wallpaperUploadRevision && choice===wallpaperChoice();
+}
+async function storeLocalWallpaper(blob,type='image',isCurrent=wallpaperRequest()) {
   if(!(blob instanceof Blob) || !blob.size || blob.size>4*1024*1024)
     throw new Error(t('壁纸不能超过 4 MiB'));
   const url=await blobToDataUrl(blob);
+  if(!isCurrent())return false;
   const previous=clone(state.settings);
   state.settings.customWallpaper=url;
   state.settings.customWallpaperType=type;
@@ -711,9 +718,11 @@ async function storeLocalWallpaper(blob,type='image') {
   state.settings.dailyWallpaper=false;
   try{await persist();}catch(error){state.settings=previous;throw error;}
   applySettings();
+  return true;
 }
 let viewerCleanup=()=>{};
 function openDialog(kind,data={}) {
+ wallpaperUploadRevision++;
  if(kind==='widget-config'&&['countdown','workday','notes','clock','habit'].includes(data.item?.widget))kind='widget-detail';
  if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
  viewerCleanup(); viewerCleanup=()=>{};
@@ -793,7 +802,7 @@ function openDialog(kind,data={}) {
   if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
   else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
   else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
-  else if(detailWidget==='image-compressor')viewerCleanup=bindImageCompressorWorkspace($('#image-compressor-workspace'),{applyWallpaper:async blob=>{await storeLocalWallpaper(blob,'image');toast(t('壁纸已保存，可在栖页桌面查看。'));}});
+  else if(detailWidget==='image-compressor')viewerCleanup=bindImageCompressorWorkspace($('#image-compressor-workspace'),{applyWallpaper:async blob=>{const saved=await storeLocalWallpaper(blob,'image');if(saved)toast(t('壁纸已保存，可在栖页桌面查看。'));return saved;}});
   else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
   else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
@@ -814,6 +823,7 @@ function openDialog(kind,data={}) {
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='map')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='converter')$('#dialog-title',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail'&&detailWidget==='image-compressor')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
@@ -821,6 +831,7 @@ function openDialog(kind,data={}) {
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
+ wallpaperUploadRevision++;
  cancelLinkFaviconVisit();
  viewerCleanup();viewerCleanup=()=>{};
  const pending = widgetDetails.close();
@@ -1350,6 +1361,7 @@ document.addEventListener('change',async event=>{
   }
   if(input.id==='wallpaper-file'){
    const file=input.files?.[0];input.value='';if(!file)return;
+   const isCurrent=wallpaperRequest();
    if(!/^(image\/(png|jpeg|webp|gif|avif)|video\/(mp4|webm))$/.test(file.type))throw new Error(t("请使用 PNG、JPEG、WebP、GIF、AVIF 图片或 MP4、WebM 视频。"));
    let blob=file, compressed=false;
    if(['image/png','image/jpeg','image/webp'].includes(file.type)){
@@ -1365,7 +1377,8 @@ document.addEventListener('change',async event=>{
      }
    }
    if(blob.size>4*1024*1024)throw new Error(t("图片压缩后仍超过 4 MiB；请使用图片压缩工具调整。"));
-   await storeLocalWallpaper(blob,file.type.startsWith('video/')?'video':'image');
+   if(!isCurrent())return;
+   if(!await storeLocalWallpaper(blob,file.type.startsWith('video/')?'video':'image',isCurrent))return;
    openDialog('wallpaper');
    toast(compressed?t('壁纸已自动压缩：{before} → {after}',{before:(file.size/1024/1024).toFixed(2)+' MiB',after:(blob.size/1024/1024).toFixed(2)+' MiB'}):t('本地壁纸已保存。'));
   }
@@ -1414,7 +1427,7 @@ dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog
 dialog.addEventListener('pointerdown',()=>dialog.classList.add('pointer-focus'),true);
 dialog.addEventListener('keydown',()=>dialog.classList.remove('pointer-focus'),true);
 dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
-dialog.addEventListener('close',()=>{if(dialog.open)return;dialog.classList.remove('pointer-focus');cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
+dialog.addEventListener('close',()=>{if(dialog.open)return;wallpaperUploadRevision++;dialog.classList.remove('pointer-focus');cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
 dialog.addEventListener('cancel',event=>{if(dialogKind==='widget-detail'){event.preventDefault();void closeDialog();}});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');

@@ -16,6 +16,7 @@ html[data-theme=dark] .w-extension[data-widget="image-compressor"]{--w-bg:linear
 .image-tool-header{height:46px;min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px;border-bottom:1px solid var(--app-border)}
 .image-tool-header h2{display:flex;align-items:center;gap:9px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;font-size:14px;font-weight:600}
 .image-tool-header h2>.icon{width:18px;height:18px;color:var(--app-blue)}
+.image-tool-header h2:focus{outline:none}
 .image-tool-layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:0;flex:1}
 .image-tool-sidebar{display:flex;flex-direction:column;gap:18px;min-width:0;min-height:0;padding:19px 15px;overflow:auto;border-right:1px solid var(--app-border);background:var(--app-pane)}
 .image-tool-intro{display:flex;flex-direction:column;gap:6px}
@@ -32,7 +33,7 @@ html[data-theme=dark] .w-extension[data-widget="image-compressor"]{--w-bg:linear
 .image-tool-run .icon{width:15px;height:15px}
 .image-tool-privacy{display:flex;align-items:flex-start;gap:7px;margin-top:auto;padding-top:12px;border-top:1px solid var(--app-border)}
 .image-tool-privacy>.icon{width:16px;height:16px;flex:none}
-.image-tool-main{display:flex;flex-direction:column;min-width:0;min-height:0;gap:12px;padding:20px;overflow:auto}
+.image-tool .image-tool-main{display:flex;flex-direction:column;min-width:0;min-height:0;gap:12px;margin:0;padding:20px;overflow:auto}
 .image-tool .image-tool-drop{flex:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;min-height:110px;padding:14px;background:var(--app-pane);border:1px dashed var(--app-muted);border-radius:12px;color:var(--app-fg)}
 .image-tool-drop .icon{width:21px;height:21px;color:var(--app-blue)}
 .image-tool-drop strong{font-size:13px;font-weight:550}
@@ -67,7 +68,7 @@ html[data-theme=dark] .w-extension[data-widget="image-compressor"]{--w-bg:linear
   .image-tool-sidebar{overflow:visible;border-right:0;border-bottom:1px solid var(--app-border);padding:13px;gap:10px}
   .image-tool-intro span,.image-tool-privacy{display:none}
   .image-tool-sidebar>label{gap:5px}
-  .image-tool-main{overflow:visible;padding:13px}
+  .image-tool .image-tool-main{overflow:visible;padding:13px}
   .image-tool-preview{height:220px}
 }
 @container(max-width:410px){

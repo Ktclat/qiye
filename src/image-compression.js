@@ -102,7 +102,50 @@ export async function inspectImage(file, {signal} = {}) {
     if (png.animated) throw new Error('APNG 动画暂不支持压缩，以免丢失动画帧');
   } else if (type === 'image/webp' && webpAnimated(bytes))
     throw new Error('动画 WebP 暂不支持压缩，以免丢失动画帧');
+  if (type !== 'image/png') {
+    const {width, height} = rasterDimensions(bytes, type);
+    if (!width || !height || width * height > MAX_IMAGE_PIXELS)
+      throw new Error('图片像素数量超出安全限制');
+  }
   return {type, bytes, png};
+}
+// Inspect dimensions before asking the browser to allocate decoded pixel memory.
+function rasterDimensions(bytes, type) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (type === 'image/jpeg') {
+    for (let at = 2; at < bytes.length;) {
+      if (bytes[at++] !== 255) break;
+      while (bytes[at] === 255) at++;
+      const marker = bytes[at++];
+      if (marker === 0xda || marker === 0xd9) break;
+      if (marker === 1 || (marker >= 0xd0 && marker <= 0xd8)) continue;
+      if (at + 2 > bytes.length) break;
+      const length = view.getUint16(at);
+      if (length < 2 || at + length > bytes.length) break;
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4,0xc8,0xcc].includes(marker)) {
+        if (length < 8) break;
+        return {width:view.getUint16(at + 5), height:view.getUint16(at + 3)};
+      }
+      at += length;
+    }
+  } else if (bytes.length >= 20 && view.getUint32(4, true) === bytes.length - 8) {
+    const uint24 = at => bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16);
+    for (let at = 12; at + 8 <= bytes.length;) {
+      const name = String.fromCharCode(...bytes.subarray(at, at + 4));
+      const size = view.getUint32(at + 4, true), start = at + 8;
+      if (start + size > bytes.length) break;
+      if (name === 'VP8X' && size === 10)
+        return {width:1 + uint24(start + 4), height:1 + uint24(start + 7)};
+      if (name === 'VP8 ' && size >= 10 && bytes[start + 3] === 0x9d && bytes[start + 4] === 1 && bytes[start + 5] === 0x2a)
+        return {width:view.getUint16(start + 6, true) & 0x3fff, height:view.getUint16(start + 8, true) & 0x3fff};
+      if (name === 'VP8L' && size >= 5 && bytes[start] === 0x2f) {
+        const bits = view.getUint32(start + 1, true);
+        return {width:1 + (bits & 0x3fff), height:1 + ((bits >>> 14) & 0x3fff)};
+      }
+      at = start + size + size % 2;
+    }
+  }
+  throw new Error('图片尺寸信息无效');
 }
 async function readBounded(stream, limit, signal) {
   const reader = stream.getReader();
@@ -151,7 +194,6 @@ export async function optimizePngLossless(file, inspected, {signal} = {}) {
     // Encoders may reject some legal PNG variations. Retain the original IDAT.
   }
   const parts = [bytes.subarray(0, 8)];
-  const idatCount = png.chunks.filter(c => c.type === 'IDAT').length;
   let emitted = false;
   for (const chunk of png.chunks) {
     cancelled(signal);
@@ -200,11 +242,12 @@ export async function compressImage(file, options = {}) {
   if (!globalThis.createImageBitmap || !globalThis.document)
     throw new Error('当前环境缺少图片解码或 Canvas 支持');
   const bitmap = await createImageBitmap(file, {imageOrientation:'from-image'});
+  let canvas;
   try {
     cancelled(signal);
     if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > MAX_IMAGE_PIXELS)
       throw new Error('图片像素数量超出安全限制');
-    const canvas = document.createElement('canvas');
+    canvas = document.createElement('canvas');
     canvas.width = bitmap.width; canvas.height = bitmap.height;
     const ctx = canvas.getContext('2d', {alpha:true});
     if (!ctx) throw new Error('无法初始化图片画布');
@@ -224,7 +267,10 @@ export async function compressImage(file, options = {}) {
     }
     if (best.outputBytes > maxBytes) throw new Error('高画质压缩后仍超出 4 MiB 限制；请使用图片压缩工具手动调整');
     return best;
-  } finally { bitmap.close?.(); }
+  } finally {
+    bitmap.close?.();
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
+  }
 }
 export function downloadName(name, type) {
   const safe = String(name || 'image').replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_').replace(/\.(png|jpe?g|webp)$/i, '').slice(0, 90) || 'image';
@@ -250,10 +296,12 @@ export async function createImageZip(entries, {signal} = {}) {
     const crc = crc32(data);
     const head = zipPart(30 + name.length), hv = new DataView(head.buffer);
     zip32(hv, 0, 0x04034b50); zip16(hv, 4, 20); zip16(hv, 6, 0x0800);
+    zip16(hv, 12, 33); // Deterministic valid DOS date: 1980-01-01.
     zip16(hv, 8, 0); zip32(hv, 14, crc); zip32(hv, 18, data.length);
     zip32(hv, 22, data.length); zip16(hv, 26, name.length); head.set(name, 30);
     const cent = zipPart(46 + name.length), cv = new DataView(cent.buffer);
     zip32(cv, 0, 0x02014b50); zip16(cv, 4, 20); zip16(cv, 6, 20);
+    zip16(cv, 14, 33);
     zip16(cv, 8, 0x0800); zip16(cv, 10, 0); zip32(cv, 16, crc);
     zip32(cv, 20, data.length); zip32(cv, 24, data.length);
     zip16(cv, 28, name.length); zip32(cv, 42, offset); cent.set(name, 46);

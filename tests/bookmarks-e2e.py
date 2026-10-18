@@ -157,6 +157,14 @@ with sync_playwright() as p:
         page.evaluate('document.documentElement.dataset.theme="light"')
         page.screenshot(path=str(OUT / ('preview-light.png' if args.preview else 'manager-light.png')))
         page.set_viewport_size({'width':390,'height':844})
+        # Resizing dispatches an asynchronous window event before the host's
+        # CSS variables and container queries settle. Await the required layout.
+        page.wait_for_function('''() => {
+          const sidebar=document.querySelector('.bm-sidebar').getBoundingClientRect();
+          const main=document.querySelector('.bm-main').getBoundingClientRect();
+          const dialog=document.querySelector('#dialog').getBoundingClientRect();
+          return dialog.width<=innerWidth-24+1 && sidebar.right<=main.left+1 && main.width>140;
+        }''')
         sidebar = page.locator('.bm-sidebar').bounding_box(); main = page.locator('.bm-main').bounding_box()
         check('narrow screens retain side-by-side folders and links', sidebar['x']+sidebar['width']<=main['x']+1 and main['width']>140)
         check('narrow manager does not overflow', page.locator('.bookmarks-app').evaluate('n=>n.scrollWidth<=n.clientWidth+1'))

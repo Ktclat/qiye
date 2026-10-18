@@ -55,11 +55,15 @@ with tempfile.TemporaryDirectory(prefix='qiye-map-mv3-') as temp, sync_playwrigh
         page.locator('[name=query]').fill('深圳')
         page.locator('[data-map-result]').first.click()
         page.locator('[data-map-action=favorite]').click()
+        expect(page.locator('[data-map-favorite-count]')).to_have_text('1')
+        # A native storage write can be visible before its completion callback
+        # and the draft's save queue settle. Reload only after the UI confirms it.
+        expect(page.locator('#map-workspace')).to_have_attribute('data-map-persistence','saved')
         page.locator('[data-close]').click()
         expect(page.locator('#dialog')).to_be_hidden()
         page.wait_for_function('async()=>((await chrome.storage.local.get("qiye.state.v5"))["qiye.state.v5"]).items[0].data.favorites.length===1')
         page.reload()
-        page.locator('#desktop .map-card-open').click()
+        page.locator('#desktop [data-item=map-native] .map-card-open').click()
         expect(page.locator('[data-map-favorite-count]')).to_have_text('1')
         check('map favorites persist in chrome.storage.local')
         page.evaluate('''()=>{window.mapActualPermissions=chrome.permissions;chrome.permissions={contains:async()=>false,request:async()=>false};}''')
