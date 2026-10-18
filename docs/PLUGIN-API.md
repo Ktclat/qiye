@@ -91,3 +91,15 @@
 - [Chrome MV3 安全迁移指南](https://developer.chrome.com/docs/extensions/develop/migrate/improve-security)：远程实现仍只在隔离 iframe 内执行，不改宿主 CSP、不将远程代码写入主程序执行环境。
 
 验证入口：`tests/plugin-reuse-e2e.py` 及 `--preview`、`tests/extension-e2e.py --reuse`；组件仓库 `tests/view-switch-e2e.py` 使用真实 HTTP 缓存并测量视图切换，同时核对刷新/新标签页的资源请求。旧组件的准备流程继续由 `tests/plugin-window-e2e.py` 覆盖。
+
+
+## 可选交互与热榜协议（宿主 0.10.5）
+
+`environment.hostFeatures` 包含 `interactions`、`commands`、`hotboard`；旧宿主可没有该字段，组件应先检测。
+
+- `ready` 可附 `contextMenu: [{id,label,icon}]`，最多 8 项，命令 id 最多 40 字符，标签最多 60 字符。宿主转义标签，仅接受已知图标。
+- 卡片可发 `{type:'interaction', action:'contextmenu'|'pointerdown'|'pointermove'|'pointerup'|'pointercancel', x, y, pointerId, pointerType, buttons}`。坐标为 frame 视口坐标；宿主按实例绑定的 frame 换算，并只在活动卡片且非预览时处理。
+- 菜单命令随窗口初始化/视图切换的 `environment.command` 传入；宿主也可发送 `{type:'command',command}`（例如 API 授权后的刷新）。组件只执行自身定义的命令。
+- `call('hotboard',{platform})` 仅访问 `https://uapis.cn/api/v1/misc/hotboard?type=...` 的固定平台集合，返回公开 JSON。不接收插件 URL 或自定义请求头，凭据始终省略，限制 1 MiB、12 秒、3 秒合并。预览与失效会话拒绝访问。扩展需由标题栏按钮主动申请 `https://uapis.cn/*`，不会在初始化时弹权限请求。普通 iframe 网络访问仍遵循 CORS。
+
+研究来源和视觉决策见 [组件修复记录](WIDGETS.md)。已安装组件仍固定版本；在组件源详情检查更新并“更新已添加的组件”后才使用新清单。

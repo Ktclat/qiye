@@ -27,7 +27,7 @@ export function bindCommunity(root, host, initial={}) {
  let sources = [], busy = false, writingSources = false, observer, entries = [], selectedSource = gallery ? null : initial.source;
  let category = gallery && initial.source ? initial.source : 'all', query = initial.query || '';
  let reportTimer;
- const report = (message, temporary=false) => { clearTimeout(reportTimer);if(root.isConnected)status.textContent=message;if(temporary)reportTimer=setTimeout(()=>{status.textContent='';},3000); };
+ const report = (message, temporary=true) => { clearTimeout(reportTimer);if(root.isConnected)status.textContent=message;if(temporary)reportTimer=setTimeout(()=>{status.textContent='';},3000); };
  const sourceEntries = source => (source.catalog?.widgets || []).map(manifest=>({manifest, source}));
  const installed = entry => host.getState().items.filter(i=>i.widget==='community' && i.config.source===entry.source.url && i.config.manifest.id===entry.manifest.id);
  const changed = entry => installed(entry).some(i=>JSON.stringify(i.config.manifest)!==JSON.stringify(entry.manifest));
