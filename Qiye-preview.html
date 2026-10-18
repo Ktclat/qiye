@@ -1236,6 +1236,15 @@ body.editing .plugin-slot iframe{pointer-events:none}
 @container community-catalog (max-width:460px){.community-cards{grid-template-columns:1fr}.community-card{padding:14px 12px 12px}}
 @media(max-width:600px){.plugin-dialog{width:calc(100vw - 12px);height:calc(100dvh - 12px)}.plugin-window-header{padding:0 8px}.plugin-placeholder small{font-size:9px}.community-catalog-scroll{padding:12px}.community-gallery .community-categories{padding:10px 12px}}
 
+.widget-host-actions{position:absolute;inset:0;display:block;pointer-events:none;z-index:3;opacity:0;transition:opacity .15s}
+.tile-widget:hover .widget-host-actions,.tile-widget:focus-within .widget-host-actions,body.editing .widget-host-actions{opacity:1}
+.widget-host-actions button{pointer-events:auto;width:23px;height:23px;display:grid;place-items:center;border-radius:7px;padding:4px;background:var(--panel);color:var(--muted);box-shadow:0 1px 4px #0002}
+.widget-host-actions .icon{width:14px;height:14px}.widget-host-actions .widget-drag-handle{cursor:grab;touch-action:none}
+body.is-dragging .plugin-slot iframe{pointer-events:none}
+.toast[hidden]{display:none!important}
+
+.widget-host-actions button{position:absolute;right:6px;top:6px}.widget-host-actions .widget-drag-handle{top:auto;right:auto;bottom:3px;left:calc(50% - 12px)}
+
 </style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
@@ -3782,7 +3791,12 @@ const englishMessages = {
   "请填写和风控制台提供的 API Host（以 .qweatherapi.com 结尾）。": "Enter your API Host from the QWeather console, ending in .qweatherapi.com.",
   "API Key 格式无效。": "Invalid API key format.",
   "未获准访问天气源，请在天气设置中重新保存并授权。": "Weather source access was not granted. Save weather settings again to grant access.",
-  "澳门": "Macao"
+  "澳门": "Macao",
+  "拖动排序": "Drag to reorder",
+  "组件菜单": "Widget menu",
+  "请在窗口标题栏授权热榜访问，然后刷新榜单。": "Allow hotboard access in the window title bar, then refresh the board.",
+  "授权热榜访问": "Allow hotboards",
+  "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing."
 };
 
 return {englishMessages};
@@ -4074,6 +4088,32 @@ function widgetContentSummary(items) {
 
 return {newWidgetData, validateWidgetData, widgetContentSummary};
 })();
+const __plugin_hotboard = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { fetchPublicJson } = __public_json;
+const { t } = __i18n;
+
+// A fixed public-data endpoint, never a general proxy for plugin-supplied URLs.
+const platforms = new Set(['zhihu','weibo','52pojie','baidu','toutiao','thepaper','ithome','sspai','juejin','bilibili','douyin','douban-movie','tieba','v2ex','hupu','ithome-xijiayi','36kr','huxiu','zhihu-daily','guokr']);
+const requests = new Map();
+async function requireHotboardPermission(url) {
+ const api=globalThis.chrome;
+ if(api?.runtime?.id&&api.permissions&&!await api.permissions.contains({origins:[new URL(url).origin+'/*']}))
+  throw new Error(t('请在窗口标题栏授权热榜访问，然后刷新榜单。'));
+}
+async function fetchPluginHotboard(type, { fetcher = fetchPublicJson, permission = requireHotboardPermission, now = Date.now } = {}) {
+ if (!platforms.has(type)) throw new Error('Unsupported hotboard platform');
+ const cached = requests.get(type);
+ if (cached && now() - cached.time < 3000) return cached.promise;
+ const url = 'https://uapis.cn/api/v1/misc/hotboard?type=' + encodeURIComponent(type);
+ const job = {time: now()};
+ job.promise = (async () => { await permission(url); return fetcher(url, {maxBytes:1024*1024}); })();
+ requests.set(type, job);
+ try { return await job.promise; } catch (error) { if (requests.get(type) === job) requests.delete(type); throw error; }
+}
+
+return {fetchPluginHotboard};
+})();
 const __icons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
@@ -4131,7 +4171,7 @@ const paths = {
  ai: '<path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8z"/>',
  game: '<path d="M7 7h10c3 0 5 10 3 12-1 1-4-2-5-3H9c-1 1-4 4-5 3C2 17 4 7 7 7Z"/><path d="M8 10v5m-2.5-2.5h5M16 11h.01M18 14h.01"/>',
  plus:'<path d="M12 5v14M5 12h14"/>',
- settings:'<path d="m9 3-1 3-3 1-2 3 2 2-1 4 3 2 3-1 2 3 4-1 1-3 3-1 1-4-3-2V5l-4-2-2 2z"/><circle cx="12" cy="12" r="3"/>',
+ settings:'<path d="M10 3h4l.6 2.5 1.5.9 2.5-.8 2 3.5-1.9 1.8v1.8l1.9 1.8-2 3.5-2.5-.8-1.5.9L14 21h-4l-.6-2.5-1.5-.9-2.5.8-2-3.5 1.9-1.8v-1.8L3.4 9.5l2-3.5 2.5.8 1.5-.9L10 3Z"/><circle cx="12" cy="12" r="3"/>',
  search:'<circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/>',
  wallpaper:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.5"/><path d="m21 16-6-6-7 8-3-3-2 2"/>',
  edit:'<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/>',
@@ -4276,6 +4316,7 @@ return {createPluginFrame, discardPreparedWindow, preparePluginWindow, takePrepa
 })();
 const __plugin_host = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
+const { fetchPluginHotboard } = __plugin_hotboard;
 const { t, getLocale } = __i18n;
 const { escapeText: e } = __html;
 const { icon } = __icons;
@@ -4285,14 +4326,26 @@ const { validateCommunityData } = __community_format;
 const { publicHttpsUrl } = __public_json;
 const { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPreparedWindow } = __plugin_preload;
 
-const sessions = new Map();
+const sessions = new Map(), queuedCommands = new Map();
+function pluginMenu(itemId) { return [...sessions.values()].find(s=>s.itemId===itemId)?.menu || []; }
+function queuePluginCommand(itemId, command) {
+ if(command!=='settings'&&!pluginMenu(itemId).some(entry=>entry.id===command))return false;
+ queuedCommands.set(itemId,command);return true;
+}
+function validatePluginMenu(value) {
+ if(!Array.isArray(value))return [];
+ const seen=new Set();return value.slice(0,8).flatMap(entry=>{
+  if(!entry||typeof entry.id!=='string'||!(/^[a-z][a-z0-9-]{0,39}$/).test(entry.id)||seen.has(entry.id)||typeof entry.label!=='string'||!entry.label.trim())return [];
+  seen.add(entry.id);return [{id:entry.id,label:entry.label.slice(0,60),icon:['settings','plus','list','grid','refresh','download','trash'].includes(entry.icon)?entry.icon:'grid'}];
+ });
+}
 const appearanceKeys = ['theme','themeColor','useThemeColor','surfaceStyle','surfaceOpacity','surfaceBlur','reducedEffects','uiFont','gridSize','gap','radius','showSeconds','hour12'];
 function pluginCard(item) {
  return `<section class="plugin-slot" data-plugin-slot data-widget-id="${e(item.id)}"><button class="plugin-placeholder" data-action="widget-sources"><strong>${e(item.title)}</strong><small>${t('启用组件源')}</small></button></section>`;
 }
 function pluginWorkspace(item) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch{}
- return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
+ return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.id==='qiye.hotsearch'&&globalThis.chrome?.runtime?.id?`<button data-plugin-hotboard-grant>${t('授权热榜访问')}</button>`:''}${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
 }
 function payload(item) {
  return item.widget==='community'?{value:item.data.value||'null',revision:item.data.value||'null'}
@@ -4323,6 +4376,7 @@ async function performPluginCall(method,params,{item,plugin,host,active,mode='ca
  if(method==='close'){if(mode!=='window')throw new Error('No widget window');void host.closeDialog();return true;}
  if(method==='expand'){if(mode!=='window')throw new Error('No widget window');document.querySelector('#dialog')?.classList.toggle('widget-app-expanded');return true;}
  if(method==='toast'){host.toast(String(params.message||'').slice(0,300));return true;}
+ if(method==='hotboard')return fetchPluginHotboard(params.platform);
  if(method==='openUrl'){window.open(publicHttpsUrl(params.url),'_blank','noopener,noreferrer');return true;}
  if(method==='wallpaper'){
   if(!plugin.manifest.capabilities?.includes('wallpaper'))throw new Error('Capability not declared');
@@ -4392,7 +4446,8 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const latest=host.getState().items.find(entry=>entry.id===item.id);if(!latest)return false;
   try{return JSON.stringify(resolveWidgetSource(latest))===pluginKey;}catch{return false;}
  };
- const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
+ const environment=()=>({hostFeatures:['hotboard','interactions','commands'],locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:current()?.size||item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
+ const commandEnvironment=()=>{const env=environment();if(mode==='window'&&queuedCommands.has(item.id)){env.command=queuedCommands.get(item.id);queuedCommands.delete(item.id);}return env;};
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
  const update=()=>{
   if(!ready||!active())return;
@@ -4417,8 +4472,16 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
    const message=event.data;if(!active())return;
    if(message?.type==='view-ready'&&viewJob&&message.id===viewJob.id){const job=viewJob;viewJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
    if(message?.type==='flushed'&&flushJob){const job=flushJob;flushJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
-   if(message?.type==='ready'&&message.version===plugin.manifest.version){ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
+   if(message?.type==='ready'&&message.version===plugin.manifest.version){session.menu=validatePluginMenu(message.contextMenu);ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
+   if(message?.type==='interaction'&&mode==='card'&&!preview){
+    const rect=frame.getBoundingClientRect(),x=Number(message.x),y=Number(message.y);
+    if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>20000||Math.abs(y)>20000)return;
+    const point={clientX:rect.left+x*rect.width/(frame.clientWidth||1),clientY:rect.top+y*rect.height/(frame.clientHeight||1)};
+    if(message.action==='contextmenu')host.openWidgetContext?.(item.id,point);
+    if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
+    return;
+   }
    if(plugin.manifest.version===1&&message?.type==='save'){
     try{if(preview)throw new Error(t('预览不会修改桌面数据'));if(busy)throw new Error('Save in progress');busy=true;const data=validateCommunityData({value:message.value});await host.saveData(item.id,data,JSON.stringify(current().data));if(active())port.postMessage({type:'saved',id:message.id,ok:true});}
     catch(error){if(active())port.postMessage({type:'saved',id:message.id,error:error.message});}finally{busy=false;}return;
@@ -4432,7 +4495,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
    catch(error){reply({error:error.message});}finally{if(writing)busy=false;}
   };
   let storage={};try{if(!preview)storage=validatePluginData(JSON.parse(localStorage.getItem(scopedKey(item,plugin))||'{}'));}catch{}
-  const init={type:'qiye:init',version:plugin.manifest.version,...payload(current()),data:current().data.value||'null',item:{id:item.id,title:item.title,size:item.size},environment:environment(),storage};
+  const init={type:'qiye:init',version:plugin.manifest.version,...payload(current()),data:current().data.value||'null',item:{id:item.id,title:item.title,size:item.size},environment:commandEnvironment(),storage};
   // Opaque sandbox origin requires '*'; the channel is sent only to this frame.
   frame.contentWindow.postMessage(init,'*',[channel.port2]);
   observer=new ResizeObserver(update);observer.observe(root);
@@ -4460,7 +4523,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const promise=new Promise((resolve,reject)=>{
    const id=String(++viewSequence);
    viewJob={id,resolve,reject,timer:setTimeout(()=>{viewJob=null;reject(new Error(t('组件未响应，请检查网络后重试。')));},5000)};
-   port.postMessage({type:'view',id,environment:environment()});
+   port.postMessage({type:'view',id,environment:commandEnvironment()});
   }).finally(()=>{if(!closed)root.setAttribute('aria-busy','false');});
   // The window may close while the switch is in flight. flush() awaits this
   // same promise, while this handler prevents an unobserved rejection.
@@ -4479,7 +4542,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   viewTransition=requestView();
   try{await viewTransition;update();}catch(error){fail(error.message);}
  };
- const session={update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
+ const session={itemId:item.id,menu:[],command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
   if(preview||homeMode!=='card'||mode!=='card'||borrowed||!reusable||!ready||!active()||!target.moveBefore||!homeRoot.moveBefore||candidate.id!==item.id||JSON.stringify(resolved)!==JSON.stringify(plugin))return null;
   target.replaceChildren();
   try{target.moveBefore(frame,null);}catch{return null;}
@@ -4508,8 +4571,16 @@ function updatePluginFrames(container) { for(const [root,session] of sessions)if
 function bindPluginWorkspace(root,item,host) {
  const controller=new AbortController();
  const cleanup=mountPlugin(root.querySelector('[data-plugin-slot]'),item,host,'window');
+ const hotboardButton=root.querySelector('[data-plugin-hotboard-grant]');let hotboardTimer;
+ if(hotboardButton)chrome.permissions.contains({origins:['https://uapis.cn/*']}).then(allowed=>{if(root.isConnected&&!allowed)root.querySelector('.plugin-window-header')?.classList.add('needs-grant');});
  root.addEventListener('click',async event=>{
   if(event.target.closest('[data-plugin-force-close]')){await cleanup(true);controller.abort();void host.closeDialog();return;}
+  if(event.target.closest('[data-plugin-hotboard-grant]')){
+   try{if(await chrome.permissions.request({origins:['https://uapis.cn/*']})){
+    root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权热榜访问，正在刷新。'));
+    clearTimeout(hotboardTimer);hotboardTimer=setTimeout(()=>{if(root.isConnected)sessions.get(root.querySelector('[data-plugin-slot]'))?.command('hot-refresh');},3100);
+   }}catch(error){host.toast(error.message);}return;
+  }
   if(event.target.closest('[data-plugin-expand]'))root.closest('dialog').classList.toggle('widget-app-expanded');
   if(event.target.closest('[data-plugin-location]')){
    try{const plugin=resolveWidgetSource(item);if(plugin&&(!globalThis.chrome?.permissions?.request||await chrome.permissions.request({permissions:['geolocation']}))){localStorage.setItem(grantKey(plugin)+'|geolocation','true');root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权，请在组件中重新点击定位。'));}}
@@ -4528,11 +4599,11 @@ function bindPluginWorkspace(root,item,host) {
    }
    throw error;
   }
-  controller.abort();
+  controller.abort();clearTimeout(hotboardTimer);
  };
 }
 
-return {pluginCard, pluginWorkspace, performPluginCall, mountPlugin, updatePluginFrames, bindPluginWorkspace};
+return {pluginMenu, queuePluginCommand, validatePluginMenu, pluginCard, pluginWorkspace, performPluginCall, mountPlugin, updatePluginFrames, bindPluginWorkspace};
 })();
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -6607,7 +6678,7 @@ function bindCommunity(root, host, initial={}) {
  let sources = [], busy = false, writingSources = false, observer, entries = [], selectedSource = gallery ? null : initial.source;
  let category = gallery && initial.source ? initial.source : 'all', query = initial.query || '';
  let reportTimer;
- const report = (message, temporary=false) => { clearTimeout(reportTimer);if(root.isConnected)status.textContent=message;if(temporary)reportTimer=setTimeout(()=>{status.textContent='';},3000); };
+ const report = (message, temporary=true) => { clearTimeout(reportTimer);if(root.isConnected)status.textContent=message;if(temporary)reportTimer=setTimeout(()=>{status.textContent='';},3000); };
  const sourceEntries = source => (source.catalog?.widgets || []).map(manifest=>({manifest, source}));
  const installed = entry => host.getState().items.filter(i=>i.widget==='community' && i.config.source===entry.source.url && i.config.manifest.id===entry.manifest.id);
  const changed = entry => installed(entry).some(i=>JSON.stringify(i.config.manifest)!==JSON.stringify(entry.manifest));
@@ -6725,7 +6796,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.4";
+const APP_VERSION = "0.10.5";
 
 return {APP_VERSION};
 })();
@@ -9030,7 +9101,7 @@ function createDesktopDragController({
   if(!s?.original || !s.source.root.isConnected)return;
   const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
   // Only restore surviving original nodes, never resurrect a deleted card.
-  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)s.source.root.append(node);
+  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)(s.source.root.moveBefore ? s.source.root.moveBefore(node,null) : s.source.root.append(node));
   animate(before,list);
  }
  function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
@@ -9074,7 +9145,7 @@ function createDesktopDragController({
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
   doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
   if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
-  try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
+  if(!s.external)try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   doc.getSelection?.()?.removeAllRanges();
   moveGhost();try{onStart();}catch(e){onError(e);}
   if(session===s)frame=win.requestAnimationFrame(tick);
@@ -9083,7 +9154,7 @@ function createDesktopDragController({
   const s=session,root=s.source.root,source=s.source.element;
   const next=position==='before'?target:target.nextElementSibling;
   if(next===source || source.nextElementSibling===next)return;
-  const list=nodes(root),before=boxes(list);cancelAnimations();root.insertBefore(source,next);
+  const list=nodes(root),before=boxes(list);cancelAnimations();if(root.moveBefore)root.moveBefore(source,next);else root.insertBefore(source,next);
   // Capture final layout before FLIP transforms affect hit testing.
   s.layout=boxes(nodes(root));s.lastSwap=Date.now();
   animate(before,list);s.changed=true;
@@ -9156,7 +9227,7 @@ function createDesktopDragController({
   if(e.isPrimary===false || e.button!==undefined && e.button!==0)return;
   suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
   const source=sourceAt(e);if(!source)return;
-  session={source,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
+  session={source,external:e.external,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
   session.touch=e.pointerType==='touch';
   holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},DRAG_HOLD_MS);
  }
@@ -9213,7 +9284,12 @@ function createDesktopDragController({
  listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
  listen(doc,'selectstart',e=>{if(session?.active)e.preventDefault();});
  listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
- return {cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
+ return {forwardPointer:(itemId,event)=>{
+  const target=nodes(grid()).find(node=>node.dataset.item===itemId);if(!target)return;
+  if(event.type!=='pointerdown'&&session?.source.id!==itemId)return;
+  const e={...event,target,external:true,preventDefault(){},stopImmediatePropagation(){}};
+  if(event.type==='pointerdown')down(e);else if(event.type==='pointermove')move(e);else if(event.type==='pointerup')up(e);else cancel();
+ },cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
 }
 
 return {DRAG_HOLD_MS, FOLDER_DWELL_MS, reorderById, resolveDropIntent, edgeScrollDelta, createDesktopDragController};
@@ -9448,7 +9524,7 @@ const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } = __widge
 const { chineseLunarDate } = __desktop_date;
 const { sharingView, bindSharing } = __sharing_ui;
 const { communityView, communityToolbar, bindCommunity } = __community_ui;
-const { pluginWorkspace, bindPluginWorkspace } = __plugin_host;
+const { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand } = __plugin_host;
 const { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } = __widget_sources;
 const { t, setLocale, getLocale, formatDate, localizeDocument } = __i18n;
 const { APP_VERSION } = __version;
@@ -9765,10 +9841,11 @@ async function visitLinkFavicon(button) {
   if(view.visitController===controller){view.visitController=null;if(form.isConnected&&dialog.open)updateLinkPreview(form);}
  }
 }
-function toast(message, undo, actionLabel=t("撤销"), duration=5200) {
+function toast(message, undo, actionLabel=t("撤销"), duration=3000) {
  clearTimeout(lastToastTimer); const el = $('#toast');
+ (dialog.open ? dialog : document.body).append(el);
  $('span',el).textContent = message; $('button',el).hidden = !undo; $('button',el).textContent=actionLabel; undoAction = undo || null; el.hidden = false;
- lastToastTimer = setTimeout(() => { el.hidden = true; undoAction = null; }, undo ? 9500 : duration);
+ lastToastTimer = setTimeout(() => { el.hidden = true; undoAction = null; }, undo ? 8000 : Math.max(1500,Math.min(10000,Number(duration)||3000)));
 }
 $('#toast button').addEventListener('click', async () => { const action = undoAction; $('#toast').hidden = true; undoAction = null; if (action) await action(); });
 async function persist(options = {}) {
@@ -10061,7 +10138,7 @@ function renderDesktop({preserveWidgets=false} = {}) {
 function renderTile(item,index=0) {
  const [width,height] = (item.size || '1x1').split('x').map(Number);
  let body = '';
- if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
+ if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div><div class="widget-host-actions"><button class="widget-drag-handle" title="${t('拖动排序')}" aria-label="${t('拖动排序')}">${icon('move')}</button><button data-widget-context="${esc(item.id)}" data-no-drag aria-label="${t('组件菜单')}" title="${t('组件菜单')}">${icon('more')}</button></div>`;
  else if (item.type === 'folder') {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
   body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="${t("打开文件夹：{v0}", {v0: esc(item.title)})}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
@@ -10537,7 +10614,10 @@ function openContext(event,{itemId,groupId}={}) {
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
+ if(item?.type==='widget')html=contextButton('widget-open',t('打开组件'),'grid')+pluginMenu(item.id).map(entry=>contextButton('widget-command',esc(entry.label),entry.icon,`data-command="${esc(entry.id)}"`)).join('')+'<hr>'+html;
  menu.innerHTML=html;menu.hidden=false;
+ for(const button of menu.querySelectorAll('button')){button.setAttribute('role','menuitem');button.tabIndex=-1;}
+ menu.querySelector('button')?.focus({preventScroll:true});
  const scale=dialog.open?(Number(getComputedStyle(dialog).zoom)||1):1;
  const host=dialog.open?dialog.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};
  menu.style.maxWidth=Math.max(1,(host.width-16)/scale)+'px';
@@ -10598,8 +10678,11 @@ document.addEventListener('click', async event=>{
  if(target.dataset.url)return navigate(target.dataset.url);
  if(target.dataset.unfolder){const item=state.items.find(i=>i.id===target.dataset.unfolder);if(!item)return;const id=item.folderId;item.folderId=null;await commit();openDialog('folder',{id});toast(t("已移回桌面。"));return;}
  if(target.dataset.deleteGroup)return confirmDeleteGroup(target.dataset.deleteGroup);
+ if(target.dataset.widgetContext){const r=target.getBoundingClientRect();openContext({preventDefault(){},clientX:r.right,clientY:r.bottom},{itemId:target.dataset.widgetContext});return;}
  if(target.dataset.context){
   const menu=$('#context-menu'),id=menu.dataset.item,groupId=menu.dataset.group,action=target.dataset.context;menu.hidden=true;
+  if(action==='widget-open')return openDialog('widget-detail',{item:state.items.find(i=>i.id===id)});
+  if(action==='widget-command'){const item=state.items.find(i=>i.id===id);if(item&&queuePluginCommand(id,target.dataset.command))openDialog('widget-detail',{item});return;}
   if(action==='edit')return openDialog('edit-item',{id});
   if(action==='move')return openDialog('move',{id});
   if(action==='delete')return await removeItem(id);
@@ -10778,6 +10861,13 @@ $('#search-input').addEventListener('keydown',async event=>{
 $('#search-suggestions').addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();const buttons=$$('button',$('#search-suggestions')),index=buttons.indexOf(document.activeElement),next=(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;buttons[next]?.focus();}});
 $('#clock').addEventListener('click',async()=>{state.settings.minimal=!state.settings.minimal;applySettings();await persist();});
 document.addEventListener('keydown',event=>{
+ const menu=$('#context-menu');
+ if(!menu.hidden&&menu.contains(event.target)){
+  const buttons=$$('button',menu),index=buttons.indexOf(event.target);
+  if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus();return;}
+  if(event.key==='Escape'||event.key==='Tab'){menu.hidden=true;document.querySelector(`[data-item="${CSS.escape(menu.dataset.item)}"]`)?.focus();if(event.key==='Escape'){event.preventDefault();return;}}
+ }
+ if((event.key==='ContextMenu'||event.shiftKey&&event.key==='F10')&&event.target.closest('[data-item]')){event.preventDefault();const tile=event.target.closest('[data-item]'),rect=tile.getBoundingClientRect();openContext({preventDefault(){},clientX:rect.left+16,clientY:rect.top+28},{itemId:tile.dataset.item});return;}
  if(event.key==='Enter' && event.target.matches('.tile-widget')){const item=state.items.find(i=>i.id===event.target.dataset.item);if(item){event.preventDefault();openDialog('widget-detail',{item});return;}}
  if(event.key==='Escape'){document.body.classList.remove('shortcuts-open','navigation-open');document.body.classList.add('shortcuts-dismissed');$('#shortcuts-button').setAttribute('aria-expanded','false');updateToolbar();hideSearchMenus();$('#context-menu').hidden=true;if(dialog.open)return; if(editing){editing=false;renderDesktop();}else if(state.settings.minimal){state.settings.minimal=false;applySettings();persist().catch(()=>{});}return;}
  if(event.key==='Enter'&&event.target.id==='local-query'){event.preventDefault();if(localScope==='history')chooseLocalScope('history').catch(err=>toast(err.message));else renderLocalResults(event.target.value);return;}
@@ -10896,6 +10986,8 @@ document.addEventListener('change',async event=>{
 function pluginHost() {
  return {getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,savePlugin:savePluginEnvelope,openDialog,closeDialog,toast,
   refreshCards:()=>refreshLiveWidgets($('#desktop'),state),
+  openWidgetContext:(id,point)=>{if(!dialog.open)openContext({...point,preventDefault(){}},{itemId:id});},
+  widgetPointer:(id,event)=>desktopDrag?.forwardPointer(id,event),
   applyWallpaper:applyOnlineWallpaper,
   applyWallpaperBlob:blob=>storeLocalWallpaper(blob,'image'),
   openWallpaper:()=>openDialog('wallpaper')};

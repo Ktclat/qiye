@@ -135,7 +135,7 @@ export function createDesktopDragController({
   if(!s?.original || !s.source.root.isConnected)return;
   const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
   // Only restore surviving original nodes, never resurrect a deleted card.
-  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)s.source.root.append(node);
+  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)(s.source.root.moveBefore ? s.source.root.moveBefore(node,null) : s.source.root.append(node));
   animate(before,list);
  }
  function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
@@ -179,7 +179,7 @@ export function createDesktopDragController({
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
   doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
   if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
-  try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
+  if(!s.external)try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   doc.getSelection?.()?.removeAllRanges();
   moveGhost();try{onStart();}catch(e){onError(e);}
   if(session===s)frame=win.requestAnimationFrame(tick);
@@ -188,7 +188,7 @@ export function createDesktopDragController({
   const s=session,root=s.source.root,source=s.source.element;
   const next=position==='before'?target:target.nextElementSibling;
   if(next===source || source.nextElementSibling===next)return;
-  const list=nodes(root),before=boxes(list);cancelAnimations();root.insertBefore(source,next);
+  const list=nodes(root),before=boxes(list);cancelAnimations();if(root.moveBefore)root.moveBefore(source,next);else root.insertBefore(source,next);
   // Capture final layout before FLIP transforms affect hit testing.
   s.layout=boxes(nodes(root));s.lastSwap=Date.now();
   animate(before,list);s.changed=true;
@@ -261,7 +261,7 @@ export function createDesktopDragController({
   if(e.isPrimary===false || e.button!==undefined && e.button!==0)return;
   suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
   const source=sourceAt(e);if(!source)return;
-  session={source,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
+  session={source,external:e.external,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
   session.touch=e.pointerType==='touch';
   holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},DRAG_HOLD_MS);
  }
@@ -318,5 +318,10 @@ export function createDesktopDragController({
  listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
  listen(doc,'selectstart',e=>{if(session?.active)e.preventDefault();});
  listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
- return {cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
+ return {forwardPointer:(itemId,event)=>{
+  const target=nodes(grid()).find(node=>node.dataset.item===itemId);if(!target)return;
+  if(event.type!=='pointerdown'&&session?.source.id!==itemId)return;
+  const e={...event,target,external:true,preventDefault(){},stopImmediatePropagation(){}};
+  if(event.type==='pointerdown')down(e);else if(event.type==='pointermove')move(e);else if(event.type==='pointerup')up(e);else cancel();
+ },cancel,isDragging:()=>!!session?.active,destroy:()=>{if(destroyed)return;destroyed=true;clean({guard:false});cancelAnimations();listeners.splice(0).forEach(off=>off());}};
 }

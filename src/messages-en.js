@@ -2047,5 +2047,10 @@ export const englishMessages = {
   "请填写和风控制台提供的 API Host（以 .qweatherapi.com 结尾）。": "Enter your API Host from the QWeather console, ending in .qweatherapi.com.",
   "API Key 格式无效。": "Invalid API key format.",
   "未获准访问天气源，请在天气设置中重新保存并授权。": "Weather source access was not granted. Save weather settings again to grant access.",
-  "澳门": "Macao"
+  "澳门": "Macao",
+  "拖动排序": "Drag to reorder",
+  "组件菜单": "Widget menu",
+  "请在窗口标题栏授权热榜访问，然后刷新榜单。": "Allow hotboard access in the window title bar, then refresh the board.",
+  "授权热榜访问": "Allow hotboards",
+  "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing."
 };

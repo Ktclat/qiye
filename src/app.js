@@ -7,7 +7,7 @@ import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './
 import { chineseLunarDate } from './desktop-date.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
 import { communityView, communityToolbar, bindCommunity } from './community-ui.js';
-import { pluginWorkspace, bindPluginWorkspace } from './plugin-host.js';
+import { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand } from './plugin-host.js';
 import { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } from './widget-sources.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
 import { APP_VERSION } from './version.js';
@@ -324,10 +324,11 @@ async function visitLinkFavicon(button) {
   if(view.visitController===controller){view.visitController=null;if(form.isConnected&&dialog.open)updateLinkPreview(form);}
  }
 }
-function toast(message, undo, actionLabel=t("撤销"), duration=5200) {
+function toast(message, undo, actionLabel=t("撤销"), duration=3000) {
  clearTimeout(lastToastTimer); const el = $('#toast');
+ (dialog.open ? dialog : document.body).append(el);
  $('span',el).textContent = message; $('button',el).hidden = !undo; $('button',el).textContent=actionLabel; undoAction = undo || null; el.hidden = false;
- lastToastTimer = setTimeout(() => { el.hidden = true; undoAction = null; }, undo ? 9500 : duration);
+ lastToastTimer = setTimeout(() => { el.hidden = true; undoAction = null; }, undo ? 8000 : Math.max(1500,Math.min(10000,Number(duration)||3000)));
 }
 $('#toast button').addEventListener('click', async () => { const action = undoAction; $('#toast').hidden = true; undoAction = null; if (action) await action(); });
 async function persist(options = {}) {
@@ -620,7 +621,7 @@ function renderDesktop({preserveWidgets=false} = {}) {
 function renderTile(item,index=0) {
  const [width,height] = (item.size || '1x1').split('x').map(Number);
  let body = '';
- if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
+ if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div><div class="widget-host-actions"><button class="widget-drag-handle" title="${t('拖动排序')}" aria-label="${t('拖动排序')}">${icon('move')}</button><button data-widget-context="${esc(item.id)}" data-no-drag aria-label="${t('组件菜单')}" title="${t('组件菜单')}">${icon('more')}</button></div>`;
  else if (item.type === 'folder') {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
   body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="${t("打开文件夹：{v0}", {v0: esc(item.title)})}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
@@ -1096,7 +1097,10 @@ function openContext(event,{itemId,groupId}={}) {
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
+ if(item?.type==='widget')html=contextButton('widget-open',t('打开组件'),'grid')+pluginMenu(item.id).map(entry=>contextButton('widget-command',esc(entry.label),entry.icon,`data-command="${esc(entry.id)}"`)).join('')+'<hr>'+html;
  menu.innerHTML=html;menu.hidden=false;
+ for(const button of menu.querySelectorAll('button')){button.setAttribute('role','menuitem');button.tabIndex=-1;}
+ menu.querySelector('button')?.focus({preventScroll:true});
  const scale=dialog.open?(Number(getComputedStyle(dialog).zoom)||1):1;
  const host=dialog.open?dialog.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};
  menu.style.maxWidth=Math.max(1,(host.width-16)/scale)+'px';
@@ -1157,8 +1161,11 @@ document.addEventListener('click', async event=>{
  if(target.dataset.url)return navigate(target.dataset.url);
  if(target.dataset.unfolder){const item=state.items.find(i=>i.id===target.dataset.unfolder);if(!item)return;const id=item.folderId;item.folderId=null;await commit();openDialog('folder',{id});toast(t("已移回桌面。"));return;}
  if(target.dataset.deleteGroup)return confirmDeleteGroup(target.dataset.deleteGroup);
+ if(target.dataset.widgetContext){const r=target.getBoundingClientRect();openContext({preventDefault(){},clientX:r.right,clientY:r.bottom},{itemId:target.dataset.widgetContext});return;}
  if(target.dataset.context){
   const menu=$('#context-menu'),id=menu.dataset.item,groupId=menu.dataset.group,action=target.dataset.context;menu.hidden=true;
+  if(action==='widget-open')return openDialog('widget-detail',{item:state.items.find(i=>i.id===id)});
+  if(action==='widget-command'){const item=state.items.find(i=>i.id===id);if(item&&queuePluginCommand(id,target.dataset.command))openDialog('widget-detail',{item});return;}
   if(action==='edit')return openDialog('edit-item',{id});
   if(action==='move')return openDialog('move',{id});
   if(action==='delete')return await removeItem(id);
@@ -1337,6 +1344,13 @@ $('#search-input').addEventListener('keydown',async event=>{
 $('#search-suggestions').addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();const buttons=$$('button',$('#search-suggestions')),index=buttons.indexOf(document.activeElement),next=(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;buttons[next]?.focus();}});
 $('#clock').addEventListener('click',async()=>{state.settings.minimal=!state.settings.minimal;applySettings();await persist();});
 document.addEventListener('keydown',event=>{
+ const menu=$('#context-menu');
+ if(!menu.hidden&&menu.contains(event.target)){
+  const buttons=$$('button',menu),index=buttons.indexOf(event.target);
+  if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus();return;}
+  if(event.key==='Escape'||event.key==='Tab'){menu.hidden=true;document.querySelector(`[data-item="${CSS.escape(menu.dataset.item)}"]`)?.focus();if(event.key==='Escape'){event.preventDefault();return;}}
+ }
+ if((event.key==='ContextMenu'||event.shiftKey&&event.key==='F10')&&event.target.closest('[data-item]')){event.preventDefault();const tile=event.target.closest('[data-item]'),rect=tile.getBoundingClientRect();openContext({preventDefault(){},clientX:rect.left+16,clientY:rect.top+28},{itemId:tile.dataset.item});return;}
  if(event.key==='Enter' && event.target.matches('.tile-widget')){const item=state.items.find(i=>i.id===event.target.dataset.item);if(item){event.preventDefault();openDialog('widget-detail',{item});return;}}
  if(event.key==='Escape'){document.body.classList.remove('shortcuts-open','navigation-open');document.body.classList.add('shortcuts-dismissed');$('#shortcuts-button').setAttribute('aria-expanded','false');updateToolbar();hideSearchMenus();$('#context-menu').hidden=true;if(dialog.open)return; if(editing){editing=false;renderDesktop();}else if(state.settings.minimal){state.settings.minimal=false;applySettings();persist().catch(()=>{});}return;}
  if(event.key==='Enter'&&event.target.id==='local-query'){event.preventDefault();if(localScope==='history')chooseLocalScope('history').catch(err=>toast(err.message));else renderLocalResults(event.target.value);return;}
@@ -1455,6 +1469,8 @@ document.addEventListener('change',async event=>{
 function pluginHost() {
  return {getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,savePlugin:savePluginEnvelope,openDialog,closeDialog,toast,
   refreshCards:()=>refreshLiveWidgets($('#desktop'),state),
+  openWidgetContext:(id,point)=>{if(!dialog.open)openContext({...point,preventDefault(){}},{itemId:id});},
+  widgetPointer:(id,event)=>desktopDrag?.forwardPointer(id,event),
   applyWallpaper:applyOnlineWallpaper,
   applyWallpaperBlob:blob=>storeLocalWallpaper(blob,'image'),
   openWallpaper:()=>openDialog('wallpaper')};
