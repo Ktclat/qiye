@@ -114,6 +114,8 @@ jobs:
               python3 tests/widget-life-e2e.py --preview
               ;;
             services)
+              python3 tests/catalog-e2e.py
+              python3 tests/catalog-e2e.py --preview
               python3 tests/weather-e2e.py
               python3 tests/weather-e2e.py --preview
               python3 tests/hotsearch-e2e.py
@@ -159,6 +161,7 @@ jobs:
             output/playwright/hotsearch
             output/playwright/pomodoro
             output/playwright/codec
+            output/playwright/catalog
           retention-days: 14
 
   release:

@@ -58,6 +58,9 @@ with sync_playwright() as p:
         page.locator('.top-tools [data-action=add]').click()
         page.locator('[data-add-tab=widgets]').click()
         page.locator(f'[data-add-widget={widget}]').click()
+        page.wait_for_function('document.querySelector("[data-add-feedback]")?.textContent.length > 0')
+        check(f'{widget} chooser stays open after adding', page.locator('#dialog').is_visible())
+        page.locator('#dialog [data-close]').click()
         page.locator('#dialog').wait_for(state='hidden')
 
     try:
@@ -120,7 +123,9 @@ with sync_playwright() as p:
         page.locator('#widget-query').fill('does-not-exist')
         check('catalog has useful empty state', page.locator('#widget-catalog-empty').is_visible())
         page.locator('#widget-query').fill('便签'); page.locator('[data-catalog-widget=notes] [data-catalog-size="4x2"]').click()
-        page.locator('[data-add-widget=notes]').click(); page.locator('#dialog').wait_for(state='hidden')
+        page.locator('[data-add-widget=notes]').click()
+        page.wait_for_function('document.querySelector("[data-add-feedback]")?.textContent.length > 0')
+        page.locator('#dialog [data-close]').click(); page.locator('#dialog').wait_for(state='hidden')
         check('catalog size selection persists', saved(page)['items'][-1]['size'] == '4x2')
         context.close()
 

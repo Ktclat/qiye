@@ -9,7 +9,7 @@ import { bindMapWorkspace } from './map-workspace.js';
 import { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } from './pomodoro-view.js';
 import { configurePomodoro, validatePomodoroConfig } from './pomodoro.js';
 import { bindPomodoro } from './pomodoro-runtime.js';
-import { renderCatalog, filterCatalog, changeCatalogSize } from './widget-catalog.js';
+import { renderCatalog, renderCatalogToolbar, filterCatalog, changeCatalogSize } from './widget-catalog.js';
 import { TILE_SIZES, sizeLabel, gridMetrics } from './widget-sizes.js';
 import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
@@ -824,6 +824,7 @@ function openDialog(kind,data={}) {
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
+ else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='map')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else if(kind==='widget-detail'&&detailWidget==='converter')$('#dialog-title',dialog)?.focus({preventScroll:true});
@@ -875,16 +876,17 @@ function linkEditorForm(item){
 }
 function addDialog(tab,data) {
  const item = data.item;
+ const catalog = tab === 'widgets' || tab === 'sites';
  let content = '';
- if (tab === 'widgets' || tab === 'sites') content = renderCatalog({state,groupId:data.groupId||currentGroup().id,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
+ if (catalog) content = renderCatalog({state,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
  else if(tab==='sharing')content=sharingView(state,data.url||'');
  else if(tab==='community')content=communityView();
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title',t("文件夹名称"),item?.title || '',{required:true,maxlength:24,placeholder:t("例如：灵感收藏")})}${selectField('groupId',t("所在分组"),item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">${t("把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。")}</p>${formActions(item?t("保存文件夹"):t("创建文件夹"))}</form>`;
  else content = linkEditorForm(item);
- const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):dialogCloseButton()+`<button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>`;
+ const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):`<header class="add-header"><h2 id="workspace-title" tabindex="-1">${t('添加')}</h2>${catalog?renderCatalogToolbar({state,groupId:data.groupId||currentGroup().id}):''}<div class="add-window-actions"><button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>${dialogCloseButton()}</div></header>`;
  if(item)return head+`<div class="dialog-body">${content}</div>`;
  const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'community',name:t('社区组件'),icon:'globe'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'},{id:'sharing',name:t('分享与导入'),icon:'download'}];
- return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}"><h2 class="workspace-title" id="workspace-title">${t("添加")}</h2>${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div>`;
+ return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content${catalog?' catalog-content':''}" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div><p class="add-feedback" data-add-feedback role="status" aria-live="polite" aria-atomic="true"></p>`;
 
 }
 function groupDialog(id) {
@@ -1113,12 +1115,36 @@ function importPreviewDialog(bookmarks) {
 function restorePreviewDialog(restored) { return dialogHeader(t("恢复备份"),t("请先确认备份内容。恢复后会替换当前桌面。"))+`<div class="dialog-body"><div class="about-features"><div><strong>${restored.groups.length}</strong><p>${t("个分组")}</p></div><div><strong>${restored.items.length}</strong><p>${t("个桌面项目")}</p></div><div><strong>${widgetContentSummary(restored.items).todos}</strong><p>${t("条待办")}</p></div></div><p class="help-text">${t("备份中的网址、便签、组件设置和壁纸将一并恢复。可以先导出当前桌面，保留一份副本。")}</p>${restored.items.some(i=>i.widget==='weather'&&i.config.enabled)?`<p class="help-text">${t("此备份已开启天气。恢复后会将「{v0}」的城市坐标发送至所选天气源获取预报。", {v0: esc(restored.items.filter(i=>i.widget==='weather'&&i.config.enabled).map(i=>i.config.city.name).join(', '))})}</p>`:''}<div class="button-row"><button class="secondary-button" data-action="export">${t("先备份当前桌面")}</button><button class="primary-button" data-action="confirm-restore">${t("确认恢复")}</button></div></div>`; }
 function confirmDialog(data) { return dialogHeader(data.title)+`<div class="dialog-body"><p class="help-text">${esc(data.message)}</p><div class="button-row"><button class="secondary-button" data-close>${t("取消")}</button><button class="danger-button" data-action="confirm-callback">${esc(data.label || t("确认"))}</button></div></div>`; }
 
-async function addWidget(type) {
+let catalogFeedbackTimer;
+function catalogFeedback(message, failed = false) {
+ const feedback=$('[data-add-feedback]',dialog);
+ if(!feedback)return;
+ clearTimeout(catalogFeedbackTimer);
+ feedback.textContent=message;feedback.classList.toggle('is-error',failed);
+ catalogFeedbackTimer=setTimeout(()=>{feedback.textContent='';},failed?9000:4500);
+}
+async function addCatalogItem(item, button, message) {
+ if(button.getAttribute('aria-disabled')==='true')return;
+ const session=dialogData;
+ button.setAttribute('aria-disabled','true');button.setAttribute('aria-busy','true');
+ catalogFeedback('');
+ try {
+  state.items.push(item);state.activeGroupId=item.groupId;await commit();
+  if(dialog.open && dialogKind==='add' && dialogData===session)catalogFeedback(message);
+ } catch(error) {
+  if(dialog.open && dialogKind==='add' && dialogData===session)catalogFeedback(error.message||t('保存失败，请再试一次。'),true);
+  throw error;
+ } finally {
+  button.removeAttribute('aria-disabled');button.removeAttribute('aria-busy');
+ }
+}
+async function addWidget(type, button) {
  const w=widgetCatalog.find(x=>x.type===type); if(!w)return;
  const selectedSize=$(`[data-catalog-widget="${type}"]`,dialog)?.dataset.previewSize;
  const data=newWidgetData(type);
  const groupId=$('#catalog-group',dialog)?.value||currentGroup().id;
  const item={id:uid(),groupId,type:'widget',widget:type,title:t(w.title),size:w.sizes.includes(selectedSize)?selectedSize:w.size,config:newWidgetConfig(type),data};
+ if(button)return await addCatalogItem(item,button,t('已添加{v0}，右键可调整设置。',{v0:t(w.title)}));
  state.items.push(item);state.activeGroupId=groupId;await commit();closeDialog();toast(`${t("已添加{v0}，右键可调整设置。", {v0: t(w.title)})}`);
 }
 async function removeItem(id) {
@@ -1204,12 +1230,12 @@ document.addEventListener('click', async event=>{
  if(target.dataset.editItem)return openDialog('edit-item',{id:target.dataset.editItem});
  if(target.dataset.deleteItem){await removeItem(target.dataset.deleteItem);return;}
  if(target.dataset.iconChoice)return chooseLinkIcon(target);
- if(target.dataset.addTab)return openDialog('add',{tab:target.dataset.addTab,groupId:$('#catalog-group')?.value||dialogData.groupId});
+ if(target.dataset.addTab){const expanded=dialog.classList.contains('workspace-expanded');openDialog('add',{tab:target.dataset.addTab,groupId:$('#catalog-group')?.value||dialogData.groupId});dialog.classList.toggle('workspace-expanded',expanded);return;}
  if(target.dataset.catalogSize || target.dataset.catalogStep){changeCatalogSize(target,state);return;}
  if(target.dataset.catalogCategory){$$('[data-catalog-category]',dialog).forEach(button=>button.setAttribute('aria-pressed',String(button===target)));filterCatalog(dialog);return;}
- if(target.dataset.addSite){const source=DEFAULT_STATE.items.find(item=>item.id===target.dataset.addSite);if(source){const groupId=$('#catalog-group').value;state.items.push({...clone(source),id:uid(),groupId,folderId:null});state.activeGroupId=groupId;await commit();closeDialog();}return;}
+ if(target.dataset.addSite){const source=DEFAULT_STATE.items.find(item=>item.id===target.dataset.addSite);if(source){const groupId=$('#catalog-group').value;await addCatalogItem({...clone(source),id:uid(),groupId,folderId:null},target,t('已添加到桌面。'));}return;}
  if(target.dataset.action==='workspace-expand'){dialog.classList.toggle('workspace-expanded');return;}
- if(target.dataset.addWidget)return await addWidget(target.dataset.addWidget);
+ if(target.dataset.addWidget)return await addWidget(target.dataset.addWidget,target);
  if(target.dataset.settingsTab)return openDialog('settings',{tab:target.dataset.settingsTab});
  if(target.dataset.color){const form=target.closest('form');$('input[name=color]',form).value=target.dataset.color;$$('[data-color]',form).forEach(b=>{b.classList.toggle('selected',b===target);b.innerHTML=b===target?icon('check'):'';});if(form.id==='link-form')updateLinkPreview(form);return;}
  if(target.dataset.groupIcon){$('input[name=icon]',dialog).value=target.dataset.groupIcon;$$('[data-group-icon]',dialog).forEach(b=>b.classList.toggle('selected',b===target));return;}

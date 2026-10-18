@@ -19,6 +19,14 @@ Native source can access its execution environment; its API is not a permission 
 
 ## Built-in catalog
 
+### Fixed controls and repeated additions
+
+The Add window has a 46 px single-row header containing search, the target group, maximize and close. Categories remain above the independently scrolling card list. Narrow windows keep search and window controls together and turn the side navigation into a horizontal strip. Initial focus goes to the title; keyboard users can reach search, categories, size previews and Add, scroll the list with PageDown, and close with Escape to return to the launcher.
+
+Adding a widget or website shortcut keeps the window open, including its query, category, target group, individual preview sizes, scroll position and maximized state. Feedback appears inside the window. A pending save blocks duplicate activation of that button; after completion, another intentional addition creates an independent instance. A failed save preserves the current choices for retry. A save that finishes after closing does not close or replace a different window.
+
+References reviewed on 2026-10-18: the user's iTab visual baseline and its [public entry](https://go.itab.link/), [MDN overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/overflow), and the [WAI-ARIA modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/). Qiye retains preview cards and navigation, chooses a 46 px header, separates the scroll region with an accessible name and keyboard focus, and preserves explicit dismissal and focus return. Card content, persistence formats and date/time calculations are unchanged. `tests/catalog-e2e.py` covers source, standalone preview and an optional public URL.
+
 ### Desktop context menus
 
 The compact visual reference is the [public iTab desktop](https://go.itab.link/) and its [right-click add instructions](https://www.itab.link/guide/skills.html). At 100% scale, Qiye uses a 176 px menu width, 30 px action rows, 12 px text, 15 px icons, 5 px padding and 10 px corners. Card-size buttons are 26 px tall and retain all sizes and actions. These are Qiye's adaptation values, not an official iTab size specification. Desktop, website, folder, widget and group menus share these styles and retain viewport bounds. The sidebar footer groups Add group, Local search and Settings in one container, using a shared 6 px [CSS `gap`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/gap) at 100% scale. This prevents extra spacing between a separate button and the button group, and applies to left/right sidebars and top navigation. Icon appearance and extraction options remain under Settings → Icons.

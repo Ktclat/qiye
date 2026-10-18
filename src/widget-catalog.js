@@ -27,13 +27,16 @@ function widgetCard(definition, state) {
     <footer><span class="catalog-size-label" aria-live="polite">${sizeLabel(size)}</span><button class="catalog-add" data-add-widget="${esc(definition.type)}">${t('添加')}</button></footer></article>`;
 }
 
-export function renderCatalog({ state, groupId, sites = [], renderSite, siteMode = false }) {
+export function renderCatalogToolbar({ state, groupId }) {
   const groups = state.groups.map(group => `<option value="${esc(group.id)}"${group.id === groupId ? ' selected' : ''}>${esc(group.name)}</option>`).join('');
-  const toolbar = `<div class="catalog-toolbar"><input id="widget-query" type="search" placeholder="${t('输入并搜索')}" aria-label="${t('搜索名称或用途')}"><label>${t('添加到')}<select id="catalog-group" aria-label="${t('添加到')}">${groups}</select></label></div>`;
+  return `<div class="catalog-toolbar"><input id="widget-query" type="search" placeholder="${t('输入并搜索')}" aria-label="${t('搜索名称或用途')}"><label><span>${t('添加到')}</span><select id="catalog-group" aria-label="${t('添加到')}">${groups}</select></label></div>`;
+}
+
+export function renderCatalog({ state, sites = [], renderSite, siteMode = false }) {
   const filters = siteMode ? '' : `<div class="catalog-categories" role="group" aria-label="${t('组件分类')}">${categories.map((category, index) => `<button data-catalog-category="${category}" aria-pressed="${index === 0}">${t(category)}</button>`).join('')}</div>`;
   const cards = siteMode ? sites.map(site => `<article class="catalog-showcase catalog-site" data-catalog-card data-search="${esc((site.title + ' ' + site.url).toLocaleLowerCase())}"><div class="catalog-site-art">${renderSite(site)}</div><h3>${esc(site.title)}</h3><p>${esc(new URL(site.url).hostname)}</p><button class="catalog-add" data-add-site="${esc(site.id)}">${t('添加')}</button></article>`).join('')
     : listWidgetDefinitions().map(definition => widgetCard(definition, state)).join('');
-  return toolbar + filters + `<h3 class="catalog-section-title">${siteMode ? t('网址导航') : t('发现小组件')}</h3><p id="widget-catalog-empty" role="status" hidden>${t('没有找到匹配的内容')}</p><div class="catalog-showcases${siteMode ? ' catalog-sites' : ''}">${cards}</div>`;
+  return filters + `<div class="catalog-scroll" role="region" tabindex="0" aria-labelledby="catalog-section-title"><h3 id="catalog-section-title" class="catalog-section-title">${siteMode ? t('网址导航') : t('发现小组件')}</h3><p id="widget-catalog-empty" role="status" hidden>${t('没有找到匹配的内容')}</p><div class="catalog-showcases${siteMode ? ' catalog-sites' : ''}">${cards}</div></div>`;
 }
 
 export function filterCatalog(root) {

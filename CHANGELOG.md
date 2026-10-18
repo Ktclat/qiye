@@ -17,6 +17,8 @@ This is the canonical version history, moved from the original README. Historica
 
 ## 未发布 / Unreleased
 
+- 添加窗口使用固定的 46px 标题栏与分类区，滚动组件列表时始终可搜索、选择分组、放大或关闭；添加组件和网址后保持窗口打开并保留筛选、尺寸与滚动位置，支持连续添加和保存失败重试。
+- The Add window keeps search, target group and window controls in a fixed 46px header. Widgets and website shortcuts can be added repeatedly without losing filters, preview sizes or scroll position; failed saves remain available for retry.
 - 进制转换整合进换算器，统一为 20 类工具；旧卡片无损迁移。进制页采用通栏输入、紧凑结果行、折叠设置与 46px 共用标题栏，补齐跨分类保存和失败重试验证。
 - Integrated base conversion into the 20-tool Converter, preserving legacy cards and their data. Added a full-width input, compact results, contextual settings and a shared persistence queue with recovery tests.
 

@@ -80,6 +80,9 @@ with sync_playwright() as p:
         check('catalog search exposes Pomodoro in productivity', page.locator('[data-catalog-widget=pomodoro]').is_visible())
         check('retired focus timer is absent from the catalog', page.locator('[data-add-widget=focus]').count() == 0)
         page.locator('[data-add-widget=pomodoro]').click()
+        page.wait_for_function('document.querySelector("[data-add-feedback]")?.textContent.length > 0')
+        check('catalog remains open after adding Pomodoro', page.locator('#dialog').is_visible())
+        page.locator('#dialog [data-close]').click()
         page.locator('#dialog').wait_for(state='hidden')
         check('adding creates an independent timer', len(saved(page)['items']) == 6)
         for card in page.locator('#desktop [data-widget=pomodoro]').all():
