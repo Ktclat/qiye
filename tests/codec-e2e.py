@@ -234,6 +234,9 @@ with sync_playwright() as p:
             check(f'{language} 360px viewport at 150% fits', page.locator('#dialog').evaluate('e=>e.scrollWidth<=e.clientWidth+1') and page.locator('.codec-main').evaluate('e=>e.scrollWidth<=e.clientWidth+1'))
             close()
             page.set_viewport_size({'width':1440,'height':960})
+            # The viewport changes before the app's resize handler updates the grid.
+            # Wait for desktop cell sizing before measuring caption/shortcut geometry.
+            page.wait_for_function("expected=>parseFloat(document.documentElement.style.getPropertyValue('--cell-size'))===expected", arg=state0['settings']['gridSize'])
             check(f'{language} card captions do not overlap shortcuts', page.locator('#desktop .codec-card-hero').evaluate_all('nodes=>nodes.every(n=>n.lastElementChild.getBoundingClientRect().bottom<=n.nextElementSibling.getBoundingClientRect().top)'))
             page.screenshot(path=str(OUT/f'cards-{language}{suffix}.png'), animations='disabled')
             check(f'{language} no uncaught browser errors', not errors)
