@@ -1,5 +1,7 @@
 # 社区组件与桌面分享
 
+> **v0.10.0 仓库拆分：** 主程序不附带组件实现。官方源预置但默认关闭；在设置中启用后添加组件。旧实例与数据保留。组件开发和发布转至 [qiye-widgets](https://github.com/Ktclat/qiye-widgets)，当前契约见 [宿主 API](PLUGIN-API.md)。
+
 [文档索引](README.md) · [中文技术文档](wiki/Community-Widgets.md) · [English technical guide](wiki/Community-Widgets-en.md)
 
 当前提供两条独立入口：**添加 → 社区组件** 和 **添加 → 分享与导入**。扩展、独立 HTML 与 GitHub Pages 使用同一套实现。只支持本文的当前格式，不进行历史格式兼容或数据迁移。

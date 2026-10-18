@@ -1,5 +1,8 @@
 # 分支维护与本次归并
 
+> **v0.10.0 仓库拆分：** 主程序不附带组件实现。官方源预置但默认关闭；在设置中启用后添加组件。旧实例与数据保留。组件开发和发布转至 [qiye-widgets](https://github.com/Ktclat/qiye-widgets)，当前契约见 [宿主 API](PLUGIN-API.md)。
+> 两仓库分别使用短期 `codex/*` 分支，合入各自 `main`。Release 仅由各自 `vX.Y.Z` 标签触发；主程序 main 通过 CI 验证后部署 Pages，组件只在版本发布时部署固定路径。Pages 使用 GitHub Actions，历史 gh-pages 分支保留。
+
 ## 已完成的结果
 
 [本次清理工作流](https://github.com/Ktclat/qiye/actions/runs/38281719014)已成功：先整合已验证的 v0.3.2 源码、检查主线 CI 和从主代码重新构建的线上 Pages 文件，再备份全部旧引用，最后原子删除十个临时分支。操作后重新读取 GitHub 分支列表，确认只保留 `main` 与 `gh-pages`。

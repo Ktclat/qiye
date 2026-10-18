@@ -1,14 +1,5 @@
-# Widget development documentation
+# Qiye Widgets
 
-[简体中文](WIDGETS.md) · **English** · [Documentation index](README.en.md)
+小组件源码、清单、资源、测试和独立发布已迁移到 [Ktclat/qiye-widgets](https://github.com/Ktclat/qiye-widgets)。
 
-The [technical wiki](wiki/Home-en.md) provides matching Chinese and English guides for current widget contracts.
-
-| Topic | English | 中文 |
-| --- | --- | --- |
-| Architecture, built-ins, instance data and limits | [Overview](wiki/Widgets-Overview-en.md) | [组件概览](wiki/Widgets-Overview.md) |
-| Registration, config, lifecycle, sizes and themes | [Native API v3](wiki/Native-Widgets-en.md) | [原生 API v3](wiki/Native-Widgets.md) |
-| HTTPS manifests, SDK, MessageChannel and isolation | [Community protocol v1](wiki/Community-Widgets-en.md) | [社区协议 v1](wiki/Community-Widgets.md) |
-| Environment, acceptance checks and troubleshooting | [Testing and contributing](wiki/Widget-Testing-en.md) | [测试与贡献](wiki/Widget-Testing.md) |
-
-Native widgets are bundled with the application; community widgets are author-hosted webpages running in isolated iframes. Their APIs are independent, while desktop storage uses schema 5. See [community usage (Chinese)](COMMUNITY.md) and [version history](../CHANGELOG.md).
+本文档现位于 [qiye-widgets/docs/WIDGETS.en.md](https://github.com/Ktclat/qiye-widgets/blob/main/docs/WIDGETS.en.md)。主程序宿主接口见 [PLUGIN-API.md](PLUGIN-API.md)。

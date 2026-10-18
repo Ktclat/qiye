@@ -22,7 +22,7 @@
 
 ## 对照范围
 
-参考 [iTab 官方更新记录](https://www.itab.link/changelog.html) 和 [公开页面](https://go.itab.link/)。按可核实的月份 / 年度统计 / 日期工具、备忘录列表 / 整理、城市天气等操作完善；没有使用私有接口，未把网络环境中无法完整检查的功能标为逐项一致。完整能力表与边界在 [WIDGETS.md](WIDGETS.md#日常组件功能与数据来源)。
+参考 [iTab 官方更新记录](https://www.itab.link/changelog.html) 和 [公开页面](https://go.itab.link/)。按可核实的月份 / 年度统计 / 日期工具、备忘录列表 / 整理、城市天气等操作完善；没有使用私有接口，未把网络环境中无法完整检查的功能标为逐项一致。完整能力表与边界在 [WIDGETS.md](https://github.com/Ktclat/qiye-widgets/blob/main/docs/WIDGETS.md)。
 
 ## 仍需持续维护
 

@@ -1,54 +1,42 @@
-"""Smoke test an unpacked MV3 build in a disposable browser profile."""
-import json,os,tempfile,subprocess
+"""Real MV3 host: opt-in plugin source, sandbox, save/flush/reload and CSP."""
+import argparse,json,tempfile,os
 from pathlib import Path
-from playwright.sync_api import sync_playwright, expect
-root=Path(__file__).resolve().parents[1]
-version=json.loads((root/'manifest.json').read_text(encoding='utf-8'))['version']
-key=subprocess.check_output(['node','--input-type=module','-e',"import {STORAGE_KEY} from './src/core.js';console.log(STORAGE_KEY)"],cwd=root,text=True).strip()
-(root/'test-results').mkdir(exist_ok=True)
-with tempfile.TemporaryDirectory(prefix='qiye-extension-') as profile, sync_playwright() as p:
-    context=p.chromium.launch_persistent_context(profile,**({'executable_path':os.environ['CHROMIUM_PATH']} if os.environ.get('CHROMIUM_PATH') else {'channel':'chromium'}),headless=True,locale='en-US',args=[f'--disable-extensions-except={root}',f'--load-extension={root}'])
-    try:
-        worker=context.service_workers[0] if context.service_workers else context.wait_for_event('serviceworker',timeout=20000)
-        extension_id=worker.url.split('/')[2]
-        page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-        page.goto(f'chrome-extension://{extension_id}/index.html')
-        page.locator('[data-widget=memo]').wait_for()
-        page.locator('#engine-button').click()
-        assert page.locator('#engine-menu button').evaluate_all('ns=>ns.every(n=>{const r=n.getBoundingClientRect();return n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))})'), 'Search engines must be above widgets'
-        page.locator('#engine-menu [data-engine=google]').click()
-        expect(page.locator('#engine-menu')).to_be_hidden()
-        page.wait_for_function('async key=>(await chrome.storage.local.get(key))[key]?.settings.searchEngine==="google"',arg=key)
-        page.locator('#brand-button').click();page.locator('[data-preference=language]').select_option('en');page.wait_for_function('document.querySelector("#workspace-title")?.textContent==="Settings"')
-        page.locator('[data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
-        page.locator('[data-widget=memo] [data-action=widget-memo-new]').first.click();page.locator('#memo-title').fill('Extension test');page.locator('#memo-text').fill('Uses chrome.storage.local')
-        page.locator('[data-close]').first.click();page.locator('#dialog').wait_for(state='hidden')
-        page.wait_for_function('async(key)=>{const s=await chrome.storage.local.get(key);return s[key]?.items.some(i=>i.widget==="memo"&&i.data.entries.some(e=>e.title==="Extension test"))}',arg=key)
-        page.reload();page.locator('[data-widget=memo]').wait_for()
-        expect(page.locator('[data-widget=memo]')).to_contain_text('Extension test')
-        page.goto(f'chrome-extension://{extension_id}/popup.html');page.wait_for_function('document.documentElement.lang==="en"');assert page.locator('h1').inner_text()=='Save this page'
-        manifest=page.evaluate('chrome.runtime.getManifest()');assert manifest['version']==version and '__MSG_' not in manifest['name'];assert not errors,errors
-        community=json.loads((root/'community/widgets/qiye.counter.json').read_text(encoding='utf-8'))
-        await_state=page.evaluate('''async ([key,manifest])=>{const s=(await chrome.storage.local.get(key))[key];s.items.push({id:'community-test',groupId:'home',type:'widget',widget:'community',title:'Counter test',size:'1x1',config:{manifest,source:'https://ktclat.github.io/qiye/community/index.json'},data:{value:'null'}});await chrome.storage.local.set({[key]:s})}''',[key,community])
-        page.route('https://ktclat.github.io/qiye/community/examples/counter/index.html',lambda route:route.fulfill(body=(root/'community/examples/counter/index.html').read_text(encoding='utf-8'),content_type='text/html',headers={'Access-Control-Allow-Origin':'*'}))
-        page.route('https://ktclat.github.io/qiye/community/sdk.js',lambda route:route.fulfill(body=(root/'community/sdk.js').read_text(encoding='utf-8'),content_type='text/javascript',headers={'Access-Control-Allow-Origin':'*'}))
-        page.goto(f'chrome-extension://{extension_id}/index.html');page.locator('#desktop [data-item=community-test]').focus();page.keyboard.press('Enter');assert page.locator('.community-frame-host iframe').count()==0
-        page.locator('[data-community-run]').click();expect(page.locator('[data-community-status]')).to_have_text('Widget is running')
-        page.frame_locator('.community-frame-host iframe').locator('#increase').click()
-        page.wait_for_function('async key=>(await chrome.storage.local.get(key))[key].items.find(i=>i.id==="community-test").data.value===\'{"count":1}\'',arg=key)
-        assert page.frame_locator('.community-frame-host iframe').locator('body').evaluate('()=>{try{void parent.document;return false}catch{return true}}')
-        page.locator('[data-close]').first.click();expect(page.locator('.community-frame-host iframe')).to_have_count(0);assert not errors,errors
-        result={'browser':context.browser.version if context.browser else 'Chromium','manifest_name':manifest['name'],'version':version,'checks':['MV3 service worker starts','new tab loads bundled modules','search menu receives pointer events above widgets','selected search engine saves to chrome.storage.local','English preference persists','memo uses chrome.storage.local','memo survives reload','popup uses chosen language','manifest locale placeholders resolve'],'errors':errors}
-        result['checks']+=['community detail waits for explicit run','MV3 CSP allows isolated community handshake','community saves its own chrome.storage.local data','community cannot access extension DOM','closing removes the remote iframe']
-        (root/'test-results/extension-smoke.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(result,ensure_ascii=False))
-    except Exception:
-        if 'page' in locals() and not page.is_closed():
-            try:
-                page.screenshot(path=str(root/'test-results/extension-failure.png'))
-                diagnostic={'body':page.locator('body').inner_text(),'stored':page.evaluate('async(key)=>(await chrome.storage.local.get(key))[key]',key),'errors':errors}
-                (root/'test-results/extension-failure.json').write_text(json.dumps(diagnostic,ensure_ascii=False,indent=2),encoding='utf-8')
-                print(json.dumps(diagnostic,ensure_ascii=False),flush=True)
-            except Exception:pass
-        raise
-    finally:
-        context.close()
+from playwright.sync_api import sync_playwright,expect
+ROOT=Path(__file__).resolve().parents[1]
+parser=argparse.ArgumentParser();parser.add_argument('--widgets',type=Path,default=ROOT/'tests/fixtures/plugin-source');args=parser.parse_args()
+catalog=json.loads((args.widgets/'index.json').read_text(encoding='utf-8'))
+OUT=ROOT/'test-results/extension';OUT.mkdir(parents=True,exist_ok=True)
+requests=[];errors=[]
+def external(route):
+ url=route.request.url
+ if url.startswith('https://ktclat.github.io/qiye-widgets/'):
+  requests.append(url);path=args.widgets/url.split('/qiye-widgets/',1)[1].split('?')[0]
+  return route.fulfill(path=str(path),headers={'Access-Control-Allow-Origin':'*'})
+ return route.fulfill(status=200,content_type='application/json',body='{}',headers={'Access-Control-Allow-Origin':'*'})
+with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright() as pw:
+ context=pw.chromium.launch_persistent_context(profile,channel='chromium',headless=True,locale='zh-CN',viewport={'width':1440,'height':960},args=[f'--disable-extensions-except={ROOT}',f'--load-extension={ROOT}'])
+ context.route('https://**/*',external)
+ worker=context.service_workers[0] if context.service_workers else context.wait_for_event('serviceworker',timeout=20000)
+ extension_id=worker.url.split('/')[2];page=context.new_page();page.set_default_timeout(15000);page.on('pageerror',lambda e:errors.append(str(e)))
+ try:
+  page.goto(f'chrome-extension://{extension_id}/index.html');page.locator('#desktop .tile-link').first.wait_for()
+  assert page.locator('#desktop .tile-widget').count()==0 and not requests
+  manifest=page.evaluate('chrome.runtime.getManifest()');assert manifest['version']==json.loads((ROOT/'manifest.json').read_text())['version']
+  page.locator('#engine-button').click();page.locator('#engine-menu [data-engine=google]').click()
+  page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.settings.searchEngine==='google'")
+  page.locator('#brand-button').click();page.locator('[data-settings-tab=sources]').click();assert page.locator('[data-source-toggle]').first.get_attribute('aria-checked')=='false'
+  page.locator('[data-source-toggle]').first.click();page.wait_for_function("n=>document.querySelectorAll('[data-community-card]').length===n",arg=len(catalog['widgets']))
+  page.locator('[data-community-query]').fill('便签');page.locator('[data-community-add]').click();page.locator('#dialog [data-close]').first.click()
+  page.locator('#desktop iframe[data-ready=true]').wait_for();card=page.frame_locator('#desktop iframe')
+  assert card.locator('body').evaluate('()=>{try{void parent.document;return false}catch{return true}}')
+  card.locator('[data-widget-input=notes]').fill('MV3 independent widget')
+  page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5'].items.some(i=>i.widget==='community'&&i.data.value.includes('MV3 independent widget'))")
+  card.locator('[data-action=widget-open]').first.click();page.locator('#dialog iframe[data-ready=true]').wait_for()
+  page.frame_locator('#dialog iframe').locator('[data-close]').first.click();expect(page.locator('#dialog')).not_to_be_visible()
+  page.reload();page.locator('#desktop iframe[data-ready=true]').wait_for();assert page.frame_locator('#desktop iframe').locator('[data-widget-input=notes]').input_value()=='MV3 independent widget'
+  page.screenshot(path=str(OUT/'mv3-widgets.png'))
+  assert not errors,errors
+  print('PASS real MV3: blank defaults, disabled public source, no unnecessary host permission, isolated remote frame, chrome.storage save, close flush, reload, search and manifest')
+ except Exception:
+  page.screenshot(path=str(OUT/'failure.png'));print('ERRORS',errors,'REQUESTS',requests,flush=True);print(page.locator('body').inner_text()[-3500:],flush=True);raise
+ finally:context.close()

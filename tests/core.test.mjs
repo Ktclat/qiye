@@ -1,4 +1,4 @@
-import { widgetData, withNote } from './state-fixtures.mjs';
+import { widgetData, withNote, INSTALLED_STATE } from './state-fixtures.mjs';
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -9,7 +9,7 @@ import {
 import { MAX_AVATAR_BYTES } from '../src/avatar.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
-const fresh = () => copy(DEFAULT_STATE);
+const fresh = () => copy(INSTALLED_STATE);
 const originalChrome = globalThis.chrome;
 const originalLocalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 const cleanups = [];
@@ -88,7 +88,7 @@ function extensionFixture(initial) {
 test('default state is valid, rich, immutable, and exports a lossless backup', () => {
   const checked = validateImport(DEFAULT_STATE);
   assert.equal(checked.settings.gridSize, 60);
-  assert.equal(checked.items.find(i=>i.widget==='weather').config.enabled, false);
+  assert.equal(checked.items.some(i=>i.type==='widget'), false);
   assert.equal(checked.settings.pinClock, false);
   assert.equal(checked.settings.pinSearch, false);
   assert.equal(checked.settings.clockSize, 70);
@@ -97,11 +97,6 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
     assert.ok(checked.groups.some(group => group.id === groupId));
     assert.ok(checked.items.some(item => item.groupId === groupId));
   }
-  const homeWidgets = checked.items.filter(item => item.groupId === 'home' && item.type === 'widget');
-  for (const kind of ['weather', 'calendar', 'wallpaper', 'notes', 'todo', 'countdown', 'pomodoro', 'workday']) {
-    assert.ok(homeWidgets.some(item => item.widget === kind), `${kind} has a default home card`);
-  }
-  assert.equal(homeWidgets.find(item => item.widget === 'wallpaper').size, '4x2');
   assert.ok(checked.items.filter(item => item.type === 'link').every(item => item.iconMode === 'auto'));
   assert.ok(checked.items.filter(item => item.type !== 'link').every(item => !Object.hasOwn(item, 'iconMode')));
   assert.deepEqual(validateImport(exportState(checked)), checked);
@@ -160,7 +155,7 @@ test('explicit non-boolean pin settings cannot overwrite stored desktop data', a
 test('only the current schema is loaded and no previous storage key is read', async () => {
   const fixture = extensionFixture();
   fixture.records['qiye.state.v1'] = { schemaVersion: 1, notes: 'obsolete record' };
-  assert.deepEqual(await loadState(), fresh());
+  assert.deepEqual(await loadState(), DEFAULT_STATE);
   assert.equal(fixture.writes, 0);
   assert.deepEqual(fixture.records['qiye.state.v1'], { schemaVersion: 1, notes: 'obsolete record' });
   const old = fresh(); old.schemaVersion = 1;
@@ -392,11 +387,8 @@ test('prototype pollution, unsupported fields, and inherited state are rejected'
 test('import limits prevent oversized backups, lists, notes, and malformed media', () => {
   assert.throws(() => validateImport(' '.repeat(MAX_BACKUP_BYTES + 1)), /6 MiB/);
   const state = fresh();
-  widgetData(state).notes = 'a'.repeat(100001);
-  assert.throws(() => validateImport(state), /notes/);
-  widgetData(state).notes = '';
-  widgetData(state, 'todo').todos = Array.from({ length: 501 }, (_, i) => ({ id: `test-${i}`, text: 'task', done: false }));
-  assert.throws(() => validateImport(state), /todos/);
+  widgetData(state).notes = 'a'.repeat(4*1024*1024+1);
+  assert.throws(() => validateImport(state), /4 MiB/);
   const media = fresh();
   media.settings.customWallpaper = 'data:image/svg+xml;base64,PHN2Zy8+';
   assert.throws(() => validateImport(media), /PNG/);
@@ -455,20 +447,9 @@ test('invalid references and duplicate ids reject the entire backup without drop
   assert.throws(() => validateImport(future), /仅支持当前数据格式/);
 });
 
-test('date, timer, location, and widget configuration values are validated', () => {
-  const state = fresh();
-  state.items.find(item => item.widget === 'countdown').config.date = '2026-02-29';
-  assert.throws(() => validateImport(state), /有效日期/);
-  state.items.find(item => item.widget === 'countdown').config.date = '2028-02-29';
-  assert.equal(validateImport(state).items.find(item => item.widget === 'countdown').config.date, '2028-02-29');
-  widgetData(state, 'pomodoro').status = 'running';
-  assert.throws(() => validateImport(state), /状态与剩余时间不一致/);
-  widgetData(state, 'pomodoro').status = 'idle';
-  state.items.find(i=>i.widget==='weather').config.city.latitude = 91;
-  assert.throws(() => validateImport(state), /latitude/);
-  state.items.find(i=>i.widget==='weather').config.city.latitude = 22;
-  state.items.find(item => item.widget === 'clock').config.timeZone = 'Definitely/Not_A_Timezone';
-  assert.throws(() => validateImport(state), /有效时区/);
+test('the host preserves opaque widget data without running a widget schema', () => {
+ const state=fresh();state.items.find(item=>item.widget==='countdown').config.futureOption={date:'custom'};
+ assert.deepEqual(validateImport(exportState(state)),state);
 });
 
 test('custom search engines require a safe explicit search placeholder', () => {
@@ -595,7 +576,7 @@ test('explicit restore and reset may replace an old revision or damaged storage 
   widgetData(restored).notes = 'explicitly restored backup';
   const result = await saveState(restored, { replace: true });
   assert.equal(widgetData(result).notes, 'explicitly restored backup');
-  assert.equal(result.items.length, DEFAULT_STATE.items.length);
+  assert.equal(result.items.length, INSTALLED_STATE.items.length);
   fixture.records[STORAGE_KEY] = { schemaVersion: 999, notes: 'damaged record' };
   await assert.rejects(saveState(fresh()), /原数据已保留/);
   const reset = await saveState(fresh(), { replace: true });
@@ -624,7 +605,7 @@ test('rapid explicit resets never reuse an earlier snapshot revision', async () 
 
 test('parallel append transactions retain every new link and duplicates do not write', async () => {
   const fixture = extensionFixture(fresh());
-  const originalCount = DEFAULT_STATE.items.length;
+  const originalCount = INSTALLED_STATE.items.length;
   await Promise.all(Array.from({ length: 12 }, (_, i) => appendLink({ title: `收藏 ${i}`, url: `https://example.org/item-${i}` })));
   const state = await loadState();
   assert.equal(state.items.length, originalCount + 12);

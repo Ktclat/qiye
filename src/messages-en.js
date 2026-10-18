@@ -1,16 +1,26 @@
-import { baseConverterEnglishMessages } from './base-converter-messages-en.js';
 // SPDX-License-Identifier: GPL-3.0-only
-import { converterEnglishMessages } from './converter-messages-en.js';
-import { fileConverterEnglishMessages } from './file-converter-messages-en.js';
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
-import { mapEnglishMessages } from './map-messages-en.js';
-import { imageCompressorEnglishMessages } from './image-compressor-messages-en.js';
 export const englishMessages = {
-  ...imageCompressorEnglishMessages,
-  ...baseConverterEnglishMessages,
-  ...converterEnglishMessages,
-  ...fileConverterEnglishMessages,
-  ...mapEnglishMessages,
+  "授权定位": "Allow location",
+  "请先点击窗口标题栏的“授权定位”。": "First click Allow location in the window header.",
+  "已授权，请在组件中重新点击定位。": "Access granted. Try locating again in the widget.",
+  "小组件源": "Widget sources",
+  "管理小组件源": "Manage widget sources",
+  "启用小组件源": "Enable widget source",
+  "从已启用的来源添加组件。": "Add widgets from enabled sources.",
+  "主程序不附带小组件。启用来源后读取目录，再选择需要的组件。停用会停止运行并保留数据。": "The app ships without widgets. Enable a source to browse its catalog. Disabling a source stops its widgets and keeps your data.",
+  "添加并启用": "Add and enable",
+  "小组件源码与发布": "Widget source code and releases",
+  "栖页官方小组件": "Official Qiye widgets",
+  "检查更新": "Check for updates",
+  "尚未启用小组件源。请在设置中启用官方源或添加自己的源。": "No widget sources enabled. Enable the official source or add your own in Settings.",
+  "组件已添加到桌面。": "Widgets saved to your desktop.",
+  "授权浏览器书签": "Allow browser bookmarks",
+  "组件页面已跳转，请重试。": "The widget navigated away. Retry to restart it.",
+  "组件未响应，请检查网络后重试。": "Widget did not respond. Check your connection and retry.",
+  "组件没有确认保存，请稍后重试关闭。": "Widget has not confirmed saving. Try closing it again shortly.",
+  "请先点击窗口标题栏的“授权浏览器书签”。": "First click Allow browser bookmarks in the window header.",
+  "已授权，请在组件中重新选择浏览器书签。": "Access granted. Select browser bookmarks again in the widget.",
   "编码工具": "Encoding tools",
   "Base64、URL、Unicode 编解码，MD2 / MD4 / MD5、SHA 摘要，佛曰、兽语 / 兽音译者、熊曰 / 与熊论道": "Base64, URL, Unicode, MD2 / MD4 / MD5 and SHA, plus Buddha, Beast and Bear codecs",
   "趣味编码": "Playful encodings",

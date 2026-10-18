@@ -1,7 +1,8 @@
+import { INSTALLED_STATE as DEFAULT_STATE } from './state-fixtures.mjs';
 import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_STATE, exportState, MAX_BACKUP_BYTES } from '../src/core.js';
+import { exportState, MAX_BACKUP_BYTES } from '../src/core.js';
 import {
   createWebDAVSync, validateWebDAVConfig, webDAVTargetURL, webDAVOriginPattern,
   webDAVStateFingerprint, DEFAULT_WEBDAV_CONFIG, requestWebDAVPermission

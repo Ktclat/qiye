@@ -1,8 +1,11 @@
 # 开发指南
 
+> **v0.10.0 仓库拆分：** 主程序不附带组件实现。官方源预置但默认关闭；在设置中启用后添加组件。旧实例与数据保留。组件开发和发布转至 [qiye-widgets](https://github.com/Ktclat/qiye-widgets)，当前契约见 [宿主 API](PLUGIN-API.md)。
+> 两仓库分别使用短期 `codex/*` 分支，合入各自 `main`。Release 仅由各自 `vX.Y.Z` 标签触发；主程序 main 通过 CI 验证后部署 Pages，组件只在版本发布时部署固定路径。Pages 使用 GitHub Actions，历史 gh-pages 分支保留。
+
 [贡献约定](../CONTRIBUTING.md) · [文档索引](README.md) · [组件开发](wiki/Home.md)
 
-项目使用原生 HTML、CSS 和 JavaScript ES Modules，无需安装运行时依赖；历法引擎随源码离线提供。加载扩展后修改源码，在扩展管理页重新加载即可查看更新。
+项目使用原生 HTML、CSS 和 JavaScript ES Modules，无需安装运行时依赖；组件历法引擎在独立组件仓库维护。加载扩展后修改源码，在扩展管理页重新加载即可查看更新。
 
 运行逻辑测试使用支持内置测试运行器与 Web Crypto 的 Node.js（建议 Node.js 22 或更新版本）；生成独立预览需要 Python 3。以下命令均在仓库根目录执行：
 
@@ -26,7 +29,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 品牌图标的唯一源图是 `icons/qiye-icon.svg`，页面与文档直接引用 SVG。修改源图后，运行 `python3 scripts/build-icons.py` 更新扩展使用的 16、32、48、128 像素 PNG，再重新生成预览。图标生成复用浏览器测试所需的 Playwright 1.56.0 和 Chromium；首次使用可运行 `python3 -m pip install playwright==1.56.0` 与 `python3 -m playwright install chromium`，已有浏览器也可通过 `CHROMIUM_PATH` 指定。独立预览会内嵌品牌图标，下载后无需附带 `icons/` 目录。
 
-网页发布同样从 `main` 中的生产源码构建，但生成文件须提交并推送到 **`gh-pages`**。仅推送 `main` 不会更新演示页面。请将 `/path/to/qiye-demo` 替换为 `gh-pages` 的独立检出目录，首次准备 worktree 或启用 Pages 的步骤见 [部署指南](DEPLOYMENT.md)。
+网页发布同样从 `main` 中的生产源码构建，但生成文件须提交并推送到 **`gh-pages`**。推送 `main` 后由 CI 验证并部署演示页面。请将 `/path/to/qiye-demo` 替换为独立输出目录，首次准备 worktree 或启用 Pages 的步骤见 [部署指南](DEPLOYMENT.md)。
 
 ## 源码结构
 

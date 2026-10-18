@@ -1,5 +1,7 @@
 # Qiye documentation
 
+> The host and [widgets](https://github.com/Ktclat/qiye-widgets) build and release independently. The official source is off by default. See the [host API](PLUGIN-API.md).
+
 [Project home](../README.en.md) · [简体中文](README.md) · **English**
 
 Start with the widget wiki for extension development. Its Chinese and English pages cover the same contracts. Product, operations and historical documents currently marked “Chinese” have not been translated.

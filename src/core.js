@@ -5,7 +5,6 @@ import { t, localizeSeed } from './i18n.js';
 import { invalid, plain, keys, string, id, number, bool, enumeration, array, color, opaqueColor, unique, byteLength } from './validation.js';
 import { getWidgetDefinition, newWidgetConfig, validateWidgetConfig } from './widget-registry.js';
 import { newWidgetData, validateWidgetData } from './widget-data.js';
-import { migrateFocusTimer } from './pomodoro.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { validateAvatarDataUrl } from './avatar.js';
 import { normalizeIconSelection } from './icon-selection.js';
@@ -45,10 +44,6 @@ function link(id, groupId, title, url, icon, color, folderId = null, iconMode = 
   return { id, groupId, type: 'link', title, url, icon, iconMode, color, size: '1x1', folderId };
 }
 
-function widget(id, widgetType, title, size = '2x2', config = {}, groupId = 'home', data = newWidgetData(widgetType)) {
-  return { id, groupId, type: 'widget', widget: widgetType, title, size, config: { ...newWidgetConfig(widgetType), ...config }, data };
-}
-
 export const DEFAULT_STATE = deepFreeze({
   schemaVersion: SCHEMA_VERSION,
   updatedAt: 0,
@@ -81,69 +76,424 @@ export const DEFAULT_STATE = deepFreeze({
     { id: 'life', name: '生活', icon: 'coffee' }
   ],
   items: [
-    widget('weather-home', 'weather', '天气'),
-    widget('calendar-home', 'calendar', '日历', '4x2'),
-    widget('memo-home', 'memo', '备忘录'),
-    link('site-google', 'home', 'Google', 'https://www.google.com/', 'G', '#FFFFFF'),
-    link('site-bilibili', 'home', '哔哩哔哩', 'https://www.bilibili.com/', '哔', '#F18CAD'),
-    link('site-github', 'home', 'GitHub', 'https://github.com/', 'github', '#24292F'),
-    link('site-chatgpt', 'home', 'ChatGPT', 'https://chatgpt.com/', 'sparkles', '#10A37F'),
-    widget('wallpaper-home', 'wallpaper', '发现壁纸', '4x2'),
-    widget('notes-home', 'notes', '灵感便签', '2x2', { color: 'yellow' }, 'home', {
-      notes: '把忽然想到的事，留在这一页。\n\n试试拖动卡片，让它成为你的日常。'
-    }),
-    widget('todo-home', 'todo', '今日待办', '2x2', {}, 'home', { todos: [
-      { id: 'todo-explore', text: '换一张喜欢的壁纸', done: false },
-      { id: 'todo-create', text: '添加一个常用网站', done: false },
-      { id: 'todo-break', text: '给自己留一点休息时间', done: true }
-    ] }),
-    link('site-youtube', 'home', 'YouTube', 'https://www.youtube.com/', 'play', '#F44349'),
-    link('site-zhihu', 'home', '知乎', 'https://www.zhihu.com/', '知', '#1677FF'),
-    link('site-douban', 'home', '豆瓣', 'https://www.douban.com/', '豆', '#2DA854'),
-    link('site-notion', 'home', 'Notion', 'https://www.notion.so/', 'N', '#F6F4F0'),
-    widget('countdown-home', 'countdown', '下一份期待'),
-    widget('focus-home', 'pomodoro', '番茄钟'),
-    widget('workday-home', 'workday', '下班倒计时'),
-    { id: 'folder-tools', groupId: 'home', type: 'folder', title: '随手工具', icon: 'folder', color: '#A6B1E1', size: '2x2' },
-    link('tool-deepl', 'home', 'DeepL', 'https://www.deepl.com/translator', '译', '#234D68', 'folder-tools'),
-    link('tool-figma', 'home', 'Figma', 'https://www.figma.com/', 'F', '#A259FF', 'folder-tools'),
-    link('tool-unsplash', 'home', 'Unsplash', 'https://unsplash.com/', 'U', '#25282E', 'folder-tools'),
-    link('tool-excalidraw', 'home', 'Excalidraw', 'https://excalidraw.com/', 'pen', '#8D8AEF', 'folder-tools'),
-    link('work-mail', 'work', 'Gmail', 'https://mail.google.com/', 'mail', '#E96759'),
-    link('work-outlook', 'work', 'Outlook', 'https://outlook.live.com/', 'mail', '#2483C6'),
-    link('work-calendar', 'work', 'Google 日历', 'https://calendar.google.com/', 'calendar', '#4385EF'),
-    link('work-drive', 'work', 'Google 云端硬盘', 'https://drive.google.com/', 'triangle', '#2FAC75'),
-    widget('todo-work', 'todo', '工作清单', '2x2', {}, 'work'),
-    widget('focus-work', 'pomodoro', '番茄钟', '2x2', {}, 'work'),
-    link('code-mdn', 'code', 'MDN', 'https://developer.mozilla.org/zh-CN/', 'M', '#242933'),
-    link('code-github', 'code', 'GitHub', 'https://github.com/', 'github', '#24292F'),
-    link('code-stack', 'code', 'Stack Overflow', 'https://stackoverflow.com/', 'code', '#EF8A38'),
-    link('code-npm', 'code', 'npm', 'https://www.npmjs.com/', 'npm', '#CB3837'),
-    widget('notes-code', 'notes', '开发随记', '2x2', { color: 'mint' }, 'code'),
-    widget('clock-code', 'clock', '世界时钟', '2x2', { timeZone: 'America/Los_Angeles', label: '旧金山' }, 'code'),
-    link('design-figma', 'design', 'Figma', 'https://www.figma.com/', 'F', '#A259FF'),
-    link('design-dribbble', 'design', 'Dribbble', 'https://dribbble.com/', 'D', '#EA4C89'),
-    link('design-behance', 'design', 'Behance', 'https://www.behance.net/', 'Bē', '#1769FF'),
-    link('design-unsplash', 'design', 'Unsplash', 'https://unsplash.com/', 'U', '#25282E'),
-    link('design-excalidraw', 'design', 'Excalidraw', 'https://excalidraw.com/', 'pen', '#8D8AEF'),
-    widget('notes-design', 'notes', '创意手记', '2x2', { color: 'pink' }, 'design'),
-    link('ai-chatgpt', 'ai', 'ChatGPT', 'https://chatgpt.com/', 'sparkles', '#10A37F'),
-    link('ai-claude', 'ai', 'Claude', 'https://claude.ai/', 'C', '#D97757'),
-    link('ai-perplexity', 'ai', 'Perplexity', 'https://www.perplexity.ai/', 'P', '#20808D'),
-    link('ai-deepseek', 'ai', 'DeepSeek', 'https://chat.deepseek.com/', 'D', '#4D6BFE'),
-    link('ai-huggingface', 'ai', 'Hugging Face', 'https://huggingface.co/', '🤗', '#FFD21E'),
-    widget('notes-ai', 'notes', '提示词手记', '2x2', { color: 'mint' }, 'ai'),
-    link('life-music', 'life', '网易云音乐', 'https://music.163.com/', 'music', '#EB5757'),
-    link('life-spotify', 'life', 'Spotify', 'https://open.spotify.com/', 'music', '#1DB954'),
-    link('life-map', 'life', '高德地图', 'https://www.amap.com/', 'map', '#4D90FE'),
-    link('life-douban', 'life', '豆瓣', 'https://www.douban.com/', '豆', '#2DA854'),
-    widget('habit-life', 'habit', '小习惯', '2x2', {}, 'life', { habits: [
-      { id: 'habit-water', name: '好好喝水', dates: [] },
-      { id: 'habit-read', name: '读十分钟书', dates: [] }
-    ] }),
-    widget('quote-life', 'quote', '留一点空白', '2x2', {}, 'life'),
-    widget('calculator-life', 'converter', '换算器', '2x2', {}, 'life')
-  ]
+  {
+    "id": "site-google",
+    "groupId": "home",
+    "type": "link",
+    "title": "Google",
+    "url": "https://www.google.com/",
+    "icon": "G",
+    "iconMode": "auto",
+    "color": "#FFFFFF",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-bilibili",
+    "groupId": "home",
+    "type": "link",
+    "title": "哔哩哔哩",
+    "url": "https://www.bilibili.com/",
+    "icon": "哔",
+    "iconMode": "auto",
+    "color": "#F18CAD",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-github",
+    "groupId": "home",
+    "type": "link",
+    "title": "GitHub",
+    "url": "https://github.com/",
+    "icon": "github",
+    "iconMode": "auto",
+    "color": "#24292F",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-chatgpt",
+    "groupId": "home",
+    "type": "link",
+    "title": "ChatGPT",
+    "url": "https://chatgpt.com/",
+    "icon": "sparkles",
+    "iconMode": "auto",
+    "color": "#10A37F",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-youtube",
+    "groupId": "home",
+    "type": "link",
+    "title": "YouTube",
+    "url": "https://www.youtube.com/",
+    "icon": "play",
+    "iconMode": "auto",
+    "color": "#F44349",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-zhihu",
+    "groupId": "home",
+    "type": "link",
+    "title": "知乎",
+    "url": "https://www.zhihu.com/",
+    "icon": "知",
+    "iconMode": "auto",
+    "color": "#1677FF",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-douban",
+    "groupId": "home",
+    "type": "link",
+    "title": "豆瓣",
+    "url": "https://www.douban.com/",
+    "icon": "豆",
+    "iconMode": "auto",
+    "color": "#2DA854",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "site-notion",
+    "groupId": "home",
+    "type": "link",
+    "title": "Notion",
+    "url": "https://www.notion.so/",
+    "icon": "N",
+    "iconMode": "auto",
+    "color": "#F6F4F0",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "folder-tools",
+    "groupId": "home",
+    "type": "folder",
+    "title": "随手工具",
+    "icon": "folder",
+    "color": "#A6B1E1",
+    "size": "2x2"
+  },
+  {
+    "id": "tool-deepl",
+    "groupId": "home",
+    "type": "link",
+    "title": "DeepL",
+    "url": "https://www.deepl.com/translator",
+    "icon": "译",
+    "iconMode": "auto",
+    "color": "#234D68",
+    "size": "1x1",
+    "folderId": "folder-tools"
+  },
+  {
+    "id": "tool-figma",
+    "groupId": "home",
+    "type": "link",
+    "title": "Figma",
+    "url": "https://www.figma.com/",
+    "icon": "F",
+    "iconMode": "auto",
+    "color": "#A259FF",
+    "size": "1x1",
+    "folderId": "folder-tools"
+  },
+  {
+    "id": "tool-unsplash",
+    "groupId": "home",
+    "type": "link",
+    "title": "Unsplash",
+    "url": "https://unsplash.com/",
+    "icon": "U",
+    "iconMode": "auto",
+    "color": "#25282E",
+    "size": "1x1",
+    "folderId": "folder-tools"
+  },
+  {
+    "id": "tool-excalidraw",
+    "groupId": "home",
+    "type": "link",
+    "title": "Excalidraw",
+    "url": "https://excalidraw.com/",
+    "icon": "pen",
+    "iconMode": "auto",
+    "color": "#8D8AEF",
+    "size": "1x1",
+    "folderId": "folder-tools"
+  },
+  {
+    "id": "work-mail",
+    "groupId": "work",
+    "type": "link",
+    "title": "Gmail",
+    "url": "https://mail.google.com/",
+    "icon": "mail",
+    "iconMode": "auto",
+    "color": "#E96759",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "work-outlook",
+    "groupId": "work",
+    "type": "link",
+    "title": "Outlook",
+    "url": "https://outlook.live.com/",
+    "icon": "mail",
+    "iconMode": "auto",
+    "color": "#2483C6",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "work-calendar",
+    "groupId": "work",
+    "type": "link",
+    "title": "Google 日历",
+    "url": "https://calendar.google.com/",
+    "icon": "calendar",
+    "iconMode": "auto",
+    "color": "#4385EF",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "work-drive",
+    "groupId": "work",
+    "type": "link",
+    "title": "Google 云端硬盘",
+    "url": "https://drive.google.com/",
+    "icon": "triangle",
+    "iconMode": "auto",
+    "color": "#2FAC75",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "code-mdn",
+    "groupId": "code",
+    "type": "link",
+    "title": "MDN",
+    "url": "https://developer.mozilla.org/zh-CN/",
+    "icon": "M",
+    "iconMode": "auto",
+    "color": "#242933",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "code-github",
+    "groupId": "code",
+    "type": "link",
+    "title": "GitHub",
+    "url": "https://github.com/",
+    "icon": "github",
+    "iconMode": "auto",
+    "color": "#24292F",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "code-stack",
+    "groupId": "code",
+    "type": "link",
+    "title": "Stack Overflow",
+    "url": "https://stackoverflow.com/",
+    "icon": "code",
+    "iconMode": "auto",
+    "color": "#EF8A38",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "code-npm",
+    "groupId": "code",
+    "type": "link",
+    "title": "npm",
+    "url": "https://www.npmjs.com/",
+    "icon": "npm",
+    "iconMode": "auto",
+    "color": "#CB3837",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "design-figma",
+    "groupId": "design",
+    "type": "link",
+    "title": "Figma",
+    "url": "https://www.figma.com/",
+    "icon": "F",
+    "iconMode": "auto",
+    "color": "#A259FF",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "design-dribbble",
+    "groupId": "design",
+    "type": "link",
+    "title": "Dribbble",
+    "url": "https://dribbble.com/",
+    "icon": "D",
+    "iconMode": "auto",
+    "color": "#EA4C89",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "design-behance",
+    "groupId": "design",
+    "type": "link",
+    "title": "Behance",
+    "url": "https://www.behance.net/",
+    "icon": "Bē",
+    "iconMode": "auto",
+    "color": "#1769FF",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "design-unsplash",
+    "groupId": "design",
+    "type": "link",
+    "title": "Unsplash",
+    "url": "https://unsplash.com/",
+    "icon": "U",
+    "iconMode": "auto",
+    "color": "#25282E",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "design-excalidraw",
+    "groupId": "design",
+    "type": "link",
+    "title": "Excalidraw",
+    "url": "https://excalidraw.com/",
+    "icon": "pen",
+    "iconMode": "auto",
+    "color": "#8D8AEF",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "ai-chatgpt",
+    "groupId": "ai",
+    "type": "link",
+    "title": "ChatGPT",
+    "url": "https://chatgpt.com/",
+    "icon": "sparkles",
+    "iconMode": "auto",
+    "color": "#10A37F",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "ai-claude",
+    "groupId": "ai",
+    "type": "link",
+    "title": "Claude",
+    "url": "https://claude.ai/",
+    "icon": "C",
+    "iconMode": "auto",
+    "color": "#D97757",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "ai-perplexity",
+    "groupId": "ai",
+    "type": "link",
+    "title": "Perplexity",
+    "url": "https://www.perplexity.ai/",
+    "icon": "P",
+    "iconMode": "auto",
+    "color": "#20808D",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "ai-deepseek",
+    "groupId": "ai",
+    "type": "link",
+    "title": "DeepSeek",
+    "url": "https://chat.deepseek.com/",
+    "icon": "D",
+    "iconMode": "auto",
+    "color": "#4D6BFE",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "ai-huggingface",
+    "groupId": "ai",
+    "type": "link",
+    "title": "Hugging Face",
+    "url": "https://huggingface.co/",
+    "icon": "🤗",
+    "iconMode": "auto",
+    "color": "#FFD21E",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "life-music",
+    "groupId": "life",
+    "type": "link",
+    "title": "网易云音乐",
+    "url": "https://music.163.com/",
+    "icon": "music",
+    "iconMode": "auto",
+    "color": "#EB5757",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "life-spotify",
+    "groupId": "life",
+    "type": "link",
+    "title": "Spotify",
+    "url": "https://open.spotify.com/",
+    "icon": "music",
+    "iconMode": "auto",
+    "color": "#1DB954",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "life-map",
+    "groupId": "life",
+    "type": "link",
+    "title": "高德地图",
+    "url": "https://www.amap.com/",
+    "icon": "map",
+    "iconMode": "auto",
+    "color": "#4D90FE",
+    "size": "1x1",
+    "folderId": null
+  },
+  {
+    "id": "life-douban",
+    "groupId": "life",
+    "type": "link",
+    "title": "豆瓣",
+    "url": "https://www.douban.com/",
+    "icon": "豆",
+    "iconMode": "auto",
+    "color": "#2DA854",
+    "size": "1x1",
+    "folderId": null
+  }
+]
 });
 
 export function createDefaultState() { return localizeSeed(DEFAULT_STATE); }
@@ -322,30 +672,6 @@ export function validateImport(raw) {
       if (!getWidgetDefinition(item.widget).sizes.includes(size)) invalid(`${path}.size`, t("组件不支持此尺寸"));
       if(item.widget==='community'&&!item.config?.manifest?.sizes?.includes(size))invalid(`${path}.size`,t('组件不支持此尺寸'));
       const checked = { ...base, widget: item.widget, size, config: validateWidgetConfig(item.widget, item.config, `${path}.config`), data: validateWidgetData(item.widget, item.data, `${path}.data`) };
-      // Validate legacy records before upgrading; keep identity, placement and custom names.
-      if (checked.widget === 'focus') {
-        Object.assign(checked, { widget: 'pomodoro' }, migrateFocusTimer(checked.data.focus));
-        if (checked.title === '专注计时') checked.title = '番茄钟';
-        else if (checked.title === 'Focus timer') checked.title = 'Pomodoro';
-      }
-      if (checked.widget === 'calculator') {
-        checked.widget = 'converter';
-        checked.data = newWidgetData('converter');
-        if (['计算器','随手算'].includes(checked.title)) checked.title = '换算器';
-        else if (['Calculator','Quick math','Quick calculations'].includes(checked.title)) checked.title = 'Converter';
-      }
-      if (checked.widget === 'base-converter') {
-        checked.widget = 'converter';
-        checked.data = { ...newWidgetData('converter'), category: 'radix', radix: checked.data };
-        if (checked.title === '进制转换') checked.title = '换算器';
-        else if (checked.title === 'Base converter') checked.title = 'Converter';
-      }
-      if (checked.widget === 'hotlinks') {
-        checked.widget = 'hotsearch';
-        checked.config = newWidgetConfig('hotsearch');
-        if (checked.title === '热搜入口') checked.title = '热搜榜';
-        else if (checked.title === 'Trending links') checked.title = 'Trending';
-      }
       return checked;
     }
     const appearance = { icon: string(item.icon, `${path}.icon`, 80), color: color(item.color, `${path}.color`), size };

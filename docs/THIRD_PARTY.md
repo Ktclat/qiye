@@ -103,7 +103,7 @@ U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
 - 互操作验证使用 [Borber/whisperer README 中的公开格式对照](https://github.com/Borber/whisperer/blob/b50f7cf5da42f8884d6a32995f08680229ffc933/README.md) 及上述项目的短样例。校验覆盖外部密文解码和兼容输出，不仅验证本地往返。
 - 原生 `deflate-raw` API 的兼容性见 [MDN CompressionStream](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream/CompressionStream) 与 [浏览器兼容数据](https://github.com/mdn/browser-compat-data/blob/main/api/CompressionStream.json)：Chrome / Edge 103 起支持，低于扩展要求的最低 116 版本。
 
-以上格式参数公开，属于趣味文本混淆，无用户密码保护。详细格式边界见[小组件说明](wiki/Widgets-Overview.md#编码工具)。
+以上格式参数公开，属于趣味文本混淆，无用户密码保护。详细格式边界见[小组件说明](https://github.com/Ktclat/qiye-widgets/blob/main/docs/wiki/Widgets-Overview.md)。
 
 ## 换算器参考资料
 

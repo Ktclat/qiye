@@ -1,13 +1,14 @@
+import { INSTALLED_STATE as DEFAULT_STATE } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {DEFAULT_STATE,validateImport} from '../src/core.js';
+import {validateImport} from '../src/core.js';
 import {createLayout,validateLayout,layoutImportPlan,APPEARANCE_KEYS} from '../src/layout-sharing.js';
 import {validateCommunityManifest,validateCommunitySource,validateCommunityData} from '../src/community-format.js';
 import {publicHttpsUrl,fetchPublicJson} from '../src/public-json.js';
 import {sourceFromShareLink} from '../src/sharing-ui.js';
 import {layoutShareLink} from '../src/layout-sharing.js';
-const manifest=JSON.parse(readFileSync(new URL('../community/widgets/qiye.counter.json',import.meta.url)));
+const manifest=JSON.parse(readFileSync(new URL('./fixtures/community-counter.json',import.meta.url)));
 const state=()=>structuredClone(DEFAULT_STATE);
 test('sharing strips widget content and personal configuration',()=>{
  const s=state();s.items.find(i=>i.widget==='notes').data.notes='secret note';s.items.find(i=>i.widget==='countdown').config.title='secret event';
@@ -23,7 +24,7 @@ test('merge respects chosen target and reports duplicate URLs',()=>{
  const s=state(),plan=layoutImportPlan(s,createLayout(s),{mode:'merge',targetGroupId:'code'});assert.ok(plan.skipped>0);assert.equal(plan.state.groups.length,s.groups.length);assert.ok(plan.state.items.slice(s.items.length).every(i=>i.groupId==='code'));assert.equal(plan.state.activeGroupId,'code');
 });
 test('import resets network consent and never accepts embedded widget data',()=>{
- const value=createLayout(state());const weather=value.items.find(i=>i.widget==='weather');weather.config.enabled=true;assert.equal(validateLayout(value).items.find(i=>i.widget==='weather').config.enabled,false);weather.data={secret:'bad'};assert.throws(()=>validateLayout(value));
+ const value=createLayout(state());const weather=value.items.find(i=>i.widget==='weather');weather.config.enabled=true;assert.deepEqual(validateLayout(value).items.find(i=>i.widget==='weather').config,{});weather.data={secret:'bad'};assert.throws(()=>validateLayout(value));
 });
 test('sharing rejects unsupported format, oversized data, unknown fields and empty selection',()=>{
  const value=createLayout(state());assert.throws(()=>validateLayout({...value,version:99}));assert.throws(()=>validateLayout({...value,data:{}}));assert.throws(()=>validateLayout(' '.repeat(2*1024*1024+1)));assert.throws(()=>createLayout(state(),{groupIds:[]}));assert.throws(()=>layoutImportPlan(state(),value,{groupIds:[]}));assert.throws(()=>validateLayout({...value,appearance:{language:'zh-CN'}}));

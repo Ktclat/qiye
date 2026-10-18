@@ -1,10 +1,11 @@
+import { INSTALLED_STATE as DEFAULT_STATE } from './state-fixtures.mjs';
 import { t, getLocale } from '../src/i18n.js';
 import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { DEFAULT_STATE, validateImport } from '../src/core.js';
+import { validateImport } from '../src/core.js';
 
 const source = await readFile(new URL('../src/app.js', import.meta.url), 'utf8');
 const copy = value => structuredClone(value);
@@ -29,8 +30,8 @@ function declaration(prefix) {
 }
 const productionCode = [
   ...['const clone =', 'const esc =', 'let state =', 'let persistedState =', 'let editing =',
-    'let dialogKind =', 'let desktopDrag =', 'let avatarRequestSequence =', 'let viewerCleanup=', 'let wallpaperUploadRevision='].map(declaration),
-  ...['persist', 'renderAvatar', 'uploadAvatar', 'openDialog', 'closeDialog', 'resetAvatar'].map(extractFunction),
+    'let dialogKind =', 'let desktopDrag =', 'let avatarRequestSequence =', 'let viewerCleanup=', 'let viewerCleanupJob', 'let wallpaperUploadRevision='].map(declaration),
+  ...['persist', 'renderAvatar', 'uploadAvatar', 'cleanupViewer', 'openDialog', 'closeDialog', 'resetAvatar'].map(extractFunction),
   declaration("dialog.addEventListener('close'"),
   `globalThis.app = {
     renderAvatar, uploadAvatar, openDialog, closeDialog, resetAvatar,

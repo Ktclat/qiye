@@ -19,6 +19,7 @@ OUT = ROOT / 'test-results/search-overlays' / ('preview' if args.preview else 's
 OUT.mkdir(parents=True, exist_ok=True)
 seed = json.loads(subprocess.check_output(['node', '--input-type=module', '-e',
     "import {DEFAULT_STATE,STORAGE_KEY} from './src/core.js';console.log(JSON.stringify({state:DEFAULT_STATE,key:STORAGE_KEY}))"], cwd=ROOT))
+seed['state']=json.loads((ROOT/'tests/fixtures/installed-desktop.json').read_text(encoding='utf-8'))
 checks, errors = [], []
 
 
@@ -61,7 +62,7 @@ try:
                                                   'pinClock': pin_clock, 'pinSearch': pin_search})
                         page.evaluate('([key,s])=>localStorage.setItem(key,JSON.stringify(s))', [seed['key'], state])
                         page.reload()
-                        page.locator('#desktop [data-widget=calendar]').wait_for()
+                        page.locator('#desktop .tile-widget').first.wait_for()
                         label = f'{width}px {theme} pins={pin_clock}/{pin_search}'
                         page.locator('#engine-button').click()
                         check(label + ': every engine and settings button is above the desktop', exposed(page.locator('#engine-menu button')))

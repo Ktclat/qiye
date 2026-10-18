@@ -1,5 +1,8 @@
 # 使用 GitHub Pages 发布栖页
 
+> **v0.10.0 仓库拆分：** 主程序不附带组件实现。官方源预置但默认关闭；在设置中启用后添加组件。旧实例与数据保留。组件开发和发布转至 [qiye-widgets](https://github.com/Ktclat/qiye-widgets)，当前契约见 [宿主 API](PLUGIN-API.md)。
+> 两仓库分别使用短期 `codex/*` 分支，合入各自 `main`。Release 仅由各自 `vX.Y.Z` 标签触发；主程序 main 通过 CI 验证后部署 Pages，组件只在版本发布时部署固定路径。Pages 使用 GitHub Actions，历史 gh-pages 分支保留。
+
 扩展下载包的自动发布见 [RELEASES.md](RELEASES.md)。本页只描述演示网站部署。
 
 栖页在同一个 **[Ktclat/qiye](https://github.com/Ktclat/qiye)** 仓库中维护两个分支：**`main` 保存完整源码、扩展文件和测试；`gh-pages` 仅保存生成后的演示网页。** 两者使用同一份生产模块，网页更新通过重新生成和提交 `gh-pages` 完成。

@@ -1,5 +1,7 @@
 # 栖页文档
 
+> **v0.10.0 仓库拆分：** 主程序不附带组件实现。官方源预置但默认关闭；在设置中启用后添加组件。旧实例与数据保留。组件开发和发布转至 [qiye-widgets](https://github.com/Ktclat/qiye-widgets)，当前契约见 [宿主 API](PLUGIN-API.md)。
+
 [项目首页](../README.md) · **简体中文** · [English](README.en.md)
 
 从使用指南了解产品，从小组件 Wiki 开始扩展开发。技术文档描述当前源码；历史版本说明和测试结论单独归档。

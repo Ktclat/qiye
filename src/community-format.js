@@ -4,8 +4,12 @@ import { publicHttpsUrl } from './public-json.js';
 import { TILE_SIZES } from './widget-sizes.js';
 
 export function validateCommunityManifest(raw) {
-  keys(raw,['format','version','id','name','description','author','release','entry','repository','license','sizes','previews'],'manifest');
-  if(raw.format!=='qiye-widget'||raw.version!==1)invalid('manifest','qiye-widget v1 required');
+  keys(raw,['format','version','apiVersion','id','name','description','author','release','entry','repository','license','sizes','previews','capabilities'],'manifest');
+  if(raw.format!=='qiye-widget'||![1,2].includes(raw.version))invalid('manifest','qiye-widget v1 or v2 required');
+  if(raw.version===2&&raw.apiVersion!==2)invalid('manifest.apiVersion','Unsupported host API');
+  const capabilities=raw.version===2?array(raw.capabilities||[],'manifest.capabilities',3):[];
+  if(capabilities.some(value=>!['bookmarks','wallpaper','geolocation'].includes(value)))invalid('manifest.capabilities','Unknown capability');
+  unique(capabilities,'manifest.capabilities');
   const text=(key,max)=>string(raw[key],'manifest.'+key,max);
   const id=text('id',80),release=text('release',30);
   if(!/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/.test(id)||!/^\d+\.\d+\.\d+$/.test(release))invalid('manifest','invalid id or release');
@@ -16,7 +20,7 @@ export function validateCommunityManifest(raw) {
     keys(preview,['size','url'],'manifest.previews');if(!sizes.includes(preview.size))invalid('manifest.previews','unsupported size');
     return {size:preview.size,url:publicHttpsUrl(string(preview.url,'preview.url',2048))};
   });unique(previews.map(p=>p.size),'manifest.previews');
-  return {format:'qiye-widget',version:1,id,name:text('name',80),description:text('description',500),author:text('author',80),release,entry:publicHttpsUrl(text('entry',2048)),repository:publicHttpsUrl(text('repository',2048)),license:text('license',80),sizes:[...sizes],previews};
+  return {format:'qiye-widget',version:raw.version,...(raw.version===2?{apiVersion:2,capabilities:[...capabilities]}:{}),id,name:text('name',80),description:text('description',500),author:text('author',80),release,entry:publicHttpsUrl(text('entry',2048)),repository:publicHttpsUrl(text('repository',2048)),license:text('license',80),sizes:[...sizes],previews};
 }
 
 export function validateCommunitySource(raw) {
@@ -24,7 +28,7 @@ export function validateCommunitySource(raw) {
   if(raw?.format==='qiye-widget'){const manifest=validateCommunityManifest(raw);return {format:'qiye-widget-source',version:1,name:manifest.author,widgets:[manifest]};}
   keys(raw,['format','version','name','widgets'],'source');
   if(raw.format!=='qiye-widget-source'||raw.version!==1)invalid('source','qiye-widget-source v1 required');
-  const widgets=array(raw.widgets,'source.widgets',50).map(validateCommunityManifest);unique(widgets.map(w=>w.id),'source.widgets');
+  const widgets=array(raw.widgets,'source.widgets',500).map(validateCommunityManifest);unique(widgets.map(w=>w.id),'source.widgets');
   return {format:'qiye-widget-source',version:1,name:string(raw.name,'source.name',80),widgets};
 }
 

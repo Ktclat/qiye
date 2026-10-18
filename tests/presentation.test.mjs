@@ -34,12 +34,7 @@ test('one accent switch applies to resolved system theme with readable button in
   assert.equal(themeTokens({...settings,useThemeColor:true,themeColor:'#000000'},false).ink,'#ffffff');
 });
 
-test('catalog uses independent accessible size controls and inert production renderers', () => {
-  const html=renderCatalog({state:DEFAULT_STATE,groupId:'home'});
-  const definitions = listWidgetDefinitions();
-  assert.equal((html.match(/data-catalog-size=/g)||[]).length, definitions.reduce((count, widget) => count + widget.sizes.length, 0));
-  assert.equal((html.match(/class="catalog-stage" inert/g)||[]).length, definitions.length);
-  assert.ok(html.includes('data-catalog-widget="countdown" data-preview-size="2x2"'));
-  assert.ok(html.includes('--preview-width:330px;--preview-height:150px'));
-  assert.ok(!html.includes('name="widgetSize"'));
+test('the shell has no built-in widget definitions or widget previews', () => {
+ const html=renderCatalog({state:DEFAULT_STATE,groupId:'home'});
+ assert.deepEqual(listWidgetDefinitions(),[]);assert.doesNotMatch(html,/data-catalog-widget=/);
 });

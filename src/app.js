@@ -1,40 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import { converterWorkspace, bindConverterWorkspace } from './converter-view.js';
-import { fileConverterWorkspace, bindFileConverterWorkspace } from './file-converter-workspace.js';
-import { codecWorkspace, bindCodecWorkspace } from './codec-workspace.js';
-import { imageCompressorWorkspace, bindImageCompressorWorkspace } from './image-compressor-workspace.js';
 import { compressImage, MAX_IMAGE_INPUT_BYTES } from './image-compression.js';
-import { mapWorkspace } from './map-view.js';
-import { bindMapWorkspace } from './map-workspace.js';
-import { pomodoroWorkspace, pomodoroSettingsFields, readPomodoroSettings } from './pomodoro-view.js';
-import { configurePomodoro, validatePomodoroConfig } from './pomodoro.js';
-import { bindPomodoro } from './pomodoro-runtime.js';
 import { renderCatalog, renderCatalogToolbar, filterCatalog, changeCatalogSize } from './widget-catalog.js';
 import { TILE_SIZES, sizeLabel, gridMetrics } from './widget-sizes.js';
 import { DEFAULT_STATE, createDefaultState, ENGINES, uid, safeUrl, loadState, saveState, subscribeState, validateImport, exportState, requestBookmarks, searchHistory } from './core.js';
 import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './widgets.js';
-import { chineseLunarDate } from './calendar.js';
-import { createWidgetDetails } from './widget-details.js';
-import { bindCitySearch } from './city-search.js';
-import { WEATHER_SOURCES, requestWeatherPermission } from './weather-sources.js';
-import { weatherWorkspace } from './weather-view.js';
-import { bindWeatherWorkspace } from './weather-workspace.js';
-import { hotsearchWorkspace, refreshHotsearchCards } from './hotsearch-view.js';
-import { bindHotsearchWorkspace } from './hotsearch-workspace.js';
-import { bookmarkWorkspace } from './bookmarks-view.js';
-import { bindBookmarkWorkspace } from './bookmarks-workspace.js';
-import { UTILITY_WIDGETS, utilityWorkspace, bindUtilityWorkspace } from './widget-workspaces.js';
-import { baseConverterWorkspace, bindBaseConverter } from './base-converter-view.js';
+import { chineseLunarDate } from './desktop-date.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
 import { communityView, bindCommunity } from './community-ui.js';
-import { communityWorkspace, bindCommunityWorkspace } from './community-widget.js';
+import { pluginWorkspace, bindPluginWorkspace } from './plugin-host.js';
+import { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } from './widget-sources.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
 import { APP_VERSION } from './version.js';
 import { applyWindowSize, WINDOW_SIZES } from './window-layout.js';
 import { themeTokens } from './theme.js';
 import { getWidgetDefinition, newWidgetConfig } from './widget-registry.js';
 import { newWidgetData, widgetContentSummary } from './widget-data.js';
-import { renderExtensionSettings, readExtensionSettings } from './widget-settings.js';
 import { icon, iconNames } from './icons.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { createWallpaperLibrary } from './wallpaper-library.js';
@@ -68,8 +48,6 @@ const dailyQuote = createDailyQuote($('#daily-quote'), {
  onNotify: (message, duration) => toast(message, undefined, undefined, duration),
  onSearch: text => navigate(currentEngine().url.replace(/\{q\}/g, encodeURIComponent(text)), false, true),
 });
-const widgetDetails = createWidgetDetails({getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})});
-let cleanupCitySearch = () => {};
 let state = clone(DEFAULT_STATE);
 let persistedState = clone(DEFAULT_STATE), saveQueue = Promise.resolve(), saveGeneration = 0;
 let editing = false, widgetsCleanup = () => {}, saving = 0, revision = 0, blockedStorage = false, syncController = null;
@@ -620,11 +598,12 @@ function renderDesktop({preserveWidgets=false} = {}) {
 
  const desktop = $('#desktop');
  desktop.classList.toggle('group-enter', !!switched && state.settings.animateGroups && !state.settings.reducedEffects);
+ let widgetSources=[];try{widgetSources=readWidgetSources();}catch{}
  const entries=items.map((item,index)=>({
   key:item.id,
   // Order is not visual identity. Folder previews alone depend on children;
   // a pure move retains live widget drafts and their existing event binding.
-  signature:JSON.stringify([item,item.type==='folder'?state.items.filter(i=>i.folderId===item.id).slice(0,4):null,item.type==='widget'?widgetViewRevision:null,item.type==='link'?state.settings.openNewTab:null]),
+  signature:JSON.stringify([item.type==='widget'?[item.id,item.title,item.size,resolveWidgetSource(item,widgetSources)]:item,item.type==='folder'?state.items.filter(i=>i.folderId===item.id).slice(0,4):null,item.type==='link'?state.settings.openNewTab:null]),
   render:()=>renderTile(item,index)
  }));
  if(state.settings.showAddTile)entries.push({key:'$add',signature:'add',render:()=>`<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="${t("添加网站或组件")}">${icon('plus')}</button><span class="tile-label">${t("添加")}</span></div>`});
@@ -633,8 +612,7 @@ function renderDesktop({preserveWidgets=false} = {}) {
  items.forEach((item,index)=>desktop.children[index]?.style.setProperty('--enter-delay',Math.min(index,10)*16+'ms'));
  bindFaviconImages(desktop);
  if(!widgetsBound || [...changed.created,...changed.removed].some(node=>node.classList.contains('tile-widget'))){
-  widgetsCleanup();
-  widgetsCleanup=bindWidgets(desktop,{getState:()=>state,save:persist,openDialog,toast,rerender:renderDesktop,applyWallpaper:applyOnlineWallpaper,wallpaperEnabledChanged:applySettings});
+  widgetsCleanup=bindWidgets(desktop,pluginHost());
   widgetsBound=true;
  }
  updateGrid(); refreshLiveWidgets($('#desktop'), state);
@@ -722,13 +700,19 @@ async function storeLocalWallpaper(blob,type='image',isCurrent=wallpaperRequest(
   return true;
 }
 let viewerCleanup=()=>{};
+let viewerCleanupJob;
+function cleanupViewer() {
+ if(viewerCleanupJob)return viewerCleanupJob;
+ const cleanup=viewerCleanup,result=cleanup();
+ if(!result?.then){if(viewerCleanup===cleanup)viewerCleanup=()=>{};return;}
+ viewerCleanupJob=Promise.resolve(result).then(()=>{if(viewerCleanup===cleanup)viewerCleanup=()=>{};}).finally(()=>{viewerCleanupJob=null;});
+ return viewerCleanupJob;
+}
 function openDialog(kind,data={}) {
  wallpaperUploadRevision++;
- if(kind==='widget-config'&&['countdown','workday','notes','clock','habit'].includes(data.item?.widget))kind='widget-detail';
- if(kind==='widget-detail' && data.item?.widget==='wallpaper')kind='wallpaper';
- viewerCleanup(); viewerCleanup=()=>{};
+ const pendingCleanup=cleanupViewer();
+ if(pendingCleanup?.then){pendingCleanup.then(()=>openDialog(kind,data)).catch(error=>toast(error.message));return;}
  if(kind!=='settings' || !dialog.open || dialogKind!=='settings')dialog.classList.toggle('settings-drawer',kind==='settings' && state.settings.settingsPresentation==='sidebar');
- widgetDetails.close(); cleanupCitySearch();
  desktopDrag?.cancel();
  hideSearchMenus(); $('#context-menu').hidden = true;
  if (!dialog.open) lastDialogFocus = document.activeElement;
@@ -737,22 +721,8 @@ function openDialog(kind,data={}) {
  dialogKind = kind; dialogData = data;
  dialog.classList.toggle('widget-detail-dialog',kind==='widget-detail');
  const detailWidget = kind === 'widget-detail' ? state.items.find(item => item.id === data.item?.id)?.widget : null;
- const utilityWidget = detailWidget && UTILITY_WIDGETS.includes(detailWidget);
- const dedicatedWidget = ['image-compressor','converter','file-converter','map','codec','calendar','memo','weather','community','hotsearch','pomodoro','base-converter','bookmarks'].includes(detailWidget) || utilityWidget;
- dialog.classList.toggle('widget-app-dialog',dedicatedWidget);
- dialog.classList.toggle('codec-app-dialog',detailWidget === 'codec');
- dialog.classList.toggle('image-tool-dialog',detailWidget === 'image-compressor');
- dialog.classList.toggle('calendar-app-dialog',detailWidget === 'calendar');
- dialog.classList.toggle('memo-app-dialog',detailWidget === 'memo');
- dialog.classList.toggle('weather-app-dialog',detailWidget === 'weather');
- dialog.classList.toggle('map-app-dialog',detailWidget === 'map');
- dialog.classList.toggle('bookmarks-app-dialog',detailWidget === 'bookmarks');
- dialog.classList.toggle('hotsearch-app-dialog',detailWidget === 'hotsearch');
- dialog.classList.toggle('radix-app-dialog',detailWidget === 'base-converter');
- dialog.classList.toggle('converter-app-dialog',detailWidget === 'converter');
- dialog.classList.toggle('file-converter-app-dialog',detailWidget === 'file-converter');
- dialog.classList.toggle('pomodoro-app-dialog',detailWidget === 'pomodoro');
- dialog.classList.toggle('utility-app-dialog',utilityWidget || ['weather','community'].includes(detailWidget));
+ dialog.classList.toggle('widget-app-dialog', !!detailWidget);
+ dialog.classList.toggle('plugin-dialog', !!detailWidget);
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
@@ -763,23 +733,9 @@ function openDialog(kind,data={}) {
  $('#shortcuts-button').setAttribute('aria-expanded','false');
  let html = '';
  if (kind === 'add') html = addDialog(data.tab || 'widgets',data);
- else if(kind==='widget-detail'&&detailWidget==='map'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="map-workspace" class="widget-app-body">${mapWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="converter-workspace" class="widget-app-body">${converterWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='file-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="file-converter-workspace" class="widget-app-body">${fileConverterWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='base-converter'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="base-converter-workspace" class="widget-app-body">${baseConverterWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='bookmarks'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="bookmarks-workspace" class="widget-app-body">${bookmarkWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='codec'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="codec-workspace" class="widget-app-body">${codecWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='image-compressor'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="image-compressor-workspace" class="widget-app-body">${imageCompressorWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='community'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="community-workspace" class="widget-app-body">${communityWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='weather'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="weather-workspace" class="widget-app-body">${weatherWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='hotsearch'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="hotsearch-workspace" class="widget-app-body">${hotsearchWorkspace(item)}</div>`;}
- else if(kind==='widget-detail'&&detailWidget==='pomodoro'){const item=state.items.find(i=>i.id===data.item?.id);html=`<div id="pomodoro-workspace" class="widget-app-body">${pomodoroWorkspace(item)}</div>`;}
+ else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=pluginWorkspace(item); }
  else if (kind === 'edit-item') { const item = state.items.find(i=>i.id===data.id); if (!item) return; html = item.type==='widget'?widgetConfigDialog(item):addDialog(item.type==='folder'?'folder':'link',{item}); }
- else if (kind === 'widget-detail' && utilityWidget) {const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=`<div id="utility-workspace" class="widget-app-body">${utilityWorkspace(item,state)}</div>`;}
- else if (kind === 'widget-detail' && !dedicatedWidget) { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=dialogHeader(item.title)+`<div class="widget-viewer"><div id="widget-viewer-body">${renderWidget({...item,size:'2x2'},state)}</div><div class="widget-viewer-tools"><button class="secondary-button" data-edit-item="${esc(item.id)}">${t('设置组件')}</button></div></div>`; }
- else if (kind === 'widget-detail') { const item=state.items.find(i=>i.id===data.item?.id);if(!item)return;html=(dedicatedWidget?'':dialogHeader(item.title))+`<div id="widget-detail-body" class="${dedicatedWidget?'widget-app-body':'widget-detail-body'}">${widgetDetails.render(item,data)}</div>`; }
  else if (kind === 'widget-config') html = widgetConfigDialog(state.items.find(i=>i.id===data.item?.id) || data.item);
- else if (kind === 'weather') { const item = state.items.find(i=>i.widget==='weather') || {id:uid(),widget:'weather',title:t('天气'),config:newWidgetConfig('weather')}; html = widgetConfigDialog(item); }
  else if (kind === 'settings') html = settingsDialog(data.tab || 'general');
  else if (kind === 'sync-review') html = dialogHeader(t("确认同步桌面"),t("选择要保留的版本，确认后再应用。")) + syncController.renderReview(data.result);
  else if (kind === 'wallpaper') html = wallpaperDialog();
@@ -798,54 +754,24 @@ function openDialog(kind,data={}) {
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
  if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
- if(kind==='add' && data.tab==='community')viewerCleanup=bindCommunity($('#add-content'),{getState:()=>state,apply:applyExchange});
- if (kind==='widget-detail') {
-  const utility=$('#utility-workspace');
-  const viewer=$('#widget-viewer-body');
-  if(detailWidget==='map')viewerCleanup=bindMapWorkspace($('#map-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,toast,refreshCards:()=>renderDesktop({preserveWidgets:true})},data.mapRegion);
-  else if(detailWidget==='community')viewerCleanup=bindCommunityWorkspace($('#community-workspace'),data.item,{getState:()=>state,saveData:saveWidgetData});
-  else if(detailWidget==='codec')viewerCleanup=bindCodecWorkspace($('#codec-workspace'),data.codecAlgorithm);
-  else if(detailWidget==='image-compressor')viewerCleanup=bindImageCompressorWorkspace($('#image-compressor-workspace'),{applyWallpaper:async blob=>{const saved=await storeLocalWallpaper(blob,'image');if(saved)toast(t('壁纸已保存，可在栖页桌面查看。'));return saved;}});
-  else if(detailWidget==='converter')viewerCleanup=bindConverterWorkspace($('#converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
-  else if(detailWidget==='file-converter')viewerCleanup=bindFileConverterWorkspace($('#file-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,toast});
-  else if(detailWidget==='base-converter')viewerCleanup=bindBaseConverter($('#base-converter-workspace'),state.items.find(i=>i.id===data.item?.id),{saveData:saveWidgetData,refreshCards:()=>renderDesktop({preserveWidgets:true}),toast});
-  else if(detailWidget==='bookmarks')viewerCleanup=bindBookmarkWorkspace($('#bookmarks-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,uid,refreshCards:()=>renderDesktop({preserveWidgets:true})});
-  else if(detailWidget==='weather')viewerCleanup=bindWeatherWorkspace($('#weather-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>renderDesktop({preserveWidgets:true})});
-  else if(detailWidget==='hotsearch')viewerCleanup=bindHotsearchWorkspace($('#hotsearch-workspace'),state.items.find(i=>i.id===data.item?.id),{getState:()=>state,saveSettings:saveWidgetSettings,refreshCards:()=>refreshHotsearchCards($('#desktop'),state)});
-  else if(detailWidget==='pomodoro'){const cleanup=bindPomodoro($('#pomodoro-workspace'),{getState:()=>state,save:persist,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
-  else if(utility){const cleanup=bindUtilityWorkspace(utility,data.item,{getState:()=>state,save:persist,saveData:saveWidgetData,saveSettings:saveWidgetSettings,openDialog,toast});viewerCleanup=()=>{cleanup();renderDesktop({preserveWidgets:true});};}
-  else if(viewer) {
-    const cleanup=bindWidgets(viewer,{getState:()=>state,save:persist,toast,openDialog:(next,args)=>{if(next!=='widget-detail')openDialog(next,args);}});
-    const timer=setInterval(()=>refreshLiveWidgets(viewer,state),1000);
-    viewerCleanup=()=>{clearInterval(timer);cleanup();renderDesktop({preserveWidgets:true});};
-  } else widgetDetails.mount($('#widget-detail-body'),data);
- }
- cleanupCitySearch=bindCitySearch($('#widget-form'));
+ if(kind==='add' && ['widgets','community'].includes(data.tab||'widgets'))viewerCleanup=bindCommunity($('#add-content'),{getState:()=>state,apply:applyExchange});
+ if(kind==='settings' && data.tab==='sources')viewerCleanup=bindCommunity($('.settings-content'),{getState:()=>state,apply:applyExchange});
+ if(kind==='widget-detail')viewerCleanup=bindPluginWorkspace($('#dialog-content'),state.items.find(i=>i.id===data.item?.id),pluginHost());
  if (kind==='settings') renderAvatar();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='codec')$('#codec-input',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='map')$('#dialog-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='converter')$('#dialog-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&['image-compressor','file-converter'].includes(detailWidget))$('#dialog-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='base-converter')$('#radix-input',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail'&&detailWidget==='memo'){if(!data.newMemo)$('#dialog-title',dialog)?.focus({preventScroll:true});}
- else if(kind==='widget-detail'&&(utilityWidget||['weather','community','hotsearch','pomodoro','bookmarks'].includes(detailWidget)))$('[data-close]',dialog)?.focus({preventScroll:true});
+ else if(kind==='widget-detail')$('#dialog-title',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
  wallpaperUploadRevision++;
  cancelLinkFaviconVisit();
- viewerCleanup();viewerCleanup=()=>{};
- const pending = widgetDetails.close();
- if (pending) {
-  const closingData = dialogData;
-  await pending;
-  if (dialogData !== closingData) return;
- }
- cleanupCitySearch(); wallpaperLibrary.close(); avatarRequestSequence++;
+ const pendingCleanup=cleanupViewer();
+ try{await pendingCleanup;}catch(error){toast(error.message);return;}
+ viewerCleanup=()=>{};
+ wallpaperLibrary.close(); avatarRequestSequence++;
  if(dialog.open) dialog.close(); dialogKind=''; dialogData={};
  if(lastDialogFocus?.isConnected)lastDialogFocus.focus();
 }
@@ -876,16 +802,16 @@ function linkEditorForm(item){
 }
 function addDialog(tab,data) {
  const item = data.item;
- const catalog = tab === 'widgets' || tab === 'sites';
+ const catalog = tab === 'sites';
  let content = '';
  if (catalog) content = renderCatalog({state,sites:DEFAULT_STATE.items.filter(item=>item.type==='link'&&!item.folderId),renderSite:siteGlyph,siteMode:tab==='sites'});
  else if(tab==='sharing')content=sharingView(state,data.url||'');
- else if(tab==='community')content=communityView();
+ else if(['widgets','community'].includes(tab))content=communityView({catalogOnly:true});
  else if (tab === 'folder') content = `<form id="folder-form" data-id="${esc(item?.id || '')}">${field('title',t("文件夹名称"),item?.title || '',{required:true,maxlength:24,placeholder:t("例如：灵感收藏")})}${selectField('groupId',t("所在分组"),item?.groupId || currentGroup().id,groupOptions())}<p class="help-text">${t("把网站卡片拖到文件夹中央即可收纳。文件夹中可将网站移回桌面。")}</p>${formActions(item?t("保存文件夹"):t("创建文件夹"))}</form>`;
  else content = linkEditorForm(item);
  const head=item?dialogHeader(item.type==='folder'?t("编辑文件夹"):t("编辑图标")):`<header class="add-header"><h2 id="workspace-title" tabindex="-1">${t('添加')}</h2>${catalog?renderCatalogToolbar({state,groupId:data.groupId||currentGroup().id}):''}<div class="add-window-actions"><button class="workspace-expand" data-action="workspace-expand" aria-label="${t('切换窗口大小')}">${icon('maximize')}</button>${dialogCloseButton()}</div></header>`;
  if(item)return head+`<div class="dialog-body">${content}</div>`;
- const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'community',name:t('社区组件'),icon:'globe'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'},{id:'sharing',name:t('分享与导入'),icon:'download'}];
+ const tabs=[{id:'widgets',name:t("小组件"),icon:'grid'},{id:'sites',name:t('网址导航'),icon:'globe'},{id:'link',name:t('自定义图标'),icon:'edit'},{id:'folder',name:t("文件夹"),icon:'folder'},{id:'sharing',name:t('分享与导入'),icon:'download'}];
  return head+`<div class="add-layout"><nav class="add-nav" role="tablist" aria-orientation="vertical" aria-label="${t("添加内容分类")}">${tabs.map(t=>`<button role="tab" aria-controls="add-content" aria-selected="${tab===t.id}" data-add-tab="${t.id}">${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<p>${t("内容仅保存到你的桌面")}</p></nav><section id="add-content" class="add-content${catalog?' catalog-content':''}" role="tabpanel" aria-label="${tabs.find(t=>t.id===tab)?.name||t("网站")}">${content}</section></div><p class="add-feedback" data-add-feedback role="status" aria-live="polite" aria-atomic="true"></p>`;
 
 }
@@ -909,7 +835,7 @@ function settingsDialog(tab) {
   {id:'icons',name:t("图标"),icon:'grid'}, {id:'clock',name:t("时间 / 日期"),icon:'clock'},
   {id:'appearance',name:t("主题与材质"),icon:'sun'}, {id:'layout',name:t("布局"),icon:'move'},
   {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("同步"),icon:'sync'},
-  {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
+  {id:'sources',name:t('小组件源'),icon:'grid'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
  ];
  if (!tabs.some(item=>item.id===tab)) tab='general';
  let content = '';
@@ -1031,6 +957,7 @@ function settingsDialog(tab) {
   <div class="section-label">${t("重置设置")}</div>
   <div class="data-card"><div><strong>${t("恢复默认设置")}</strong><p>${t("还原显示、搜索、头像与壁纸偏好，保留网站、分组和组件内容。")}</p></div><button class="secondary-button" data-action="reset-preferences">${t("重置设置")}</button></div>
   <div class="button-row"><button class="danger-button" data-action="reset">${t("恢复初始桌面")}</button></div>`;
+ else if(tab==='sources') content = communityView();
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
   <div class="about-block"><img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="66" height="66" draggable="false"><h3>${t("栖页")} <span style="font-weight:350">Qiye</span></h3><p>${t("让每一次打开，都有一处喜欢的风景。")}</p><span class="version-badge">${t("v{v0} · GPLv3 · 无需账号", {v0: APP_VERSION})}</span></div>
@@ -1064,23 +991,7 @@ const wallpaperLibrary = createWallpaperLibrary({
 function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
 
 function widgetConfigDialog(item) {
- if(!item) return dialogHeader(t("组件不存在"))+`<div class="dialog-body">${t("请关闭后重试。")}</div>`;
- const type = item.widget, c=item.config, definition=getWidgetDefinition(type);
- let content = field('title',t("卡片名称"),item.title,{required:true,maxlength:30});
- if(type==='weather') content += `<div class="detail-toolbar"><input id="city-query" class="text-input" placeholder="${t("搜索全球城市")}" aria-label="${t("搜索全球城市")}"><button type="button" class="secondary-button" data-city-search>${t("搜索城市")}</button></div><div id="city-results" role="status"></div>` + selectField('source',t("天气源"),c.source||'auto',WEATHER_SOURCES.map(source=>({value:source.id,label:t(source.name)}))) + `<label class="setting-row"><span>${t("故障时自动切换天气源")}</span><input type="checkbox" class="switch" name="fallback" ${c.fallback!==false?'checked':''}></label><p class="help-text">${t("个人密钥可在天气详情的「天气源与设置」中配置。")}</p>` + selectField('unit',t("温度单位"),c.unit,[{value:'celsius',label:t("摄氏度 °C")},{value:'fahrenheit',label:t("华氏度 °F")}]) + `<div class="two-columns">${selectField('cityPreset',t("选择城市"),'',[{value:'',label:t("选择常用城市")},{value:'香港|22.32|114.17',label:t("香港")},{value:'北京|39.9|116.4',label:t("北京")},{value:'上海|31.23|121.47',label:t("上海")},{value:'深圳|22.54|114.06',label:t("深圳")},{value:'广州|23.13|113.26',label:t("广州")},{value:'成都|30.67|104.07',label:t("成都")},{value:'台北|25.03|121.56',label:t("台北")},{value:'澳门|22.1987|113.5439',label:t("澳门")},{value:'新加坡|1.35|103.82',label:t("新加坡")},{value:'东京|35.68|139.69',label:t("东京")}])}${field('cityName',t("城市名称"),c.city.name,{required:true,maxlength:60})}</div><div class="two-columns">${field('latitude',t("纬度"),c.city.latitude,{type:'number',min:-90,max:90,required:true})}${field('longitude',t("经度"),c.city.longitude,{type:'number',min:-180,max:180,required:true})}</div><label class="setting-row"><span class="setting-copy"><strong>${t("启用天气服务")}</strong><small>${t("将城市坐标发送至所选天气源。每 30 分钟更新，离线时显示缓存或错误提示。")}</small></span><input class="switch" name="weatherEnabled" type="checkbox" ${c.enabled?'checked':''}></label>`;
- else if(type==='map') content += `<p class="help-text">${t('地图源、个人 Key 和地区偏好可在地图工作台右上角设置。')}</p>`;
- else if(type==='calendar') content += selectField('weekStart',t("每周开始日"),c.weekStart,[{value:'1',label:t("星期一")},{value:'0',label:t("星期日")}])+selectField('holidays',t("节假日地区"),c.holidays,[{value:'none',label:t("仅周末")},{value:'CN',label:t("中国大陆 · 2026")}])+`<label class="setting-row"><span>${t("显示农历")}</span><input type="checkbox" name="showLunar" ${c.showLunar?'checked':''}></label>`;
- else if(type==='countdown') content += field('eventTitle',t("纪念日 / 倒数日名称"),c.title,{required:true,maxlength:40})+field('date',t("目标日期"),c.date,{type:'date',required:true});
- else if(type==='focus') content += field('duration',t("每次专注时长（分钟）"),item.data.focus.duration,{type:'number',min:1,max:180,required:true,help:t("保存时会停止当前计时，并开始一轮新的时长。")});
- else if(type==='pomodoro') content += pomodoroSettingsFields(c);
- else if(type==='workday') content += `<div class="two-columns">${field('endTime',t("下班时间"),c.endTime,{type:'time',required:true})}${field('payday',t("每月发薪日"),c.payday,{type:'number',min:1,max:31,required:true})}</div><div class="field"><span>${t("工作日")}</span><div class="color-options">${[t("日"),t("一"),t("二"),t("三"),t("四"),t("五"),t("六")].map((d,i)=>`<label class="help-text"><input type="checkbox" name="workdays" value="${i}" ${c.workdays.includes(i)?'checked':''}>${t("周{v0}", {v0: d})}</label>`).join('')}</div></div>`;
- else if(type==='clock') content += field('label',t("城市显示名称"),c.label,{required:true,maxlength:30})+selectField('timeZone',t("时区"),c.timeZone,[{value:'Asia/Hong_Kong',label:t("香港 / 北京")},{value:'Asia/Tokyo',label:t("东京")},{value:'Asia/Singapore',label:t("新加坡")},{value:'Europe/London',label:t("伦敦")},{value:'Europe/Paris',label:t("巴黎")},{value:'America/New_York',label:t("纽约")},{value:'America/Los_Angeles',label:t("洛杉矶")},{value:'Australia/Sydney',label:t("悉尼")},{value:'UTC',label:'UTC'}]);
- else if(type==='quote') content += `<label class="field"><span>${t("自定义短句（可留空）")}</span><textarea name="text" maxlength="300" placeholder="${t("写下一句想对自己说的话")}">${esc(c.text || '')}</textarea></label>${field('author',t("署名"),c.author || '',{maxlength:40})}`;
- else if(type==='notes') content += selectField('color',t("便签颜色"),c.color,[{value:'yellow',label:t("奶油黄")},{value:'pink',label:t("浅樱粉")},{value:'mint',label:t("薄荷绿")}]);
- else if(definition && !definition.builtin) content += renderExtensionSettings(item);
- else content += `<p class="help-text">${t("直接在卡片中使用这个组件。右键卡片可以调整尺寸或位置。")}</p>`;
- content += selectField('size',t("卡片尺寸"),item.size || '2x2',(type==='community'?c.manifest.sizes:definition?.sizes || TILE_SIZES).map(value=>({value,label:sizeLabel(value)})));
- return dialogHeader(`${t("设置{v0}", {v0: item.title})}`,t("修改后会保存到当前浏览器。")) + `<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}" data-type="${esc(type)}">${content}${formActions()}</form></div>`;
+ return dialogHeader(t('设置组件'))+`<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}">${field('title',t('名称'),item.title,{required:true,maxlength:120})}${selectField('size',t('卡片尺寸'),item.size,(item.config?.manifest?.sizes||TILE_SIZES).map(value=>({value,label:sizeLabel(value)})))}<p>${t('组件功能设置请在组件窗口内打开。')}</p>${formActions()}</form></div>`;
 }
 function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div id="local-results" class="local-results"></div></div>`; }
 function renderLocalResults(query) {
@@ -1276,12 +1187,8 @@ document.addEventListener('click', async event=>{
  if(action==='visit-favicon')return await visitLinkFavicon(target);
  if(action?.startsWith('webdav-'))return await syncController.handleAction(action);
  if(action==='open-sync')return openDialog('settings',{tab:'sync'});
- if(action==='add-wallpaper-widget'){
-  const existing=state.items.find(i=>i.type==='widget'&&i.widget==='wallpaper');
-  if(existing){state.activeGroupId=existing.groupId;await commit();closeDialog();document.querySelector(`[data-item="${CSS.escape(existing.id)}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});toast(t("壁纸小组件在这里。"));}
-  else await addWidget('wallpaper');
-  return;
- }
+ if(action==='add-wallpaper-widget')return openDialog('add',{tab:'widgets'});
+ if(action==='widget-sources')return openDialog('settings',{tab:'sources'});
  if(action==='settings')return openDialog('settings');
  if(action==='wallpaper')return openDialog('wallpaper');
  if(action==='local-search')return openDialog('local-search');
@@ -1335,20 +1242,9 @@ dialog.addEventListener('submit',async event=>{
    const template=value('url');if(!template.includes('{q}'))throw new Error(t("搜索地址需要包含 {q} 占位符。"));if(!safeUrl(template.replace(/\{q\}/g,'test')))throw new Error(t("搜索地址必须使用 http 或 https。"));
    state.settings.customEngines.push({id:uid(),name:value('name'),letter:value('name').slice(0,1),color:'#83cbb2',url:template});await persist();renderEngine();openDialog('settings',{tab:'search'});toast(t("搜索引擎已添加。"));
   }else if(form.id==='widget-form'){
-   const item=state.items.find(i=>i.id===form.dataset.id),type=form.dataset.type;if(!item)throw new Error(t("组件已被移除，请重新添加。"));
-   const c=item.config;
-   if(type==='weather'){const latitude=Number(value('latitude')),longitude=Number(value('longitude'));if(!Number.isFinite(latitude)||latitude<-90||latitude>90||!Number.isFinite(longitude)||longitude<-180||longitude>180)throw new Error(t("请填写有效的经纬度。"));const city={name:value('cityName'),latitude,longitude};if(form.dataset.weatherCountryCode&&form.dataset.weatherCoordinates===`${latitude},${longitude}`)city.countryCode=form.dataset.weatherCountryCode;else if(latitude===c.city.latitude&&longitude===c.city.longitude&&c.city.countryCode)city.countryCode=c.city.countryCode;const updated={city,enabled:data.has('weatherEnabled'),unit:value('unit'),source:value('source'),fallback:data.has('fallback')};await requestWeatherPermission(city,updated);Object.assign(c,updated);}
-   if(type==='calendar'){c.weekStart=Number(value('weekStart'));c.holidays=value('holidays');c.showLunar=data.has('showLunar');}
-   if(type==='countdown'){c.title=value('eventTitle');c.date=value('date');}
-   if(type==='focus'){const duration=Number(value('duration'));if(!Number.isInteger(duration)||duration<1||duration>180)throw new Error(t("专注时长需为 1–180 分钟。"));item.data.focus={duration,remaining:duration*60,endAt:null,running:false};}
-   if(type==='pomodoro'){item.config=validatePomodoroConfig(readPomodoroSettings(data));item.data=configurePomodoro(item.data,item.config);}
-   if(type==='workday'){c.endTime=value('endTime');c.payday=Number(value('payday'));c.workdays=data.getAll('workdays').map(Number);}
-   if(type==='clock'){c.timeZone=value('timeZone');c.label=value('label');}
-   if(type==='quote'){c.text=value('text');c.author=value('author');}
-   if(type==='notes')c.color=value('color');
-   if(!getWidgetDefinition(type).builtin)item.config=readExtensionSettings(type,data,c);
+   const item=state.items.find(i=>i.id===form.dataset.id);if(!item)throw new Error(t('组件已移除'));
    item.title=value('title');item.size=value('size');
-   await commit();closeDialog();toast(t("组件设置已保存。"));
+   await commit();closeDialog();toast(t('组件设置已保存。'));
   }else if(form.id==='move-form'){
    const folder=state.items.find(i=>i.id===value('folderId')&&i.type==='folder');await moveItem(form.dataset.id,folder?.groupId || value('groupId'),folder?.id || null);closeDialog();toast(t("已移动。"));
   }else if(form.id==='bookmarks-form'){
@@ -1456,9 +1352,8 @@ dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog
 // Native selects can match :focus-visible even after a pointer selection.
 dialog.addEventListener('pointerdown',()=>dialog.classList.add('pointer-focus'),true);
 dialog.addEventListener('keydown',()=>dialog.classList.remove('pointer-focus'),true);
-dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}closeDialog();});
-dialog.addEventListener('close',()=>{if(dialog.open)return;wallpaperUploadRevision++;dialog.classList.remove('pointer-focus');cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};widgetDetails.close();cleanupCitySearch();wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
-dialog.addEventListener('cancel',event=>{if(dialogKind==='widget-detail'){event.preventDefault();void closeDialog();}});
+dialog.addEventListener('cancel',event=>{if(dialogKind==='wallpaper'&&wallpaperLibrary.back()){event.preventDefault();return;}if(dialogKind==='widget-detail')event.preventDefault();void closeDialog();});
+dialog.addEventListener('close',()=>{if(dialog.open)return;wallpaperUploadRevision++;dialog.classList.remove('pointer-focus');cancelLinkFaviconVisit();viewerCleanup();viewerCleanup=()=>{};wallpaperLibrary.close();avatarRequestSequence++;searchToken++;dialogKind='';$('#dialog-content').innerHTML='';});
 document.addEventListener('contextmenu',event=>{
  const entry=event.target.closest('[data-folder-item]');
  if(dialog.open && dialogKind==='folder' && entry){openContext(event,{itemId:entry.dataset.folderItem});return;}
@@ -1557,3 +1452,26 @@ document.addEventListener('change',async event=>{
  state.settings.pinClock=state.settings.pinSearch=event.target.value==='fixed';
  try{applySettings();await persist();}catch(error){if(!error.notified)toast(error.message);}
 });
+
+function pluginHost() {
+ return {getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,savePlugin:savePluginEnvelope,openDialog,closeDialog,toast,
+  refreshCards:()=>refreshLiveWidgets($('#desktop'),state),
+  applyWallpaper:applyOnlineWallpaper,
+  applyWallpaperBlob:blob=>storeLocalWallpaper(blob,'image'),
+  openWallpaper:()=>openDialog('wallpaper')};
+}
+window.addEventListener(SOURCES_CHANGED,()=>{renderDesktop();if(dialogKind==='widget-detail')openDialog('widget-detail',dialogData);});
+window.addEventListener('storage',event=>{if(event.key==='qiye.community.v1')window.dispatchEvent(new Event(SOURCES_CHANGED));});
+
+async function savePluginEnvelope(id,value,expected,{plugin,title,size}) {
+ await saveQueue;
+ const current=state.items.find(item=>item.id===id);
+ const revision=current?.widget==='community'?current.data.value:JSON.stringify({config:current?.config,data:current?.data});
+ if(!current||revision!==expected)throw new Error(t('组件内容已在其他位置修改，请重新打开。'));
+ const candidate=clone(state),item=candidate.items.find(item=>item.id===id);
+ item.widget='community';item.config={manifest:plugin.manifest,source:plugin.source};item.data={value:JSON.stringify(value)};
+ if(title!==undefined)item.title=title;if(size!==undefined)item.size=size;
+ state=validateImport(candidate);await persist();
+ if(item.title!==current.title||item.size!==current.size)setTimeout(()=>renderDesktop({preserveWidgets:true}),0);
+ return state.items.find(item=>item.id===id);
+}

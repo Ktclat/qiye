@@ -1,10 +1,11 @@
+import { INSTALLED_STATE as DEFAULT_STATE } from './state-fixtures.mjs';
 import { t, getLocale } from '../src/i18n.js';
 import { widgetData, withNote } from './state-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { DEFAULT_STATE, validateImport } from '../src/core.js';
+import { validateImport } from '../src/core.js';
 import { webDAVStateFingerprint } from '../src/webdav.js';
 
 const source = await readFile(new URL('../src/app.js', import.meta.url), 'utf8');

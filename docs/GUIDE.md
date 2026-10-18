@@ -1,5 +1,7 @@
 # 使用指南
 
+> **v0.10.0 仓库拆分：** 主程序不附带组件实现。官方源预置但默认关闭；在设置中启用后添加组件。旧实例与数据保留。组件开发和发布转至 [qiye-widgets](https://github.com/Ktclat/qiye-widgets)，当前契约见 [宿主 API](PLUGIN-API.md)。
+
 [项目首页](../README.md) · [文档索引](README.md) · [小组件技术文档](wiki/Home.md)
 
 本文集中说明桌面操作、安装、图标、WebDAV、隐私设置与快捷键。版本变化见 [更新日志](../CHANGELOG.md)。

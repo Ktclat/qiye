@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish verified assets from a version bump on main or a matching vX.Y.Z tag."""
+"""Publish verified assets only from a matching vX.Y.Z tag."""
 import argparse
 import importlib.util
 import json
@@ -22,7 +22,7 @@ def release_requested(ref, version, previous_version, published):
         if ref != f'refs/tags/v{version}':
             raise ValueError('Release tag must match manifest.json and package.json')
         return True
-    return ref == 'refs/heads/main' and (previous_version != version or not published)
+    return False  # Only a matching version tag authorizes publication.
 
 
 def publish(assets):
@@ -62,7 +62,7 @@ def publish(assets):
 
 版本变化 / Changes: [CHANGELOG.md](https://github.com/{repository}/blob/{tag}/CHANGELOG.md)。
 
-`preview.html` 可直接打开体验网页功能。`source.zip` 包含本版本对应源码、许可证、文档与构建脚本。校验文件为 `SHA256SUMS.txt`。项目尚未正式推出，仅接受当前版本的数据格式，不提供旧数据迁移。在线网页与扩展共用生产模块：[打开网页端](https://ktclat.github.io/qiye/)。
+`preview.html` 可直接打开体验网页功能。`source.zip` 包含本版本对应源码、许可证、文档与构建脚本。校验文件为 `SHA256SUMS.txt`。主程序不附带组件实现；官方组件源默认关闭，可在设置中启用。旧桌面组件记录保留，组件更新单独发布。在线网页与扩展共用生产模块：[打开网页端](https://ktclat.github.io/qiye/)。
 
 English: extract the Chrome/Edge ZIP, enable Developer mode at your browser's extensions page, and choose “Load unpacked”. Select the folder containing manifest.json. Language follows your browser; change it in Settings → Opening behavior → Language. See [English documentation](https://github.com/Ktclat/qiye/blob/main/README.en.md).
 ''', encoding='utf-8')

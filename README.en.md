@@ -21,21 +21,21 @@
 
 Qiye brings websites, search, everyday widgets and wallpapers together on your browser's new tab. Organize groups, choose card sizes and customize the layout in Chrome or Edge. No Qiye account is required: your desktop stays in your browser, with JSON backups and optional synchronization through your own WebDAV server.
 
-> Qiye is in active development. Data formats may change, and older formats are not migrated. Read the [installation and upgrade guide (Chinese)](docs/GUIDE.md#安装与更新) before upgrading.
+> The app ships without widgets. Enable the built-in official source under **Settings → Widget sources**, then choose widgets from **Add → Widgets**. Existing widget data is retained; sources are disabled until you enable them.
 
 ## Highlights
 
 | Capability | What you can do |
 | --- | --- |
 | Flexible desktop | Arrange websites, folders and widgets; move between groups, use keyboard controls and undo changes |
-| 14 everyday widgets | Weather, calendar, memos, sticky notes, to-dos, focus, countdown, workday countdown, habits, clocks, quotes, converter, wallpapers and subscribed trending lists; existing trending-page cards upgrade automatically |
+| Independent widget library | [qiye-widgets](https://github.com/Ktclat/qiye-widgets) owns widget code, manifests, assets, tests and releases. The official source is disabled by default. |
 | Search and browser integration | Built-in and custom search engines, local search, optional bookmarks/history access, toolbar and context-menu saving |
 | Appearance | Light/dark themes, accent colors, translucent materials, local image/video wallpapers, online galleries and layout settings |
 | Your data | Local storage, JSON import/export and WebDAV sync with revision and conflict checks |
 | Community and sharing | Subscribe to widget catalogs, run isolated web widgets, preview and import shared desktop layouts |
 | Chinese and English | Follow the browser language or select one manually; your own names and notes stay unchanged |
 
-Built-in widgets support `1×1`, `1×2`, `2×1`, `2×2` and `4×2`. Weather requires opt-in network access; trending widgets link to platform pages. Official mainland China holidays and adjusted working days currently cover 2026. See the [widget overview](docs/wiki/Widgets-Overview-en.md) and [product scope (Chinese)](docs/FEATURES.md).
+The desktop, windows, themes, host API and settings live here. Widget implementations are maintained in [qiye-widgets](https://github.com/Ktclat/qiye-widgets). The two repositories build and release independently. See [repository boundaries and protocol](docs/PLUGIN-API.md).
 
 ## Quick start
 
@@ -44,7 +44,7 @@ Built-in widgets support `1×1`, `1×2`, `2×1`, `2×2` and `4×2`. Weather requ
 1. Download `qiye-X.Y.Z-chrome-edge.zip` from [Releases](https://github.com/Ktclat/qiye/releases) and extract it.
 2. Open `chrome://extensions/` or `edge://extensions/` and enable **Developer mode**.
 3. Choose **Load unpacked** and select the directory that directly contains `manifest.json`.
-4. Open a new tab. Click the Qiye icon in the navigation to open settings, or **＋** to add websites and widgets.
+4. Open a new tab. Click the Qiye icon in the navigation to open settings, or **＋** to add websites. For widgets, enable a source in Settings first.
 
 No Node.js, npm dependencies or build step is needed to use the extension. The manifest requires Chrome 116 or later; Qiye targets Chrome and Edge and has not been adapted for Firefox. Change the interface language in **Settings → Opening behavior → Language**.
 
@@ -65,7 +65,7 @@ Local HTML persistence also depends on the browser's file policy. Installation, 
 
 Desktop content is stored locally by default. WebDAV credentials stay in the current browser and are excluded from desktop JSON backups; synchronization requires your own server configuration. Website icons, weather, online wallpapers and community webpages contact their respective providers. See the [privacy policy (Chinese)](docs/PRIVACY.md) for triggers and permissions.
 
-Community widgets load after you click **Run** in their detail window. The host API exposes only their own data. Public layout exports clear personal widget content but keep the website names and URLs you choose to share. See [community widgets](docs/wiki/Community-Widgets-en.md) and [layout sharing (Chinese)](docs/COMMUNITY.md).
+Widgets run in isolated frames only while their source is enabled. Disabling the source keeps instance data. Widget network requests follow normal web CORS rules.
 
 ## Documentation
 
