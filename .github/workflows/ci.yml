@@ -133,6 +133,8 @@ jobs:
               python3 tests/pomodoro-e2e.py --preview
               python3 tests/converter-e2e.py
               python3 tests/converter-e2e.py --preview
+              python3 tests/converter-radix-e2e.py
+              python3 tests/converter-radix-e2e.py --preview
               python3 tests/codec-e2e.py
               python3 tests/codec-e2e.py --preview
               python3 tests/map-e2e.py
@@ -150,6 +152,8 @@ jobs:
             test-results
             output/playwright/image-compressor
             output/playwright/file-converter
+            output/playwright/converter
+            output/playwright/converter-radix
             output/playwright/map
             output/playwright/bookmarks
             output/playwright/hotsearch

@@ -92,7 +92,7 @@ test('widget data validates limits, stays independent and survives desktop backu
   assert.deepEqual(other, newBaseConverterData());
   const state = structuredClone(DEFAULT_STATE);
   state.items.push({ id: 'base-test', type: 'widget', widget: 'base-converter', title: '进制转换', groupId: 'home', size: '4x2', config: newWidgetConfig('base-converter'), data });
-  assert.deepEqual(validateImport(exportState(state)).items.find(item => item.id === 'base-test').data, data);
+  assert.deepEqual(validateImport(exportState(state)).items.find(item => item.id === 'base-test').data.radix, data);
   for (const changes of [{ targets: [] }, { targets: [2, 2] }, { targets: [37] }, { input: '1'.repeat(513) }, { base: 1 }, { base: '10' }, { precision: 0 }, { precision: 129 }, { uppercase: 1 }, { groupDigits: 'yes' }, { surprise: true }]) {
     assert.throws(() => validateBaseConverterData({ ...data, ...changes }));
   }
@@ -266,6 +266,6 @@ test('legacy backups gain safe defaults while new integer settings are strictly 
   const state = structuredClone(DEFAULT_STATE), data = wordData({ bits: 128, input: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', base: 16, inputKind: 'bits', padBits: false });
   state.items.push({ id: 'word-backup', type: 'widget', widget: 'base-converter', title: '进制转换', groupId: 'home', size: '4x2', config: {}, data });
   const restored = validateImport(exportState(state)).items.find(item => item.id === 'word-backup');
-  assert.deepEqual(restored.data, data);
-  assert.equal(convertRadix(restored.data).word.signed, -1n);
+  assert.deepEqual(restored.data.radix, data);
+  assert.equal(convertRadix(restored.data.radix).word.signed, -1n);
 });

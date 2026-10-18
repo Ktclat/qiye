@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { t, getLocale } from './i18n.js';
 import { keys, number, bool, enumeration } from './validation.js';
+import { newBaseConverterData, validateBaseConverterData } from './base-converter.js';
 
 const unit = (id, name, en, symbol, factor, offset = 0) => ({ id, name, en, symbol, factor, offset });
 const category = (id, name, en, mark, group, units = []) => ({ id, name, en, mark, group, units });
@@ -8,6 +9,7 @@ const category = (id, name, en, mark, group, units = []) => ({ id, name, en, mar
 // Offset is in base units (kelvin for absolute temperatures).
 export const CONVERTER_CATEGORIES = Object.freeze([
   category('calculator', '计算器', 'Calculator', '±', 'daily'),
+  { ...category('radix', '进制转换', 'Base converter', '01', 'daily'), keywords: 'radix binary octal decimal hexadecimal BIN OCT DEC HEX 二进制 八进制 十进制 十六进制 补码 位宽' },
   category('currency', '货币汇率', 'Currency', '¥', 'daily'),
   category('bmi', 'BMI 计算', 'BMI', '♡', 'daily'),
   category('date', '日期计算', 'Date', '31', 'daily'),
@@ -40,11 +42,11 @@ export const converterCategory = id => CONVERTER_CATEGORIES.find(entry => entry.
 export const converterLabel = entry => getLocale() === 'en' ? entry.en : entry.name;
 
 export function newConverterData() {
-  return { category: 'calculator', precision: 6, online: false, pairs: Object.fromEntries(CONVERTER_CATEGORIES.filter(c => c.units.length).map(c => [c.id, [c.units[0].id, c.units[1].id]]).concat([['currency',['CNY','USD']]])) };
+  return { category: 'calculator', precision: 6, online: false, pairs: Object.fromEntries(CONVERTER_CATEGORIES.filter(c => c.units.length).map(c => [c.id, [c.units[0].id, c.units[1].id]]).concat([['currency',['CNY','USD']]])), radix: newBaseConverterData() };
 }
 
 export function validateConverterData(raw, path = 'data') {
-  keys(raw, ['category','precision','online','pairs'], path);
+  keys(raw, ['category','precision','online','pairs','radix'], path);
   const defaults = newConverterData();
   keys(raw.pairs, Object.keys(defaults.pairs), `${path}.pairs`);
   const pairs = {};
@@ -53,7 +55,7 @@ export function validateConverterData(raw, path = 'data') {
     if (!Array.isArray(pair) || pair.length !== 2) throw new Error(t('换算单位设置无效。'));
     pairs[id] = pair.map(value => enumeration(value, choices, `${path}.pairs.${id}`));
   }
-  return { category: enumeration(raw.category, CONVERTER_CATEGORIES.map(c => c.id), `${path}.category`), precision: number(raw.precision, `${path}.precision`, 0, 12, true), online: bool(raw.online, `${path}.online`), pairs };
+  return { category: enumeration(raw.category, CONVERTER_CATEGORIES.map(c => c.id), `${path}.category`), precision: number(raw.precision, `${path}.precision`, 0, 12, true), online: bool(raw.online, `${path}.online`), pairs, radix: raw.radix === undefined ? defaults.radix : validateBaseConverterData(raw.radix, `${path}.radix`) };
 }
 
 export function parseConverterNumber(raw) {

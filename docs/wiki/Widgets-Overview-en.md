@@ -45,8 +45,7 @@ The registry provides the user-facing built-in widgets below. `community` is a s
 | `hotsearch` | Trending | 22 sources, categories/search, subscription ordering, single/multiple lists, refresh and local cache; opens directly to rankings |
 | `codec` | Encoding tools | Base64 / URL and other conversions, MD / SHA hashes, and Buddha, Beast and Bear formats |
 | `file-converter` | File converter | Batch PNG / JPG / WebP conversion, processed locally with no uploads; [details](../FILE_CONVERTER.md) |
-| `converter` | Converter | 19 tools, 117 units and 40 currencies; [details](../CONVERTER.md) |
-| `base-converter` | Base converter | Simultaneous results for bases 2–36, large integers, negatives, fractions, recurring digits and precision controls |
+| `converter` | Converter | 20 tools including base conversion, 117 units and 40 currencies; [details](../CONVERTER.md) |
 | `habit` | Habits | Daily records and streaks |
 | `clock` | World clock | IANA timezone, city label and time comparison |
 
@@ -65,11 +64,11 @@ The independent MD implementations are checked against standard vectors from [RF
 
 Playful format references, versions and published compatibility fixtures are recorded in [Third-party references](../THIRD_PARTY.md#趣味编码格式参考).
 
-## Base converter
+## Base conversion within Converter
 
-The 44px single-line title bar contains a small icon, the title and window controls, without a subtitle. Long titles truncate with an ellipsis while keeping a full-title tooltip and keyboard access. The layout follows [Windows title bar design](https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design) and [MDN text-overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-overflow); 44px is this widget's compact layout choice.
+Add **Widgets → Tools → Converter**, then choose **Base converter**. Existing base-converter cards migrate automatically, keeping their input, output bases, integer settings, title and placement. The shared 46px title bar provides category search, contextual settings and window controls.
 
-Add **Widgets → Tools → Base converter**. Binary, octal, decimal and hexadecimal appear together by default; add or remove any output base from 2 to 36. The 2×2 / 4×2 desktop cards show the first four results, and all five sizes open the dedicated workspace. Narrow windows stack input and results and initially collapse formatting options.
+The input spans the workspace above compact, aligned result rows. Binary, octal, decimal and hexadecimal appear together by default; add or remove outputs from bases 2–36 with **Choose bases**. Formatting and input examples start collapsed. The five desktop card sizes remain supported; 2×2 / 4×2 cards show the first four results when the latest category is base conversion. Preferences and radix input share one save queue across categories, including retry after a failed save. See [Converter](../CONVERTER.md) for design references and verification.
 
 - Input is limited to 512 characters. Exact rational arithmetic preserves large integers and fractions beyond JavaScript's safe integer range. Accepts negatives, case-insensitive letters, space / underscore groups and recurring notation such as `0.(3)`. Pasting a complete `0b`, `0o` or `0x` number detects its input base.
 - Choose 1–128 maximum fractional digits. Parentheses mark recurring digits; longer expansions are truncated, not rounded, and show `≈` and `…`. General mode retains a minus sign for negatives. Scientific notation is not supported.

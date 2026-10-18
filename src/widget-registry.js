@@ -30,8 +30,8 @@ const builtins = [
   { type: 'hotlinks', title: '热搜入口', description: '直达各平台的热门内容页面', size: '4x2', icon: 'trending', internal: true },
   { type: 'hotsearch', title: '热搜榜', description: '订阅全网热榜，分类浏览与实时更新', size: '4x2', icon: 'trending' },
   { type: 'calculator', title: '计算器', description: '加减乘除、括号和百分比计算', size: '2x2', icon: 'calculator', internal: true },
-  { type: 'converter', title: '换算器', description: '计算器、货币汇率、BMI、日期与时间，以及长度、面积、质量、体积、温度、角度、力等常用单位换算', size: '2x2', icon: 'converter' },
-  { type: 'base-converter', title: '进制转换', description: '2–36 进制实时互转，同时查看多个结果，支持大整数与小数', size: '4x2', icon: 'code' },
+  { type: 'converter', title: '换算器', description: '计算器、进制转换、货币汇率、BMI、日期与时间，以及长度、面积、质量、体积、温度、角度、力等常用单位换算', size: '2x2', icon: 'converter' },
+  { type: 'base-converter', title: '进制转换', description: '2–36 进制实时互转，同时查看多个结果，支持大整数与小数', size: '4x2', icon: 'code', internal: true },
   { type: 'habit', title: '习惯打卡', description: '每日打卡和连续天数', size: '2x2', icon: 'sparkles' },
   { type: 'clock', title: '世界时钟', description: '查看城市时间与时差', size: '2x2', icon: 'globe' },
 ];

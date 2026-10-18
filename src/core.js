@@ -334,6 +334,12 @@ export function validateImport(raw) {
         if (['计算器','随手算'].includes(checked.title)) checked.title = '换算器';
         else if (['Calculator','Quick math','Quick calculations'].includes(checked.title)) checked.title = 'Converter';
       }
+      if (checked.widget === 'base-converter') {
+        checked.widget = 'converter';
+        checked.data = { ...newWidgetData('converter'), category: 'radix', radix: checked.data };
+        if (checked.title === '进制转换') checked.title = '换算器';
+        else if (checked.title === 'Base converter') checked.title = 'Converter';
+      }
       if (checked.widget === 'hotlinks') {
         checked.widget = 'hotsearch';
         checked.config = newWidgetConfig('hotsearch');

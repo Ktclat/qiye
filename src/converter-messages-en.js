@@ -2,7 +2,8 @@
 export const converterEnglishMessages = {
   '换算器':'Converter',
   '计算器、货币汇率、BMI、日期与时间，以及长度、面积、质量、体积、温度、角度、力等常用单位换算':'Calculator, currency, BMI, dates, time, length, area, mass, volume, temperature, angles, force and more',
-  '19 类常用换算':'19 everyday tools',
+  '20 类常用换算':'20 everyday tools',
+  '计算器、进制转换、货币汇率、BMI、日期与时间，以及长度、面积、质量、体积、温度、角度、力等常用单位换算':'Calculator, base conversion, currency, BMI, dates and time, plus length, area, mass, volume, temperature, angle, force and other units',
   '计算 · 单位 · 汇率':'Math · Units · Currency',
   '打开换算器':'Open converter',
   '万物有尺度，换算很简单':'A little clarity in every conversion',

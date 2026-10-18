@@ -20,7 +20,7 @@ export function baseConverterCard(item) {
   return `<div class="radix-card-heading"><span>${icon('code')}${e(item.title || t('进制转换'))}</span><span>${mode === 'number' ? '2–36' : `${mode === 'signed' ? 'i' : 'u'}${item.data.bits || 32}`}</span></div>
     <button type="button" class="radix-card-open" data-action="widget-open" aria-label="${e(item.title || t('进制转换'))}">
       <span class="radix-card-values">${results.length ? results.map(result => `<span class="radix-card-row"><small>${codes[result.base] || result.base}</small><strong>${e(result.display)}</strong></span>`).join('') : `<span class="radix-card-empty">${t(conversion.error ? '检查输入数值' : '输入一个数，同时转换')}</span>`}</span>
-      <span class="radix-card-footer">${t('打开转换器')}<span aria-hidden="true">↗</span></span>
+      <span class="radix-card-footer">${t(item.widget === 'converter' ? '进制转换' : '打开转换器')}<span aria-hidden="true">↗</span></span>
     </button>`;
 }
 
@@ -30,9 +30,9 @@ function resultRows(data, conversion) {
     const reusable = result?.exact && formatRadixResult(conversion, base, { ...data, groupDigits: false, prefixes: false }).text.length <= RADIX_INPUT_LIMIT;
     const status = !result ? '' : conversion.word ? t(result.inputKind === 'bits' ? data.mode === 'signed' && conversion.word.signed < 0n ? '补码' : '位模式' : modeNames[data.mode]) : result.recurring ? t('循环小数') : result.exact ? t('精确') : t('已截断');
     return `<article class="radix-result${base === data.base ? ' is-source' : ''}" data-result-base="${base}">
-      <div class="radix-result-label"><span class="radix-base-badge">${codes[base] || 'B' + base}</span><span>${baseName(base)}</span><span class="radix-result-status${result && !result.exact ? ' is-approximate' : ''}">${e(status)}</span></div>
+      <div class="radix-result-label"><span class="radix-base-badge">${codes[base] || 'B' + base}</span><span>${baseName(base)}</span></div>
       <div class="radix-result-number"><span class="radix-equality" aria-label="${t(result && !result.exact ? '近似值' : '等于')}">${result && !result.exact ? '≈' : '='}</span><output aria-label="${e(t('{base} 进制结果', { base }))}">${e(result?.display || '—')}</output><sub>${base}</sub></div>
-      <div class="radix-result-tools"><button type="button" data-radix-use="${base}" ${reusable ? '' : 'disabled'} title="${t('将精确结果设为输入，保持数值不变')}">${icon('refresh')}${t('用作输入')}</button><button type="button" data-radix-copy="${base}" ${result ? '' : 'disabled'} aria-label="${e(t('复制 {base} 进制结果', { base }))}">${icon('copy')}${t(result && !result.exact ? '复制近似值' : '复制')}</button><button type="button" class="radix-remove" data-radix-remove="${base}" ${data.targets.length === 1 ? 'disabled' : ''} aria-label="${e(t('移除 {base} 进制结果', { base }))}" title="${t('移除此结果')}">${icon('close')}</button></div>
+      <div class="radix-result-tools"><span class="radix-result-status${result && !result.exact ? ' is-approximate' : ''}">${e(status)}</span><button type="button" data-radix-use="${base}" ${reusable ? '' : 'disabled'} aria-label="${e(t('将 {base} 进制结果用作输入', { base }))}" title="${t('将精确结果设为输入，保持数值不变')}">${icon('refresh')}</button><button type="button" data-radix-copy="${base}" ${result ? '' : 'disabled'} aria-label="${e(t('复制 {base} 进制结果', { base }))}" title="${t(result && !result.exact ? '复制近似值' : '复制')}">${icon('copy')}</button></div>
     </article>`;
   }).join('');
 }
@@ -53,46 +53,48 @@ function wordSummary(data, word) {
   return `<div class="radix-word-heading"><span>${t('同一位模式的两种解读')}</span><span>${t('{bits} 位', { bits: data.bits })}</span></div><div class="radix-word-values">${values}</div><div class="radix-bit-heading"><span>${t('位视图 · 高位 → 低位')}</span><span>${t(data.mode === 'signed' ? '符号位' : '最高位')}${word ? ` ${word.signBit}` : ' —'}</span></div><div class="radix-bit-strip" aria-label="${e(t('{bits} 位二进制位模式', { bits: data.bits }))}">${groups}</div>`;
 }
 
-export function baseConverterWorkspace(item) {
-  const data = { ...RADIX_INTEGER_DEFAULTS, ...(drafts.get(item.id)?.data || item.data) };
+export function baseConverterWorkspace(item, { embedded = false } = {}) {
+  const data = { ...RADIX_INTEGER_DEFAULTS, ...(embedded ? item.data : drafts.get(item.id)?.data || item.data) };
   const integer = data.mode !== 'number';
-  return `<div class="radix-app${integer ? ' is-integer' : ''}">
-    <header class="radix-header"><div class="radix-app-mark" aria-hidden="true">${icon('code')}</div><h2 id="dialog-title" title="${e(item.title)}">${e(item.title)}</h2>${windowControls()}</header>
-    <div class="radix-mode-bar"><div class="radix-mode-switch" role="group" aria-label="${t('数值模式')}">${Object.entries(modeNames).map(([mode, label]) => `<button type="button" data-radix-mode="${mode}" aria-pressed="${data.mode === mode}">${t(label)}</button>`).join('')}</div><label class="radix-width" data-radix-word-only ${integer ? '' : 'hidden'}><span>${t('位宽')}</span><select data-radix-width>${RADIX_WORD_BITS.map(bits => `<option value="${bits}" ${bits === data.bits ? 'selected' : ''}>${t('{bits} 位', { bits })}</option>`).join('')}</select></label><span class="radix-mode-caption" data-radix-number-only ${integer ? 'hidden' : ''}>${t('大整数 · 小数 · 循环节')}</span></div>
-    <div class="radix-layout">
+  return `<div class="radix-app${embedded ? ' radix-embedded' : ''}${integer ? ' is-integer' : ''}">
+    ${embedded ? '' : `<header class="radix-header"><div class="radix-app-mark" aria-hidden="true">${icon('code')}</div><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2><button type="button" class="widget-app-button" data-radix-settings aria-label="${t('结果格式')}" title="${t('结果格式')}" aria-expanded="false" aria-controls="radix-settings">${icon('sliders')}</button>${windowControls()}</header>`}
+    <div class="radix-workbench">
+      <div class="radix-mode-bar"><div class="radix-mode-switch" role="group" aria-label="${t('数值模式')}">${Object.entries(modeNames).map(([mode, label]) => `<button type="button" data-radix-mode="${mode}" aria-pressed="${data.mode === mode}">${t(label)}</button>`).join('')}</div><label class="radix-width" data-radix-word-only ${integer ? '' : 'hidden'}><span>${t('位宽')}</span><select data-radix-width>${RADIX_WORD_BITS.map(bits => `<option value="${bits}" ${bits === data.bits ? 'selected' : ''}>${t('{bits} 位', { bits })}</option>`).join('')}</select></label><span class="radix-mode-caption" data-radix-number-only ${integer ? 'hidden' : ''}>${t('大整数 · 小数 · 循环节')}</span></div>
+      <section class="radix-format-settings" id="radix-settings" aria-label="${t('结果格式')}" hidden><div class="radix-format"><div class="radix-fraction-options" data-radix-number-only ${integer ? 'hidden' : ''}><label class="radix-precision"><span>${t('最大小数位数')}</span><input type="number" min="1" max="128" step="1" value="${data.precision}" data-radix-precision aria-describedby="radix-precision-help"></label><p id="radix-precision-help" class="radix-help">${t('1–128 位；超出时截断，不四舍五入。')}</p></div>${formatToggle('uppercase', '字母大写 A–Z', data.uppercase)}${formatToggle('groupDigits', '整数位分组', data.groupDigits)}${formatToggle('prefixes', '显示 0b / 0o / 0x 前缀', data.prefixes)}<div data-radix-word-only ${integer ? '' : 'hidden'}>${formatToggle('padBits', '按位宽补零（2 / 8 / 16 进制）', data.padBits)}</div></div></section>
       <section class="radix-source" aria-label="${t('转换输入')}">
-        <div class="radix-section-heading"><h3>${t('输入数值')}</h3><span class="radix-local">${t('本地计算')}</span></div>
-        <label class="radix-base-select"><span>${t('输入进制')}</span><select data-radix-base>${baseOptions(data.base)}</select></label>
-        <div class="radix-source-presets" role="group" aria-label="${t('常用输入进制')}">${COMMON_BASES.map(base => `<button type="button" data-radix-source="${base}" aria-pressed="${base === data.base}">${base}<small>${codes[base]}</small></button>`).join('')}</div>
-        <div class="radix-input-kind" role="group" aria-label="${t('输入方式')}" data-radix-word-only ${integer ? '' : 'hidden'}><button type="button" data-radix-input-kind="value" aria-pressed="${data.inputKind === 'value'}">${t('数值输入')}</button><button type="button" data-radix-input-kind="bits" aria-pressed="${data.inputKind === 'bits'}">${t('位模式输入')}</button></div>
-        <div class="radix-input-shell"><label class="sr-only" for="radix-input">${t('待转换数值')}</label><textarea id="radix-input" rows="3" maxlength="${RADIX_INPUT_LIMIT}" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="radix-input-status radix-input-help">${e(data.input)}</textarea><span class="radix-input-base" aria-hidden="true">${data.base}</span></div>
-        <div class="radix-input-actions"><span data-radix-length></span><button type="button" data-radix-paste>${icon('copy')}${t('粘贴')}</button><button type="button" data-radix-clear>${t('清空')}</button></div>
-        <p id="radix-input-status" class="radix-input-status" role="status" aria-live="polite"></p>
-        <p id="radix-input-help" class="radix-help" data-radix-input-help></p>
-        <div class="radix-limits" data-radix-limits data-radix-word-only ${integer ? '' : 'hidden'}>${integer ? integerLimits(data) : ''}</div>
-        <div class="radix-examples" data-radix-number-only ${integer ? 'hidden' : ''}><span>${t('试一试')}</span><button type="button" data-radix-example="255">255</button><button type="button" data-radix-example="-42">−42</button><button type="button" data-radix-example="0.1">0.1</button></div>
-        <div class="radix-examples" data-radix-word-only ${integer ? '' : 'hidden'}><span>${t('试一试')}</span><button type="button" data-radix-word-example="zero">0</button><button type="button" data-radix-word-example="sign">${t('仅最高位为 1')}</button><button type="button" data-radix-word-example="ones">${t('全部位为 1')}</button></div>
-        <details class="radix-format-settings" open><summary>${t('结果格式')}</summary><div class="radix-format"><div class="radix-fraction-options" data-radix-number-only ${integer ? 'hidden' : ''}><label class="radix-precision"><span>${t('最大小数位数')}</span><input type="number" min="1" max="128" step="1" value="${data.precision}" data-radix-precision aria-describedby="radix-precision-help"></label><p id="radix-precision-help" class="radix-help">${t('1–128 位；超出时截断，不四舍五入。')}</p></div>${formatToggle('uppercase', '字母大写 A–Z', data.uppercase)}${formatToggle('groupDigits', '整数位分组', data.groupDigits)}${formatToggle('prefixes', '显示 0b / 0o / 0x 前缀', data.prefixes)}<div data-radix-word-only ${integer ? '' : 'hidden'}>${formatToggle('padBits', '按位宽补零（2 / 8 / 16 进制）', data.padBits)}</div></div></details>
-        <details class="radix-guide"><summary>${t('输入规则与精度')}</summary><p>${t('当前可用数字')}</p><code data-radix-digits></code><p>${t('A–Z 代表 10–35，不区分大小写。括号表示循环节，例如 0.(3)。')}</p><p>${t('常规数值保留负号与小数；整数模式使用指定位宽，有符号数以二进制补码解释。')}</p><p>${t('十进制结果显示所选数值，其余进制显示原始位模式。切换有符号与无符号时保留各位。')}</p><p>${t('改变位宽或输入进制会重新解释当前输入；超出范围不会截断。')}</p></details>
+        <div class="radix-source-toolbar"><label class="radix-base-select"><span>${t('输入进制')}</span><select data-radix-base>${baseOptions(data.base)}</select></label><div class="radix-source-presets" role="group" aria-label="${t('常用输入进制')}">${COMMON_BASES.map(base => `<button type="button" data-radix-source="${base}" aria-pressed="${base === data.base}" title="${baseName(base)}">${codes[base]}<small>${base}</small></button>`).join('')}</div></div>
+        <div class="radix-input-kind" role="group" aria-label="${t('输入方式')}" data-radix-word-only ${integer ? '' : 'hidden'}><button type="button" data-radix-input-kind="value" aria-pressed="${data.inputKind === 'value'}">${t('数值输入')}</button><button type="button" data-radix-input-kind="bits" aria-pressed="${data.inputKind === 'bits'}">${t('位模式输入')}</button><span data-radix-kind-hint></span></div>
+        <div class="radix-input-shell"><label class="sr-only" for="radix-input">${t('待转换数值')}</label><textarea id="radix-input" rows="2" maxlength="${RADIX_INPUT_LIMIT}" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="radix-input-status radix-input-help">${e(data.input)}</textarea><span class="radix-input-base" aria-hidden="true">${data.base}</span></div>
+        <div class="radix-input-meta"><p id="radix-input-status" class="radix-input-status" role="status" aria-live="polite"></p><div class="radix-input-actions"><span data-radix-length></span><button type="button" data-radix-paste>${icon('copy')}${t('粘贴')}</button><button type="button" data-radix-clear>${t('清空')}</button></div></div>
+        <p id="radix-input-help" class="sr-only" data-radix-input-help></p>
       </section>
       <section class="radix-results-panel" aria-label="${t('转换结果')}">
-        <div class="radix-section-heading"><h3>${t('转换结果')}<span data-radix-count>${data.targets.length}</span></h3><button type="button" class="radix-copy-all" data-radix-copy-all>${icon('copy')}${t('复制全部')}</button></div>
-        <div class="radix-target-picker"><div role="group" aria-label="${t('显示的常用进制')}">${COMMON_BASES.map(base => `<button type="button" data-radix-target="${base}" aria-pressed="${data.targets.includes(base)}">${baseName(base)}</button>`).join('')}</div><div class="radix-add-target"><label class="sr-only" for="radix-extra-base">${t('更多进制')}</label><select id="radix-extra-base" data-radix-extra>${baseOptions(36)}</select><button type="button" data-radix-add>${icon('plus')}${t('添加')}</button></div></div>
-        <div class="radix-word-summary" data-radix-word-summary data-radix-word-only ${integer ? '' : 'hidden'}>${integer ? wordSummary(data, convertRadix(data).word) : ''}</div>
+        <div class="radix-section-heading"><h3>${t('同步转换')}<span data-radix-count>${data.targets.length}</span></h3><div class="radix-result-actions"><button type="button" data-radix-targets-toggle aria-expanded="false" aria-controls="radix-targets">${icon('plus')}${t('调整进制')}</button><button type="button" data-radix-copy-all>${icon('copy')}${t('复制全部')}</button></div></div>
+        <div class="radix-target-picker" id="radix-targets" hidden><div role="group" aria-label="${t('显示的常用进制')}">${COMMON_BASES.map(base => `<button type="button" data-radix-target="${base}" aria-pressed="${data.targets.includes(base)}">${baseName(base)}</button>`).join('')}<span data-radix-custom-targets></span></div><div class="radix-add-target"><label class="sr-only" for="radix-extra-base">${t('更多进制')}</label><select id="radix-extra-base" data-radix-extra>${baseOptions(36)}</select><button type="button" data-radix-add>${icon('plus')}${t('添加')}</button></div></div>
         <div class="radix-results" data-radix-results>${resultRows(data, convertRadix(data))}</div>
         <p class="radix-results-note" data-radix-results-note></p>
+        <div class="radix-word-summary" data-radix-word-summary data-radix-word-only ${integer ? '' : 'hidden'}>${integer ? wordSummary(data, convertRadix(data).word) : ''}</div>
       </section>
+      <details class="radix-guide"><summary>${t('输入规则与示例')}<span>2–36</span></summary><div class="radix-guide-content"><p>${t('当前可用数字')} <code data-radix-digits></code></p><p>${t('A–Z 代表 10–35，不区分大小写。括号表示循环节，例如 0.(3)。')}</p><p>${t('支持负数、小数、空格或下划线分组；粘贴 0b / 0o / 0x 前缀时自动识别进制。')}</p><div data-radix-word-only ${integer ? '' : 'hidden'}><p>${t('常规数值保留负号与小数；整数模式使用指定位宽，有符号数以二进制补码解释。')}</p><p>${t('十进制结果显示所选数值，其余进制显示原始位模式。切换有符号与无符号时保留各位。')}</p><p>${t('改变位宽或输入进制会重新解释当前输入；超出范围不会截断。')}</p></div><div class="radix-limits" data-radix-limits data-radix-word-only ${integer ? '' : 'hidden'}>${integer ? integerLimits(data) : ''}</div><div class="radix-examples" data-radix-number-only ${integer ? 'hidden' : ''}><span>${t('试一试')}</span><button type="button" data-radix-example="255">255</button><button type="button" data-radix-example="-42">−42</button><button type="button" data-radix-example="0.1">0.1</button></div><div class="radix-examples" data-radix-word-only ${integer ? '' : 'hidden'}><span>${t('试一试')}</span><button type="button" data-radix-word-example="zero">0</button><button type="button" data-radix-word-example="sign">${t('仅最高位为 1')}</button><button type="button" data-radix-word-example="ones">${t('全部位为 1')}</button></div></div></details>
     </div>
-    <footer class="radix-footer"><span data-radix-save role="status">${t('已保存在本机')}</span><button type="button" data-radix-retry hidden>${t('重试保存')}</button><span class="radix-feedback" data-radix-feedback role="status" aria-live="polite"></span><span class="radix-range">BASE 2 — 36</span></footer>
+    ${embedded ? '' : `<footer class="radix-footer"><span data-radix-save role="status">${t('已保存在本机')}</span><button type="button" data-radix-retry hidden>${t('重试保存')}</button><span class="radix-feedback" data-radix-feedback role="status" aria-live="polite"></span><span class="radix-range">BASE 2 — 36</span></footer>`}
   </div>`;
+}
+
+export function setRadixSettings(root, open) {
+  root.querySelector('#radix-settings').hidden = !open;
+  const button = root.querySelector('[data-radix-settings]') || root.closest('.cv-app')?.querySelector('[data-cv-action=settings]') || root.querySelector('[data-cv-action=settings]');
+  button?.setAttribute('aria-expanded', String(open));
 }
 
 export function bindBaseConverter(root, item, host) {
   const controller = new AbortController(), options = { signal: controller.signal };
-  let active = true, conversion, noticeTimer, limitsKey = '', displayedMode;
-  let draft = drafts.get(item.id);
+  let active = true, conversion, noticeTimer, limitsKey = '';
+  const sharedDraft = Boolean(host.draft);
+  let draft = host.draft || drafts.get(item.id);
   const feedback = message => {
     if (!active) return;
+    if (host.feedback) { host.feedback(message); return; }
     clearTimeout(noticeTimer);
     root.querySelector('[data-radix-feedback]').textContent = message;
     noticeTimer = setTimeout(() => { if (active) root.querySelector('[data-radix-feedback]').textContent = ''; }, 5000);
@@ -100,6 +102,7 @@ export function bindBaseConverter(root, item, host) {
   const saveStatus = () => {
     if (!active) return;
     const status = root.querySelector('[data-radix-save]');
+    if (!status) return;
     status.textContent = t(draft.error ? '保存失败，请重试' : draft.dirty ? '保存中…' : '已保存在本机');
     status.title = draft.error?.message || '';
     root.querySelector('[data-radix-retry]').hidden = !draft.error;
@@ -111,16 +114,12 @@ export function bindBaseConverter(root, item, host) {
     drafts.set(item.id, draft);
   }
   draft.data = validateBaseConverterData(draft.data);
-  draft.notify = saveStatus;
+  if (!sharedDraft) draft.notify = saveStatus;
   const input = root.querySelector('#radix-input');
   const update = () => {
     const data = draft.data;
     conversion = convertRadix(data);
     const integer = data.mode !== 'number';
-    if (displayedMode !== data.mode) {
-      root.querySelector('.radix-format-settings').open = !integer && root.clientWidth > 560;
-      displayedMode = data.mode;
-    }
     root.querySelector('.radix-app').classList.toggle('is-integer', integer);
     for (const node of root.querySelectorAll('[data-radix-word-only]')) node.hidden = !integer;
     for (const node of root.querySelectorAll('[data-radix-number-only]')) node.hidden = integer;
@@ -129,6 +128,7 @@ export function bindBaseConverter(root, item, host) {
     root.querySelector('[data-radix-width]').value = String(data.bits);
     root.querySelector('[data-radix-precision]').disabled = integer;
     root.querySelector('[data-radix-input-help]').textContent = t(!integer ? '支持负数、小数、空格或下划线分组；粘贴 0b / 0o / 0x 前缀时自动识别进制。' : data.inputKind === 'bits' ? '按当前进制输入原始位模式。例如 8 位十六进制 FF，可解读为 −1 或 255。' : '按当前进制输入数值并校验范围；要读取 FF 这样的补码，请选择“位模式输入”。');
+    root.querySelector('[data-radix-kind-hint]').textContent = t(data.inputKind === 'bits' ? '读取原始位模式' : '保留数值的正负号');
     const nextLimitsKey = `${data.mode}/${data.bits}/${data.inputKind}`;
     if (integer && nextLimitsKey !== limitsKey) root.querySelector('[data-radix-limits]').innerHTML = integerLimits(data);
     limitsKey = nextLimitsKey;
@@ -145,6 +145,7 @@ export function bindBaseConverter(root, item, host) {
     status.textContent = conversion.error || (!conversion.value ? t('输入数值后，结果会实时显示。') : integer ? t('{bits} 位{kind} · 范围内，精确转换', { bits: data.bits, kind: t(modeNames[data.mode]) }) : conversion.value.denominator === 1n ? t('整数 · {bits} 个二进制位（绝对值）', { bits: magnitude.toString(2).length }) : t('小数 · 已精确解析'));
     root.querySelector('[data-radix-results]').innerHTML = resultRows(data, conversion);
     root.querySelector('[data-radix-count]').textContent = data.targets.length;
+    root.querySelector('[data-radix-custom-targets]').innerHTML = data.targets.filter(base => !COMMON_BASES.includes(base)).map(base => `<button type="button" data-radix-remove="${base}" ${data.targets.length === 1 ? 'disabled' : ''} aria-label="${e(t('移除 {base} 进制结果', { base }))}">${baseName(base)} ×</button>`).join('');
     root.querySelector('[data-radix-copy-all]').disabled = !conversion.value;
     for (const button of root.querySelectorAll('[data-radix-source]')) button.setAttribute('aria-pressed', String(Number(button.dataset.radixSource) === data.base));
     for (const button of root.querySelectorAll('[data-radix-target]')) {
@@ -196,6 +197,11 @@ export function bindBaseConverter(root, item, host) {
   }, options);
   root.addEventListener('click', async event => {
     const button = event.target.closest('button'); if (!button || button.disabled) return;
+    if (button.hasAttribute('data-radix-settings')) setRadixSettings(root, root.querySelector('#radix-settings').hidden);
+    if (button.hasAttribute('data-radix-targets-toggle')) {
+      const picker = root.querySelector('#radix-targets');
+      picker.hidden = !picker.hidden; button.setAttribute('aria-expanded', String(!picker.hidden));
+    }
     if (button.dataset.detailAction === 'window-expand') {
       const dialog = root.closest('dialog'), expanded = dialog.classList.toggle('widget-app-expanded');
       button.setAttribute('aria-pressed', String(expanded));
@@ -259,18 +265,25 @@ export function bindBaseConverter(root, item, host) {
     }
     if (button.hasAttribute('data-radix-retry')) await draft.flush();
   }, options);
+  root.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const picker = root.querySelector('#radix-targets');
+    if (!picker.hidden) {
+      event.preventDefault(); event.stopPropagation(); picker.hidden = true;
+      const button = root.querySelector('[data-radix-targets-toggle]');
+      button.setAttribute('aria-expanded', 'false'); button.focus();
+    } else if (!root.querySelector('#radix-settings').hidden) {
+      event.preventDefault(); event.stopPropagation(); setRadixSettings(root, false);
+      (root.querySelector('[data-radix-settings]') || root.closest('.cv-app')?.querySelector('[data-cv-action=settings]'))?.focus();
+    }
+  }, options);
   const flush = () => { void draft.flush(); };
   window.addEventListener('pagehide', flush, options);
   document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); }, options);
-  let narrow;
-  const layoutObserver = new ResizeObserver(([entry]) => {
-    const next = entry.contentRect.width <= 560;
-    if (next !== narrow) { root.querySelector('.radix-format-settings').open = !next && draft.data.mode === 'number'; narrow = next; }
-  });
-  layoutObserver.observe(root);
   update(); saveStatus();
   return () => {
-    active = false; controller.abort(); layoutObserver.disconnect(); clearTimeout(noticeTimer);
+    active = false; controller.abort(); clearTimeout(noticeTimer);
+    if (sharedDraft) return;
     if (draft.notify === saveStatus) draft.notify = null;
     void draft.flush().then(saved => {
       if (saved && !draft.notify) drafts.delete(item.id);

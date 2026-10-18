@@ -9,7 +9,7 @@ import { listWidgetDefinitions } from '../src/widget-registry.js';
 const near = (a,b) => assert.ok(Math.abs(a-b) <= Math.max(1,Math.abs(b))*1e-11, `${a} ≈ ${b}`);
 
 test('converter replaces catalog calculator and migrates existing cards without changing identity or placement', () => {
-  assert.equal(CONVERTER_CATEGORIES.length,19);
+  assert.equal(CONVERTER_CATEGORIES.length,20);
   assert.equal(listWidgetDefinitions().some(d => d.type === 'calculator'),false);
   assert.ok(listWidgetDefinitions().some(d => d.type === 'converter'));
   const state = structuredClone(DEFAULT_STATE);
@@ -29,6 +29,29 @@ test('preferences round trip strictly and separate newly created cards', () => {
   assert.throws(() => validateConverterData({...data,pairs:{...data.pairs,length:['m','kg']}}));
   assert.throws(() => validateConverterData({...data,pairs:{}}));
   assert.throws(() => validateConverterData({...data,category:'script'}));
+  const old = structuredClone(data); delete old.radix;
+  assert.deepEqual(validateConverterData(old).radix,newConverterData().radix);
+  data.radix.targets.push(36); assert.equal(newConverterData().radix.targets.includes(36),false);
+  assert.throws(() => validateConverterData({...data,radix:null}));
+  assert.throws(() => validateConverterData({...data,radix:{...data.radix,bits:7}}));
+  assert.throws(() => validateConverterData({...data,radix:{...data.radix,input:'1'.repeat(513)}}));
+});
+
+test('legacy radix cards migrate losslessly and only one converter is offered', () => {
+  assert.equal(listWidgetDefinitions().some(d => d.type === 'base-converter'),false);
+  const state = structuredClone(DEFAULT_STATE);
+  const item = state.items.find(i => i.widget === 'converter');
+  const radix = { ...newConverterData().radix, input:'FFFFFFFFFFFFFFFF', base:16, mode:'signed', bits:64, inputKind:'bits', targets:[16,2,10,36], prefixes:true };
+  Object.assign(item,{widget:'base-converter',title:'My hex desk',size:'4x2',data:radix});
+  const migrated = validateImport(state).items.find(i => i.id === item.id);
+  assert.equal(migrated.widget,'converter'); assert.equal(migrated.data.category,'radix');
+  assert.deepEqual(migrated.data.radix,radix);
+  for (const key of ['id','groupId','size','title','config']) assert.deepEqual(migrated[key],item[key]);
+  assert.deepEqual(validateImport(validateImport(state)),validateImport(state));
+  for (const [from,to] of [['进制转换','换算器'],['Base converter','Converter']]) {
+    item.title=from; assert.equal(validateImport(state).items.find(i => i.id===item.id).title,to);
+  }
+  item.data.bits=7; assert.throws(() => validateImport(state));
 });
 
 test('unit factors match independent SI and customary reference examples', () => {

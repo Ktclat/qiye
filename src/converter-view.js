@@ -5,6 +5,7 @@ import { icon } from './icons.js';
 import { windowControls } from './widget-app-controls.js';
 import { createWidgetDraft } from './widget-drafts.js';
 import { calculateArithmetic } from './arithmetic.js';
+import { baseConverterCard, baseConverterWorkspace, bindBaseConverter, setRadixSettings } from './base-converter-view.js';
 import { CONVERTER_CATEGORIES, CURRENCY_CODES, converterCategory, converterLabel, convertUnit, formatConversion, parseConverterNumber, calculateBMI, dateDifference, addCalendarDate, timestampToDate, isoToTimestamp } from './converter.js';
 import { currencyName, readCachedRate, cacheRate, fetchCurrencyRate, requestCurrencyPermission, currencyPermissionGranted, RATE_MAX_AGE } from './converter-rates.js';
 
@@ -14,9 +15,10 @@ const btn = (action, text, glyph = '') => `<button type="button" data-cv-action=
 const numberField = (id, label, value = '', suffix = '') => `<label class="cv-field"><span>${e(t(label))}${suffix ? ` <small>${e(suffix)}</small>` : ''}</span><input id="${id}" inputmode="decimal" autocomplete="off" maxlength="100" value="${e(value)}" aria-describedby="cv-status"></label>`;
 
 export function converterCard(item) {
+  if (item.data.category === 'radix') return baseConverterCard({ ...item, data: item.data.radix });
   return `<div class="widget-heading"><button type="button" class="widget-title" data-action="widget-open">${icon('converter')}${e(item.title)}</button><button type="button" class="widget-icon-button" data-action="widget-config" aria-label="${t('设置组件')}">${icon('more')}</button></div>
     <button type="button" class="cv-card-face" data-action="widget-open" aria-label="${t('打开换算器')}"><span class="cv-card-equation"><b>1<span>m</span></b><i aria-hidden="true">⇄</i><b>100<span>cm</span></b></span><span class="cv-card-caption">${t('万物有尺度，换算很简单')}</span></button>
-    <div class="cv-card-tags" aria-hidden="true"><span>±</span><span>¥</span><span>BMI</span><span>°C</span></div><div class="cv-card-bottom"><span>${t('19 类常用换算')}</span>${icon('arrowUpRight')}</div>`;
+    <div class="cv-card-tags" aria-hidden="true"><span>±</span><span>01</span><span>¥</span><span>°C</span></div><div class="cv-card-bottom"><span>${t('20 类常用换算')}</span>${icon('arrowUpRight')}</div>`;
 }
 
 export function converterWorkspace(item) {
@@ -63,12 +65,13 @@ function timestampPanel(c) {
 export function bindConverterWorkspace(root, item, host) {
   const controller = new AbortController(), events = {signal:controller.signal};
   const q = selector => root.querySelector(selector);
-  let active = true, noticeTimer, rateController, rateTimer, rateRevision = 0, rate = null, rateBusy = false, rateError = '', copyValue = '';
+  let active = true, noticeTimer, rateController, rateTimer, rateRevision = 0, rate = null, rateBusy = false, rateError = '', copyValue = '', radixCleanup;
   let draft = drafts.get(item.id);
   const notifySave = () => {
     if (!active) return;
-    q('[data-cv-save]').textContent = t(draft.error ? '保存失败，请重试' : draft.dirty ? '保存中…' : '偏好已保存');
+    q('[data-cv-save]').textContent = t(draft.error ? '保存失败，请重试' : draft.dirty ? '保存中…' : draft.data.category === 'radix' ? '已保存在本机' : '偏好已保存');
     q('[data-cv-action=retry]').hidden = !draft.error;
+    if (!draft.dirty && !draft.error) host.refreshCards();
   };
   if (!draft) { draft = createWidgetDraft(item, (...args) => host.saveData(...args), () => draft.notify?.()); drafts.set(item.id,draft); }
   draft.notify = notifySave;
@@ -231,11 +234,28 @@ export function bindConverterWorkspace(root, item, host) {
 
   function showCategory(id, save = false) {
     const c = converterCategory(id); if (!c) return;
+    radixCleanup?.(); radixCleanup = null;
     cancelRate(); data.category = id; status('');
+    q('.cv-app').classList.toggle('cv-radix-active', id === 'radix');
+    q('#cv-settings').hidden = true;
+    const settingsButton = q('[data-cv-action=settings]');
+    settingsButton.setAttribute('aria-expanded','false');
+    settingsButton.setAttribute('aria-controls',id === 'radix' ? 'radix-settings' : 'cv-settings');
+    settingsButton.setAttribute('aria-label',t(id === 'radix' ? '结果格式' : '换算设置'));
+    settingsButton.title = settingsButton.getAttribute('aria-label');
     for (const b of root.querySelectorAll('[data-cv-category]')) b.setAttribute('aria-pressed',String(b.dataset.cvCategory === id));
     q('[data-cv-select]').value = id;
-    q('[data-cv-panel]').innerHTML = c.units.length || id === 'currency' ? conversionPanel(c,data) : id === 'calculator' ? calculatorPanel(c) : id === 'bmi' ? bmiPanel(c) : id === 'date' ? datePanel(c,today) : timestampPanel(c);
-    if (id === 'currency') loadRate();
+    q('[data-cv-panel]').innerHTML = id === 'radix' ? baseConverterWorkspace({ ...item, data: data.radix }, { embedded: true }) : c.units.length || id === 'currency' ? conversionPanel(c,data) : id === 'calculator' ? calculatorPanel(c) : id === 'bmi' ? bmiPanel(c) : id === 'date' ? datePanel(c,today) : timestampPanel(c);
+    if (id === 'radix') {
+      // One persistence queue owns all categories, even while a save is in flight.
+      const radixDraft = {
+        get data() { return data.radix; }, set data(value) { data.radix = value; },
+        get dirty() { return draft.dirty; }, get error() { return draft.error; },
+        changed: () => draft.changed(), flush: () => draft.flush(),
+      };
+      radixCleanup = bindBaseConverter(q('[data-cv-panel]'), { ...item, data: data.radix }, { ...host, draft: radixDraft, feedback });
+    }
+    else if (id === 'currency') loadRate();
     else if (c.units.length) updateNumbers();
     else if (id === 'calculator') { q('#cv-expression').value = session.expression; calc(); renderHistory(); }
     else if (id === 'bmi') { q('#cv-height').value = session.bmi.height; q('#cv-weight').value = session.bmi.weight; q('#cv-bmi-system').value = session.bmi.system; updateBMI(); }
@@ -264,7 +284,10 @@ export function bindConverterWorkspace(root, item, host) {
     if (b.dataset.cvHistory !== undefined) { q('#cv-expression').value = session.history[Number(b.dataset.cvHistory)].result; session.calculated = true; calc(); return; }
     if (b.dataset.cvDateMode) { session.dateMode = b.dataset.cvDateMode; updateDates(); return; }
     const action = b.dataset.cvAction;
-    if (action === 'settings') { const open = q('#cv-settings').hidden; q('#cv-settings').hidden = !open; b.setAttribute('aria-expanded',String(open)); }
+    if (action === 'settings') {
+      if (data.category === 'radix') setRadixSettings(root, q('#radix-settings').hidden);
+      else { const open = q('#cv-settings').hidden; q('#cv-settings').hidden = !open; b.setAttribute('aria-expanded',String(open)); }
+    }
     else if (action === 'retry') await draft.flush();
     else if (action === 'swap') { data.pairs[data.category].reverse(); valueState().side = 1-valueState().side; draft.changed(); showCategory(data.category); }
     else if (action === 'copy' && copyValue) { try { await navigator.clipboard.writeText(copyValue); if(active) feedback(t('已复制')); } catch { if(active) feedback(t('复制失败，请选择结果手动复制。')); } }
@@ -278,7 +301,7 @@ export function bindConverterWorkspace(root, item, host) {
     if (target.matches('[data-cv-search]')) {
       const text = target.value.trim().toLocaleLowerCase(); let count = 0;
       for (const c of CONVERTER_CATEGORIES) {
-        const matches = `${c.name} ${c.en} ${c.units.map(u => `${u.name} ${u.en} ${u.symbol}`).join(' ')}`.toLocaleLowerCase().includes(text);
+        const matches = `${c.name} ${c.en} ${c.keywords || ''} ${c.units.map(u => `${u.name} ${u.en} ${u.symbol}`).join(' ')}`.toLocaleLowerCase().includes(text);
         q(`[data-cv-category="${c.id}"]`).hidden = !matches; q(`[data-cv-select] option[value="${c.id}"]`).hidden = !matches; if(matches) count++;
       }
       for (const section of root.querySelectorAll('[data-cv-group]')) section.hidden = !section.querySelector('button:not([hidden])');
@@ -312,12 +335,17 @@ export function bindConverterWorkspace(root, item, host) {
   }, events);
 
   root.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && data.category === 'radix' && !q('#radix-settings').hidden) {
+      event.preventDefault(); event.stopPropagation(); setRadixSettings(root, false); q('[data-cv-action=settings]').focus(); return;
+    }
     if (event.target.id === 'cv-expression' && ['Enter','=','Escape'].includes(event.key)) { event.preventDefault(); event.stopPropagation(); calcKey(event.key === 'Escape' ? 'C' : '='); }
-    if (event.target.matches('[data-cv-search]') && event.key === 'Enter') { const b = root.querySelector('[data-cv-category]:not([hidden])'); if(b) { showCategory(b.dataset.cvCategory,true); q('#cv-expression,[data-cv-value],#cv-height,#cv-date-start,#cv-timestamp')?.focus(); } }
+    if (event.target.matches('[data-cv-search]') && event.key === 'Enter') { const b = root.querySelector('[data-cv-category]:not([hidden])'); if(b) { showCategory(b.dataset.cvCategory,true); q('#cv-expression,[data-cv-value],#cv-height,#cv-date-start,#cv-timestamp,#radix-input')?.focus(); } }
   }, events);
+  window.addEventListener('pagehide', () => { void draft.flush(); }, events);
   q('[data-cv-precision]').value = String(data.precision); q('[data-cv-online]').checked = data.online;
   notifySave(); showCategory(data.category);
   return () => {
+    radixCleanup?.();
     active = false; controller.abort(); cancelRate(); clearTimeout(noticeTimer); draft.notify = null;
     draft.flush().then(saved => { if(saved && !draft.dirty && !draft.notify) drafts.delete(item.id); host.refreshCards(); });
   };

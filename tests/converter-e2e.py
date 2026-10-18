@@ -77,7 +77,7 @@ with sync_playwright() as p:
             open_widget()
             check(f'{language} 46px single-row header',page.locator('.cv-header').evaluate('el=>Math.abs(el.getBoundingClientRect().height-46)<1'))
             check(f'{language} title gets initial focus',page.evaluate('document.activeElement.id')=='dialog-title')
-            check(f'{language} 19 modes',page.locator('[data-cv-category]').count()==19)
+            check(f'{language} 20 modes',page.locator('[data-cv-category]').count()==20)
             page.locator('#cv-expression').fill('(7+3)*4')
             page.locator('#cv-expression').press('Enter')
             check(f'{language} arithmetic and history',page.locator('#cv-expression').input_value()=='40' and page.locator('.cv-history li').count()==1)

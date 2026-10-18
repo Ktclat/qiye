@@ -17,6 +17,9 @@ This is the canonical version history, moved from the original README. Historica
 
 ## 未发布 / Unreleased
 
+- 进制转换整合进换算器，统一为 20 类工具；旧卡片无损迁移。进制页采用通栏输入、紧凑结果行、折叠设置与 46px 共用标题栏，补齐跨分类保存和失败重试验证。
+- Integrated base conversion into the 20-tool Converter, preserving legacy cards and their data. Added a full-width input, compact results, contextual settings and a shared persistence queue with recovery tests.
+
 - 热搜榜桌面标签默认只显示平台名称，详情图标改用透明底；订阅排序新增整行拖拽预览、占位、插入提示与移动动画，修复“订阅顺序已保存”提示不消失，保存失败仍保留错误信息。
 - Trending cards now use text-only platform tabs and transparent detail icons. Subscription sorting adds a whole-row drag preview, placeholder, insertion marker and movement animation. Success notices dismiss automatically while save errors remain visible.
 

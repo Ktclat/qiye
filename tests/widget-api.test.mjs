@@ -46,7 +46,8 @@ test('window presentation and independent size persist under the current strict 
 
 test('packaged extension registration supplies defaults without changing builtins', () => {
   const registry = createWidgetRegistry([counterWidget]);
-  assert.ok(listWidgetDefinitions().some(widget => widget.type === 'base-converter'));
+  assert.ok(listWidgetDefinitions().some(widget => widget.type === 'converter'));
+  assert.ok(!listWidgetDefinitions().some(widget => widget.type === 'base-converter'));
   assert.ok(listWidgetDefinitions().some(entry => entry.type === 'bookmarks'));
   assert.ok(listWidgetDefinitions().some(entry => entry.type === 'pomodoro'));
   assert.equal(registry.list().length, listWidgetDefinitions().filter(widget => widget.builtin).length + 1);
@@ -100,6 +101,8 @@ test('every widget requires current config and data, rejecting shared fields and
         if(entry.type==='weather'&&field==='config'&&['source','fallback'].includes(key)) continue;
         // Older radix backups inherit General mode and default integer settings.
         if(entry.type==='base-converter'&&field==='data'&&['mode','bits','inputKind','padBits'].includes(key)) continue;
+        // Converter backups predating the integrated radix workspace receive its defaults.
+        if(entry.type==='converter'&&field==='data'&&key==='radix') continue;
         const partial = structuredClone(state); delete partial.items[0][field][key];
         assert.throws(() => validateImport(partial), /数据校验失败/, entry.type + '.' + key);
       }

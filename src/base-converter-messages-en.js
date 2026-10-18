@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 export const baseConverterEnglishMessages = {
+  '同步转换': 'Live results',
+  '调整进制': 'Choose bases',
+  '输入规则与示例': 'Input guide & examples',
+  '读取原始位模式': 'Interpret the raw bits',
+  '保留数值的正负号': 'Preserve the numeric sign',
+  '将 {base} 进制结果用作输入': 'Use the base {base} result as input',
   '常规数值': 'General',
   '有符号': 'Signed',
   '无符号': 'Unsigned',
