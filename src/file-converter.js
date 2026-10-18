@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Local-only image conversion engine. No file bytes leave the browser.
+import { inspectImage, MAX_IMAGE_PIXELS } from './image-compression.js';
 export const FILE_CONVERTER_FORMATS = Object.freeze({
   png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp',
 });
 export const FILE_CONVERTER_MAX_FILES = 20;
 export const FILE_CONVERTER_MAX_BYTES = 30 * 1024 * 1024;
 export const FILE_CONVERTER_MAX_TOTAL_BYTES = 120 * 1024 * 1024;
-export const FILE_CONVERTER_MAX_PIXELS = 25_000_000;
+export const FILE_CONVERTER_MAX_PIXELS = MAX_IMAGE_PIXELS;
 
 export async function detectImageFormat(file) {
   if (!file || typeof file.slice !== 'function') return null;
@@ -44,17 +45,25 @@ export async function convertImageFile(file, { format = 'webp', quality = 90, si
   if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
   const inputFormat = await detectImageFormat(file);
   if (!inputFormat) throw new Error('仅支持有效的 PNG / JPG / WebP 文件');
+  // Reuse the bounded container/animation/dimension checks. Detect the real
+  // format even if the platform supplied an empty or incorrect MIME type.
+  const source = file.slice(0, file.size, FILE_CONVERTER_FORMATS[inputFormat]);
+  try { await inspectImage(source, {signal}); }
+  catch (error) {
+    if (/动画/.test(error.message)) throw new Error('暂不支持动画图片转换，以免丢失动画帧');
+    throw error;
+  }
   if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
 
   let bitmap;
   let canvas;
   try {
-    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    bitmap = await createImageBitmap(source, { imageOrientation: 'from-image' });
     if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
     if (!Number.isSafeInteger(bitmap.width) || !Number.isSafeInteger(bitmap.height)
       || bitmap.width < 1 || bitmap.height < 1
       || bitmap.width * bitmap.height > FILE_CONVERTER_MAX_PIXELS) {
-      throw new Error('图片像素超出限制（最多 2500 万）');
+      throw new Error('图片像素超出限制（最多 2400 万）');
     }
     canvas = document.createElement('canvas');
     canvas.width = bitmap.width;
@@ -74,7 +83,7 @@ export async function convertImageFile(file, { format = 'webp', quality = 90, si
     });
     if (signal?.aborted) throw new DOMException('已取消转换', 'AbortError');
     // Canvas silently falls back to PNG for an unsupported output encoder.
-    if (blob.type !== requestedType) throw new Error('当前浏览器不支持所选输出格式');
+    if (blob.type !== requestedType || !blob.size) throw new Error('当前浏览器不支持所选输出格式');
     return { blob, width: bitmap.width, height: bitmap.height, inputFormat };
   } finally {
     bitmap?.close();

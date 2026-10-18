@@ -8,6 +8,13 @@ This is the canonical version history, moved from the original README. Historica
 
 发布流程与下载包结构见 [发布指南](docs/RELEASES.md)，测试结果见 [验证记录](docs/QA.md)。新增版本请在本文顶部追加变更、修复与破坏性调整；README 只维护当前功能概览和文档入口。
 
+## v0.9.2 — 图片压缩 / Image compression
+
+- 新增本地“图片压缩”小组件：静态 PNG/JPEG/WebP 上传、最多 10 张批量处理、智能/WebP 高画质模式、真正无损 PNG 元数据清理与 DEFLATE 重压缩、滑动前后对比、逐张下载、ZIP 下载和一键设为壁纸。工作文件不保存至桌面、JSON 备份或 WebDAV。
+- 自定义壁纸上传自动尝试本机高画质 WebP 压缩（PNG/JPEG/WebP 原图上限 32 MiB、24 MP，不改变分辨率）；最终仍需符合 4 MiB 存储限制。动态图片和视频保留原有上限，不会静默丢帧；压缩失败保留原有壁纸。
+- Added an offline Image Compressor widget with pixel-lossless PNG optimization, high-quality WebP/JPEG, batch comparison, ZIP exports and direct wallpaper use. Wallpaper uploads use the same engine locally; image files never leave the browser or enter backups until applied. Animated formats are not re-encoded.
+- 已知边界：WebP/JPEG 视觉压缩不是像素无损；真正无损模式仅支持 PNG；暂不含 AVIF 编码器、视频/动画重编码或额外 WASM。构建器与 CI 发布网页使用同一生产源码。
+
 ## 未发布 / Unreleased
 
 - 热搜榜桌面标签默认只显示平台名称，详情图标改用透明底；订阅排序新增整行拖拽预览、占位、插入提示与移动动画，修复“订阅顺序已保存”提示不消失，保存失败仍保留错误信息。

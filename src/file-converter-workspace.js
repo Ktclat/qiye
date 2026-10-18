@@ -32,7 +32,7 @@ export function fileConverterWorkspace(item) {
       </section>
       <div class="fc-options">
         <label class="fc-field"><span>${t('转换为')}</span><select data-fc-format aria-label="${t('目标格式')}">${formatOptions(format)}</select></label>
-        <label class="fc-field fc-quality"><span>${t('输出画质')} <output data-fc-quality-label>${quality}%</output></span><input data-fc-quality type="range" min="50" max="100" step="5" value="${quality}" aria-label="${t('输出画质')}"></label>
+        <label class="fc-field fc-quality"><span>${t('输出画质')} <output data-fc-quality-label>${quality}%</output></span><input data-fc-quality type="range" min="50" max="100" step="1" value="${quality}" aria-label="${t('输出画质')}"></label>
         <div class="fc-option-note">${t('JPG 会将透明区域填充为白色；PNG 不使用画质滑块。')}</div>
       </div>
       <section class="fc-results" aria-label="${t('待转换文件列表')}">
@@ -58,7 +58,7 @@ export function bindFileConverterWorkspace(root, item, host) {
   const status = q('[data-fc-status]');
   let entries = [], serial = 0, busy = false, accepting = false, closed = false;
   let conversion = null;
-  let saving = Promise.resolve();
+  let saving = Promise.resolve(), optionsRevision = 0;
   const revoke = entry => {
     if (entry.url) URL.revokeObjectURL(entry.url);
     entry.url = null;
@@ -90,7 +90,9 @@ export function bindFileConverterWorkspace(root, item, host) {
     q('[data-fc-action="run"]').disabled = busy || accepting || !ready;
     q('[data-fc-action="download-all"]').disabled = busy || !done;
     q('[data-fc-action="cancel"]').hidden = !busy;
-    q('[data-fc-action="clear"]').disabled = busy;
+    q('[data-fc-action="clear"]').disabled = busy || accepting;
+    drop.setAttribute('aria-busy', String(busy || accepting));
+    root.classList.toggle('fc-has-files', count > 0);
     list.innerHTML = entries.map(entry => {
       const tag = entry.state === 'done' ? t('完成') : entry.state === 'running' ? t('转换中…') : entry.state === 'error' ? t('失败') : t('待处理');
       const description = entry.state === 'done'
@@ -101,7 +103,7 @@ export function bindFileConverterWorkspace(root, item, host) {
         <span class="fc-file-info"><strong title="${e(entry.file.name)}">${e(entry.file.name)}</strong><small>${e(description)}</small></span>
         <span class="fc-state fc-state-${entry.state}" aria-label="${e(tag)}">${e(tag)}</span>
         <span class="fc-file-actions">${entry.state === 'done' ? `<button type="button" data-fc-action="download" data-fc-id="${entry.id}" title="${t('下载结果')}">${icon('download')}<span>${t('下载')}</span></button>` : ''}
-        <button type="button" data-fc-action="remove" data-fc-id="${entry.id}" title="${t('移除文件')}" aria-label="${t('移除文件')}">${icon('close')}</button></span>
+        <button type="button" data-fc-action="remove" data-fc-id="${entry.id}" title="${t('移除文件')}" aria-label="${t('移除文件')}"${busy || accepting ? ' disabled' : ''}>${icon('close')}</button></span>
       </li>`;
     }).join('');
     if (message) setStatus(message);
@@ -142,6 +144,7 @@ export function bindFileConverterWorkspace(root, item, host) {
   }
 
   function saveOptions() {
+    const revision = ++optionsRevision;
     const {format,quality:value} = optionSnapshot();
     saving = saving.catch(()=>{}).then(async () => {
       const current = host.getState().items.find(row => row.id === item.id);
@@ -150,7 +153,13 @@ export function bindFileConverterWorkspace(root, item, host) {
       await host.saveSettings(item.id, {
         title:current.title, config:{ ...current.config, outputFormat:format, quality:value },
       }, JSON.stringify([current.title,current.config]));
-    }).catch(error => { failed(error); });
+    }).catch(error => {
+      if (live() && revision === optionsRevision) {
+        const current = host.getState().items.find(row => row.id === item.id);
+        if (current) { select.value = current.config.outputFormat; quality.value = current.config.quality; }
+        clearResults(); refresh(); failed(error);
+      }
+    });
   }
 
   async function start() {
@@ -170,6 +179,8 @@ export function bindFileConverterWorkspace(root, item, host) {
         try {
           const {blob,width,height} = await convertImageFile(entry.file,{format,quality:value,signal});
           if (closed || signal.aborted) break;
+          if (entries.reduce((total,row)=>total + (row.blob?.size || 0), 0) + blob.size > FILE_CONVERTER_MAX_TOTAL_BYTES)
+            throw new Error('转换结果合计超过 120 MiB，请下载并移除部分结果后重试');
           entry.blob = blob;
           entry.width = width;
           entry.height = height;
@@ -216,12 +227,12 @@ export function bindFileConverterWorkspace(root, item, host) {
     }
     const button = event.target.closest('[data-fc-action]');
     if (!button) {
-      if (event.target !== input && drop.contains(event.target) && !busy) input.click();
+      if (event.target !== input && drop.contains(event.target) && !busy && !accepting) input.click();
       return;
     }
     const action = button.dataset.fcAction;
-    if (action === 'pick') input.click();
-    else if (action === 'clear' && !busy) {
+    if (action === 'pick' && !busy && !accepting) input.click();
+    else if (action === 'clear' && !busy && !accepting) {
       for (const entry of entries) revoke(entry);
       entries = [];
       refresh(t('文件已清空。'));
@@ -231,7 +242,7 @@ export function bindFileConverterWorkspace(root, item, host) {
       for (const entry of entries) if (entry.state === 'done') download(entry);
       setStatus(t('已请求批量下载；浏览器可能要求允许下载多个文件。'));
     } else if (action === 'download') download(entries.find(entry => entry.id === Number(button.dataset.fcId)));
-    else if (action === 'remove' && !busy) {
+    else if (action === 'remove' && !busy && !accepting) {
       const id = Number(button.dataset.fcId);
       entries = entries.filter(entry => { if (entry.id === id) { revoke(entry); return false; } return true; });
       refresh();
@@ -244,8 +255,9 @@ export function bindFileConverterWorkspace(root, item, host) {
     void addFiles(files);
   }, events);
   drop.addEventListener('dragover', event => {
-    if (busy || !Array.from(event.dataTransfer?.types || []).includes('Files')) return;
+    if (!Array.from(event.dataTransfer?.types || []).includes('Files')) return;
     event.preventDefault(); event.stopPropagation();
+    if (busy || accepting) { event.dataTransfer.dropEffect = 'none'; return; }
     event.dataTransfer.dropEffect = 'copy';
     drop.classList.add('fc-drop-active');
   }, events);
@@ -258,7 +270,7 @@ export function bindFileConverterWorkspace(root, item, host) {
     if (!busy) void addFiles(event.dataTransfer?.files || []);
   }, events);
   drop.addEventListener('keydown', event => {
-    if (event.target === drop && (event.key === 'Enter' || event.key === ' ')) {
+    if (event.target === drop && !busy && !accepting && (event.key === 'Enter' || event.key === ' ')) {
       event.preventDefault(); input.click();
     }
   }, events);

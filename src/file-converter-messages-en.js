@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Local file converter language additions; kept separate from the shared catalogue.
 export const fileConverterEnglishMessages = {
+  '暂不支持动画图片转换，以免丢失动画帧': 'Animated images are unsupported to avoid losing animation frames',
+  '转换结果合计超过 120 MiB，请下载并移除部分结果后重试': 'Results exceed 120 MiB. Download and remove some results, then retry',
   '文件转换': 'File converter',
   'PNG、JPG、WebP 图片批量转换，纯本地处理': 'Convert PNG, JPG, and WebP images in batches, locally',
   '打开文件转换': 'Open file converter',
@@ -52,7 +54,7 @@ export const fileConverterEnglishMessages = {
   '单个文件必须大于 0 且不超过 30 MB': 'Each file must be larger than 0 and no more than 30 MB',
   '已取消转换': 'Conversion canceled',
   '仅支持有效的 PNG / JPG / WebP 文件': 'Only valid PNG, JPG, and WebP files are supported',
-  '图片像素超出限制（最多 2500 万）': 'Image exceeds the 25-million-pixel limit',
+  '图片像素超出限制（最多 2400 万）': 'Image exceeds the 24-million-pixel limit',
   '无法初始化图片编码器': 'Could not initialize the image encoder',
   '图片编码失败': 'Image encoding failed',
   '当前浏览器不支持所选输出格式': 'Your browser cannot export this format',
