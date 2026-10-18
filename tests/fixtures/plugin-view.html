@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><style>body{margin:0;font:14px system-ui;background:#30251f;color:#eee}header{height:46px;display:flex;align-items:center;justify-content:space-between}textarea{box-sizing:border-box;width:100%;height:90px}button{min-height:30px}</style>
+<header><button data-action="widget-open">便签</button><button data-close>关闭</button></header><textarea data-widget-input="notes" aria-label="便签"></textarea>
+<script>
+window.bootId=crypto.randomUUID();window.initCount=0;window.views=[];
+window.addEventListener('message',function init(e){
+ if(e.source!==parent||e.data?.type!=='qiye:init'||e.data.version!==2||!e.ports[0])return;
+ window.removeEventListener('message',init);window.initCount++;
+ const port=e.ports[0],pending=new Map(),input=document.querySelector('textarea');let id=0,revision=e.data.revision,queue=Promise.resolve();
+ document.body.dataset.view=e.data.environment.mode;
+ input.value=JSON.parse(e.data.value||'null')?.data?.notes||'';
+ const call=(method,params={})=>new Promise((resolve,reject)=>{const key=String(++id);pending.set(key,{resolve,reject});port.postMessage({type:'call',id:key,method,params});});
+ const flush=async()=>{if(window.rejectFlush)throw Error('Test save failure');await queue;};
+ port.onmessage=async({data:m})=>{
+  if(m.type==='view'){
+   try{await flush();if(window.holdView)await new Promise(resolve=>window.finishView=resolve);views.push(m.environment.mode);document.body.dataset.view=m.environment.mode;port.postMessage({type:'view-ready',id:m.id});}
+   catch(error){port.postMessage({type:'view-ready',id:m.id,error:error.message});}return;
+  }
+  if(m.type==='state'&&m.revision!==revision){revision=m.revision;input.value=JSON.parse(m.value||'null')?.data?.notes||'';}
+  if(m.type==='flush'){try{await flush();port.postMessage({type:'flushed'});}catch(error){port.postMessage({type:'flushed',error:error.message});}return;}
+  if(m.type==='result'){const job=pending.get(m.id);if(job){pending.delete(m.id);m.error?job.reject(Error(m.error)):job.resolve(m.value);}}
+ };
+ input.oninput=()=>{const notes=input.value;queue=queue.then(()=>call('save',{value:{config:{},data:{notes}},expected:revision})).then(result=>{revision=result.revision;});};
+ document.querySelector('[data-action]').onclick=()=>call('open');document.querySelector('[data-close]').onclick=async()=>{await queue;await call('close');};
+ port.postMessage({type:'ready',version:2,features:['view-switch']});
+});
+</script>

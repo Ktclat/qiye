@@ -41,9 +41,12 @@ jobs:
           python tests/plugin-e2e.py --preview
           python tests/plugin-window-e2e.py
           python tests/plugin-window-e2e.py --preview
+          python tests/plugin-reuse-e2e.py
+          python tests/plugin-reuse-e2e.py --preview
           python tests/component-gallery-e2e.py
           python tests/component-gallery-e2e.py --preview
           python tests/extension-e2e.py
+          python tests/extension-e2e.py --reuse
           python tests/editor-e2e.py
           python tests/search-overlays-e2e.py
           python tests/search-overlays-e2e.py --preview

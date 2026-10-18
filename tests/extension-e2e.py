@@ -3,7 +3,7 @@ import argparse,json,tempfile,os
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 ROOT=Path(__file__).resolve().parents[1]
-parser=argparse.ArgumentParser();parser.add_argument('--widgets',type=Path,default=ROOT/'tests/fixtures/plugin-source');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--widgets',type=Path,default=ROOT/'tests/fixtures/plugin-source');parser.add_argument('--reuse',action='store_true');args=parser.parse_args()
 catalog=json.loads((args.widgets/'index.json').read_text(encoding='utf-8'))
 OUT=ROOT/'test-results/extension';OUT.mkdir(parents=True,exist_ok=True)
 requests=[];errors=[]
@@ -11,6 +11,7 @@ def external(route):
  url=route.request.url
  if url.startswith('https://ktclat.github.io/qiye-widgets/'):
   requests.append(url);path=args.widgets/url.split('/qiye-widgets/',1)[1].split('?')[0]
+  if args.reuse and path.suffix=='.html':return route.fulfill(path=str(ROOT/'tests/fixtures/plugin-view.html'))
   return route.fulfill(path=str(path),headers={'Access-Control-Allow-Origin':'*'})
  return route.fulfill(status=200,content_type='application/json',body='{}',headers={'Access-Control-Allow-Origin':'*'})
 with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright() as pw:
@@ -32,14 +33,21 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   assert card.locator('body').evaluate("()=>document.featurePolicy.allowsFeature('clipboard-write')&&!document.featurePolicy.allowsFeature('clipboard-read')")
   card.locator('[data-widget-input=notes]').fill('MV3 independent widget')
   page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5'].items.some(i=>i.widget==='community'&&i.data.value.includes('MV3 independent widget'))")
-  # Use keyboard intent in the full headless Chromium extension process;
-  # pointer preparation is exercised by plugin-window-e2e in the web renderer.
+  reusable=card.locator('body').evaluate("()=>!!globalThis.qiyeBridge?.onView || Array.isArray(window.views)")
   page.bring_to_front();page.locator('#desktop .tile-widget').focus()
-  page.locator('.plugin-preload-stage iframe').wait_for(state='attached')
-  page.locator('.plugin-preload-stage iframe').evaluate("e=>e.dataset.mv3Prepared='yes'")
+  if reusable:
+   page.locator('#desktop iframe').evaluate("e=>e.dataset.mv3Prepared='yes'")
+  else:
+   page.locator('.plugin-preload-stage iframe').wait_for(state='attached')
+   page.locator('.plugin-preload-stage iframe').evaluate("e=>e.dataset.mv3Prepared='yes'")
+  count=len(requests)
   card.locator('[data-action=widget-open]').first.click();page.locator('#dialog iframe[data-ready=true]').wait_for()
   assert page.locator('#dialog iframe[data-mv3-prepared=yes]').count()==1
+  if reusable:
+   page.wait_for_function('document.querySelector("#dialog [data-plugin-slot]").getAttribute("aria-busy")==="false"')
+   assert len(requests)==count
   page.frame_locator('#dialog iframe').locator('[data-close]').first.click();expect(page.locator('#dialog')).not_to_be_visible()
+  if reusable:assert page.locator('#desktop iframe[data-mv3-prepared=yes]').count()==1
   page.reload();page.locator('#desktop iframe[data-ready=true]').wait_for();assert page.frame_locator('#desktop iframe').locator('[data-widget-input=notes]').input_value()=='MV3 independent widget'
   page.screenshot(path=str(OUT/'mv3-widgets.png'))
   assert not errors,errors

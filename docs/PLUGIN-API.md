@@ -44,7 +44,7 @@
 
 首次启用和加载网页需要网络；浏览器缓存不是保证离线可用的安装包。组件内的天气、地图和汇率等请求遵循网页 CORS，不能继承主程序的跨域特权。原生浏览器书签通过单独授权的宿主桥接提供；网页版仍仅支持独立收藏。窗口、卡片、深浅主题和原有组件布局保留在独立运行包中。
 
-## 窗口打开与圆角覆盖（主程序 v0.10.3）
+## 旧组件的窗口准备与圆角覆盖（主程序 v0.10.3 起）
 
 鼠标在已就绪的桌面卡片停留 60ms 或键盘聚焦卡片时，宿主在不可聚焦的隐藏容器中准备该实例的网页。此时没有 `qiye:init`、实例数据或 MessagePort，组件不能通过宿主读取、保存或请求权限。真正打开窗口后才发送最新状态和端口。页面保留移动使用 `Element.moveBefore()`，避免普通 DOM 插入导致 iframe 再次导航；尚未加载完成的页面也保留原请求。关闭仍先等待 `flush`，然后销毁会话，不复用旧窗口的草稿或计时器。
 
@@ -71,3 +71,23 @@
 验证入口：`npm test`、`python tests/plugin-e2e.py --widgets ../qiye-widgets/dist`，以及组件仓库的 `tests/runtime-e2e.py`。
 
 表单行为依据 [MDN iframe sandbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe)：启用 `allow-forms` 让组件的表单校验与 submit 事件工作；仍不启用同源、顶层导航和弹窗权限。组件表单自行导航会撤销宿主端口。
+
+
+## 已就绪页面的内存复用（主程序 v0.10.4 / 组件库 v1.0.3）
+
+2026-10-18：用户截图中的“正在打开组件…”来自宿主 `mountPlugin` 的新 iframe 启动流程，并非固定等待计时器。即使 JS/CSS 命中 HTTP 缓存，每次新建窗口也要解析、初始化、建立端口、渲染并回复 ready；此前的鼠标准备仅提前加载文档，不执行带实例数据的初始化。采用已运行卡片的视图切换，可以直接省去第二次启动。
+
+这是 API v2 的可选能力：组件在 ready 中附加 `features: ['view-switch']`。宿主仅对已就绪、同一实例、同一来源及完全相同清单的桌面卡片启用；预览、未声明能力或不支持 `Element.moveBefore()` 的浏览器保持旧路径。宿主将原 iframe 保留移动到窗口中，通过同一专用端口发送 `{type:'view',id,environment}`，其中 mode 为 window 或 card；组件等待当前视图保存、清理事件和计时绑定、重新渲染，回复 `{type:'view-ready',id,error?}`。没有第二次 `qiye:init`，不复制其他实例数据，也不增加沙箱或浏览器权限。
+
+宿主等待匹配 id 的确认，切换超时为 5 秒；关闭会等待正在进行的切换与 flush。失败时保留恢复/强制关闭操作。正常关闭后原页面回到原卡片，重新绑定卡片交互；编码、图片和文件工具重新渲染以清空临时输入，已保存数据与番茄钟截止时间继续有效。来源撤销或页面自行导航会停止复用并关闭端口。桌面重新布局移除了原槽位时，仍保留活动编辑窗口直到保存关闭，随后销毁旧会话。
+
+这里复用的是已经加载的本地内存，不是下载安装包。HTTP 资源缓存继续由浏览器和服务端缓存头控制。实测的 Chromium 在相同上下文刷新后仍能复用公开 JS/CSS 响应；不能把 credentialless 的存储生命周期等同于 HTTP 缓存清除。首次加载、清缓存及需要联网的天气/地图仍可能等待，不承诺跨浏览器永久离线可用。
+
+研究与决策：
+- [Chrome moveBefore 示例](https://developer.chrome.com/blog/movebefore-api)与 [MDN Element.moveBefore](https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore)：移动 iframe 时保留文档，普通 append 会重新导航；使用功能检测回退。
+- [V8 代码缓存建议](https://v8.dev/blog/code-caching-for-devs)与 [MDN HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)：稳定版本 URL 有利于资源/编译缓存，但不能避免创建新页面及应用初始化。
+- [Chrome credentialless](https://developer.chrome.com/blog/iframe-credentialless)及 [WICG 说明](https://wicg.github.io/anonymous-iframe/)：继续保留无凭据、隔离存储，不为持久缓存而放开 allow-same-origin。
+- [GoogleChromeLabs quicklink](https://github.com/GoogleChromeLabs/quicklink)：参考其按意图准备、节省流量和有界资源策略；已就绪组件直接复用运行页面，无需再预取一个副本。
+- [Chrome MV3 安全迁移指南](https://developer.chrome.com/docs/extensions/develop/migrate/improve-security)：远程实现仍只在隔离 iframe 内执行，不改宿主 CSP、不将远程代码写入主程序执行环境。
+
+验证入口：`tests/plugin-reuse-e2e.py` 及 `--preview`、`tests/extension-e2e.py --reuse`；组件仓库 `tests/view-switch-e2e.py` 使用真实 HTTP 缓存并测量视图切换，同时核对刷新/新标签页的资源请求。旧组件的准备流程继续由 `tests/plugin-window-e2e.py` 覆盖。

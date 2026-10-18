@@ -4,6 +4,9 @@
 .plugin-frame{visibility:hidden}.plugin-frame[data-ready=true]{visibility:visible}
 .plugin-slot,.community-preview{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
 .plugin-frame,.plugin-loading{min-width:0;min-height:0}
+.plugin-parked-card{display:grid;place-items:center;color:var(--muted);font-size:12px;background:var(--control-surface);border-radius:inherit}
+.plugin-view-error{position:absolute;inset:auto 16px 16px;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:var(--workspace-pane);color:var(--fg)}
+.plugin-window-header h2:focus{outline:none}
 .plugin-loading{grid-area:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:12px;min-width:0;background:var(--workspace-pane);color:var(--fg);border-radius:inherit;text-align:center;overflow:hidden;font-size:12px}
 .plugin-loading strong{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px}.plugin-loading>span:not(.plugin-loading-mark){color:var(--muted);font-size:11px}
 .plugin-loading-mark{display:grid;place-items:center;width:40px;height:40px;background:var(--control-surface);border-radius:12px;color:var(--accent)}

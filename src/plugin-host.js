@@ -94,13 +94,27 @@ export async function performPluginCall(method,params,{item,plugin,host,active,m
 export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch(error){root.title=error.message;}
  if(!plugin)return ()=>{};
+ // A supporting card already owns an isolated, initialized document. Borrow it
+ // for its window instead of downloading and booting a second copy of the app.
+ if(mode==='window'&&!preview){
+  for(const session of new Set(sessions.values())){
+   const release=session.borrow?.(root,item,plugin);if(release)return release;
+  }
+ }
+ const homeRoot=root,homeMode=mode;
  const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
+ let reusable=false,borrowed=false,homeDetached=false,viewJob,viewSequence=0,viewTransition=Promise.resolve(),parkedLabel,viewError,onHomeRetry,homeRetryCleanup=()=>{};
  const loading=document.createElement('div');loading.className='plugin-loading';loading.setAttribute('role','status');loading.innerHTML=`<span class="plugin-loading-mark">${icon('grid')}</span><strong>${e(item.title)}</strong><span>${t('正在打开组件…')}</span><i aria-hidden="true"></i>`;
  root.replaceChildren(loading);
  const prepared=mode==='window'&&!preview?takePreparedWindow(root,item,plugin):null;
  const frame=prepared?.frame||createPluginFrame(item,plugin,{preview});
  root.setAttribute('aria-busy','true');
- const active=()=>!closed&&root.isConnected&&!!host.getState().items.find(entry=>entry.id===item.id)&&!!resolveWidgetSource(item);
+ const pluginKey=JSON.stringify(plugin);
+ const active=()=>{
+  if(closed||!root.isConnected)return false;
+  const latest=host.getState().items.find(entry=>entry.id===item.id);if(!latest)return false;
+  try{return JSON.stringify(resolveWidgetSource(latest))===pluginKey;}catch{return false;}
+ };
  const environment=()=>({locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
  const update=()=>{
@@ -108,8 +122,15 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const next={type:'state',...payload(current()),environment:environment()};const signature=JSON.stringify(next);
   if(signature!==lastSignature){lastSignature=signature;port.postMessage(next);}
  };
- const dispose=()=>{closed=true;clearTimeout(timer);clearTimeout(prepareTimer);if(mode==='card'&&!preview)discardPreparedWindow(item.id);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();root.removeAttribute('aria-busy');if(sessions.get(root)?.frame===frame)sessions.delete(root);};
- const fail=message=>{dispose();root.innerHTML=`<button class="plugin-placeholder" data-plugin-retry><strong>${e(item.title)}</strong><small>${e(message)}</small><span>${t('重试')}</span></button>`;root.addEventListener('click',onRetry,{once:true});};
+ const dispose=()=>{closed=true;clearTimeout(timer);clearTimeout(prepareTimer);if(homeMode==='card'&&!preview)discardPreparedWindow(item.id);observer?.disconnect();themeObserver?.disconnect();controller.abort();port?.close();frame.remove();loading.remove();parkedLabel?.remove();viewError?.remove();root.removeAttribute('aria-busy');if(viewJob){clearTimeout(viewJob.timer);viewJob.reject(new Error(t('组件已停止')));viewJob=null;}for(const key of [root,homeRoot])if(sessions.get(key)?.frame===frame)sessions.delete(key);};
+ const fail=message=>{
+  dispose();const html=`<button class="plugin-placeholder" data-plugin-retry><strong>${e(item.title)}</strong><small>${e(message)}</small><span>${t('重试')}</span></button>`;
+  root.innerHTML=html;root.addEventListener('click',onRetry,{once:true});
+  if(borrowed&&homeRoot.isConnected&&!homeDetached){
+   homeRoot.innerHTML=html;onHomeRetry=()=>{homeRetryCleanup=mountPlugin(homeRoot,current()||item,host,'card');};
+   homeRoot.addEventListener('click',onHomeRetry,{once:true});
+  }
+ };
  const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode,{preview});};
  const initialize=()=>{
   // Never transfer a new capability after an untrusted frame navigates itself.
@@ -117,8 +138,9 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const channel=new MessageChannel();port=channel.port1;
   port.onmessage=async event=>{
    const message=event.data;if(!active())return;
+   if(message?.type==='view-ready'&&viewJob&&message.id===viewJob.id){const job=viewJob;viewJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
    if(message?.type==='flushed'&&flushJob){const job=flushJob;flushJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
-   if(message?.type==='ready'&&message.version===plugin.manifest.version){ready=true;clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
+   if(message?.type==='ready'&&message.version===plugin.manifest.version){ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
    if(plugin.manifest.version===1&&message?.type==='save'){
     try{if(preview)throw new Error(t('预览不会修改桌面数据'));if(busy)throw new Error('Save in progress');busy=true;const data=validateCommunityData({value:message.value});await host.saveData(item.id,data,JSON.stringify(current().data));if(active())port.postMessage({type:'saved',id:message.id,ok:true});}
@@ -144,7 +166,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const target=root.closest('.tile-widget')||root;
   const prepare=()=>{
    clearTimeout(prepareTimer);
-   if(!ready||!active()||document.querySelector('#dialog[open]')||document.body.classList.contains('editing'))return;
+   if(!ready||reusable||mode!=='card'||!active()||document.querySelector('#dialog[open]')||document.body.classList.contains('editing'))return;
    const item=current(),plugin=resolveWidgetSource(item);
    if(plugin)preparePluginWindow(item,plugin);
   };
@@ -156,17 +178,61 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  const flush=()=>!ready||plugin.manifest.version!==2||!active()?Promise.resolve():flushPromise||(flushPromise=new Promise((resolve,reject)=>{
   flushJob={resolve,reject,timer:setTimeout(()=>{flushJob=null;reject(new Error(t('组件没有确认保存，请稍后重试关闭。')));},5000)};port.postMessage({type:'flush'});
  }).finally(()=>{flushPromise=null;}));
- sessions.set(root,{update,dispose,flush,frame});
+ const requestView=()=>{
+  root.setAttribute('aria-busy','true');
+  const promise=new Promise((resolve,reject)=>{
+   const id=String(++viewSequence);
+   viewJob={id,resolve,reject,timer:setTimeout(()=>{viewJob=null;reject(new Error(t('组件未响应，请检查网络后重试。')));},5000)};
+   port.postMessage({type:'view',id,environment:environment()});
+  }).finally(()=>{if(!closed)root.setAttribute('aria-busy','false');});
+  // The window may close while the switch is in flight. flush() awaits this
+  // same promise, while this handler prevents an unobserved rejection.
+  promise.catch(()=>{});return promise;
+ };
+ const release=async(force=false)=>{
+  if(closed){if(root!==homeRoot){root.removeEventListener('click',onRetry);await retryCleanup();}return;}
+  if(!borrowed)return;
+  try{await viewTransition;}catch(error){if(!force)throw error;}
+  const windowRoot=root;
+  if(homeDetached||!homeRoot.isConnected||!active()){dispose();return;}
+  try{homeRoot.moveBefore(frame,null);}catch(error){dispose();root=homeRoot;fail(error.message);return;}
+  sessions.delete(windowRoot);windowRoot.removeAttribute('aria-busy');
+  root=homeRoot;mode='card';borrowed=false;parkedLabel?.remove();viewError?.remove();
+  observer?.disconnect();observer?.observe(root);lastSignature='';
+  viewTransition=requestView();
+  try{await viewTransition;update();}catch(error){fail(error.message);}
+ };
+ const session={update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
+  if(preview||homeMode!=='card'||mode!=='card'||borrowed||!reusable||!ready||!active()||!target.moveBefore||!homeRoot.moveBefore||candidate.id!==item.id||JSON.stringify(resolved)!==JSON.stringify(plugin))return null;
+  target.replaceChildren();
+  try{target.moveBefore(frame,null);}catch{return null;}
+  discardPreparedWindow();clearTimeout(prepareTimer);
+  parkedLabel=document.createElement('div');parkedLabel.className='plugin-parked-card';parkedLabel.textContent=item.title;homeRoot.append(parkedLabel);
+  root=target;mode='window';borrowed=true;sessions.set(root,session);
+  observer?.disconnect();observer?.observe(root);lastSignature='';update();
+  viewTransition=requestView();viewTransition.catch(error=>{
+   if(!active()||!borrowed)return;
+   root.closest('dialog')?.querySelector('.plugin-window-header')?.classList.add('needs-recovery');
+   viewError=document.createElement('div');viewError.className='plugin-view-error';viewError.setAttribute('role','alert');viewError.textContent=error.message;root.append(viewError);
+  });
+  return release;
+ }};
+ sessions.set(root,session);
  if(prepared?.loaded)initialize();
  if(!prepared){frame.src=plugin.manifest.entry;root.append(frame);}
- return ()=>{dispose();root.removeEventListener('click',onRetry);retryCleanup();};
+ return ()=>{
+  // A desktop layout refresh can remove the original slot while its window is
+  // open. Keep that live editor until close, but never reuse it after revocation.
+  if(borrowed&&active()){homeDetached=true;sessions.delete(homeRoot);return;}
+  dispose();root.removeEventListener('click',onRetry);if(onHomeRetry)homeRoot.removeEventListener('click',onHomeRetry);homeRetryCleanup();retryCleanup();
+ };
 }
 export function updatePluginFrames(container) { for(const [root,session] of sessions)if(container.contains(root))session.update(); }
 export function bindPluginWorkspace(root,item,host) {
  const controller=new AbortController();
  const cleanup=mountPlugin(root.querySelector('[data-plugin-slot]'),item,host,'window');
  root.addEventListener('click',async event=>{
-  if(event.target.closest('[data-plugin-force-close]')){controller.abort();cleanup();void host.closeDialog();return;}
+  if(event.target.closest('[data-plugin-force-close]')){await cleanup(true);controller.abort();void host.closeDialog();return;}
   if(event.target.closest('[data-plugin-expand]'))root.closest('dialog').classList.toggle('widget-app-expanded');
   if(event.target.closest('[data-plugin-location]')){
    try{const plugin=resolveWidgetSource(item);if(plugin&&(!globalThis.chrome?.permissions?.request||await chrome.permissions.request({permissions:['geolocation']}))){localStorage.setItem(grantKey(plugin)+'|geolocation','true');root.querySelector('.plugin-window-header')?.classList.remove('needs-grant');host.toast(t('已授权，请在组件中重新点击定位。'));}}
@@ -177,7 +243,7 @@ export function bindPluginWorkspace(root,item,host) {
   }
  },{signal:controller.signal});
  return async()=>{
-  try{await sessions.get(root.querySelector('[data-plugin-slot]'))?.flush();}
+  try{await sessions.get(root.querySelector('[data-plugin-slot]'))?.flush();await cleanup();}
   catch(error){
    const header=root.querySelector('.plugin-window-header');header?.classList.add('needs-recovery');
    if(header&&!header.querySelector('[data-plugin-force-close]')){
@@ -185,6 +251,6 @@ export function bindPluginWorkspace(root,item,host) {
    }
    throw error;
   }
-  controller.abort();cleanup();
+  controller.abort();
  };
 }
