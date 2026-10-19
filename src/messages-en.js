@@ -2052,5 +2052,6 @@ export const englishMessages = {
   "组件菜单": "Widget menu",
   "请在窗口标题栏授权热榜访问，然后刷新榜单。": "Allow hotboard access in the window title bar, then refresh the board.",
   "授权热榜访问": "Allow hotboards",
-  "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing."
+  "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing.",
+ "{v0} · 长按拖动，右键设置，Alt 加方向键调整位置": "{v0} · Hold to drag, right-click to configure, Alt + arrows to reorder",
 };

@@ -182,19 +182,13 @@ main{padding-top:clamp(54px,7vh,90px)}
 .engine-list-row>[data-delete-engine]{margin-left:0;padding:6px}
 
 /* Pointer dragging keeps widget editing and touch scrolling intact. */
-.tile-drag-handle{position:absolute;z-index:4;left:50%;bottom:0;transform:translateX(-50%);display:grid;place-items:center;width:30px;height:22px;padding:4px 8px;border-radius:7px;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);box-shadow:0 2px 8px #07132124;cursor:grab;touch-action:none;opacity:0;transition:opacity .15s,background .15s}
-.tile-drag-handle svg{width:13px;height:13px;transform:rotate(90deg)}
-.tile:hover>.tile-drag-handle,.tile:focus-within>.tile-drag-handle,.editing .tile-drag-handle,.tile-widget>.tile-drag-handle{opacity:1}
-.tile-drag-handle:hover,.tile-drag-handle:focus-visible{color:var(--fg);background:var(--panel-2)}
-.tile-widget>.tile-drag-handle{left:auto;right:5px;bottom:3px;transform:none;width:27px;height:19px;padding:3px 7px}
-.tile-widget>.tile-label{max-width:calc(100% - 50px)}
+
 .tile-link:hover>.tile-label,.tile-folder:hover>.tile-label{opacity:0}
 .tile-link:focus-within>.tile-label,.tile-folder:focus-within>.tile-label{opacity:0}
 .editing .group-button{touch-action:none;cursor:grab}
 .editing .tile-actions{right:3px;top:3px;gap:2px}
 .tile.dragging{opacity:.28}
 body.is-dragging,body.is-dragging *{cursor:grabbing!important;user-select:none!important}
-body.is-dragging .tile-drag-handle{opacity:1}
 body.is-dragging .tile-body{transform:none!important}
 .drop-before>.tile-body,.drop-after>.tile-body{box-shadow:0 0 0 2px #a9e3d333}
 .drop-inside{outline:3px solid var(--accent)!important;outline-offset:3px;border-radius:var(--radius)}
@@ -225,12 +219,9 @@ html[data-theme=light] .tile-folder .tile-body{background:rgba(239,246,244,.75);
  .desktop-heading .pill-button{white-space:nowrap;flex-shrink:0}
 }
 @media(hover:none),(pointer:coarse){
- .tile-drag-handle{opacity:1;left:auto;right:0;bottom:0;transform:none;width:25px;height:22px}
- .tile-widget>.tile-drag-handle{right:0;bottom:0;width:30px;height:25px}
  .tile-link>.tile-label,.tile-folder>.tile-label{max-width:calc(100% - 26px);align-self:flex-start}
  .tile-link:hover>.tile-label,.tile-folder:hover>.tile-label{opacity:1}
 }
-@media(prefers-reduced-motion:reduce){.clock-block,.tile-drag-handle{transition:none}}
 
 /* v0.2.3 — configurable navigation, compact typography and bounded materials.
    Blur is restricted to a few surfaces; widget cards never get one blur each. */
@@ -525,6 +516,8 @@ html .scope-button.active { color: var(--fg); border-color: var(--accent); backg
 @media (prefers-reduced-motion:reduce) {
   *,*:before,*:after { animation: none!important; transition: none!important; scroll-behavior: auto!important; }
 }
+
+@media(prefers-reduced-motion:reduce){.clock-block{transition:none}}
 
 </style>
   <style>
@@ -1236,14 +1229,11 @@ body.editing .plugin-slot iframe{pointer-events:none}
 @container community-catalog (max-width:460px){.community-cards{grid-template-columns:1fr}.community-card{padding:14px 12px 12px}}
 @media(max-width:600px){.plugin-dialog{width:calc(100vw - 12px);height:calc(100dvh - 12px)}.plugin-window-header{padding:0 8px}.plugin-placeholder small{font-size:9px}.community-catalog-scroll{padding:12px}.community-gallery .community-categories{padding:10px 12px}}
 
-.widget-host-actions{position:absolute;inset:0;display:block;pointer-events:none;z-index:3;opacity:0;transition:opacity .15s}
-.tile-widget:hover .widget-host-actions,.tile-widget:focus-within .widget-host-actions,body.editing .widget-host-actions{opacity:1}
-.widget-host-actions button{pointer-events:auto;width:23px;height:23px;display:grid;place-items:center;border-radius:7px;padding:4px;background:var(--panel);color:var(--muted);box-shadow:0 1px 4px #0002}
-.widget-host-actions .icon{width:14px;height:14px}.widget-host-actions .widget-drag-handle{cursor:grab;touch-action:none}
 body.is-dragging .plugin-slot iframe{pointer-events:none}
 .toast[hidden]{display:none!important}
 
-.widget-host-actions button{position:absolute;right:6px;top:6px}.widget-host-actions .widget-drag-handle{top:auto;right:auto;bottom:3px;left:calc(50% - 12px)}
+
+.widget-drag-preview{display:grid;place-items:center;width:100%;height:100%;border-radius:var(--radius);background:var(--panel);color:var(--fg);padding:12px}
 
 </style>
 <!-- Bundled Inter font: copyright and full license
@@ -3796,7 +3786,8 @@ const englishMessages = {
   "组件菜单": "Widget menu",
   "请在窗口标题栏授权热榜访问，然后刷新榜单。": "Allow hotboard access in the window title bar, then refresh the board.",
   "授权热榜访问": "Allow hotboards",
-  "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing."
+  "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing.",
+ "{v0} · 长按拖动，右键设置，Alt 加方向键调整位置": "{v0} · Hold to drag, right-click to configure, Alt + arrows to reorder",
 };
 
 return {englishMessages};
@@ -4328,6 +4319,7 @@ const { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPrepa
 
 const sessions = new Map(), queuedCommands = new Map();
 function pluginMenu(itemId) { return [...sessions.values()].find(s=>s.itemId===itemId)?.menu || []; }
+function setPluginDragState(itemId,state) { [...sessions.values()].find(s=>s.itemId===itemId)?.dragState(state); }
 function queuePluginCommand(itemId, command) {
  if(command!=='settings'&&!pluginMenu(itemId).some(entry=>entry.id===command))return false;
  queuedCommands.set(itemId,command);return true;
@@ -4446,7 +4438,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const latest=host.getState().items.find(entry=>entry.id===item.id);if(!latest)return false;
   try{return JSON.stringify(resolveWidgetSource(latest))===pluginKey;}catch{return false;}
  };
- const environment=()=>({hostFeatures:['hotboard','interactions','commands'],locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:current()?.size||item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
+ const environment=()=>({hostFeatures:['hotboard','interactions','commands','long-press'],locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:current()?.size||item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
  const commandEnvironment=()=>{const env=environment();if(mode==='window'&&queuedCommands.has(item.id)){env.command=queuedCommands.get(item.id);queuedCommands.delete(item.id);}return env;};
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
  const update=()=>{
@@ -4542,7 +4534,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   viewTransition=requestView();
   try{await viewTransition;update();}catch(error){fail(error.message);}
  };
- const session={itemId:item.id,menu:[],command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
+ const session={itemId:item.id,menu:[],dragState:state=>{if(ready&&active())port.postMessage({type:'drag-state',...state});},command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
   if(preview||homeMode!=='card'||mode!=='card'||borrowed||!reusable||!ready||!active()||!target.moveBefore||!homeRoot.moveBefore||candidate.id!==item.id||JSON.stringify(resolved)!==JSON.stringify(plugin))return null;
   target.replaceChildren();
   try{target.moveBefore(frame,null);}catch{return null;}
@@ -4603,7 +4595,7 @@ function bindPluginWorkspace(root,item,host) {
  };
 }
 
-return {pluginMenu, queuePluginCommand, validatePluginMenu, pluginCard, pluginWorkspace, performPluginCall, mountPlugin, updatePluginFrames, bindPluginWorkspace};
+return {pluginMenu, setPluginDragState, queuePluginCommand, validatePluginMenu, pluginCard, pluginWorkspace, performPluginCall, mountPlugin, updatePluginFrames, bindPluginWorkspace};
 })();
 const __widgets = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -6796,7 +6788,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.5";
+const APP_VERSION = "0.10.6";
 
 return {APP_VERSION};
 })();
@@ -9052,7 +9044,7 @@ function edgeScrollDelta(position, start, end, edge = 64, maxSpeed = 20) {
  */
 function createDesktopDragController({
  document:doc=globalThis.document, getState, getActiveGroupId=()=>getState().activeGroupId,
- onDrop, canDragGroups=()=>false, isBlocked=()=>false, onError=()=>{}, onStart=()=>{}
+ onDrop, canDragGroups=()=>false, isBlocked=()=>false, onError=()=>{}, onStart=()=>{}, onWidgetDrag=()=>{}
 }) {
  if(!doc || typeof getState!=='function' || typeof onDrop!=='function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
  const win=doc.defaultView || globalThis, listeners=[], animations=new Map();
@@ -9082,10 +9074,10 @@ function createDesktopDragController({
   if(tile && grid()?.contains(tile)){
    const item=getState().items.find(i=>i.id===tile.dataset.item);
    if(!item || item.folderId || item.groupId!==getActiveGroupId())return null;
-   if(t.closest('select,[data-no-drag]'))return null;
+   if(item.type!=='widget'&&t.closest('select,[data-no-drag]'))return null;
    const editor=t.closest('input,textarea,[contenteditable]');
-   if(editor && doc.activeElement===editor)return null;
-   const holdOnly=!!editor;
+   if(item.type!=='widget'&&editor && doc.activeElement===editor)return null;
+   const holdOnly=item.type==='widget'||!!editor;
    return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title,holdOnly};
   }
   if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
@@ -9098,10 +9090,12 @@ function createDesktopDragController({
  }
  function unmark(){for(const name of DROP_CLASSES)doc.querySelectorAll('.'+name).forEach(n=>n.classList.remove(name));}
  function restore(s){
-  if(!s?.original || !s.source.root.isConnected)return;
+  if(!s?.changed || !s.original || !s.source.root.isConnected)return;
   const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
-  // Only restore surviving original nodes, never resurrect a deleted card.
-  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)(s.source.root.moveBefore ? s.source.root.moveBefore(node,null) : s.source.root.append(node));
+  // Only the dragged node moved. Reparenting every neighbour needlessly
+  // invalidates their iframe/container layout and can erase live viewport sizes.
+  const node=s.source.element,next=s.original.slice(s.original.indexOf(node)+1).find(n=>n.isConnected&&n.parentElement===s.source.root)||null;
+  if(node.isConnected&&node.parentElement===s.source.root){if(s.source.root.moveBefore)s.source.root.moveBefore(node,next);else s.source.root.insertBefore(node,next);}
   animate(before,list);
  }
  function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
@@ -9110,10 +9104,12 @@ function createDesktopDragController({
   if(s?.active && guard)suppression={x:s.x,y:s.y,pointerId:s.pointerId,until:Date.now()+CLICK_GUARD_MS,waitForRelease};
   if(revert)restore(s);
   const image=ghost;ghost=null;
+  if(s?.liveBody&&s.source.element.isConnected)s.source.element.moveBefore(s.liveBody,s.source.element.firstChild);
+  if(s?.external)onWidgetDrag(s.source.id,{pointerId:s.pointerId,active:false});
   s?.source.element.classList.remove('dragging');doc.body.classList.remove('is-dragging');unmark();
   if(image){
    const end=s?.source.element.getBoundingClientRect();
-   if(landing && end && !reduced() && image.animate){
+   if(landing && !s?.liveBody && end && !reduced() && image.animate){
     const begin=image.getBoundingClientRect();
     const a=image.animate([{transform:`translate3d(${begin.left}px,${begin.top}px,0) scale(1.015)`,opacity:.92},{transform:`translate3d(${end.left}px,${end.top}px,0) scale(1)`,opacity:0}],{duration:150,easing:'ease-out',fill:'forwards'});
     a.onfinish=()=>image.remove();setTimeout(()=>image.remove(),200);
@@ -9140,12 +9136,23 @@ function createDesktopDragController({
   s.original=[...s.source.root.children];s.offsetX=s.startX-rect.left;s.offsetY=s.startY-rect.top;s.lastSwap=0;
   cancelAnimations();s.source.root.classList.remove('group-enter');
   ghost=s.source.element.cloneNode(true);ghost.classList.remove('dragging');ghost.classList.add('drag-ghost');
+  // A cloned iframe has no session and would load an empty widget. Lift the
+  // live surface with moveBefore so focus, editing and pointer capture survive.
+  const body=s.source.type==='widget'?s.source.element.querySelector?.('.tile-body'):null;
+  if(body){
+   ghost.querySelector('.tile-body')?.remove();
+   for(const frame of ghost.querySelectorAll('iframe'))frame.remove();
+   if(ghost.moveBefore)s.liveBody=body;
+   else{const label=doc.createElement('div');label.className='widget-drag-preview';label.textContent=s.source.title;ghost.append(label);}
+  }
   for(const n of [ghost,...ghost.querySelectorAll('*')]){n.removeAttribute('id');n.removeAttribute('data-item');n.removeAttribute('data-group');n.removeAttribute('tabindex');}
-  ghost.setAttribute('aria-hidden','true');ghost.inert=true;
+  ghost.setAttribute('aria-hidden','true');ghost.inert=!s.liveBody;
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
-  doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
+  doc.body.append(ghost);if(s.liveBody)ghost.moveBefore(s.liveBody,ghost.firstChild);
+  s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
   if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
   if(!s.external)try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
+  if(s.external)onWidgetDrag(s.source.id,{pointerId:s.pointerId,active:true});
   doc.getSelection?.()?.removeAllRanges();
   moveGhost();try{onStart();}catch(e){onError(e);}
   if(session===s)frame=win.requestAnimationFrame(tick);
@@ -9163,7 +9170,7 @@ function createDesktopDragController({
   if(!session?.active)return;
   if(!valid())return cancel();
   const s=session,point={x:s.x,y:s.y},hit=doc.elementFromPoint(s.x,s.y);unmark();
-  s.special=null;s.inside=false;
+  s.special=null;s.fallbackIntent=null;s.inside=false;
   if(!hit?.closest){clearMerge();return;}
   const g=hit.closest('[data-group]');
   if(g && groups()?.contains(g) && s.source.kind==='item'){
@@ -9202,6 +9209,7 @@ function createDesktopDragController({
   clearMerge();
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
+  if(s.source.type==='widget'&&!root.moveBefore){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
   if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
   swap(dest,intent.position);
  }
@@ -9242,6 +9250,7 @@ function createDesktopDragController({
  }
  function finalIntent(s){
   if(s.special)return s.special;
+  if(s.inside&&s.fallbackIntent)return s.fallbackIntent;
   if(!s.inside || !s.changed)return null;
   const list=nodes(s.source.root),index=list.indexOf(s.source.element),next=list[index+1],previous=list[index-1];
   const same=list.map(id).join('\0')===s.original.filter(n=>n.matches?.('[data-item],[data-group]')).map(id).join('\0');
@@ -9524,7 +9533,7 @@ const { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } = __widge
 const { chineseLunarDate } = __desktop_date;
 const { sharingView, bindSharing } = __sharing_ui;
 const { communityView, communityToolbar, bindCommunity } = __community_ui;
-const { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand } = __plugin_host;
+const { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand, setPluginDragState } = __plugin_host;
 const { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } = __widget_sources;
 const { t, setLocale, getLocale, formatDate, localizeDocument } = __i18n;
 const { APP_VERSION } = __version;
@@ -10138,12 +10147,12 @@ function renderDesktop({preserveWidgets=false} = {}) {
 function renderTile(item,index=0) {
  const [width,height] = (item.size || '1x1').split('x').map(Number);
  let body = '';
- if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div><div class="widget-host-actions"><button class="widget-drag-handle" title="${t('拖动排序')}" aria-label="${t('拖动排序')}">${icon('move')}</button><button data-widget-context="${esc(item.id)}" data-no-drag aria-label="${t('组件菜单')}" title="${t('组件菜单')}">${icon('more')}</button></div>`;
+ if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
  else if (item.type === 'folder') {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
   body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="${t("打开文件夹：{v0}", {v0: esc(item.title)})}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
  } else body = `<a class="tile-body" draggable="false" href="${esc(safeUrl(item.url) || '#')}" data-open-link="${esc(item.id)}" style="--tile-color:${esc(item.color || '#486c91')};--tile-ink:${tileInk(item.color)}" aria-label="${t("打开{v0}", {v0: esc(item.title)})}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer">${siteGlyph(item)}</a>`;
- return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" tabindex="0" aria-label="${t("{v0} · 拖动排序，Alt 加方向键调整位置", {v0: esc(item.title)})}"><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="${t("编辑{v0}", {v0: esc(item.title)})}" title="${t("编辑")}">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="${t("移除{v0}", {v0: esc(item.title)})}" title="${t("移除")}">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
+ return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" tabindex="0" aria-label="${t(item.type==='widget'?"{v0} · 长按拖动，右键设置，Alt 加方向键调整位置":"{v0} · 拖动排序，Alt 加方向键调整位置", {v0: esc(item.title)})}">${item.type==='widget'?'':`<div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="${t("编辑{v0}", {v0: esc(item.title)})}" title="${t("编辑")}">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="${t("移除{v0}", {v0: esc(item.title)})}" title="${t("移除")}">${icon('close')}</button></div>`}${body}<span class="tile-label">${esc(item.title)}</span></article>`;
 }
 function renderEngine() {
  const e = currentEngine(), key = JSON.stringify([e.id,allEngines()]);
@@ -10678,7 +10687,6 @@ document.addEventListener('click', async event=>{
  if(target.dataset.url)return navigate(target.dataset.url);
  if(target.dataset.unfolder){const item=state.items.find(i=>i.id===target.dataset.unfolder);if(!item)return;const id=item.folderId;item.folderId=null;await commit();openDialog('folder',{id});toast(t("已移回桌面。"));return;}
  if(target.dataset.deleteGroup)return confirmDeleteGroup(target.dataset.deleteGroup);
- if(target.dataset.widgetContext){const r=target.getBoundingClientRect();openContext({preventDefault(){},clientX:r.right,clientY:r.bottom},{itemId:target.dataset.widgetContext});return;}
  if(target.dataset.context){
   const menu=$('#context-menu'),id=menu.dataset.item,groupId=menu.dataset.group,action=target.dataset.context;menu.hidden=true;
   if(action==='widget-open')return openDialog('widget-detail',{item:state.items.find(i=>i.id===id)});
@@ -10956,6 +10964,7 @@ async function init() {
   canDragGroups:()=>editing, isBlocked:()=>dialog.open || blockedStorage || state.settings.minimal,
   onStart:()=>{hideSearchMenus();$('#context-menu').hidden=true;},
   onDrop:applyDesktopDrop,
+  onWidgetDrag:setPluginDragState,
   onError:err=>{renderDesktop();if(!err.notified)toast(err.message || t("移动未保存，请重试。"));}
  });
  renderDesktop();

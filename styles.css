@@ -169,19 +169,13 @@ main{padding-top:clamp(54px,7vh,90px)}
 .engine-list-row>[data-delete-engine]{margin-left:0;padding:6px}
 
 /* Pointer dragging keeps widget editing and touch scrolling intact. */
-.tile-drag-handle{position:absolute;z-index:4;left:50%;bottom:0;transform:translateX(-50%);display:grid;place-items:center;width:30px;height:22px;padding:4px 8px;border-radius:7px;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);box-shadow:0 2px 8px #07132124;cursor:grab;touch-action:none;opacity:0;transition:opacity .15s,background .15s}
-.tile-drag-handle svg{width:13px;height:13px;transform:rotate(90deg)}
-.tile:hover>.tile-drag-handle,.tile:focus-within>.tile-drag-handle,.editing .tile-drag-handle,.tile-widget>.tile-drag-handle{opacity:1}
-.tile-drag-handle:hover,.tile-drag-handle:focus-visible{color:var(--fg);background:var(--panel-2)}
-.tile-widget>.tile-drag-handle{left:auto;right:5px;bottom:3px;transform:none;width:27px;height:19px;padding:3px 7px}
-.tile-widget>.tile-label{max-width:calc(100% - 50px)}
+
 .tile-link:hover>.tile-label,.tile-folder:hover>.tile-label{opacity:0}
 .tile-link:focus-within>.tile-label,.tile-folder:focus-within>.tile-label{opacity:0}
 .editing .group-button{touch-action:none;cursor:grab}
 .editing .tile-actions{right:3px;top:3px;gap:2px}
 .tile.dragging{opacity:.28}
 body.is-dragging,body.is-dragging *{cursor:grabbing!important;user-select:none!important}
-body.is-dragging .tile-drag-handle{opacity:1}
 body.is-dragging .tile-body{transform:none!important}
 .drop-before>.tile-body,.drop-after>.tile-body{box-shadow:0 0 0 2px #a9e3d333}
 .drop-inside{outline:3px solid var(--accent)!important;outline-offset:3px;border-radius:var(--radius)}
@@ -212,12 +206,9 @@ html[data-theme=light] .tile-folder .tile-body{background:rgba(239,246,244,.75);
  .desktop-heading .pill-button{white-space:nowrap;flex-shrink:0}
 }
 @media(hover:none),(pointer:coarse){
- .tile-drag-handle{opacity:1;left:auto;right:0;bottom:0;transform:none;width:25px;height:22px}
- .tile-widget>.tile-drag-handle{right:0;bottom:0;width:30px;height:25px}
  .tile-link>.tile-label,.tile-folder>.tile-label{max-width:calc(100% - 26px);align-self:flex-start}
  .tile-link:hover>.tile-label,.tile-folder:hover>.tile-label{opacity:1}
 }
-@media(prefers-reduced-motion:reduce){.clock-block,.tile-drag-handle{transition:none}}
 
 /* v0.2.3 — configurable navigation, compact typography and bounded materials.
    Blur is restricted to a few surfaces; widget cards never get one blur each. */
@@ -512,3 +503,5 @@ html .scope-button.active { color: var(--fg); border-color: var(--accent); backg
 @media (prefers-reduced-motion:reduce) {
   *,*:before,*:after { animation: none!important; transition: none!important; scroll-behavior: auto!important; }
 }
+
+@media(prefers-reduced-motion:reduce){.clock-block{transition:none}}
