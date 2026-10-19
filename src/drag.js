@@ -86,7 +86,7 @@ export function edgeScrollDelta(position, start, end, edge = 64, maxSpeed = 20) 
  */
 export function createDesktopDragController({
  document:doc=globalThis.document, getState, getActiveGroupId=()=>getState().activeGroupId,
- onDrop, canDragGroups=()=>false, isBlocked=()=>false, onError=()=>{}, onStart=()=>{}
+ onDrop, canDragGroups=()=>false, isBlocked=()=>false, onError=()=>{}, onStart=()=>{}, onWidgetDrag=()=>{}
 }) {
  if(!doc || typeof getState!=='function' || typeof onDrop!=='function') throw new TypeError('Dragging requires a document, state reader and drop callback.');
  const win=doc.defaultView || globalThis, listeners=[], animations=new Map();
@@ -116,10 +116,10 @@ export function createDesktopDragController({
   if(tile && grid()?.contains(tile)){
    const item=getState().items.find(i=>i.id===tile.dataset.item);
    if(!item || item.folderId || item.groupId!==getActiveGroupId())return null;
-   if(t.closest('select,[data-no-drag]'))return null;
+   if(item.type!=='widget'&&t.closest('select,[data-no-drag]'))return null;
    const editor=t.closest('input,textarea,[contenteditable]');
-   if(editor && doc.activeElement===editor)return null;
-   const holdOnly=!!editor;
+   if(item.type!=='widget'&&editor && doc.activeElement===editor)return null;
+   const holdOnly=item.type==='widget'||!!editor;
    return {kind:'item',id:item.id,type:item.type,element:tile,root:grid(),title:item.title,holdOnly};
   }
   if(g && groups()?.contains(g) && canDragGroups())return {kind:'group',id:g.dataset.group,type:'group',element:g,root:groups()};
@@ -132,10 +132,12 @@ export function createDesktopDragController({
  }
  function unmark(){for(const name of DROP_CLASSES)doc.querySelectorAll('.'+name).forEach(n=>n.classList.remove(name));}
  function restore(s){
-  if(!s?.original || !s.source.root.isConnected)return;
+  if(!s?.changed || !s.original || !s.source.root.isConnected)return;
   const list=nodes(s.source.root),before=boxes(list);cancelAnimations();
-  // Only restore surviving original nodes, never resurrect a deleted card.
-  for(const node of s.original)if(node.isConnected && node.parentElement===s.source.root)(s.source.root.moveBefore ? s.source.root.moveBefore(node,null) : s.source.root.append(node));
+  // Only the dragged node moved. Reparenting every neighbour needlessly
+  // invalidates their iframe/container layout and can erase live viewport sizes.
+  const node=s.source.element,next=s.original.slice(s.original.indexOf(node)+1).find(n=>n.isConnected&&n.parentElement===s.source.root)||null;
+  if(node.isConnected&&node.parentElement===s.source.root){if(s.source.root.moveBefore)s.source.root.moveBefore(node,next);else s.source.root.insertBefore(node,next);}
   animate(before,list);
  }
  function clean({revert=true,guard=true,landing=false,waitForRelease=false}={}){
@@ -144,10 +146,12 @@ export function createDesktopDragController({
   if(s?.active && guard)suppression={x:s.x,y:s.y,pointerId:s.pointerId,until:Date.now()+CLICK_GUARD_MS,waitForRelease};
   if(revert)restore(s);
   const image=ghost;ghost=null;
+  if(s?.liveBody&&s.source.element.isConnected)s.source.element.moveBefore(s.liveBody,s.source.element.firstChild);
+  if(s?.external)onWidgetDrag(s.source.id,{pointerId:s.pointerId,active:false});
   s?.source.element.classList.remove('dragging');doc.body.classList.remove('is-dragging');unmark();
   if(image){
    const end=s?.source.element.getBoundingClientRect();
-   if(landing && end && !reduced() && image.animate){
+   if(landing && !s?.liveBody && end && !reduced() && image.animate){
     const begin=image.getBoundingClientRect();
     const a=image.animate([{transform:`translate3d(${begin.left}px,${begin.top}px,0) scale(1.015)`,opacity:.92},{transform:`translate3d(${end.left}px,${end.top}px,0) scale(1)`,opacity:0}],{duration:150,easing:'ease-out',fill:'forwards'});
     a.onfinish=()=>image.remove();setTimeout(()=>image.remove(),200);
@@ -174,12 +178,23 @@ export function createDesktopDragController({
   s.original=[...s.source.root.children];s.offsetX=s.startX-rect.left;s.offsetY=s.startY-rect.top;s.lastSwap=0;
   cancelAnimations();s.source.root.classList.remove('group-enter');
   ghost=s.source.element.cloneNode(true);ghost.classList.remove('dragging');ghost.classList.add('drag-ghost');
+  // A cloned iframe has no session and would load an empty widget. Lift the
+  // live surface with moveBefore so focus, editing and pointer capture survive.
+  const body=s.source.type==='widget'?s.source.element.querySelector?.('.tile-body'):null;
+  if(body){
+   ghost.querySelector('.tile-body')?.remove();
+   for(const frame of ghost.querySelectorAll('iframe'))frame.remove();
+   if(ghost.moveBefore)s.liveBody=body;
+   else{const label=doc.createElement('div');label.className='widget-drag-preview';label.textContent=s.source.title;ghost.append(label);}
+  }
   for(const n of [ghost,...ghost.querySelectorAll('*')]){n.removeAttribute('id');n.removeAttribute('data-item');n.removeAttribute('data-group');n.removeAttribute('tabindex');}
-  ghost.setAttribute('aria-hidden','true');ghost.inert=true;
+  ghost.setAttribute('aria-hidden','true');ghost.inert=!s.liveBody;
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
-  doc.body.append(ghost);s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
+  doc.body.append(ghost);if(s.liveBody)ghost.moveBefore(s.liveBody,ghost.firstChild);
+  s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
   if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
   if(!s.external)try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
+  if(s.external)onWidgetDrag(s.source.id,{pointerId:s.pointerId,active:true});
   doc.getSelection?.()?.removeAllRanges();
   moveGhost();try{onStart();}catch(e){onError(e);}
   if(session===s)frame=win.requestAnimationFrame(tick);
@@ -197,7 +212,7 @@ export function createDesktopDragController({
   if(!session?.active)return;
   if(!valid())return cancel();
   const s=session,point={x:s.x,y:s.y},hit=doc.elementFromPoint(s.x,s.y);unmark();
-  s.special=null;s.inside=false;
+  s.special=null;s.fallbackIntent=null;s.inside=false;
   if(!hit?.closest){clearMerge();return;}
   const g=hit.closest('[data-group]');
   if(g && groups()?.contains(g) && s.source.kind==='item'){
@@ -236,6 +251,7 @@ export function createDesktopDragController({
   clearMerge();
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
+  if(s.source.type==='widget'&&!root.moveBefore){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
   if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
   swap(dest,intent.position);
  }
@@ -276,6 +292,7 @@ export function createDesktopDragController({
  }
  function finalIntent(s){
   if(s.special)return s.special;
+  if(s.inside&&s.fallbackIntent)return s.fallbackIntent;
   if(!s.inside || !s.changed)return null;
   const list=nodes(s.source.root),index=list.indexOf(s.source.element),next=list[index+1],previous=list[index-1];
   const same=list.map(id).join('\0')===s.original.filter(n=>n.matches?.('[data-item],[data-group]')).map(id).join('\0');

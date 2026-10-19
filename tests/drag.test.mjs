@@ -94,6 +94,7 @@ class Node {
  get nextElementSibling(){const p=this.parentElement;return p?.children[p.children.indexOf(this)+1]||null;}
  append(...ns){for(const n of ns){n.remove();n.parentElement=this;this.children.push(n);}}
  insertBefore(n,next){n.remove();n.parentElement=this;const i=this.children.indexOf(next);this.children.splice(i<0?this.children.length:i,0,n);}
+ moveBefore(n,next){this.insertBefore(n,next);}
  remove(){if(this.parentElement)this.parentElement.children=this.parentElement.children.filter(n=>n!==this);this.parentElement=null;}
  contains(n){return n===this||this.children.some(c=>c.contains(n));}
  setAttribute(k,v){this.attributes[k]=v;}
@@ -139,9 +140,9 @@ test('click threshold preserves website taps; live DOM reflow happens before the
  assert.equal(h.doc.emit('click',{target:n,clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,true);
  h.pointer('pointerdown',n,315,265);h.pointer('pointerup',n,315,265);assert.equal(h.doc.emit('click',{target:n,clientX:315,clientY:265,pointerId:1,detail:1}).defaultPrevented,false);h.controller.destroy();
 });
-test('widget inputs remain interactive; noninteractive widget surfaces drag without a handle',async()=>{
+test('all widget surfaces require a hold, including focused inputs',async()=>{
  const h=harness();h.pointer('pointerdown',h.nodes.note.control,510,250);h.pointer('pointermove',h.nodes.note.control,240,265);assert.equal(h.controller.isDragging(),false);
- start(h,{source:'note',x:240});assert.equal(h.controller.isDragging(),true);assert.deepEqual(h.order(),['a','note','b','folder']);h.pointer('pointerup',h.nodes.note.tile,240,265);await h.flush();assert.equal(h.drops.length,1);h.controller.destroy();
+ h.doc.activeElement=h.nodes.note.control;h.pointer('pointerdown',h.nodes.note.control,510,250);await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));h.hit(h.nodes.b.control);h.pointer('pointermove',h.nodes.note.control,240,265);h.tick();assert.equal(h.controller.isDragging(),true);assert.deepEqual(h.order(),['a','note','b','folder']);h.pointer('pointerup',h.nodes.note.tile,240,265);await h.flush();assert.equal(h.drops.length,1);h.controller.destroy();
 });
 test('touch swipe scrolls; holding the surface arms touch sorting',async()=>{
  const h=harness(),n=h.nodes.a.tile;h.pointer('pointerdown',n,120,250,{pointerType:'touch'});h.pointer('pointermove',n,150,260,{pointerType:'touch'});assert.equal(h.controller.isDragging(),false);
@@ -209,4 +210,15 @@ test('only two distinct top-level websites can form a new folder, while edges st
  assert.equal(intent(source,{kind:'item',id:'note',rect:bounds(100,100)}).kind,'reorder');
  assert.equal(intent({kind:'item',id:'child'},target),null);
  assert.equal(intent(source,{kind:'item',id:'other',rect:bounds(100,100)}),null);
+});
+
+
+test('older browsers defer widget reordering until drop without reparenting its frame',async()=>{
+ const h=harness();h.grid.moveBefore=undefined;
+ h.pointer('pointerdown',h.nodes.note.control,510,250);
+ await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));
+ h.hit(h.nodes.b.control);h.pointer('pointermove',h.nodes.note.control,240,265);h.tick();
+ assert.equal(h.controller.isDragging(),true);assert.deepEqual(h.order(),['a','b','folder','note']);
+ h.pointer('pointerup',h.nodes.note.control,240,265);await h.flush();
+ assert.equal(h.drops.length,1);assert.equal(h.drops[0].kind,'reorder');h.controller.destroy();
 });

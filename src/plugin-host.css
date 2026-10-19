@@ -51,11 +51,8 @@ body.editing .plugin-slot iframe{pointer-events:none}
 @container community-catalog (max-width:460px){.community-cards{grid-template-columns:1fr}.community-card{padding:14px 12px 12px}}
 @media(max-width:600px){.plugin-dialog{width:calc(100vw - 12px);height:calc(100dvh - 12px)}.plugin-window-header{padding:0 8px}.plugin-placeholder small{font-size:9px}.community-catalog-scroll{padding:12px}.community-gallery .community-categories{padding:10px 12px}}
 
-.widget-host-actions{position:absolute;inset:0;display:block;pointer-events:none;z-index:3;opacity:0;transition:opacity .15s}
-.tile-widget:hover .widget-host-actions,.tile-widget:focus-within .widget-host-actions,body.editing .widget-host-actions{opacity:1}
-.widget-host-actions button{pointer-events:auto;width:23px;height:23px;display:grid;place-items:center;border-radius:7px;padding:4px;background:var(--panel);color:var(--muted);box-shadow:0 1px 4px #0002}
-.widget-host-actions .icon{width:14px;height:14px}.widget-host-actions .widget-drag-handle{cursor:grab;touch-action:none}
 body.is-dragging .plugin-slot iframe{pointer-events:none}
 .toast[hidden]{display:none!important}
 
-.widget-host-actions button{position:absolute;right:6px;top:6px}.widget-host-actions .widget-drag-handle{top:auto;right:auto;bottom:3px;left:calc(50% - 12px)}
+
+.widget-drag-preview{display:grid;place-items:center;width:100%;height:100%;border-radius:var(--radius);background:var(--panel);color:var(--fg);padding:12px}

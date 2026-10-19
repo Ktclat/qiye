@@ -11,6 +11,7 @@ import { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPrep
 
 const sessions = new Map(), queuedCommands = new Map();
 export function pluginMenu(itemId) { return [...sessions.values()].find(s=>s.itemId===itemId)?.menu || []; }
+export function setPluginDragState(itemId,state) { [...sessions.values()].find(s=>s.itemId===itemId)?.dragState(state); }
 export function queuePluginCommand(itemId, command) {
  if(command!=='settings'&&!pluginMenu(itemId).some(entry=>entry.id===command))return false;
  queuedCommands.set(itemId,command);return true;
@@ -129,7 +130,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   const latest=host.getState().items.find(entry=>entry.id===item.id);if(!latest)return false;
   try{return JSON.stringify(resolveWidgetSource(latest))===pluginKey;}catch{return false;}
  };
- const environment=()=>({hostFeatures:['hotboard','interactions','commands'],locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:current()?.size||item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
+ const environment=()=>({hostFeatures:['hotboard','interactions','commands','long-press'],locale:getLocale(),theme:document.documentElement.dataset.theme||host.getState().settings.theme,extension:!preview&&!!globalThis.chrome?.runtime?.id,mode,preview,size:current()?.size||item.size,width:root.clientWidth,height:root.clientHeight,settings:Object.fromEntries(appearanceKeys.map(key=>[key,host.getState().settings[key]]))});
  const commandEnvironment=()=>{const env=environment();if(mode==='window'&&queuedCommands.has(item.id)){env.command=queuedCommands.get(item.id);queuedCommands.delete(item.id);}return env;};
  const current=()=>host.getState().items.find(entry=>entry.id===item.id);
  const update=()=>{
@@ -225,7 +226,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   viewTransition=requestView();
   try{await viewTransition;update();}catch(error){fail(error.message);}
  };
- const session={itemId:item.id,menu:[],command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
+ const session={itemId:item.id,menu:[],dragState:state=>{if(ready&&active())port.postMessage({type:'drag-state',...state});},command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
   if(preview||homeMode!=='card'||mode!=='card'||borrowed||!reusable||!ready||!active()||!target.moveBefore||!homeRoot.moveBefore||candidate.id!==item.id||JSON.stringify(resolved)!==JSON.stringify(plugin))return null;
   target.replaceChildren();
   try{target.moveBefore(frame,null);}catch{return null;}

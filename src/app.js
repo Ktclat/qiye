@@ -7,7 +7,7 @@ import { renderWidget, widgetCatalog, bindWidgets, refreshLiveWidgets } from './
 import { chineseLunarDate } from './desktop-date.js';
 import { sharingView, bindSharing } from './sharing-ui.js';
 import { communityView, communityToolbar, bindCommunity } from './community-ui.js';
-import { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand } from './plugin-host.js';
+import { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand, setPluginDragState } from './plugin-host.js';
 import { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } from './widget-sources.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
 import { APP_VERSION } from './version.js';
@@ -621,12 +621,12 @@ function renderDesktop({preserveWidgets=false} = {}) {
 function renderTile(item,index=0) {
  const [width,height] = (item.size || '1x1').split('x').map(Number);
  let body = '';
- if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div><div class="widget-host-actions"><button class="widget-drag-handle" title="${t('拖动排序')}" aria-label="${t('拖动排序')}">${icon('move')}</button><button data-widget-context="${esc(item.id)}" data-no-drag aria-label="${t('组件菜单')}" title="${t('组件菜单')}">${icon('more')}</button></div>`;
+ if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
  else if (item.type === 'folder') {
   const children = state.items.filter(i=>i.folderId === item.id).slice(0,4);
   body = `<button class="tile-body" draggable="false" data-open-folder="${esc(item.id)}" aria-label="${t("打开文件夹：{v0}", {v0: esc(item.title)})}"><div class="folder-preview ${children.length?'':'empty'}">${children.length ? children.map(c=>`<span class="mini-site" style="--tile-color:${esc(c.color || '#507ca6')};--tile-ink:${tileInk(c.color)}">${siteGlyph(c)}</span>`).join('') : icon('folder')}</div></button>`;
  } else body = `<a class="tile-body" draggable="false" href="${esc(safeUrl(item.url) || '#')}" data-open-link="${esc(item.id)}" style="--tile-color:${esc(item.color || '#486c91')};--tile-ink:${tileInk(item.color)}" aria-label="${t("打开{v0}", {v0: esc(item.title)})}" target="${state.settings.openNewTab?'_blank':'_self'}" rel="noopener noreferrer">${siteGlyph(item)}</a>`;
- return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" tabindex="0" aria-label="${t("{v0} · 拖动排序，Alt 加方向键调整位置", {v0: esc(item.title)})}"><div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="${t("编辑{v0}", {v0: esc(item.title)})}" title="${t("编辑")}">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="${t("移除{v0}", {v0: esc(item.title)})}" title="${t("移除")}">${icon('close')}</button></div>${body}<span class="tile-label">${esc(item.title)}</span></article>`;
+ return `<article class="tile tile-${esc(item.type)}" data-item="${esc(item.id)}" data-item-type="${esc(item.type)}" data-size="${width}x${height}" style="grid-column:span ${Math.min(width,currentGridColumns)};grid-row:span ${height};--enter-delay:${Math.min(index,10)*16}ms" draggable="false" tabindex="0" aria-label="${t(item.type==='widget'?"{v0} · 长按拖动，右键设置，Alt 加方向键调整位置":"{v0} · 拖动排序，Alt 加方向键调整位置", {v0: esc(item.title)})}">${item.type==='widget'?'':`<div class="tile-actions"><button data-edit-item="${esc(item.id)}" aria-label="${t("编辑{v0}", {v0: esc(item.title)})}" title="${t("编辑")}">${icon('edit')}</button><button data-delete-item="${esc(item.id)}" aria-label="${t("移除{v0}", {v0: esc(item.title)})}" title="${t("移除")}">${icon('close')}</button></div>`}${body}<span class="tile-label">${esc(item.title)}</span></article>`;
 }
 function renderEngine() {
  const e = currentEngine(), key = JSON.stringify([e.id,allEngines()]);
@@ -1161,7 +1161,6 @@ document.addEventListener('click', async event=>{
  if(target.dataset.url)return navigate(target.dataset.url);
  if(target.dataset.unfolder){const item=state.items.find(i=>i.id===target.dataset.unfolder);if(!item)return;const id=item.folderId;item.folderId=null;await commit();openDialog('folder',{id});toast(t("已移回桌面。"));return;}
  if(target.dataset.deleteGroup)return confirmDeleteGroup(target.dataset.deleteGroup);
- if(target.dataset.widgetContext){const r=target.getBoundingClientRect();openContext({preventDefault(){},clientX:r.right,clientY:r.bottom},{itemId:target.dataset.widgetContext});return;}
  if(target.dataset.context){
   const menu=$('#context-menu'),id=menu.dataset.item,groupId=menu.dataset.group,action=target.dataset.context;menu.hidden=true;
   if(action==='widget-open')return openDialog('widget-detail',{item:state.items.find(i=>i.id===id)});
@@ -1439,6 +1438,7 @@ async function init() {
   canDragGroups:()=>editing, isBlocked:()=>dialog.open || blockedStorage || state.settings.minimal,
   onStart:()=>{hideSearchMenus();$('#context-menu').hidden=true;},
   onDrop:applyDesktopDrop,
+  onWidgetDrag:setPluginDragState,
   onError:err=>{renderDesktop();if(!err.notified)toast(err.message || t("移动未保存，请重试。"));}
  });
  renderDesktop();

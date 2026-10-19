@@ -59,7 +59,7 @@ with sync_playwright() as pw:
     # Real pointer drag starts inside the opaque frame, not at a host-only test hook.
     before=page.locator('#desktop>[data-item]').evaluate_all('nodes=>nodes.map(n=>n.dataset.item)')
     title=card('notes').locator('[data-action=widget-open]').first.bounding_box();target=tile('converter').bounding_box()
-    page.mouse.move(title['x']+title['width']/2,title['y']+title['height']/2);page.mouse.down()
+    page.mouse.move(title['x']+title['width']/2,title['y']+title['height']/2);page.mouse.down();page.wait_for_timeout(450)
     page.mouse.move(target['x']+target['width']*.8,target['y']+target['height']/2,steps=25);page.wait_for_timeout(350);page.mouse.up()
     page.wait_for_function("before=>JSON.stringify([...document.querySelectorAll('#desktop>[data-item]')].map(n=>n.dataset.item))!==JSON.stringify(before)",arg=before)
     check('drag keeps initialized note',card('notes').locator('textarea').input_value()=='拖动、调整尺寸后保留的笔记')
