@@ -44,7 +44,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   card.locator('[data-action=widget-open]').first.click();page.locator('#dialog iframe[data-ready=true]').wait_for()
   assert page.locator('#dialog iframe[data-mv3-prepared=yes]').count()==1
   if reusable:
-   page.wait_for_function('document.querySelector("#dialog [data-plugin-slot]").getAttribute("aria-busy")==="false"')
+   expect(page.locator('#dialog [data-plugin-slot]')).to_have_attribute('aria-busy','false')
    assert len(requests)==count
   page.frame_locator('#dialog iframe').locator('[data-close]').first.click();expect(page.locator('#dialog')).not_to_be_visible()
   if reusable:assert page.locator('#desktop iframe[data-mv3-prepared=yes]').count()==1
