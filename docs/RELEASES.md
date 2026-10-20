@@ -4,6 +4,8 @@
 
 ## 主程序流程
 
+本地分发身份从 0.10.10 起固定，见 [安装与升级](../UPDATING.md)。`manifest.json` 中的公开 `key` 与 `extension-identity.json` 不随版本轮换；构建、打包和回归会核对 ID。发布包及发布说明必须保留旧版首次迁移的备份提醒。普通版本升级不能通过重新生成身份来解决安装问题。
+
 1. 从 main 创建短期 `codex/功能名` 分支，修改、测试并合入主线。
 2. 需要发布时同步修改 `manifest.json`、`package.json` 版本，更新 [CHANGELOG](../CHANGELOG.md)，执行 `python scripts/build-preview.py`，提交生成预览和版本文件。
 3. 推送匹配的 `vX.Y.Z` 标签。CI 验证逻辑、文档、协议夹具、真实 MV3、桌面交互，成功后发布扩展 ZIP、对应源码 ZIP、独立预览与 SHA256。

@@ -60,11 +60,13 @@ def publish(assets):
 
 下载 `qiye-{version}-chrome-edge.zip`，解压后在 Chrome / Edge 的扩展管理页开启开发者模式，选择“加载已解压的扩展程序”。选择包含 manifest.json 的目录。
 
+**从 0.10.9 或更早版本升级：请先在旧版导出桌面 JSON 备份，再在新版导入并核对，最后移除旧安装。** 本版开始固定扩展 ID，旧安装的数据不会自动跨 ID 迁移。后续更新保留原安装目录，覆盖文件后在现有扩展卡片点击“重新加载”，不要先卸载。安装包内附 `UPDATING.md`，[完整升级说明](https://github.com/{repository}/blob/{tag}/UPDATING.md)。
+
 版本变化 / Changes: [CHANGELOG.md](https://github.com/{repository}/blob/{tag}/CHANGELOG.md)。
 
 `preview.html` 可直接打开体验网页功能。`source.zip` 包含本版本对应源码、许可证、文档与构建脚本。校验文件为 `SHA256SUMS.txt`。主程序不附带组件实现；官方组件源默认关闭，可在设置中启用。旧桌面组件记录保留，组件更新单独发布。在线网页与扩展共用生产模块：[打开网页端](https://ktclat.github.io/qiye/)。
 
-English: extract the Chrome/Edge ZIP, enable Developer mode at your browser's extensions page, and choose “Load unpacked”. Select the folder containing manifest.json. Language follows your browser; change it in Settings → Opening behavior → Language. See [English documentation](https://github.com/Ktclat/qiye/blob/main/README.en.md).
+English: extract the Chrome/Edge ZIP, enable Developer mode and choose “Load unpacked”. When migrating from 0.10.9 or older, export your desktop in the old installation first, import it into the new one, verify it, and only then remove an old copy. Later updates retain the same extension ID: replace files in the existing folder and click Reload without uninstalling. See UPDATING.md in the ZIP and [English documentation](https://github.com/Ktclat/qiye/blob/main/README.en.md).
 ''', encoding='utf-8')
         subprocess.run(['gh', 'release', 'create', tag, '--repo', repository, '--target', sha, '--title', f'栖页 Qiye {version}', '--notes-file', str(notes), '--generate-notes', '--draft'], check=True, cwd=ROOT)
     subprocess.run(['gh', 'release', 'upload', tag, *map(str, files), '--repo', repository, '--clobber'], check=True, cwd=ROOT)

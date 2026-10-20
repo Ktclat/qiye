@@ -1,0 +1,11 @@
+.extension-update{min-width:0;margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--field);text-align:left}
+.extension-update header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.extension-update h4{margin:0;font-size:14px}
+.extension-update p,.extension-update details{font-size:12px;line-height:1.7;color:var(--muted)}
+.extension-update summary{width:fit-content;max-width:100%;cursor:pointer;color:var(--text);padding:6px 0}
+.extension-update ol{padding-inline-start:22px;margin:6px 0}
+.extension-update li{margin:6px 0}
+.extension-update code{display:block;overflow-wrap:anywhere;font-size:11px}
+.extension-update .button-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;margin-top:14px}
+.extension-update .button-row>*{white-space:normal;text-align:center}
+.extension-update .extension-update-footnote{margin:12px 0 0;font-size:11px}
