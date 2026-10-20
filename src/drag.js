@@ -2,7 +2,7 @@
 import { t } from './i18n.js';
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
-export const DRAG_HOLD_MS = 400;
+export const DRAG_HOLD_MS = 200;
 const SWAP_TRAVEL = 10;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
@@ -185,7 +185,10 @@ export function createDesktopDragController({
   if(body){
    ghost.querySelector('.tile-body')?.remove();
    for(const frame of ghost.querySelectorAll('iframe'))frame.remove();
-   if(ghost.moveBefore)s.liveBody=body;
+   // Legacy/privacy touch events can omit absolute screen coordinates. Leave
+   // their source frame stationary: moving it would feed delayed local points
+   // back into its own position and cause drift. Commit the order on release.
+   if(ghost.moveBefore&&(!s.external||s.stableCoordinates))s.liveBody=body;
    else{const label=doc.createElement('div');label.className='widget-drag-preview';label.textContent=s.source.title;ghost.append(label);}
   }
   for(const n of [ghost,...ghost.querySelectorAll('*')]){n.removeAttribute('id');n.removeAttribute('data-item');n.removeAttribute('data-group');n.removeAttribute('tabindex');}
@@ -252,7 +255,7 @@ export function createDesktopDragController({
   clearMerge();
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
-  if(s.source.type==='widget'&&!root.moveBefore){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
+  if(s.source.type==='widget'&&(!root.moveBefore||(s.external&&!s.stableCoordinates))){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
   // Dense grids can move a different-sized neighbour underneath a still pointer.
   // A fresh swap needs real pointer/scroll travel, not that layout change alone.
   if(s.swapPoint&&Math.hypot(s.x-s.swapPoint.x+scrollX-s.swapPoint.scrollX,s.y-s.swapPoint.y+scrollY-s.swapPoint.scrollY)<SWAP_TRAVEL)return;
@@ -281,13 +284,25 @@ export function createDesktopDragController({
   if(e.isPrimary===false || e.button!==undefined && e.button!==0)return;
   suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
   const source=sourceAt(e);if(!source)return;
-  session={source,external:e.external,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
+  session={source,external:e.external,stableCoordinates:e.stableCoordinates,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
   session.touch=e.pointerType==='touch';
-  holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},DRAG_HOLD_MS);
+  const configured=Number(getState().settings?.dragHoldMs);
+  const holdMs=Number.isFinite(configured)&&configured>=100&&configured<=3000?configured:DRAG_HOLD_MS;
+  holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},holdMs);
  }
  function move(e){
   if(!session || e.pointerId!==session.pointerId)return;
   if(e.pointerType==='mouse' && e.buttons===0)return cancel();
+  // Some touch clients expose a screen point on down, then zero it on move.
+  // Stop moving their coordinate source as soon as that loss is observed.
+  if(session.external&&session.stableCoordinates&&e.stableCoordinates===false){
+   const s=session;s.stableCoordinates=false;
+   if(s.liveBody){
+    cancelAnimations();restore(s);s.changed=false;s.layout=null;s.swapPoint=null;
+    s.source.element.moveBefore(s.liveBody,s.source.element.firstChild);s.liveBody=null;
+    const label=doc.createElement('div');label.className='widget-drag-preview';label.textContent=s.source.title;ghost.append(label);ghost.inert=true;
+   }
+  }
   session.x=e.clientX;session.y=e.clientY;
   if(!session.active && Math.hypot(session.x-session.startX,session.y-session.startY)>=DRAG_THRESHOLD){
    if((session.touch || session.source.holdOnly) && holdTimer!==null)return clean({guard:false});begin();

@@ -51,7 +51,7 @@ export const DEFAULT_STATE = deepFreeze({
     language: 'auto', theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
-    gridSize: 60, gap: 30, radius: 18, showLabels: true, clockSize: 70,
+    gridSize: 60, gap: 30, radius: 18, showLabels: true, clockSize: 70, dragHoldMs: 200,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, useThemeColor: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
@@ -564,6 +564,7 @@ function validateSettings(raw) {
   }
   return {
     language: enumeration(v.language, ['auto', 'zh-CN', 'en'], 'settings.language'),
+    dragHoldMs: number(v.dragHoldMs === undefined ? defaults.dragHoldMs : v.dragHoldMs, 'settings.dragHoldMs', 100, 3000, true),
     theme: enumeration(v.theme, ['dark', 'light', 'auto'], 'settings.theme'),
     wallpaper: enumeration(v.wallpaper, ['aurora', 'sunset', 'ocean', 'forest', 'lavender', 'midnight'], 'settings.wallpaper'),
     customWallpaper: validateMedia(v.customWallpaper, customWallpaperType), customWallpaperType,
@@ -853,21 +854,22 @@ async function requireOptionalPermission(permission) {
   if (!accepted) throw new Error(`${t("未授予{v0}权限，现有数据未改变。", {v0: permission === 'bookmarks' ? t("书签") : t("浏览记录")})}`);
 }
 
-export async function requestBookmarks() {
+export async function requestBookmarks({includeFolders=false}={}) {
   await requireOptionalPermission('bookmarks');
   if (!globalThis.chrome?.bookmarks) throw new Error(t("当前浏览器未提供书签接口。"));
   const tree = await chromeCall(globalThis.chrome.bookmarks, 'getTree');
+  if(!await chromeCall(globalThis.chrome.permissions,'contains',{permissions:['bookmarks']}))throw new Error(t('授权已撤销。'));
   const out = [];
-  const queue = [...(tree || [])];
+  const queue = (tree || []).map(node=>({node,path:[]}));
   const seen = new Set();
   while (queue.length && out.length < 5000) {
-    const node = queue.shift();
+    const {node,path} = queue.shift();
     const checkedUrl = safeUrl(node?.url);
     if (checkedUrl && !seen.has(checkedUrl)) {
       seen.add(checkedUrl);
-      out.push({ title: typeof node.title === 'string' && node.title.trim() ? node.title.slice(0, 120) : new URL(checkedUrl).hostname, url: checkedUrl });
+      out.push({ title: typeof node.title === 'string' && node.title.trim() ? node.title.slice(0, 120) : new URL(checkedUrl).hostname, url: checkedUrl, ...(includeFolders?{folder:path.join(' / ')}:{}) });
     }
-    if (Array.isArray(node?.children)) queue.push(...node.children);
+    if (Array.isArray(node?.children)) queue.push(...node.children.map(child=>({node:child,path:node.title?[...path,String(node.title).slice(0,120)]:path})));
   }
   return out;
 }
@@ -878,6 +880,7 @@ export async function searchHistory(query) {
   await requireOptionalPermission('history');
   if (!globalThis.chrome?.history) throw new Error(t("当前浏览器未提供历史记录接口。"));
   const results = await chromeCall(globalThis.chrome.history, 'search', { text, startTime: 0, maxResults: 50 });
+  if(!await chromeCall(globalThis.chrome.permissions,'contains',{permissions:['history']}))throw new Error(t('授权已撤销。'));
   return (results || []).flatMap(entry => {
     const checkedUrl = safeUrl(entry.url);
     return checkedUrl ? [{ id: String(entry.id || ''), title: String(entry.title || new URL(checkedUrl).hostname).slice(0, 200), url: checkedUrl, lastVisitTime: Number(entry.lastVisitTime) || 0, visitCount: Number(entry.visitCount) || 0 }] : [];

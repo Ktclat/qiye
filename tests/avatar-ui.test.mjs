@@ -87,7 +87,7 @@ function harness({ initialAvatar = null, writer } = {}) {
         '#avatar-status': currentPanel.status, '#avatar-preview': currentPanel.preview })[selector] || null;
     }
   };
-  context = vm.createContext({t, getLocale,
+  context = vm.createContext({t, getLocale, populatePermissionOrigins:async()=>{},
     widgetDetails: {close() {}}, cleanupCitySearch() {}, bindCitySearch:()=>()=>{}, DEFAULT_STATE: initial, structuredClone, Promise, document, dialog, wallpaperLibrary: {close() {}},
     $: (selector, root = document) => root?.querySelector(selector),
     normalizeAvatarFile(file) {

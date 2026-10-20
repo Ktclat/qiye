@@ -77,5 +77,8 @@ test('shell source and standalone bundle do not contain widget implementations',
  for(const name of ['weather.js','converter.js','widgets.css','map-workspace.js','lunar-engine.js','widget-extensions.js'])assert.ok(!files.includes(name),name);
  const preview=readFileSync(new URL('../Qiye-preview.html',import.meta.url),'utf8');
  assert.doesNotMatch(preview,/const __weather\s*=|const __converter\s*=|const __lunar_engine\s*=/);
- assert.doesNotMatch(readFileSync(new URL('../manifest.json',import.meta.url),'utf8'),/unsafe-eval|unsafe-inline/);
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url),'utf8'));
+ assert.doesNotMatch(manifest.content_security_policy.extension_pages,/unsafe-eval|unsafe-inline/);
+ assert.deepEqual(manifest.sandbox.pages,['widget-sandbox.html']);
+ assert.doesNotMatch(manifest.content_security_policy.sandbox,/allow-same-origin|unsafe-eval/);
 });

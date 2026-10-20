@@ -1257,6 +1257,80 @@ body.is-dragging .plugin-slot iframe{pointer-events:none}
 .widget-drag-preview{display:grid;place-items:center;width:100%;height:100%;border-radius:var(--radius);background:var(--panel);color:var(--fg);padding:12px}
 
 </style>
+  <style>
+/* SPDX-License-Identifier: GPL-3.0-only */
+#dialog.bookmark-import-dialog{width:min(var(--window-width,960px),var(--dialog-width));height:min(var(--window-height,680px),var(--dialog-height));max-width:none;max-height:none;padding:0;overflow:hidden;scrollbar-gutter:auto;background:var(--workspace-pane)}
+.bookmark-import-dialog #dialog-content{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.bookmark-import-header{display:flex;align-items:center;gap:10px;height:46px;min-height:46px;padding:0 14px;border-bottom:1px solid var(--panel-border)}
+.bookmark-import-header>span{display:flex;color:var(--accent)}
+.bookmark-import-header h2{font-size:14px;font-weight:600;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;outline:none}
+.bookmark-import-header small{color:var(--muted);font-size:11px}
+.bookmark-import-header>button{margin-left:auto;width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--muted);display:grid;place-items:center}
+.bookmark-import-header svg,.bookmark-import-toolbar svg,.bookmark-import-browser nav svg{width:18px;height:18px;flex:none}
+.bookmark-import-form{display:flex;flex-direction:column;min-height:0;flex:1}
+.bookmark-import-toolbar{display:flex;align-items:center;gap:18px;padding:14px 18px;border-bottom:1px solid var(--panel-border)}
+.capsule-search{display:flex;align-items:center;gap:9px;border:1px solid var(--control-border);background:var(--control-surface);border-radius:999px;padding:0 12px;height:36px;min-width:0;flex:1;color:var(--muted)}
+.capsule-search input{appearance:none;background:transparent;color:var(--fg);border:0;outline:0;box-shadow:none;min-width:0;width:100%;height:100%;padding:0;font:inherit;font-size:12px}
+.capsule-search:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.bookmark-select-filter{display:flex;align-items:center;gap:7px;font-size:12px;white-space:nowrap;color:var(--muted)}
+.bookmark-import-form input[type=checkbox]{width:16px;height:16px;min-width:16px;margin:0;accent-color:var(--accent)}
+.bookmark-import-browser{display:grid;grid-template-columns:205px minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.bookmark-import-browser nav{padding:12px 8px;background:var(--workspace-nav);border-right:1px solid var(--panel-border);overflow:auto}
+.bookmark-import-browser nav button{width:100%;display:flex;align-items:center;gap:8px;padding:9px;border:0;border-radius:8px;margin-bottom:3px;background:transparent;color:var(--muted);font:inherit;font-size:12px;text-align:left}
+.bookmark-import-browser nav button span{flex:1;min-width:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.bookmark-import-browser nav button small{font-size:10px;font-variant-numeric:tabular-nums}
+.bookmark-import-browser nav button[aria-pressed=true]{color:var(--fg);background:var(--nav-selection)}
+.bookmark-import-results{min-width:0;overflow:auto;overscroll-behavior:contain;padding:4px 14px;scrollbar-width:thin}
+.bookmark-import-row{display:flex;align-items:center;gap:12px;min-height:62px;padding:10px 8px;border-bottom:1px solid var(--panel-border);border-radius:6px;cursor:pointer}
+.bookmark-import-row:hover{background:var(--control-surface)}
+.bookmark-import-row:has(input:checked){background:var(--accent-soft)}
+.bookmark-host-mark{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:8px;background:var(--control-surface);color:var(--muted);font-size:13px}
+.bookmark-import-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+.bookmark-import-copy strong,.bookmark-import-copy small{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bookmark-import-copy strong{font-size:12px;font-weight:500}
+.bookmark-import-copy small{font-size:11px;color:var(--muted)}
+.bookmark-import-row.is-duplicate{opacity:.55;cursor:default}
+.bookmark-duplicate{font-size:10px;color:var(--muted);flex:none}
+.bookmark-import-footer{display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 18px;border-top:1px solid var(--panel-border)}
+.bookmark-destination{display:flex;align-items:center;gap:9px;min-width:0;font-size:12px;color:var(--muted)}
+.bookmark-destination select{max-width:180px;min-width:90px;height:34px;border:1px solid var(--control-border);border-radius:9px;padding:0 9px;color:var(--fg);background:var(--control-surface)}
+.bookmark-import-footer output{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.bookmark-import-footer .primary-button{min-height:36px;padding:8px 14px;font-size:12px;white-space:nowrap}
+.bookmark-import-note{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 18px 12px;font-size:10px;color:var(--muted)}
+.bookmark-import-note .permission-revoke{font-size:11px;white-space:nowrap}
+.permission-list{display:grid;gap:0}
+.permission-row{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid var(--panel-border)}
+.permission-row>div{flex:1;min-width:0}
+.permission-row strong{font-size:13px;overflow-wrap:anywhere}
+.permission-row p{font-size:12px;color:var(--muted);line-height:1.7;margin:7px 0 0}
+.permission-row button{flex:none;white-space:nowrap}
+.permission-revoke:disabled{color:var(--muted);opacity:.6;cursor:default}
+.local-permission-controls{display:flex;flex-wrap:wrap;gap:16px;font-size:11px;color:var(--muted);margin:10px 0}
+.local-permission-controls>span{display:flex;align-items:center;gap:8px}
+.permission-explanation{font-size:11px;color:var(--muted)}
+.permission-explanation summary{cursor:pointer;white-space:nowrap}
+.permission-explanation p{position:absolute;z-index:10;top:42px;right:12px;max-width:min(440px,calc(100vw - 65px));padding:14px;border:1px solid var(--panel-border);border-radius:12px;color:var(--fg);background:var(--workspace-pane);box-shadow:0 10px 30px #0003;line-height:1.8}
+.bookmark-import-dialog :is(button,select,input):focus:not(:focus-visible){outline:none}
+.bookmark-import-dialog :is(button,select,input):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bookmark-import-dialog .capsule-search input:focus-visible{outline:none}
+@media(max-width:600px){
+ .app-dialog.bookmark-import-dialog{width:calc(100vw - 16px);height:calc(100dvh - 24px);border-radius:16px}
+ .bookmark-import-toolbar{padding:10px;gap:10px}.bookmark-select-filter{font-size:11px}
+ .bookmark-import-browser{display:flex;flex-direction:column}
+ .bookmark-import-browser nav{display:flex;flex:none;gap:5px;overflow-x:auto;padding:7px;border-right:0;border-bottom:1px solid var(--panel-border)}
+ .bookmark-import-browser nav button{width:auto;max-width:185px;flex:none;margin:0}
+ .bookmark-import-browser nav button small{display:none}
+ .bookmark-import-results{flex:1;padding:0 6px}.bookmark-import-row{gap:8px}
+ .bookmark-host-mark{display:none}.bookmark-duplicate{max-width:48px;font-size:9px}
+ .bookmark-import-footer{gap:8px;flex-wrap:wrap;padding:10px}
+ .bookmark-destination{flex:1}.bookmark-destination select{max-width:140px}
+ .bookmark-import-footer .primary-button{flex-basis:100%;justify-content:center}
+ .bookmark-import-note{padding:0 10px 10px;font-size:9px}
+ .permission-row{align-items:flex-start;gap:8px}
+ .plugin-window-header .permission-revoke{display:none}
+}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -1756,6 +1830,36 @@ const __messages_en = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Source keys are Simplified Chinese messages. Preserve all named placeholders.
 const englishMessages = {
+  "长按拖动时间": "Hold to drag",
+  "在小组件任意位置长按后拖动，默认 0.2 秒。": "Hold anywhere on a widget to drag. Default: 0.2 seconds.",
+  "授权管理": "Permissions",
+  "管理网站访问授权": "Manage site permissions",
+  "撤销授权": "Revoke access",
+  "未授权": "Not granted",
+  "授权已撤销。": "Access revoked.",
+  "为何需要授权？": "Why is access needed?",
+  "热榜访问": "Hotboard access",
+  "热榜仅通过 GET 读取 uapis.cn 的公开榜单，不携带 Cookie，不读取其他网页或修改平台内容。浏览器按站点统一显示“读取和更改”，无法只授予单个接口的只读权限。": "Hotboards only GET public rankings from uapis.cn, without cookies, reading other pages, or modifying platform content. Browser access is granted per site; its “read and change” prompt cannot be limited to a read-only API endpoint.",
+  "授权只在使用相应功能时申请；撤销后停止后续访问，已导入到桌面的内容保留。": "Access is requested when you use the feature. Revoking it stops further access and keeps items already imported to your desktop.",
+  "用于选择导入或书签组件；浏览器授权包含书签编辑能力。": "Used for import and the bookmark widget. Browser permission includes bookmark editing.",
+  "仅在手动搜索时查询匹配的浏览记录。": "Searches matching browser history only when you request it.",
+  "用于明确允许定位的组件。网页版还可在浏览器站点设置中撤销定位权限。": "Used by widgets you have allowed to locate you. On the web, you can also revoke location in browser site settings.",
+  "组件源和公开图片 API 可在各自设置中停用。扩展安装时的必要权限需通过浏览器停用或卸载扩展来取消。": "Widget sources and public image APIs can be disabled in their settings. Required installation permissions are removed by disabling or uninstalling the extension in your browser.",
+  "网站图标、WebDAV 或自定义组件源的站点访问权限。撤销会影响共享此站点权限的功能。": "Site access for icons, WebDAV, or custom widget sources. Revoking it affects features sharing this site permission.",
+  "浏览器未撤销此权限，请到扩展管理页面检查。": "The browser did not revoke this permission. Check the extension management page.",
+  "站点授权已撤销，自动同步已暂停。": "Site access revoked. Automatic sync is paused.",
+  "搜索标题或网址": "Search titles or URLs",
+  "选择筛选结果": "Select filtered results",
+  "书签文件夹": "Bookmark folders",
+  "可导入的网站": "Available websites",
+  "已选 {count} 个": "{count} selected",
+  "未分类": "Unfiled",
+  "全部书签": "All bookmarks",
+  "已在分组中": "Already in group",
+  "复制所选网站；原书签保留，目标分组内重复网址自动跳过。": "Copies selected sites. Original bookmarks stay; duplicates in the destination group are skipped.",
+  "组件启动未完成，请重试。": "Widget startup did not finish. Please retry.",
+  "首次下载组件未完成，请联网后重试。已缓存的组件可离线打开。": "The first download did not finish. Reconnect and retry. Cached widgets can open offline.",
+
   "本地壁纸数据无效": "Invalid local wallpaper data",
   "无法打开本机壁纸库，请检查浏览器存储设置。": "Cannot open your local wallpaper library. Check browser storage settings.",
   "壁纸库正在其他标签页中使用，请关闭旧页面后重试。": "The wallpaper library is in use in another tab. Close the older page and try again.",
@@ -4140,13 +4244,14 @@ async function requireHotboardPermission(url) {
 }
 async function fetchPluginHotboard(type, { fetcher = fetchPublicJson, permission = requireHotboardPermission, now = Date.now } = {}) {
  if (!platforms.has(type)) throw new Error('Unsupported hotboard platform');
- const cached = requests.get(type);
- if (cached && now() - cached.time < 3000) return cached.promise;
  const url = 'https://uapis.cn/api/v1/misc/hotboard?type=' + encodeURIComponent(type);
+ await permission(url);
+ const cached = requests.get(type);
+ if (cached && now() - cached.time < 3000) {const result=await cached.promise;await permission(url);return result;}
  const job = {time: now()};
- job.promise = (async () => { await permission(url); return fetcher(url, {maxBytes:1024*1024}); })();
+ job.promise = fetcher(url, {maxBytes:1024*1024});
  requests.set(type, job);
- try { return await job.promise; } catch (error) { if (requests.get(type) === job) requests.delete(type); throw error; }
+ try { const result=await job.promise;await permission(url);return result; } catch (error) { if (requests.get(type) === job) requests.delete(type); throw error; }
 }
 
 return {fetchPluginHotboard};
@@ -4191,7 +4296,7 @@ function createPluginPointerMapper(frame) {
   if(message.action==='pointerup'||message.action==='pointercancel'){pointer=null;dragging=false;}
   return result;
  }
- return {point,setDragging(active){dragging=active;if(!active)pointer=null;}};
+ return {point,hasScreenAnchor:()=>!!pointer?.screen,setDragging(active){dragging=active;if(!active)pointer=null;}};
 }
 
 return {createPluginPointerMapper};
@@ -4345,6 +4450,7 @@ const keyFor=(item,plugin)=>JSON.stringify([item.id,plugin.source,plugin.manifes
 function createPluginFrame(item,plugin,{preview=false}={}) {
  const frame=document.createElement('iframe');
  frame.title=item.title;frame.dataset.api=plugin.manifest.version;
+ frame.dataset.entry=plugin.manifest.entry;
  frame.sandbox=preview?'allow-scripts':'allow-scripts allow-forms allow-downloads';
  if(!preview)frame.allow='clipboard-write *';
  frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');
@@ -4396,6 +4502,246 @@ function takePreparedWindow(root,item,plugin) {
 
 return {createPluginFrame, discardPreparedWindow, preparePluginWindow, takePreparedWindow};
 })();
+const __plugin_sandbox = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// This document runs only inside an opaque sandbox, never in the host origin.
+// The extension copy is generated by build-preview.py and declared in manifest.
+const SANDBOX_DOCUMENT = `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
+addEventListener('message',function boot(event){
+ if(event.source!==parent||event.data?.type!=='qiye:cached-document'||typeof event.data.html!=='string')return;
+ removeEventListener('message',boot);
+ const token=event.data.token,html=event.data.html,entry=event.data.entry;
+ document.open();
+ // Cached documents have a local URL. Preserve entry parsing used by pinned
+ // runtimes, while keeping the real Location and opaque origin untouched.
+ const NativeURL=URL,localAddress=location.href;
+ globalThis.URL=class extends NativeURL {
+  constructor(value,base){super(String(value)===localAddress?entry:value,base===localAddress?entry:base);}
+  static parse(value,base){try{return new this(value,base);}catch{return null;}}
+ };
+ Object.defineProperty(document,'baseURI',{get:()=>entry,configurable:true});
+ document.write(html);
+ addEventListener('load',()=>parent.postMessage({type:'qiye:cached-ready',token},'*'),{once:true});
+ document.close();
+});
+<\/script></body></html>`;
+
+return {SANDBOX_DOCUMENT};
+})();
+const __plugin_cache = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { SANDBOX_DOCUMENT } = __plugin_sandbox;
+const { publicHttpsUrl } = __public_json;
+
+const DB='qiye.widget-cache.v1', LIMIT=12*1024*1024, MAX_ENTRIES=6;
+const pending=new Map(), memory=new Map();
+let database;
+function openDB() {
+ return database||(database=new Promise((resolve,reject)=>{
+  const job=indexedDB.open(DB,1);
+  job.onupgradeneeded=()=>job.result.createObjectStore('documents',{keyPath:'key'});
+  job.onsuccess=()=>resolve(job.result);job.onerror=()=>reject(job.error);
+ }).catch(()=>null));
+}
+async function read(key) {
+ const db=await openDB();if(!db)return null;
+ return new Promise(resolve=>{const job=db.transaction('documents').objectStore('documents').get(key);job.onsuccess=()=>resolve(job.result);job.onerror=()=>resolve(null);});
+}
+async function write(record) {
+ const db=await openDB();if(!db)return;
+ await new Promise(resolve=>{
+  const tx=db.transaction('documents','readwrite'),store=tx.objectStore('documents');
+  store.put(record);const job=store.getAll();
+  job.onsuccess=()=>{const rows=job.result.sort((a,b)=>b.time-a.time);let bytes=0;rows.forEach((row,i)=>{bytes+=row.html.length*2;if(i>=MAX_ENTRIES||bytes>32*1024*1024)store.delete(row.key);});};
+  tx.oncomplete=tx.onerror=tx.onabort=()=>resolve();
+ });
+}
+async function textResource(url,signal) {
+ const response=await fetch(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',cache:'force-cache'});
+ if(!response.ok)throw new Error('Widget resource HTTP '+response.status);
+ if(Number(response.headers.get('content-length'))>LIMIT)throw new Error('Widget resource too large');
+ const reader=response.body.getReader(),decoder=new TextDecoder();let text='',bytes=0;
+ try{while(true){const chunk=await reader.read();if(chunk.done)break;bytes+=chunk.value.byteLength;if(bytes>LIMIT){await reader.cancel();throw new Error('Widget resource too large');}text+=decoder.decode(chunk.value,{stream:true});}return text+decoder.decode();}
+ finally{reader.releaseLock();}
+}
+function scriptDataUrl(text) {
+ const bytes=new TextEncoder().encode(text),chunks=[];
+ for(let i=0;i<bytes.length;i+=32768)chunks.push(String.fromCharCode(...bytes.subarray(i,i+32768)));
+ return 'data:text/javascript;base64,'+btoa(chunks.join(''));
+}
+function widgetCacheKey(plugin) {
+ const url=new URL(publicHttpsUrl(plugin.manifest.entry));
+ // Official releases share one immutable runtime; the selected widget is
+ // supplied in init. Other sources keep their query parameters in the key.
+ if(plugin.source==='https://ktclat.github.io/qiye-widgets/index.json')url.search='';
+ url.hash='';
+ return url.href+'#qiye-release='+encodeURIComponent(plugin.manifest.release||'');
+}
+async function download(plugin,key) {
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);
+ try{
+  const html=await textResource(key,controller.signal),doc=new DOMParser().parseFromString(html,'text/html');
+  // Only self-contained classic-script documents are eligible. Modules/import
+  // maps and child frames keep their normal remote loading path.
+  if(doc.querySelector('base,[srcset],script[type="module"],script[type="importmap"],script[integrity],link[integrity],iframe,object,embed,meta[http-equiv="refresh" i],meta[http-equiv="content-security-policy" i]'))return null;
+  const nodes=[...doc.querySelectorAll('script[src],link[rel="stylesheet"][href]')];
+  if(nodes.length>12)return null;
+  let total=html.length*2;
+  const resources=await Promise.all(nodes.map(async node=>{
+   const url=new URL(node.getAttribute(node.tagName==='SCRIPT'?'src':'href'),key);
+   if(url.origin!==new URL(key).origin)throw new Error('Cross-origin widget bundle');
+   const content=await textResource(url.href,controller.signal);
+   total+=content.length*2;if(total>LIMIT){controller.abort();throw new Error('Widget bundle too large');}
+   return {node,url,content};
+  }));
+  for(const {node,url,content} of resources){
+   // Keep defer/async/nomodule semantics: converting a deferred script into an
+   // inline head script would run it before its DOM exists.
+   const replacement=node.tagName==='SCRIPT'?node.cloneNode(false):doc.createElement('style');
+   if(node.tagName==='SCRIPT')replacement.src=scriptDataUrl(content);
+   else replacement.textContent=content.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/g,(match,_quote,path)=>/^(data:|blob:|#)/i.test(path)?match:'url("'+new URL(path.trim(),url).href+'")');
+   node.replaceWith(replacement);
+  }
+  // MV3 also enforces the host's base-uri restriction. Resolve declarative
+  // resources here rather than inserting a remote <base> into an extension page.
+  for(const node of doc.querySelectorAll('[src],[href],[action],[poster]')){
+   for(const attribute of ['src','href','action','poster']){
+    const value=node.getAttribute(attribute);
+    if(value&&!value.startsWith('#'))node.setAttribute(attribute,new URL(value,key).href);
+   }
+  }
+  for(const node of doc.querySelectorAll('style'))node.textContent=node.textContent.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/g,(match,_quote,path)=>/^(data:|blob:|#)/i.test(path)?match:'url("'+new URL(path.trim(),key).href+'")');
+  const bundled='<!doctype html>'+doc.documentElement.outerHTML;
+  if(bundled.length*2>LIMIT)return null;
+  const record={key,html:bundled,time:Date.now()};
+  await write(record);return record;
+ }finally{clearTimeout(timer);}
+}
+async function cachedWidgetDocument(plugin) {
+ const key=widgetCacheKey(plugin);
+ if(memory.has(key))return memory.get(key);
+ if(pending.has(key))return pending.get(key);
+ const job=(async()=>{
+  const record=await read(key)||await download(plugin,key);
+  if(record&&typeof record.html==='string'&&record.html.length*2<=LIMIT){
+   memory.set(key,record.html);if(memory.size>MAX_ENTRIES)memory.delete(memory.keys().next().value);
+   return record.html;
+  }
+  return null;
+ })().finally(()=>pending.delete(key));
+ pending.set(key,job);
+ return job;
+}
+function loadCachedFrame(frame,html,entry,signal,onReady) {
+ const token=crypto.randomUUID();
+ const receive=event=>{if(event.source===frame.contentWindow&&event.data?.type==='qiye:cached-ready'&&event.data.token===token){window.removeEventListener('message',receive);onReady();}};
+ window.addEventListener('message',receive,{signal});
+ frame.addEventListener('load',()=>frame.contentWindow.postMessage({type:'qiye:cached-document',token,html,entry},'*'),{once:true,signal});
+ const query=new URL(entry).search;
+ // srcdoc inherits the embedding document's secure context (clipboard, UUID)
+ // while its sandbox still gives it an opaque, inaccessible origin.
+ if(globalThis.chrome?.runtime?.id)frame.src=chrome.runtime.getURL('widget-sandbox.html')+query;
+ else frame.srcdoc=SANDBOX_DOCUMENT;
+}
+
+return {widgetCacheKey, cachedWidgetDocument, loadCachedFrame};
+})();
+const __permissions = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { readWidgetSources, saveWidgetSources } = __widget_sources;
+
+const PERMISSIONS_CHANGED='qiye:permissions-changed';
+const HOTBOARD_PERMISSION={origins:['https://uapis.cn/*']};
+const HOTBOARD_EXPLANATION='热榜仅通过 GET 读取 uapis.cn 的公开榜单，不携带 Cookie，不读取其他网页或修改平台内容。浏览器按站点统一显示“读取和更改”，无法只授予单个接口的只读权限。';
+let epoch=0,installed=false;
+function permissionEpoch(){return epoch;}
+function permissionControl(descriptor,label=t('撤销授权')) {
+ return `<button type="button" class="permission-revoke text-button" data-revoke-permission="${e(JSON.stringify(descriptor))}">${e(label)}</button>`;
+}
+function localLocationGranted() {
+ return Object.keys(localStorage).some(key=>key.startsWith('qiye.plugin.grant.')&&key.endsWith('|geolocation')&&localStorage.getItem(key)==='true');
+}
+async function hasPermission(descriptor) {
+ if(!globalThis.chrome?.runtime?.id)return descriptor.permissions?.includes('geolocation')&&localLocationGranted();
+ return chrome.permissions.contains(descriptor);
+}
+function removed(descriptor) {
+ epoch++;
+ for(const key of Object.keys(localStorage)){
+  if(!key.startsWith('qiye.plugin.grant.'))continue;
+  if(descriptor.permissions?.includes(key.endsWith('|geolocation')?'geolocation':'bookmarks'))localStorage.removeItem(key);
+ }
+ if(descriptor.origins?.length){
+  try{
+  const sources=readWidgetSources();
+  const next=sources.map(source=>descriptor.origins.some(pattern=>pattern==='https://*/*'||pattern===new URL(source.url).origin+'/*')?{...source,enabled:false}:source);
+  if(next.some((source,i)=>source.enabled!==sources[i].enabled))saveWidgetSources(next);
+  }catch{/* A damaged catalogue must not prevent revocation of live sessions. */}
+ }
+ globalThis.dispatchEvent(new CustomEvent(PERMISSIONS_CHANGED,{detail:descriptor}));
+}
+async function revokePermission(descriptor) {
+ if(!descriptor||Object.keys(descriptor).some(k=>!['permissions','origins'].includes(k)))throw new Error('Invalid permission');
+ const before=epoch;
+ if(globalThis.chrome?.runtime?.id){
+  const granted=await chrome.permissions.contains(descriptor);
+  if(granted&&!await chrome.permissions.remove(descriptor))throw new Error(t('浏览器未撤销此权限，请到扩展管理页面检查。'));
+ }
+ // Chrome also broadcasts removals to other open tabs. Avoid duplicate resets.
+ if(epoch===before)removed(descriptor);
+}
+function permissionAffects(plugin,descriptor) {
+ return !!plugin&&(descriptor.permissions?.some(name=>plugin.manifest.capabilities?.includes(name))
+  ||descriptor.origins?.some(origin=>origin==='https://*/*'||origin===new URL(plugin.source).origin+'/*'||origin==='https://uapis.cn/*'&&plugin.manifest.id==='qiye.hotsearch'));
+}
+async function refreshPermissionControls(root=document) {
+ await Promise.all([...root.querySelectorAll('[data-revoke-permission]')].map(async button=>{
+  try{const descriptor=JSON.parse(button.dataset.revokePermission),allowed=await hasPermission(descriptor);
+   if(!button.isConnected)return;
+   button.disabled=!allowed;button.dataset.granted=String(allowed);
+   const label=allowed?t('撤销授权'):t('未授权');if(button.textContent!==label)button.textContent=label;
+  }catch{button.disabled=true;}
+ }));
+}
+function permissionsPanel() {
+ return `<p class="help-text">${t('授权只在使用相应功能时申请；撤销后停止后续访问，已导入到桌面的内容保留。')}</p>
+ <div class="permission-list">
+ ${[['bookmarks','浏览器书签','用于选择导入或书签组件；浏览器授权包含书签编辑能力。'],['history','浏览历史','仅在手动搜索时查询匹配的浏览记录。'],['geolocation','定位','用于明确允许定位的组件。网页版还可在浏览器站点设置中撤销定位权限。']].map(([name,title,help])=>`<div class="permission-row"><div><strong>${t(title)}</strong><p>${t(help)}</p></div>${permissionControl({permissions:[name]})}</div>`).join('')}
+ <div class="permission-row"><div><strong>${t('热榜访问')} · uapis.cn</strong><p>${t(HOTBOARD_EXPLANATION)}</p></div>${permissionControl(HOTBOARD_PERMISSION)}</div>
+ <div data-permission-origins></div></div>
+ <p class="help-text">${t('组件源和公开图片 API 可在各自设置中停用。扩展安装时的必要权限需通过浏览器停用或卸载扩展来取消。')}</p>
+ <div class="button-row"><button class="secondary-button" data-action="widget-sources">${t('组件源')}</button><button class="secondary-button" data-action="wallpaper">${t('壁纸')}</button></div>`;
+}
+async function populatePermissionOrigins(root) {
+ const container=root.querySelector('[data-permission-origins]');if(!container)return;
+ const api=globalThis.chrome;if(!api?.runtime?.id)return;
+ const all=await api.permissions.getAll(),required=api.runtime.getManifest().host_permissions||[];
+ if(!container.isConnected)return;
+ container.innerHTML=(all.origins||[]).filter(origin=>origin!=='https://uapis.cn/*'&&!required.includes(origin)).map(origin=>`<div class="permission-row"><div><strong>${e(origin)}</strong><p>${t('网站图标、WebDAV 或自定义组件源的站点访问权限。撤销会影响共享此站点权限的功能。')}</p></div>${permissionControl({origins:[origin]})}</div>`).join('');
+ await refreshPermissionControls(root);
+}
+function installPermissionControls({toast,onRemoved=()=>{}}) {
+ if(installed)return;installed=true;
+ chromeApi()?.onRemoved?.addListener(removed);
+ chromeApi()?.onAdded?.addListener(()=>refreshPermissionControls());
+ window.addEventListener(PERMISSIONS_CHANGED,event=>{onRemoved(event.detail);void refreshPermissionControls();void populatePermissionOrigins(document);});
+ window.addEventListener('storage',event=>{if(event.key?.startsWith('qiye.plugin.grant.')&&event.newValue===null)removed({permissions:[event.key.endsWith('|geolocation')?'geolocation':'bookmarks']});});
+ document.addEventListener('click',async event=>{
+  const button=event.target.closest('[data-revoke-permission]');if(!button||button.disabled)return;
+  button.disabled=true;
+  try{await revokePermission(JSON.parse(button.dataset.revokePermission));toast(t('授权已撤销。'));}
+  catch(error){toast(error.message);}
+  finally{void refreshPermissionControls();}
+ });
+ const observer=new MutationObserver(records=>{if(records.some(record=>[...record.addedNodes].some(node=>node.nodeType===1&&(node.matches?.('[data-revoke-permission]')||node.querySelector?.('[data-revoke-permission]')))))void refreshPermissionControls();});
+ observer.observe(document.body,{childList:true,subtree:true});
+}
+function chromeApi(){return globalThis.chrome?.permissions;}
+
+return {PERMISSIONS_CHANGED, HOTBOARD_PERMISSION, HOTBOARD_EXPLANATION, permissionEpoch, permissionControl, hasPermission, revokePermission, permissionAffects, refreshPermissionControls, permissionsPanel, populatePermissionOrigins, installPermissionControls};
+})();
 const __plugin_host = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { fetchPluginHotboard } = __plugin_hotboard;
@@ -4408,6 +4754,8 @@ const { validatePluginData } = __plugin_data;
 const { validateCommunityData } = __community_format;
 const { publicHttpsUrl } = __public_json;
 const { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPreparedWindow } = __plugin_preload;
+const { cachedWidgetDocument, loadCachedFrame } = __plugin_cache;
+const { PERMISSIONS_CHANGED, HOTBOARD_PERMISSION, HOTBOARD_EXPLANATION, permissionControl, permissionAffects, permissionEpoch } = __permissions;
 
 const sessions = new Map(), queuedCommands = new Map();
 function pluginMenu(itemId) { return [...sessions.values()].find(s=>s.itemId===itemId)?.menu || []; }
@@ -4429,7 +4777,7 @@ function pluginCard(item) {
 }
 function pluginWorkspace(item) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch{}
- return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.id==='qiye.hotsearch'&&globalThis.chrome?.runtime?.id?`<button data-plugin-hotboard-grant>${t('授权热榜访问')}</button>`:''}${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
+ return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.id==='qiye.hotsearch'&&globalThis.chrome?.runtime?.id?`<details class="permission-explanation"><summary>${t('为何需要授权？')}</summary><p>${t(HOTBOARD_EXPLANATION)}</p></details><button data-plugin-hotboard-grant>${t('授权热榜访问')}</button>${permissionControl(HOTBOARD_PERMISSION)}`:''}${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>${permissionControl({permissions:['bookmarks']})}`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>${permissionControl({permissions:['geolocation']})}`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
 }
 function payload(item) {
  return item.widget==='community'?{value:item.data.value||'null',revision:item.data.value||'null'}
@@ -4440,6 +4788,7 @@ function grantKey(plugin) { return 'qiye.plugin.grant.'+encodeURIComponent(plugi
 
 async function performPluginCall(method,params,{item,plugin,host,active,mode='card',preview=false}) {
  if(!active())throw new Error(t('组件已停止'));
+ const accessEpoch=permissionEpoch();
  if(preview)throw new Error(t('预览不会修改桌面数据'));
  if(method==='save'){
   const value=validatePluginData(params.value);
@@ -4475,6 +4824,7 @@ async function performPluginCall(method,params,{item,plugin,host,active,mode='ca
    throw new Error(t('请先点击窗口标题栏的“授权定位”。'));
   }
   const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:10000,maximumAge:60000}));
+  if(!active()||permissionEpoch()!==accessEpoch)throw new Error(t('授权已撤销。'));
   return {timestamp:position.timestamp,coords:{latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy}};
  }
  if(method==='bookmarks'){
@@ -4501,7 +4851,9 @@ async function performPluginCall(method,params,{item,plugin,host,active,mode='ca
     if(details.index!==undefined&&(!Number.isInteger(details.index)||details.index<0))throw new Error('Invalid index');
    }
   }
-  return chrome.bookmarks[action](...args);
+  const result=await chrome.bookmarks[action](...args);
+  if(!active()||permissionEpoch()!==accessEpoch)throw new Error(t('授权已撤销。'));
+  return result;
  }
  throw new Error('Unsupported plugin API');
 }
@@ -4517,7 +4869,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   }
  }
  const homeRoot=root,homeMode=mode;
- const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
+ const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,cached=false,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
  let reusable=false,borrowed=false,homeDetached=false,viewJob,viewSequence=0,viewTransition=Promise.resolve(),parkedLabel,viewError,onHomeRetry,homeRetryCleanup=()=>{};
  const loading=document.createElement('div');loading.className='plugin-loading';loading.setAttribute('role','status');loading.innerHTML=`<span class="plugin-loading-mark">${icon('grid')}</span><strong>${e(item.title)}</strong><span>${t('正在打开组件…')}</span><i aria-hidden="true"></i>`;
  root.replaceChildren(loading);
@@ -4549,9 +4901,11 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   }
  };
  const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode,{preview});};
+ window.addEventListener(PERMISSIONS_CHANGED,event=>{if(permissionAffects(plugin,event.detail))fail(t('授权已撤销。'));},{signal:controller.signal});
  const initialize=()=>{
   // Never transfer a new capability after an untrusted frame navigates itself.
   if(loaded){fail(t('组件页面已跳转，请重试。'));return;}loaded=true;
+  clearTimeout(timer);timer=setTimeout(()=>fail(t('组件启动未完成，请重试。')),20000);
   const channel=new MessageChannel();port=channel.port1;
   port.onmessage=async event=>{
    const message=event.data;if(!active())return;
@@ -4559,10 +4913,10 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
    if(message?.type==='flushed'&&flushJob){const job=flushJob;flushJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
    if(message?.type==='ready'&&message.version===plugin.manifest.version){session.menu=validatePluginMenu(message.contextMenu);ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
-   if(message?.type==='interaction'&&mode==='card'&&!preview){
+   if(message?.type==='interaction'&&mode==='card'&&!preview&&root.getClientRects().length){
     const point=pointerMapper.point(message);if(!point)return;
     if(message.action==='contextmenu')host.openWidgetContext?.(item.id,point);
-    if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
+    if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,stableCoordinates:pointerMapper.hasScreenAnchor(),type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
     return;
    }
    if(plugin.manifest.version===1&&message?.type==='save'){
@@ -4584,7 +4938,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   observer=new ResizeObserver(update);observer.observe(root);
   themeObserver=new MutationObserver(update);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','lang']});
  };
- frame.addEventListener('load',initialize,{signal:controller.signal});
+ frame.addEventListener('load',()=>{if(!cached||loaded)initialize();},{signal:controller.signal});
  if(mode==='card'&&!preview){
   const target=root.closest('.tile-widget')||root;
   const prepare=()=>{
@@ -4597,7 +4951,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   target.addEventListener('pointerleave',()=>clearTimeout(prepareTimer),{signal:controller.signal});
   target.addEventListener('focusin',prepare,{signal:controller.signal});
  }
- timer=setTimeout(()=>fail(t('组件未响应，请检查网络后重试。')),15000);
+ timer=setTimeout(()=>fail(t('首次下载组件未完成，请联网后重试。已缓存的组件可离线打开。')),90000);
  const flush=()=>!ready||plugin.manifest.version!==2||!active()?Promise.resolve():flushPromise||(flushPromise=new Promise((resolve,reject)=>{
   flushJob={resolve,reject,timer:setTimeout(()=>{flushJob=null;reject(new Error(t('组件没有确认保存，请稍后重试关闭。')));},5000)};port.postMessage({type:'flush'});
  }).finally(()=>{flushPromise=null;}));
@@ -4642,7 +4996,13 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  }};
  sessions.set(root,session);
  if(prepared?.loaded)initialize();
- if(!prepared){frame.src=plugin.manifest.entry;root.append(frame);}
+ if(!prepared)void(async()=>{
+  let html;try{html=await cachedWidgetDocument(plugin);}catch{}
+  if(!active())return;
+  if(html){cached=true;loadCachedFrame(frame,html,plugin.manifest.entry,controller.signal,initialize);}
+  else frame.src=plugin.manifest.entry;
+  root.append(frame);
+ })();
  return ()=>{
   // A desktop layout refresh can remove the original slot while its window is
   // open. Keep that live editor until close, but never reuse it after revocation.
@@ -4697,7 +5057,7 @@ function renderWidget(item) { return pluginCard(item); }
 function bindWidgets(container, host) {
  const mounted=bindings.get(container)||new Map();bindings.set(container,mounted);
  // Keep sibling frames (and their editor drafts) when a different card changes.
- for(const [root,dispose] of mounted)if(!container.contains(root)){dispose();mounted.delete(root);}
+ for(const [root,dispose] of mounted)if(!root.isConnected){dispose();mounted.delete(root);}
  for(const root of container.querySelectorAll('[data-plugin-slot]')){
   if(mounted.has(root))continue;
   const item=host.getState().items.find(item=>item.id===root.dataset.widgetId);
@@ -5732,7 +6092,7 @@ const DEFAULT_STATE = deepFreeze({
     language: 'auto', theme: 'dark', wallpaper: 'aurora', customWallpaper: null, customWallpaperType: 'image',
     blur: 0, dim: 14, showSeconds: false, hour12: false, pinClock: false, pinSearch: false, minimal: false, openNewTab: true,
     searchNewTab: true, rememberGroup: true, scrollGroups: true, sidebarWheelMode: 'scroll', hideScrollbar: false, hideEditorScrollbar: false,
-    gridSize: 60, gap: 30, radius: 18, showLabels: true, clockSize: 70,
+    gridSize: 60, gap: 30, radius: 18, showLabels: true, clockSize: 70, dragHoldMs: 200,
     sidebarWidth: 50, sidebarOpacity: 28, sidebarPosition: 'left', navigationMode: 'sidebar',
     sidebarVisibility: 'always', sidebarLabels: true, useThemeColor: false, avatar: null,
     toolbarVisibility: 'always', surfaceStyle: 'glass', surfaceOpacity: 72, surfaceBlur: 14,
@@ -6245,6 +6605,7 @@ function validateSettings(raw) {
   }
   return {
     language: enumeration(v.language, ['auto', 'zh-CN', 'en'], 'settings.language'),
+    dragHoldMs: number(v.dragHoldMs === undefined ? defaults.dragHoldMs : v.dragHoldMs, 'settings.dragHoldMs', 100, 3000, true),
     theme: enumeration(v.theme, ['dark', 'light', 'auto'], 'settings.theme'),
     wallpaper: enumeration(v.wallpaper, ['aurora', 'sunset', 'ocean', 'forest', 'lavender', 'midnight'], 'settings.wallpaper'),
     customWallpaper: validateMedia(v.customWallpaper, customWallpaperType), customWallpaperType,
@@ -6534,21 +6895,22 @@ async function requireOptionalPermission(permission) {
   if (!accepted) throw new Error(`${t("未授予{v0}权限，现有数据未改变。", {v0: permission === 'bookmarks' ? t("书签") : t("浏览记录")})}`);
 }
 
-async function requestBookmarks() {
+async function requestBookmarks({includeFolders=false}={}) {
   await requireOptionalPermission('bookmarks');
   if (!globalThis.chrome?.bookmarks) throw new Error(t("当前浏览器未提供书签接口。"));
   const tree = await chromeCall(globalThis.chrome.bookmarks, 'getTree');
+  if(!await chromeCall(globalThis.chrome.permissions,'contains',{permissions:['bookmarks']}))throw new Error(t('授权已撤销。'));
   const out = [];
-  const queue = [...(tree || [])];
+  const queue = (tree || []).map(node=>({node,path:[]}));
   const seen = new Set();
   while (queue.length && out.length < 5000) {
-    const node = queue.shift();
+    const {node,path} = queue.shift();
     const checkedUrl = safeUrl(node?.url);
     if (checkedUrl && !seen.has(checkedUrl)) {
       seen.add(checkedUrl);
-      out.push({ title: typeof node.title === 'string' && node.title.trim() ? node.title.slice(0, 120) : new URL(checkedUrl).hostname, url: checkedUrl });
+      out.push({ title: typeof node.title === 'string' && node.title.trim() ? node.title.slice(0, 120) : new URL(checkedUrl).hostname, url: checkedUrl, ...(includeFolders?{folder:path.join(' / ')}:{}) });
     }
-    if (Array.isArray(node?.children)) queue.push(...node.children);
+    if (Array.isArray(node?.children)) queue.push(...node.children.map(child=>({node:child,path:node.title?[...path,String(node.title).slice(0,120)]:path})));
   }
   return out;
 }
@@ -6559,6 +6921,7 @@ async function searchHistory(query) {
   await requireOptionalPermission('history');
   if (!globalThis.chrome?.history) throw new Error(t("当前浏览器未提供历史记录接口。"));
   const results = await chromeCall(globalThis.chrome.history, 'search', { text, startTime: 0, maxResults: 50 });
+  if(!await chromeCall(globalThis.chrome.permissions,'contains',{permissions:['history']}))throw new Error(t('授权已撤销。'));
   return (results || []).flatMap(entry => {
     const checkedUrl = safeUrl(entry.url);
     return checkedUrl ? [{ id: String(entry.id || ''), title: String(entry.title || new URL(checkedUrl).hostname).slice(0, 200), url: checkedUrl, lastVisitTime: Number(entry.lastVisitTime) || 0, visitCount: Number(entry.visitCount) || 0 }] : [];
@@ -6742,6 +7105,7 @@ const { uid } = __core;
 const { sizeLabel, gridMetrics, widgetDimensions } = __widget_sizes;
 const { mountPlugin } = __plugin_host;
 const { readWidgetSources, saveWidgetSources, OFFICIAL_WIDGET_SOURCE, SOURCES_CHANGED } = __widget_sources;
+const { permissionControl } = __permissions;
 
 const DEFAULT_COMMUNITY_SOURCE = OFFICIAL_WIDGET_SOURCE;
 const sourceName = source => source.url === OFFICIAL_WIDGET_SOURCE ? t('官方源') : source.catalog?.name || new URL(source.url).hostname;
@@ -6768,7 +7132,7 @@ function bindCommunity(root, host, initial={}) {
  const persist = next => {writingSources=true;try{saveWidgetSources(next);sources=next;}finally{writingSources=false;}};
  const stopPreviews = () => {observer?.disconnect();for(const dispose of previews.values())dispose();previews.clear();};
  const label = source => source.url===OFFICIAL_WIDGET_SOURCE ? t('栖页官方小组件') : sourceName(source);
- const buttons = (source,index,details=false) => `<button type="button" role="switch" aria-checked="${source.enabled}" data-source-toggle="${index}">${t(source.enabled?'停用':'启用')}</button>${details?`<button data-source-refresh="${index}" ${!source.enabled?'disabled':''}>${t('检查更新')}</button>`:`<button data-source-details="${index}">${t('查看组件详情')}</button>`}${source.url===OFFICIAL_WIDGET_SOURCE?'':`<button data-source-remove="${index}">${t('移除')}</button>`}`;
+ const buttons = (source,index,details=false) => `<button type="button" role="switch" aria-checked="${source.enabled}" data-source-toggle="${index}">${t(source.enabled?'停用':'启用')}</button>${details?`<button data-source-refresh="${index}" ${!source.enabled?'disabled':''}>${t('检查更新')}</button>`:`<button data-source-details="${index}">${t('查看组件详情')}</button>`}${source.url===OFFICIAL_WIDGET_SOURCE?'':`<button data-source-remove="${index}">${t('移除')}</button>${permissionControl({origins:[new URL(source.url).origin+'/*']})}`}`;
  const access = manifest => `<details class="source-widget-access"><summary>${t('来源与权限')}</summary><dl><dt>${t('运行地址')}</dt><dd>${e(new URL(manifest.entry).origin)}</dd><dt>${t('权限')}</dt><dd>${e((manifest.capabilities||[]).map(c=>t({bookmarks:'浏览器书签',wallpaper:'壁纸',geolocation:'定位'}[c])).join('、') || t('仅组件自己的数据'))}</dd><dt>${t('许可证')}</dt><dd>${e(manifest.license)}</dd></dl><a href="${e(manifest.repository)}" target="_blank" rel="noopener noreferrer">${t('查看源码')}</a></details>`;
 
  function renderSettings() {
@@ -6849,7 +7213,7 @@ function bindCommunity(root, host, initial={}) {
    if(button.hasAttribute('data-source-back')){const url=selectedSource;selectedSource=null;query='';render();body.querySelector(`[data-source-details="${sources.findIndex(s=>s.url===url)}"]`)?.focus();return;}
    if(button.hasAttribute('data-source-browse')){host.openCatalog?.(selectedSource);return;}
    if(button.hasAttribute('data-gallery-source')){host.openSources?.(entries[Number(button.dataset.gallerySource)].source.url);return;}
-   if(button.hasAttribute('data-source-toggle')){const source=sources[Number(button.dataset.sourceToggle)];if(source.enabled){persist(sources.map(s=>s===source?{...s,enabled:false}:s));render();}else await load(source.url);return;}
+   if(button.hasAttribute('data-source-toggle')){const source=sources[Number(button.dataset.sourceToggle)];if(source.enabled){persist(sources.map(s=>s===source?{...s,enabled:false}:s));render();}else if(source.catalog){if(source.url!==OFFICIAL_WIDGET_SOURCE)await requestPublicOrigin(source.url);persist(sources.map(s=>s===source?{...s,enabled:true}:s));render();}else await load(source.url);return;}
    if(button.hasAttribute('data-source-refresh')){await load(sources[Number(button.dataset.sourceRefresh)].url);return;}
    if(button.hasAttribute('data-source-remove')){persist(sources.filter((_,index)=>index!==Number(button.dataset.sourceRemove)));render();return;}
    if(button.hasAttribute('data-community-category')){category=button.dataset.communityCategory;filter();return;}
@@ -6879,7 +7243,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.8";
+const APP_VERSION = "0.10.9";
 
 return {APP_VERSION};
 })();
@@ -7608,6 +7972,7 @@ const __sync_ui = (() => {
 const { t, getLocale } = __i18n;
 const { loadWebDAVConfig, saveWebDAVConfig, clearWebDAVConfig, requestWebDAVPermission, testWebDAVConnection, syncWebDAV, completeWebDAVDownload, getWebDAVStatus } = __webdav;
 const { icon } = __icons;
+const { PERMISSIONS_CHANGED, permissionControl, permissionEpoch } = __permissions;
 
 const syncEscape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const EMPTY_CONFIG = {enabled:false,endpoint:'',path:'qiye.json',username:'',password:'',autoSync:false};
@@ -7621,6 +7986,13 @@ function createSyncController(context) {
  const formatDate = timestamp => Number.isFinite(Number(timestamp)) && Number(timestamp)>0 ? new Intl.DateTimeFormat(getLocale(),{dateStyle:'medium',timeStyle:'short'}).format(new Date(Number(timestamp))) : t("尚未同步");
  const isExtension = () => Boolean(globalThis.chrome?.runtime?.id);
  const cloneConfig = value => ({...EMPTY_CONFIG,...value});
+ const accessRemoved=async event=>{
+  if(!config.endpoint||!event.detail.origins?.some(origin=>origin==='https://*/*'||origin===new URL(config.endpoint).origin+'/*'))return;
+  clearTimeout(autoTimer);autoPaused=true;
+  try{config=cloneConfig(await saveWebDAVConfig({...config,enabled:false}));setMessage(t('站点授权已撤销，自动同步已暂停。'));context.refreshPanel();}
+  catch(error){context.toast(error.message);}
+ };
+ globalThis.addEventListener?.(PERMISSIONS_CHANGED,accessRemoved);
  function setMessage(text, kind='idle') {
   message = String(text || ''); messageKind = kind;
   const element = document.querySelector('#webdav-status');
@@ -7707,7 +8079,9 @@ function createSyncController(context) {
     setMessage(t("WebDAV 连接在另一标签页中更改了，请检查配置后重新同步。"),'review');context.refreshPanel();if(manual)context.toast(message);return;
    }
    await context.beforeSync();
+   const accessEpoch=permissionEpoch();
    const result = await syncWebDAV(context.getState(),{mode,manual,expectedConfig:{...config}, ...(review?{review}:{})});
+   if(accessEpoch!==permissionEpoch()){autoPaused=true;return;}
    return consume(result,{manual,decision:review?mode:null});
   },t("正在比较本机与远端桌面…"));
  }
@@ -7735,7 +8109,7 @@ function createSyncController(context) {
    </form>
    <div id="webdav-status" class="sync-status" role="status" aria-live="polite" data-kind="${messageKind}">${syncEscape(message)}</div>
    <div class="sync-actions"><button class="primary-button" data-action="webdav-sync" data-webdav-busy data-webdav-needs-config ${busy||!config.enabled?'disabled':''}>${t("{v0}立即同步", {v0: icon('sync')})}</button>${pendingReview?`<button class="secondary-button" data-action="webdav-review">${t("查看待确认内容")}</button>`:''}${config.enabled?`<button class="text-button" data-action="webdav-disable" data-webdav-busy>${t("暂停同步")}</button>`:''}${config.endpoint||configBroken?`<button class="text-button" data-action="webdav-clear" data-webdav-busy>${t("清除本机连接")}</button>`:''}</div>
-   <div class="sync-details"><p>${t("同步网址、分组、布局、便签、待办和壁纸设置。WebDAV 密码仅保存在本机，不进入 JSON 备份或同步文件。远端文件是普通 JSON，请使用你信任的私有目录。")}</p><p>${t("{v0}连接测试只读取；写入权限会在实际同步时检查。", {v0: isExtension()?t("安装版会在首次连接时请求对应站点的访问权限。"):t("网页版需要 WebDAV 服务允许此网站跨域访问（CORS）；若服务不支持，请使用扩展安装版。")})}</p></div>`;
+   ${config.endpoint&&isExtension()?permissionControl({origins:[new URL(config.endpoint).origin+'/*']}):''}<div class="sync-details"><p>${t("同步网址、分组、布局、便签、待办和壁纸设置。WebDAV 密码仅保存在本机，不进入 JSON 备份或同步文件。远端文件是普通 JSON，请使用你信任的私有目录。")}</p><p>${t("{v0}连接测试只读取；写入权限会在实际同步时检查。", {v0: isExtension()?t("安装版会在首次连接时请求对应站点的访问权限。"):t("网页版需要 WebDAV 服务允许此网站跨域访问（CORS）；若服务不支持，请使用扩展安装版。")})}</p></div>`;
  }
  function renderReview(result=pendingReview) {
   if (!result) return `<div class="dialog-body"><p class="help-text">${t("没有待确认的同步。请重新检查。")}</p></div>`;
@@ -7782,7 +8156,7 @@ function createSyncController(context) {
   renderPanel,renderReview,saveFromForm,handleAction,scheduleLocal,
   onVisible:()=>scheduleLocal(2000),
   onIdle:()=>{if(!autoTimer)scheduleLocal(5000);},
-  dispose:()=>clearTimeout(autoTimer)
+  dispose:()=>{clearTimeout(autoTimer);globalThis.removeEventListener?.(PERMISSIONS_CHANGED,accessRemoved);}
  };
 }
 
@@ -9158,7 +9532,7 @@ const __drag = (() => {
 const { t } = __i18n;
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
-const DRAG_HOLD_MS = 400;
+const DRAG_HOLD_MS = 200;
 const SWAP_TRAVEL = 10;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
@@ -9341,7 +9715,10 @@ function createDesktopDragController({
   if(body){
    ghost.querySelector('.tile-body')?.remove();
    for(const frame of ghost.querySelectorAll('iframe'))frame.remove();
-   if(ghost.moveBefore)s.liveBody=body;
+   // Legacy/privacy touch events can omit absolute screen coordinates. Leave
+   // their source frame stationary: moving it would feed delayed local points
+   // back into its own position and cause drift. Commit the order on release.
+   if(ghost.moveBefore&&(!s.external||s.stableCoordinates))s.liveBody=body;
    else{const label=doc.createElement('div');label.className='widget-drag-preview';label.textContent=s.source.title;ghost.append(label);}
   }
   for(const n of [ghost,...ghost.querySelectorAll('*')]){n.removeAttribute('id');n.removeAttribute('data-item');n.removeAttribute('data-group');n.removeAttribute('tabindex');}
@@ -9408,7 +9785,7 @@ function createDesktopDragController({
   clearMerge();
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
-  if(s.source.type==='widget'&&!root.moveBefore){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
+  if(s.source.type==='widget'&&(!root.moveBefore||(s.external&&!s.stableCoordinates))){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
   // Dense grids can move a different-sized neighbour underneath a still pointer.
   // A fresh swap needs real pointer/scroll travel, not that layout change alone.
   if(s.swapPoint&&Math.hypot(s.x-s.swapPoint.x+scrollX-s.swapPoint.scrollX,s.y-s.swapPoint.y+scrollY-s.swapPoint.scrollY)<SWAP_TRAVEL)return;
@@ -9437,13 +9814,25 @@ function createDesktopDragController({
   if(e.isPrimary===false || e.button!==undefined && e.button!==0)return;
   suppression=null;if(session)clean();if(destroyed || busy || isBlocked())return;
   const source=sourceAt(e);if(!source)return;
-  session={source,external:e.external,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
+  session={source,external:e.external,stableCoordinates:e.stableCoordinates,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,dirty:false};
   session.touch=e.pointerType==='touch';
-  holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},DRAG_HOLD_MS);
+  const configured=Number(getState().settings?.dragHoldMs);
+  const holdMs=Number.isFinite(configured)&&configured>=100&&configured<=3000?configured:DRAG_HOLD_MS;
+  holdTimer=setTimeout(()=>{holdTimer=null;if(session && valid())begin();},holdMs);
  }
  function move(e){
   if(!session || e.pointerId!==session.pointerId)return;
   if(e.pointerType==='mouse' && e.buttons===0)return cancel();
+  // Some touch clients expose a screen point on down, then zero it on move.
+  // Stop moving their coordinate source as soon as that loss is observed.
+  if(session.external&&session.stableCoordinates&&e.stableCoordinates===false){
+   const s=session;s.stableCoordinates=false;
+   if(s.liveBody){
+    cancelAnimations();restore(s);s.changed=false;s.layout=null;s.swapPoint=null;
+    s.source.element.moveBefore(s.liveBody,s.source.element.firstChild);s.liveBody=null;
+    const label=doc.createElement('div');label.className='widget-drag-preview';label.textContent=s.source.title;ghost.append(label);ghost.inert=true;
+   }
+  }
   session.x=e.clientX;session.y=e.clientY;
   if(!session.active && Math.hypot(session.x-session.startX,session.y-session.startY)>=DRAG_THRESHOLD){
    if((session.touch || session.source.holdOnly) && holdTimer!==null)return clean({guard:false});begin();
@@ -9513,7 +9902,7 @@ const __keyed_view = (() => {
 // Keep loaded images, focus and widget DOM when only a sibling's position changes.
 const keyedRoots = new WeakMap();
 
-function reconcileKeyedChildren(root, entries) {
+function reconcileKeyedChildren(root, entries, {park=null, retain=new Map()}={}) {
  const previous = keyedRoots.get(root) || new Map();
  const next = new Map(), created = [], removed = [];
  const keys = new Set();
@@ -9525,7 +9914,7 @@ function reconcileKeyedChildren(root, entries) {
  for (const entry of entries) {
   const old = previous.get(entry.key);
   let record = old;
-  if (!old || old.signature !== entry.signature || old.node.parentElement !== root) {
+  if (!old || old.signature !== entry.signature || (old.node.parentElement !== root && old.node.parentElement !== park)) {
    const template = root.ownerDocument.createElement('template');
    template.innerHTML = entry.render();
    const node = template.content.firstElementChild;
@@ -9536,13 +9925,18 @@ function reconcileKeyedChildren(root, entries) {
   next.set(entry.key, record);
  }
  const wanted = new Set([...next.values()].map(entry => entry.node));
- for (const child of [...root.children]) {
-  if (!wanted.has(child)) { removed.push(child); child.remove(); }
+ for (const [key,old] of previous) {
+  if(wanted.has(old.node))continue;
+  if(park?.moveBefore && !keys.has(key) && retain.get(key)===old.signature && old.node.isConnected){
+   if(old.node.parentElement!==park)park.moveBefore(old.node,null);
+   next.set(key,old);
+  }else{removed.push(old.node);old.node.remove();}
  }
  // A pointer drag has already put nodes in this order, so the common drop path
  // makes NO DOM moves and never rewrites an img.src or loaded CSS class.
  let cursor = root.firstElementChild;
- for (const {node} of next.values()) {
+ for (const {key} of entries) {
+  const {node}=next.get(key);
   if (node !== cursor) {
    if (typeof root.moveBefore === 'function' && node.isConnected && root.isConnected) root.moveBefore(node, cursor);
    else root.insertBefore(node, cursor);
@@ -9729,6 +10123,62 @@ function createDailyQuote(root, {onSearch = () => {}, onNotify = () => {}, ...op
 
 return {createDailyQuoteClient, createDailyQuote};
 })();
+const __bookmark_import = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { icon } = __icons;
+const { permissionControl } = __permissions;
+
+function bookmarkImportView(bookmarks,groups,groupId) {
+ return `<header class="bookmark-import-header"><span>${icon('bookmark')}</span><h2 id="dialog-title" tabindex="-1">${t('导入浏览器书签')}</h2><small>${bookmarks.length}</small><button type="button" class="icon-button" data-close aria-label="${t('关闭')}">${icon('close')}</button></header>
+ <form id="bookmarks-form" class="bookmark-import-form">
+ <div class="bookmark-import-toolbar"><label class="capsule-search">${icon('search')}<input type="search" data-bookmark-query placeholder="${t('搜索标题或网址')}" aria-label="${t('搜索标题或网址')}"></label><label class="bookmark-select-filter"><input type="checkbox" data-bookmark-select-all><span>${t('选择筛选结果')}</span></label></div>
+ <div class="bookmark-import-browser"><nav data-bookmark-folders aria-label="${t('书签文件夹')}"></nav><section class="bookmark-import-results" aria-label="${t('可导入的网站')}"><div data-bookmark-results></div><button type="button" class="text-button" data-bookmark-more hidden>${t('显示更多')}</button></section></div>
+ <footer class="bookmark-import-footer"><label class="bookmark-destination"><span>${t('导入到')}</span><select name="groupId" aria-label="${t('导入到分组')}">${groups.map(group=>`<option value="${e(group.id)}"${group.id===groupId?' selected':''}>${e(group.name)}</option>`).join('')}</select></label><output data-bookmark-count aria-live="polite"></output><div data-bookmark-selected hidden></div><button type="submit" class="primary-button" disabled>${icon('check')}${t('导入所选网站')}</button></footer>
+ <div class="bookmark-import-note"><span>${t('复制所选网站；原书签保留，目标分组内重复网址自动跳过。')}</span>${permissionControl({permissions:['bookmarks']})}</div></form>`;
+}
+function bindBookmarkImport(root,bookmarks,getState) {
+ const controller=new AbortController(),selected=new Set(),options={signal:controller.signal};
+ let folder='',query='',limit=100,filtered=[];
+ const folders=[...new Set(bookmarks.map(item=>item.folder||t('未分类')))];
+ const folderBar=root.querySelector('[data-bookmark-folders]'),results=root.querySelector('[data-bookmark-results]');
+ const group=root.querySelector('[name=groupId]'),selectAll=root.querySelector('[data-bookmark-select-all]');
+ const exists=()=>new Set(getState().items.filter(item=>item.groupId===group.value&&item.url).map(item=>item.url));
+ const updateSelection=()=>{
+  const duplicates=exists();for(const index of selected)if(duplicates.has(bookmarks[index].url))selected.delete(index);
+  root.querySelector('[data-bookmark-selected]').innerHTML=[...selected].map(i=>`<input type="hidden" name="bookmark" value="${i}">`).join('');
+  root.querySelector('[data-bookmark-count]').textContent=t('已选 {count} 个',{count:selected.size});
+  root.querySelector('[type=submit]').disabled=!selected.size;
+  const eligible=filtered.filter(i=>!duplicates.has(bookmarks[i].url)),count=eligible.filter(i=>selected.has(i)).length;
+  selectAll.checked=!!eligible.length&&count===eligible.length;selectAll.indeterminate=count>0&&count<eligible.length;selectAll.disabled=!eligible.length;
+ };
+ const render=()=>{
+  const duplicates=exists();
+  filtered=bookmarks.flatMap((item,i)=>((!folder||(item.folder||t('未分类'))===folder)&&`${item.title} ${item.url}`.toLocaleLowerCase().includes(query))?[i]:[]);
+  folderBar.innerHTML=[['',t('全部书签')],...folders.map(name=>[name,name])].map(([value,name])=>`<button type="button" data-bookmark-folder="${e(value)}" aria-pressed="${folder===value}" title="${e(name)}">${icon(value?'folder':'bookmark')}<span>${e(name)}</span><small>${value?bookmarks.filter(b=>(b.folder||t('未分类'))===value).length:bookmarks.length}</small></button>`).join('');
+  results.innerHTML=filtered.slice(0,limit).map(i=>{const item=bookmarks[i],host=new URL(item.url).hostname,duplicate=duplicates.has(item.url);
+   return `<label class="bookmark-import-row ${duplicate?'is-duplicate':''}"><input type="checkbox" data-bookmark-index="${i}" ${selected.has(i)?'checked':''} ${duplicate?'disabled':''}><span class="bookmark-host-mark" aria-hidden="true">${e(host.replace(/^www\./,'').slice(0,1).toUpperCase())}</span><span class="bookmark-import-copy"><strong title="${e(item.title)}">${e(item.title)}</strong><small title="${e(item.url)}">${e(item.url)}</small></span>${duplicate?`<small class="bookmark-duplicate">${t('已在分组中')}</small>`:''}</label>`;
+  }).join('')||`<p class="local-empty">${t('没有找到匹配的网站。')}</p>`;
+  root.querySelector('[data-bookmark-more]').hidden=filtered.length<=limit;updateSelection();
+ };
+ root.addEventListener('input',event=>{if(event.target.hasAttribute('data-bookmark-query')){query=event.target.value.trim().toLocaleLowerCase();limit=100;render();}},options);
+ root.addEventListener('change',event=>{
+  const input=event.target;
+  if(input===group){render();return;}
+  if(input.hasAttribute('data-bookmark-index')){const i=Number(input.dataset.bookmarkIndex);input.checked?selected.add(i):selected.delete(i);updateSelection();}
+  if(input===selectAll){const duplicates=exists();for(const i of filtered)if(!duplicates.has(bookmarks[i].url))input.checked?selected.add(i):selected.delete(i);render();}
+ },options);
+ root.addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-bookmark-folder')){folder=button.dataset.bookmarkFolder;limit=100;render();root.querySelector(`[data-bookmark-folder="${CSS.escape(folder)}"]`)?.focus({preventScroll:true});}
+  if(button.hasAttribute('data-bookmark-more')){limit+=100;render();}
+ },options);
+ render();return ()=>controller.abort();
+}
+
+return {bookmarkImportView, bindBookmarkImport};
+})();
 // SPDX-License-Identifier: GPL-3.0-only
 const { compressImage, MAX_IMAGE_INPUT_BYTES } = __image_compression;
 const { renderCatalog, renderCatalogToolbar, filterCatalog, changeCatalogSize } = __widget_catalog;
@@ -9761,6 +10211,8 @@ const { readSearchHistory, rememberSearch, clearSearchHistory } = __search_histo
 const { createDesktopDragController, reorderById } = __drag;
 const { reconcileKeyedChildren } = __keyed_view;
 const { createDailyQuote } = __daily_quote;
+const { bookmarkImportView, bindBookmarkImport } = __bookmark_import;
+const { permissionsPanel, permissionControl, populatePermissionOrigins, installPermissionControls } = __permissions;
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -10341,7 +10793,10 @@ function renderDesktop({preserveWidgets=false} = {}) {
  }));
  if(state.settings.showAddTile)entries.push({key:'$add',signature:'add',render:()=>`<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="${t("添加网站或组件")}">${icon('plus')}</button><span class="tile-label">${t("添加")}</span></div>`});
  if(!items.length && !state.settings.showAddTile)entries.push({key:'$empty',signature:'empty',render:()=>`<div class="desktop-empty"><span>${t("给这一页留一些喜欢的内容")}</span><button class="text-button" data-action="add">${t("添加网站或组件")}</button></div>`});
- const changed=reconcileKeyedChildren(desktop,entries);
+ let park=document.getElementById('widget-parking');
+ if(!park){park=document.createElement('div');park.id='widget-parking';park.hidden=true;park.inert=true;document.body.append(park);}
+ const retained=new Map(state.items.filter(i=>i.type==='widget'&&!i.folderId&&i.groupId!==group.id).slice(-24).map(i=>[i.id,JSON.stringify([[i.id,i.title,i.size,resolveWidgetSource(i,widgetSources)],null,null])]));
+ const changed=reconcileKeyedChildren(desktop,entries,{park,retain:retained});
  items.forEach((item,index)=>desktop.children[index]?.style.setProperty('--enter-delay',Math.min(index,10)*16+'ms'));
  bindFaviconImages(desktop);
  if(!widgetsBound || [...changed.created,...changed.removed].some(node=>node.classList.contains('tile-widget'))){
@@ -10471,6 +10926,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('plugin-dialog', !!detailWidget);
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
+ dialog.classList.toggle('bookmark-import-dialog',kind==='import-preview');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  dialog.classList.toggle('add-dialog',kind==='add');
  dialog.classList.toggle('workspace-dialog',['add','settings','wallpaper'].includes(kind));
@@ -10502,13 +10958,14 @@ function openDialog(kind,data={}) {
  if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
  if((kind==='add' && ['widgets','community'].includes(data.tab||'widgets')) || (kind==='settings' && data.tab==='sources'))viewerCleanup=bindCommunity($('#dialog-content'),{getState:()=>state,apply:applyExchange,openSources:source=>openDialog('settings',{tab:'sources',source}),openCatalog:source=>openDialog('add',{tab:'widgets',source})},data);
  if(kind==='widget-detail')viewerCleanup=bindPluginWorkspace($('#dialog-content'),state.items.find(i=>i.id===data.item?.id),pluginHost());
- if (kind==='settings') renderAvatar();
+ if(kind==='import-preview')viewerCleanup=bindBookmarkImport($('#dialog-content'),data.bookmarks,()=>state);
+ if (kind==='settings') {renderAvatar();void populatePermissionOrigins(dialog);}
  if (kind==='wallpaper')void wallpaperLibrary.open();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail')$('#dialog-title',dialog)?.focus({preventScroll:true});
+ else if(['widget-detail','import-preview'].includes(kind))$('#dialog-title',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -10526,7 +10983,7 @@ function linkEditorForm(item){
  return `<form id="link-form" class="site-editor" data-id="${esc(value.id||'')}" data-original-url="${esc(value.url||'')}" data-original-mode="${esc(mode)}" data-original-icon="${esc(value.iconUrl||'')}" data-original-text="${esc(value.icon||'')}" data-original-title="${esc(value.title||'')}" data-icon-choice="${mode==='text'?'text':'current'}">
  <input name="iconMode" type="hidden" value="${esc(mode)}"><input name="iconUrl" type="hidden" value="${esc(value.iconUrl||'')}">
  <section class="editor-section" aria-label="${t("网站信息")}">
-  <label class="field"><span>${t("网址")}</span><div class="address-control">${icon('link')}<input name="url" type="text" value="${esc(value.url||'')}" required maxlength="2048" placeholder="https://example.com" autocomplete="off" spellcheck="false"><button class="get-icon-button" type="button" data-action="extract-favicon">${t("获取图标")}</button></div></label>
+  <label class="field"><span>${t("网址")}</span><div class="address-control">${icon('link')}<input name="url" type="text" value="${esc(value.url||'')}" required maxlength="2048" placeholder="https://example.com" autocomplete="off" spellcheck="false"><button class="get-icon-button" type="button" data-action="extract-favicon">${t("获取图标")}</button></div></label><button type="button" class="text-button" data-action="permissions">${t('管理网站访问授权')}</button>
   ${field('title',t("名称"),value.title||'',{required:true,maxlength:120,placeholder:t("网站名称")})}
  </section>
  <section class="editor-section icon-section" aria-label="${t("图标样式")}">
@@ -10576,12 +11033,13 @@ function settingColor(key,title) {
 }
 function settingsDialog(tab) {
  const s = state.settings;
+ const dragChoices=[...new Set([100,200,400,600,1000,1500,2000,3000,s.dragHoldMs])].sort((a,b)=>a-b).map(value=>[value,`${value/1000} s`]);
  const tabs = [
   {id:'general',name:t("打开方式"),icon:'link'}, {id:'search',name:t("搜索栏"),icon:'search'},
   {id:'icons',name:t("图标"),icon:'grid'}, {id:'clock',name:t("时间 / 日期"),icon:'clock'},
   {id:'appearance',name:t("主题与材质"),icon:'sun'}, {id:'layout',name:t("布局"),icon:'move'},
   {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("同步"),icon:'sync'},
-  {id:'sources',name:t('组件源'),icon:'grid'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
+  {id:'sources',name:t('组件源'),icon:'grid'}, {id:'permissions',name:t('授权管理'),icon:'shield'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
  ];
  if (!tabs.some(item=>item.id===tab)) tab='general';
  let content = '';
@@ -10592,6 +11050,7 @@ function settingsDialog(tab) {
   ${settingSwitch('searchNewTab',t("新标签页打开搜索结果"),t("可独立于网站图标的打开方式设置。"))}
   ${settingSwitch('rememberGroup',t("记住上次打开的分组"),t("关闭后，每次打开栖页从第一个分组开始。"))}
   <div class="section-label">${t("桌面工具")}</div>
+  ${preferenceSelect('dragHoldMs',t("长按拖动时间"),dragChoices,t("在小组件任意位置长按后拖动，默认 0.2 秒。"))}
   ${preferenceSelect('toolbarVisibility',t("右上角工具按钮"),[['always',t("始终显示")],['auto',t("自动隐藏")]],t("自动隐藏时，移入右上角或用键盘聚焦即可展开。"))}
   ${settingSwitch('showWallpaperButton',t("显示更换壁纸按钮"))}
   <div class="section-label">${t("快捷键")}</div>
@@ -10610,7 +11069,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="secondary-button" data-action="clear-search-history">${t("清除最近搜索")}</button></div>
   <div class="section-label">${t("搜索引擎")}</div>
   ${selectField('searchEngine',t("默认搜索引擎"),s.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}
-  <div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="${t("提取{v0}图标", {v0: esc(e.name)})}">${t("提取图标")}</button>${s.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="${t("删除{v0}", {v0: esc(e.name)})}">${icon('trash')}</button>`:''}</div>`).join('')}</div>
+  <button type="button" class="text-button" data-action="permissions">${t('管理网站访问授权')}</button><div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="${t("提取{v0}图标", {v0: esc(e.name)})}">${t("提取图标")}</button>${s.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="${t("删除{v0}", {v0: esc(e.name)})}">${icon('trash')}</button>`:''}</div>`).join('')}</div>
   <div class="section-label">${t("自定义引擎")}</div><form id="engine-form">
   ${field('name',t("引擎名称"),'',{required:true,maxlength:20,placeholder:t("例如：我的搜索")})}
   ${field('url',t("搜索地址模板"),'',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:t("用 {q} 代表关键词。支持 http 和 https 地址。")})}
@@ -10698,11 +11157,12 @@ function settingsDialog(tab) {
  else if(tab==='data') content = `
   <div class="data-card"><div><strong>${t("导出完整备份")}</strong><p>${t("包含网址、分组、布局、头像、组件数据和本地壁纸。")}</p></div><button class="secondary-button" data-action="export">${t("{v0}导出 JSON", {v0: icon('download')})}</button></div>
   <div class="data-card"><div><strong>${t("恢复已有备份")}</strong><p>${t("导入前可查看内容摘要，确认后替换当前桌面。")}</p></div><button class="secondary-button" data-action="import">${t("{v0}导入备份", {v0: icon('upload')})}</button></div>
-  <div class="data-card"><div><strong>${t("导入浏览器书签")}</strong><p>${t("选择要复制到当前分组的网站，保留原有书签。")}</p></div><button class="secondary-button" data-action="import-bookmarks">${t("{v0}选择书签", {v0: icon('bookmark')})}</button></div>
+  <div class="data-card"><div><strong>${t("导入浏览器书签")}</strong><p>${t("选择要复制到当前分组的网站，保留原有书签。")}</p></div><button class="secondary-button" data-action="import-bookmarks">${t("{v0}选择书签", {v0: icon('bookmark')})}</button>${permissionControl({permissions:['bookmarks']})}</div>
   <p class="help-text">${t("无需注册账号。跨设备可连接自己的 WebDAV；备份不包含 WebDAV 密码、最近搜索或网站图标缓存。")}</p>
   <div class="section-label">${t("重置设置")}</div>
   <div class="data-card"><div><strong>${t("恢复默认设置")}</strong><p>${t("还原显示、搜索、头像与壁纸偏好，保留网站、分组和组件内容。")}</p></div><button class="secondary-button" data-action="reset-preferences">${t("重置设置")}</button></div>
   <div class="button-row"><button class="danger-button" data-action="reset">${t("恢复初始桌面")}</button></div>`;
+ else if(tab==='permissions') content = permissionsPanel();
  else if(tab==='sources') content = communityView();
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
@@ -10751,7 +11211,7 @@ function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render()
 function widgetConfigDialog(item) {
  return dialogHeader(t('设置组件'))+`<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}">${field('title',t('名称'),item.title,{required:true,maxlength:120})}${selectField('size',t('卡片尺寸'),item.size,(item.config?.manifest?.sizes||TILE_SIZES).map(value=>({value,label:sizeLabel(value)})))}<p>${t('组件功能设置请在组件窗口内打开。')}</p>${formActions()}</form></div>`;
 }
-function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div id="local-results" class="local-results"></div></div>`; }
+function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div class="local-permission-controls"><span>${t('浏览器书签')}${permissionControl({permissions:['bookmarks']})}</span><span>${t('浏览历史')}${permissionControl({permissions:['history']})}</span></div><div id="local-results" class="local-results"></div></div>`; }
 function renderLocalResults(query) {
  const target=$('#local-results'); if(!target) return;
  const q=query.trim().toLocaleLowerCase();
@@ -10778,9 +11238,7 @@ function moveDialog(id) {
  const folders=state.items.filter(i=>i.type==='folder'&&i.id!==id);
  return dialogHeader(t("移动「")+item.title+'」')+`<div class="dialog-body"><form id="move-form" data-id="${esc(id)}">${selectField('groupId',t("目标分组"),item.groupId,groupOptions())}${item.type==='link'?selectField('folderId',t("放入文件夹"),item.folderId || '',[{value:'',label:t("直接放在分组桌面")},...folders.map(i=>({value:i.id,label:`${state.groups.find(g=>g.id===i.groupId)?.name || ''} / ${i.title}`}))]):''}<p class="help-text">${t("选择文件夹时，将使用该文件夹所在的分组。")}</p>${formActions(t("移动"))}</form></div>`;
 }
-function importPreviewDialog(bookmarks) {
- return dialogHeader(t("导入浏览器书签"),`${t("找到 {v0} 个可导入网站。请选择需要的内容。", {v0: bookmarks.length})}`)+`<div class="dialog-body"><form id="bookmarks-form">${selectField('groupId',t("导入到分组"),currentGroup().id,groupOptions())}<label class="help-text"><input type="checkbox" id="bookmark-select-all"> ${t("全选 / 取消全选")}</label><div class="bookmark-list">${bookmarks.map((b,i)=>`<label class="bookmark-row"><input name="bookmark" type="checkbox" value="${i}"><span class="bookmark-copy">${esc(b.title || b.url)}<small>${esc(b.url)}</small></span></label>`).join('')}</div>${formActions(t("导入所选网站"))}</form></div>`;
-}
+function importPreviewDialog(bookmarks) {return bookmarkImportView(bookmarks,state.groups,currentGroup().id);}
 function restorePreviewDialog(restored) { return dialogHeader(t("恢复备份"),t("请先确认备份内容。恢复后会替换当前桌面。"))+`<div class="dialog-body"><div class="about-features"><div><strong>${restored.groups.length}</strong><p>${t("个分组")}</p></div><div><strong>${restored.items.length}</strong><p>${t("个桌面项目")}</p></div><div><strong>${widgetContentSummary(restored.items).todos}</strong><p>${t("条待办")}</p></div></div><p class="help-text">${t("备份中的网址、便签、组件设置和壁纸将一并恢复。可以先导出当前桌面，保留一份副本。")}</p>${restored.items.some(i=>i.widget==='weather'&&i.config.enabled)?`<p class="help-text">${t("此备份已开启天气。恢复后会将「{v0}」的城市坐标发送至所选天气源获取预报。", {v0: esc(restored.items.filter(i=>i.widget==='weather'&&i.config.enabled).map(i=>i.config.city.name).join(', '))})}</p>`:''}<div class="button-row"><button class="secondary-button" data-action="export">${t("先备份当前桌面")}</button><button class="primary-button" data-action="confirm-restore">${t("确认恢复")}</button></div></div>`; }
 function confirmDialog(data) { return dialogHeader(data.title)+`<div class="dialog-body"><p class="help-text">${esc(data.message)}</p><div class="button-row"><button class="secondary-button" data-close>${t("取消")}</button><button class="danger-button" data-action="confirm-callback">${esc(data.label || t("确认"))}</button></div></div>`; }
 
@@ -10841,7 +11299,7 @@ function exportBackup(source=state) {
 }
 async function importBookmarks(button) {
  if(button)button.disabled=true;
- try { const bookmarks=await requestBookmarks(); if(!bookmarks.length)return toast(t("浏览器中没有可导入的 http / https 书签。")); openDialog('import-preview',{bookmarks}); }
+ try { const bookmarks=await requestBookmarks({includeFolders:true}); if(!bookmarks.length)return toast(t("浏览器中没有可导入的 http / https 书签。")); openDialog('import-preview',{bookmarks}); }
  catch(err){toast(err.message);}
  finally{if(button?.isConnected)button.disabled=false;}
 }
@@ -10855,7 +11313,7 @@ function openContext(event,{itemId,groupId}={}) {
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
- if(item?.type==='widget')html=contextButton('widget-open',t('打开组件'),'grid')+pluginMenu(item.id).map(entry=>contextButton('widget-command',esc(entry.label),entry.icon,`data-command="${esc(entry.id)}"`)).join('')+'<hr>'+html;
+ if(item?.type==='widget')html=contextButton('widget-open',t('打开组件'),'grid')+pluginMenu(item.id).map(entry=>contextButton('widget-command',esc(entry.label),entry.icon,`data-command="${esc(entry.id)}"`)).join('')+contextButton('permissions',t('授权管理'),'shield')+'<hr>'+html;
  menu.innerHTML=html;menu.hidden=false;
  for(const button of menu.querySelectorAll('button')){button.setAttribute('role','menuitem');button.tabIndex=-1;}
  menu.querySelector('button')?.focus({preventScroll:true});
@@ -10921,6 +11379,7 @@ document.addEventListener('click', async event=>{
  if(target.dataset.deleteGroup)return confirmDeleteGroup(target.dataset.deleteGroup);
  if(target.dataset.context){
   const menu=$('#context-menu'),id=menu.dataset.item,groupId=menu.dataset.group,action=target.dataset.context;menu.hidden=true;
+  if(action==='permissions')return openDialog('settings',{tab:'permissions'});
   if(action==='widget-open')return openDialog('widget-detail',{item:state.items.find(i=>i.id===id)});
   if(action==='widget-command'){const item=state.items.find(i=>i.id===id);if(item&&queuePluginCommand(id,target.dataset.command))openDialog('widget-detail',{item});return;}
   if(action==='edit')return openDialog('edit-item',{id});
@@ -10938,6 +11397,7 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='permissions')return openDialog('settings',{tab:'permissions'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
@@ -11036,7 +11496,7 @@ document.addEventListener('change',async event=>{
  try{
   if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
-  if(input.dataset.preference){state.settings[input.dataset.preference]=input.dataset.preference==='windowSize'?Number(input.value):input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
+  if(input.dataset.preference){state.settings[input.dataset.preference]=typeof state.settings[input.dataset.preference]==='number'?Number(input.value):input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
   if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
@@ -11250,6 +11710,12 @@ async function savePluginEnvelope(id,value,expected,{plugin,title,size}) {
  if(item.title!==current.title||item.size!==current.size)setTimeout(()=>renderDesktop({preserveWidgets:true}),0);
  return state.items.find(item=>item.id===id);
 }
+
+installPermissionControls({toast,onRemoved:descriptor=>{
+ if(descriptor.permissions?.includes(localScope)){searchToken++;localExtra=[];renderLocalResults('');}
+ if(descriptor.permissions?.includes('bookmarks')&&dialogKind==='import-preview')void closeDialog();
+ cancelLinkFaviconVisit();
+}});
 
 </script>
 </body>

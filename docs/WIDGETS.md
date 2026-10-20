@@ -1,5 +1,33 @@
 # Qiye Widgets
 
+## 缓存、授权与书签导入（主程序 0.10.9，2026-10-21）
+
+用户最后确认长按为 **0.2 秒**。设置 → 打开方式 → 长按拖动时间提供 0.1、0.2、0.4、0.6、1、1.5、2、3 秒；旧备份缺少该字段时迁移到 200ms，非法类型与越界值仍拒绝。保留屏幕坐标锚点、7px 移动取消容差及无按钮卡片，右键菜单提供组件专属命令与授权管理。本文后面的 320/400ms 为历史决策。
+
+触屏模拟器和部分隐私模式不提供屏幕坐标时，不再移动正在发送局部坐标的 iframe；使用标题拖影并在松手时提交顺序，消除异步坐标与移动文档之间的反馈偏移。正常提供屏幕坐标的鼠标与触屏仍使用原卡片画面跟随拖动。
+
+切换分组通过 `moveBefore` 将离屏卡片放入连接中的隐藏、inert 容器，最多保留 24 张；返回时复用同一文档。删除、来源停用或版本变更仍销毁旧实例。旧浏览器使用安全重建路径，但可从本机资源缓存启动。
+
+来源明确启用后，组件 HTML 与同源经典 JS/CSS 按入口和 release 保存到 IndexedDB `qiye.widget-cache.v1`；官方组件共用同版本运行包。读取不带 Cookie、禁止重定向，单包约 12 MiB、磁盘共 32 MiB/6 包；完整下载后原子写入，相同下载共享请求。首次读取最多 60 秒，远程回退整体最多 90 秒；文档就绪后另给 20 秒握手。已有缓存不先联网校验，升级以用户明确更新的清单为界。
+
+扩展使用声明的 `widget-sandbox.html`；网页/独立预览使用保持 secure context 的 opaque `srcdoc`，避免 `data:` 文档丢失复制和 UUID 能力。缓存内容只在沙箱执行。沙箱内 URL 适配将 `new URL(location.href)` 映射到原入口，保留旧运行包的组件查询参数；真实 Location、origin 和权限不变。外部经典脚本转换为沙箱内 data 资源，保留 defer/async/nomodule；模块、SRI、独立 CSP、嵌套 frame 等不兼容文档保留远程路径。依赖其他 Location 属性、动态 import、远程图片或数据的社区组件不承诺完整离线。天气、榜单、地图、汇率的实时数据仍需网络。
+
+设置 → 授权管理列出书签、历史、定位、热榜及已授予的可选站点权限。导入/搜索、WebDAV、自定义来源、图标提取和热榜处提供撤销或管理入口；组件右键也可进入。`chrome.permissions.remove` 撤销权限，`onRemoved` 同步其他标签页；同时清除来源级书签/定位标记、停止相关会话、丢弃迟到结果、暂停 WebDAV 自动同步。网页定位还可在浏览器站点设置取消浏览器自身许可；必要安装权限不能逐项撤销。已导入桌面链接保留。
+
+热榜说明区分授权能力与当前实现：“读取和更改 uapis.cn 上的数据”是域名级能力，不是读取所有网站；当前实现仅 GET 固定公开榜单接口，不带 Cookie，不提供任意 URL 代理。浏览器不能只授予某个接口的 GET 权限。
+
+书签导入采用 46px 单行标题栏、胶囊搜索、文件夹筛选、列表多选与固定底部导入区。跨筛选保留选择，支持选择筛选结果和目标分组重复标记；初次渲染 100 行，按需增加。窄屏文件夹横排，原生复选框与键盘焦点保留，初次聚焦标题。只显示本机生成的站点字母标记，不因预览就请求收藏网站。
+
+研究依据与决策：
+
+- [iTab 官方示例](https://itab.link/)：紧凑布局；用户截图是具体视觉基线。
+- [Chrome permissions](https://developer.chrome.com/docs/extensions/reference/api/permissions) 和 [跨域请求](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)：站点级授权、用户手势申请、contains/remove/onRemoved。
+- [Chrome sandbox](https://developer.chrome.com/docs/extensions/reference/manifest/sandbox) 和 [CSP](https://developer.chrome.com/docs/extensions/reference/manifest/content-security-policy)：主程序 `script-src 'self'` 不变，缓存仅在无同源权限的沙箱执行。
+- [Microsoft Webview 示例](https://github.com/microsoft/vscode-extension-samples/tree/main/webview-sample) 和 [MDN moveBefore](https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore)：生命周期、有限通信、保留 iframe 状态及兼容回退。
+- [Chrome Bookmarks API 与示例](https://developer.chrome.com/docs/extensions/reference/api/bookmarks)：保留文件夹路径，将明确选择的书签复制到桌面。
+
+验证：`tests/widget-cache-e2e.py`（源码、`--preview`、`--extension`），覆盖 16 秒首次延迟、三份共享资源、跨分组同文档、离线刷新/新标签页、保存、secure context 和父 DOM 隔离；`tests/bookmark-import-e2e.py` 覆盖 425 条书签、筛选多选、重复、导入、撤销、200ms 默认及持久化、深浅/390px。单位测试覆盖备份迁移与撤销后的缓存/迟到热榜响应；原拖动稳定性、协议、真实 MV3 和预览回归继续运行。
+
 小组件源码、清单、资源、测试和独立发布已迁移到 [Ktclat/qiye-widgets](https://github.com/Ktclat/qiye-widgets)。
 
 本文档现位于 [qiye-widgets/docs/WIDGETS.md](https://github.com/Ktclat/qiye-widgets/blob/main/docs/WIDGETS.md)。主程序宿主接口见 [PLUGIN-API.md](PLUGIN-API.md)。

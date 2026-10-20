@@ -40,7 +40,7 @@ def build(output):
     version = release_version()
     output.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, str(ROOT / 'scripts/build-preview.py')], check=True)
-    runtime = ['manifest.json', 'index.html', 'styles.css', 'background.js', 'popup.html', 'popup.css', 'popup.js', 'LICENSE', 'docs/THIRD_PARTY.md']
+    runtime = ['manifest.json', 'index.html', 'styles.css', 'background.js', 'popup.html', 'popup.css', 'popup.js', 'widget-sandbox.html', 'LICENSE', 'docs/THIRD_PARTY.md']
     for folder, suffixes in [('src', {'.js', '.css'}), ('icons', {'.png', '.svg'}), ('fonts', {'.woff2', '.txt', '.md'}), ('_locales', {'.json'})]:
         runtime.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in suffixes)
     extension = output / f'qiye-{version}-chrome-edge.zip'

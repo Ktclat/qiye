@@ -10,6 +10,7 @@ const keyFor=(item,plugin)=>JSON.stringify([item.id,plugin.source,plugin.manifes
 export function createPluginFrame(item,plugin,{preview=false}={}) {
  const frame=document.createElement('iframe');
  frame.title=item.title;frame.dataset.api=plugin.manifest.version;
+ frame.dataset.entry=plugin.manifest.entry;
  frame.sandbox=preview?'allow-scripts':'allow-scripts allow-forms allow-downloads';
  if(!preview)frame.allow='clipboard-write *';
  frame.referrerPolicy='no-referrer';frame.setAttribute('credentialless','');

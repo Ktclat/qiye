@@ -34,7 +34,7 @@ async function harness({ baseline = false, automatic = false, applyFailure = fal
   await client.saveConfig({...config,autoSync:automatic});
   if(baseline)await client.synchronize(local,{manual:true});
   requests.length=0;
-  const sandbox = vm.createContext({t, getLocale,
+  const sandbox = vm.createContext({t, getLocale, permissionEpoch:()=>0, PERMISSIONS_CHANGED:"qiye:permissions-changed",
     Promise,Intl,console,
     Date:class extends Date {static now(){return clock;}},
     document:{hidden:false,querySelector:selector=>selector==='#webdav-form'?form:elements[selector]||null,querySelectorAll:()=>[]},

@@ -28,6 +28,8 @@ try:
   frame=page.frame_locator('#desktop iframe');check('Published widget sandbox denies parent DOM',frame.locator('body').evaluate('()=>{try{void parent.document;return false}catch{return true}}'))
   frame.locator('[data-widget-input=notes]').fill('Public split verification')
   page.wait_for_function("JSON.parse(localStorage.getItem('qiye.state.v5')).items.some(i=>i.data?.value?.includes('Public split verification'))")
+  request_count=len(requests)
   page.reload(wait_until='domcontentloaded');page.locator('#desktop iframe[data-ready=true]').wait_for();check('Public widget save survives reload',page.frame_locator('#desktop iframe').locator('[data-widget-input=notes]').input_value()=='Public split verification')
+  check('Public widget reload uses local resources without new widget requests',len(requests)==request_count)
   page.screenshot(path=str(args.output/'published-desktop.png'));check('No page errors',not errors);browser.close()
 finally:(args.output/'public-verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')

@@ -30,6 +30,8 @@ import { readSearchHistory, rememberSearch, clearSearchHistory } from './search-
 import { createDesktopDragController, reorderById } from './drag.js';
 import { reconcileKeyedChildren } from './keyed-view.js';
 import { createDailyQuote } from './daily-quote.js';
+import { bookmarkImportView, bindBookmarkImport } from './bookmark-import.js';
+import { permissionsPanel, permissionControl, populatePermissionOrigins, installPermissionControls } from './permissions.js';
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -610,7 +612,10 @@ function renderDesktop({preserveWidgets=false} = {}) {
  }));
  if(state.settings.showAddTile)entries.push({key:'$add',signature:'add',render:()=>`<div class="tile tile-add"><button class="tile-body" data-action="add" aria-label="${t("添加网站或组件")}">${icon('plus')}</button><span class="tile-label">${t("添加")}</span></div>`});
  if(!items.length && !state.settings.showAddTile)entries.push({key:'$empty',signature:'empty',render:()=>`<div class="desktop-empty"><span>${t("给这一页留一些喜欢的内容")}</span><button class="text-button" data-action="add">${t("添加网站或组件")}</button></div>`});
- const changed=reconcileKeyedChildren(desktop,entries);
+ let park=document.getElementById('widget-parking');
+ if(!park){park=document.createElement('div');park.id='widget-parking';park.hidden=true;park.inert=true;document.body.append(park);}
+ const retained=new Map(state.items.filter(i=>i.type==='widget'&&!i.folderId&&i.groupId!==group.id).slice(-24).map(i=>[i.id,JSON.stringify([[i.id,i.title,i.size,resolveWidgetSource(i,widgetSources)],null,null])]));
+ const changed=reconcileKeyedChildren(desktop,entries,{park,retain:retained});
  items.forEach((item,index)=>desktop.children[index]?.style.setProperty('--enter-delay',Math.min(index,10)*16+'ms'));
  bindFaviconImages(desktop);
  if(!widgetsBound || [...changed.created,...changed.removed].some(node=>node.classList.contains('tile-widget'))){
@@ -740,6 +745,7 @@ function openDialog(kind,data={}) {
  dialog.classList.toggle('plugin-dialog', !!detailWidget);
  dialog.classList.remove('widget-app-expanded','workspace-expanded');
  dialog.classList.toggle('wallpaper-dialog',kind==='wallpaper');
+ dialog.classList.toggle('bookmark-import-dialog',kind==='import-preview');
  dialog.classList.toggle('settings-dialog',kind === 'settings');
  dialog.classList.toggle('add-dialog',kind==='add');
  dialog.classList.toggle('workspace-dialog',['add','settings','wallpaper'].includes(kind));
@@ -771,13 +777,14 @@ function openDialog(kind,data={}) {
  if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
  if((kind==='add' && ['widgets','community'].includes(data.tab||'widgets')) || (kind==='settings' && data.tab==='sources'))viewerCleanup=bindCommunity($('#dialog-content'),{getState:()=>state,apply:applyExchange,openSources:source=>openDialog('settings',{tab:'sources',source}),openCatalog:source=>openDialog('add',{tab:'widgets',source})},data);
  if(kind==='widget-detail')viewerCleanup=bindPluginWorkspace($('#dialog-content'),state.items.find(i=>i.id===data.item?.id),pluginHost());
- if (kind==='settings') renderAvatar();
+ if(kind==='import-preview')viewerCleanup=bindBookmarkImport($('#dialog-content'),data.bookmarks,()=>state);
+ if (kind==='settings') {renderAvatar();void populatePermissionOrigins(dialog);}
  if (kind==='wallpaper')void wallpaperLibrary.open();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
  else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(kind==='widget-detail')$('#dialog-title',dialog)?.focus({preventScroll:true});
+ else if(['widget-detail','import-preview'].includes(kind))$('#dialog-title',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -795,7 +802,7 @@ function linkEditorForm(item){
  return `<form id="link-form" class="site-editor" data-id="${esc(value.id||'')}" data-original-url="${esc(value.url||'')}" data-original-mode="${esc(mode)}" data-original-icon="${esc(value.iconUrl||'')}" data-original-text="${esc(value.icon||'')}" data-original-title="${esc(value.title||'')}" data-icon-choice="${mode==='text'?'text':'current'}">
  <input name="iconMode" type="hidden" value="${esc(mode)}"><input name="iconUrl" type="hidden" value="${esc(value.iconUrl||'')}">
  <section class="editor-section" aria-label="${t("网站信息")}">
-  <label class="field"><span>${t("网址")}</span><div class="address-control">${icon('link')}<input name="url" type="text" value="${esc(value.url||'')}" required maxlength="2048" placeholder="https://example.com" autocomplete="off" spellcheck="false"><button class="get-icon-button" type="button" data-action="extract-favicon">${t("获取图标")}</button></div></label>
+  <label class="field"><span>${t("网址")}</span><div class="address-control">${icon('link')}<input name="url" type="text" value="${esc(value.url||'')}" required maxlength="2048" placeholder="https://example.com" autocomplete="off" spellcheck="false"><button class="get-icon-button" type="button" data-action="extract-favicon">${t("获取图标")}</button></div></label><button type="button" class="text-button" data-action="permissions">${t('管理网站访问授权')}</button>
   ${field('title',t("名称"),value.title||'',{required:true,maxlength:120,placeholder:t("网站名称")})}
  </section>
  <section class="editor-section icon-section" aria-label="${t("图标样式")}">
@@ -845,12 +852,13 @@ function settingColor(key,title) {
 }
 function settingsDialog(tab) {
  const s = state.settings;
+ const dragChoices=[...new Set([100,200,400,600,1000,1500,2000,3000,s.dragHoldMs])].sort((a,b)=>a-b).map(value=>[value,`${value/1000} s`]);
  const tabs = [
   {id:'general',name:t("打开方式"),icon:'link'}, {id:'search',name:t("搜索栏"),icon:'search'},
   {id:'icons',name:t("图标"),icon:'grid'}, {id:'clock',name:t("时间 / 日期"),icon:'clock'},
   {id:'appearance',name:t("主题与材质"),icon:'sun'}, {id:'layout',name:t("布局"),icon:'move'},
   {id:'sidebar',name:t("侧边栏"),icon:'panel'}, {id:'sync',name:t("同步"),icon:'sync'},
-  {id:'sources',name:t('组件源'),icon:'grid'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
+  {id:'sources',name:t('组件源'),icon:'grid'}, {id:'permissions',name:t('授权管理'),icon:'shield'}, {id:'data',name:t("备份与恢复"),icon:'download'}, {id:'about',name:t("关于栖页"),icon:'info'}
  ];
  if (!tabs.some(item=>item.id===tab)) tab='general';
  let content = '';
@@ -861,6 +869,7 @@ function settingsDialog(tab) {
   ${settingSwitch('searchNewTab',t("新标签页打开搜索结果"),t("可独立于网站图标的打开方式设置。"))}
   ${settingSwitch('rememberGroup',t("记住上次打开的分组"),t("关闭后，每次打开栖页从第一个分组开始。"))}
   <div class="section-label">${t("桌面工具")}</div>
+  ${preferenceSelect('dragHoldMs',t("长按拖动时间"),dragChoices,t("在小组件任意位置长按后拖动，默认 0.2 秒。"))}
   ${preferenceSelect('toolbarVisibility',t("右上角工具按钮"),[['always',t("始终显示")],['auto',t("自动隐藏")]],t("自动隐藏时，移入右上角或用键盘聚焦即可展开。"))}
   ${settingSwitch('showWallpaperButton',t("显示更换壁纸按钮"))}
   <div class="section-label">${t("快捷键")}</div>
@@ -879,7 +888,7 @@ function settingsDialog(tab) {
   <div class="button-row"><button class="secondary-button" data-action="clear-search-history">${t("清除最近搜索")}</button></div>
   <div class="section-label">${t("搜索引擎")}</div>
   ${selectField('searchEngine',t("默认搜索引擎"),s.searchEngine,allEngines().map(e=>({value:e.id,label:e.name})))}
-  <div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="${t("提取{v0}图标", {v0: esc(e.name)})}">${t("提取图标")}</button>${s.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="${t("删除{v0}", {v0: esc(e.name)})}">${icon('trash')}</button>`:''}</div>`).join('')}</div>
+  <button type="button" class="text-button" data-action="permissions">${t('管理网站访问授权')}</button><div>${allEngines().map(e=>`<div class="engine-list-row">${engineGlyph(e)}<div class="engine-list-copy"><strong>${esc(e.name)}</strong><small>${esc(e.url)}</small></div><button type="button" class="engine-extract-button" data-extract-engine-icon="${esc(e.id)}" aria-label="${t("提取{v0}图标", {v0: esc(e.name)})}">${t("提取图标")}</button>${s.customEngines.some(x=>x.id===e.id)?`<button data-delete-engine="${esc(e.id)}" aria-label="${t("删除{v0}", {v0: esc(e.name)})}">${icon('trash')}</button>`:''}</div>`).join('')}</div>
   <div class="section-label">${t("自定义引擎")}</div><form id="engine-form">
   ${field('name',t("引擎名称"),'',{required:true,maxlength:20,placeholder:t("例如：我的搜索")})}
   ${field('url',t("搜索地址模板"),'',{required:true,maxlength:2048,placeholder:'https://example.com/search?q={q}',help:t("用 {q} 代表关键词。支持 http 和 https 地址。")})}
@@ -967,11 +976,12 @@ function settingsDialog(tab) {
  else if(tab==='data') content = `
   <div class="data-card"><div><strong>${t("导出完整备份")}</strong><p>${t("包含网址、分组、布局、头像、组件数据和本地壁纸。")}</p></div><button class="secondary-button" data-action="export">${t("{v0}导出 JSON", {v0: icon('download')})}</button></div>
   <div class="data-card"><div><strong>${t("恢复已有备份")}</strong><p>${t("导入前可查看内容摘要，确认后替换当前桌面。")}</p></div><button class="secondary-button" data-action="import">${t("{v0}导入备份", {v0: icon('upload')})}</button></div>
-  <div class="data-card"><div><strong>${t("导入浏览器书签")}</strong><p>${t("选择要复制到当前分组的网站，保留原有书签。")}</p></div><button class="secondary-button" data-action="import-bookmarks">${t("{v0}选择书签", {v0: icon('bookmark')})}</button></div>
+  <div class="data-card"><div><strong>${t("导入浏览器书签")}</strong><p>${t("选择要复制到当前分组的网站，保留原有书签。")}</p></div><button class="secondary-button" data-action="import-bookmarks">${t("{v0}选择书签", {v0: icon('bookmark')})}</button>${permissionControl({permissions:['bookmarks']})}</div>
   <p class="help-text">${t("无需注册账号。跨设备可连接自己的 WebDAV；备份不包含 WebDAV 密码、最近搜索或网站图标缓存。")}</p>
   <div class="section-label">${t("重置设置")}</div>
   <div class="data-card"><div><strong>${t("恢复默认设置")}</strong><p>${t("还原显示、搜索、头像与壁纸偏好，保留网站、分组和组件内容。")}</p></div><button class="secondary-button" data-action="reset-preferences">${t("重置设置")}</button></div>
   <div class="button-row"><button class="danger-button" data-action="reset">${t("恢复初始桌面")}</button></div>`;
+ else if(tab==='permissions') content = permissionsPanel();
  else if(tab==='sources') content = communityView();
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
@@ -1020,7 +1030,7 @@ function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render()
 function widgetConfigDialog(item) {
  return dialogHeader(t('设置组件'))+`<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}">${field('title',t('名称'),item.title,{required:true,maxlength:120})}${selectField('size',t('卡片尺寸'),item.size,(item.config?.manifest?.sizes||TILE_SIZES).map(value=>({value,label:sizeLabel(value)})))}<p>${t('组件功能设置请在组件窗口内打开。')}</p>${formActions()}</form></div>`;
 }
-function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div id="local-results" class="local-results"></div></div>`; }
+function localSearchDialog() { return dialogHeader(t("搜索我的桌面"),t("快速找到收藏。搜索浏览历史时输入关键词，再按 Enter 或点击搜索。"))+`<div class="dialog-body"><div class="local-search-input"><input id="local-query" class="text-input" placeholder="${t("搜索名称或网址…")}" aria-label="${t("本地搜索关键词")}" autocomplete="off"><button class="secondary-button" data-action="query-local">${t("{v0}搜索", {v0: icon('search')})}</button></div><div class="search-scope"><button class="scope-button active" data-scope="desktop">${t("桌面收藏")}</button><button class="scope-button" data-scope="bookmarks">${t("浏览器书签")}</button><button class="scope-button" data-scope="history">${t("浏览历史")}</button></div><div class="local-permission-controls"><span>${t('浏览器书签')}${permissionControl({permissions:['bookmarks']})}</span><span>${t('浏览历史')}${permissionControl({permissions:['history']})}</span></div><div id="local-results" class="local-results"></div></div>`; }
 function renderLocalResults(query) {
  const target=$('#local-results'); if(!target) return;
  const q=query.trim().toLocaleLowerCase();
@@ -1047,9 +1057,7 @@ function moveDialog(id) {
  const folders=state.items.filter(i=>i.type==='folder'&&i.id!==id);
  return dialogHeader(t("移动「")+item.title+'」')+`<div class="dialog-body"><form id="move-form" data-id="${esc(id)}">${selectField('groupId',t("目标分组"),item.groupId,groupOptions())}${item.type==='link'?selectField('folderId',t("放入文件夹"),item.folderId || '',[{value:'',label:t("直接放在分组桌面")},...folders.map(i=>({value:i.id,label:`${state.groups.find(g=>g.id===i.groupId)?.name || ''} / ${i.title}`}))]):''}<p class="help-text">${t("选择文件夹时，将使用该文件夹所在的分组。")}</p>${formActions(t("移动"))}</form></div>`;
 }
-function importPreviewDialog(bookmarks) {
- return dialogHeader(t("导入浏览器书签"),`${t("找到 {v0} 个可导入网站。请选择需要的内容。", {v0: bookmarks.length})}`)+`<div class="dialog-body"><form id="bookmarks-form">${selectField('groupId',t("导入到分组"),currentGroup().id,groupOptions())}<label class="help-text"><input type="checkbox" id="bookmark-select-all"> ${t("全选 / 取消全选")}</label><div class="bookmark-list">${bookmarks.map((b,i)=>`<label class="bookmark-row"><input name="bookmark" type="checkbox" value="${i}"><span class="bookmark-copy">${esc(b.title || b.url)}<small>${esc(b.url)}</small></span></label>`).join('')}</div>${formActions(t("导入所选网站"))}</form></div>`;
-}
+function importPreviewDialog(bookmarks) {return bookmarkImportView(bookmarks,state.groups,currentGroup().id);}
 function restorePreviewDialog(restored) { return dialogHeader(t("恢复备份"),t("请先确认备份内容。恢复后会替换当前桌面。"))+`<div class="dialog-body"><div class="about-features"><div><strong>${restored.groups.length}</strong><p>${t("个分组")}</p></div><div><strong>${restored.items.length}</strong><p>${t("个桌面项目")}</p></div><div><strong>${widgetContentSummary(restored.items).todos}</strong><p>${t("条待办")}</p></div></div><p class="help-text">${t("备份中的网址、便签、组件设置和壁纸将一并恢复。可以先导出当前桌面，保留一份副本。")}</p>${restored.items.some(i=>i.widget==='weather'&&i.config.enabled)?`<p class="help-text">${t("此备份已开启天气。恢复后会将「{v0}」的城市坐标发送至所选天气源获取预报。", {v0: esc(restored.items.filter(i=>i.widget==='weather'&&i.config.enabled).map(i=>i.config.city.name).join(', '))})}</p>`:''}<div class="button-row"><button class="secondary-button" data-action="export">${t("先备份当前桌面")}</button><button class="primary-button" data-action="confirm-restore">${t("确认恢复")}</button></div></div>`; }
 function confirmDialog(data) { return dialogHeader(data.title)+`<div class="dialog-body"><p class="help-text">${esc(data.message)}</p><div class="button-row"><button class="secondary-button" data-close>${t("取消")}</button><button class="danger-button" data-action="confirm-callback">${esc(data.label || t("确认"))}</button></div></div>`; }
 
@@ -1110,7 +1118,7 @@ function exportBackup(source=state) {
 }
 async function importBookmarks(button) {
  if(button)button.disabled=true;
- try { const bookmarks=await requestBookmarks(); if(!bookmarks.length)return toast(t("浏览器中没有可导入的 http / https 书签。")); openDialog('import-preview',{bookmarks}); }
+ try { const bookmarks=await requestBookmarks({includeFolders:true}); if(!bookmarks.length)return toast(t("浏览器中没有可导入的 http / https 书签。")); openDialog('import-preview',{bookmarks}); }
  catch(err){toast(err.message);}
  finally{if(button?.isConnected)button.disabled=false;}
 }
@@ -1124,7 +1132,7 @@ function openContext(event,{itemId,groupId}={}) {
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
- if(item?.type==='widget')html=contextButton('widget-open',t('打开组件'),'grid')+pluginMenu(item.id).map(entry=>contextButton('widget-command',esc(entry.label),entry.icon,`data-command="${esc(entry.id)}"`)).join('')+'<hr>'+html;
+ if(item?.type==='widget')html=contextButton('widget-open',t('打开组件'),'grid')+pluginMenu(item.id).map(entry=>contextButton('widget-command',esc(entry.label),entry.icon,`data-command="${esc(entry.id)}"`)).join('')+contextButton('permissions',t('授权管理'),'shield')+'<hr>'+html;
  menu.innerHTML=html;menu.hidden=false;
  for(const button of menu.querySelectorAll('button')){button.setAttribute('role','menuitem');button.tabIndex=-1;}
  menu.querySelector('button')?.focus({preventScroll:true});
@@ -1190,6 +1198,7 @@ document.addEventListener('click', async event=>{
  if(target.dataset.deleteGroup)return confirmDeleteGroup(target.dataset.deleteGroup);
  if(target.dataset.context){
   const menu=$('#context-menu'),id=menu.dataset.item,groupId=menu.dataset.group,action=target.dataset.context;menu.hidden=true;
+  if(action==='permissions')return openDialog('settings',{tab:'permissions'});
   if(action==='widget-open')return openDialog('widget-detail',{item:state.items.find(i=>i.id===id)});
   if(action==='widget-command'){const item=state.items.find(i=>i.id===id);if(item&&queuePluginCommand(id,target.dataset.command))openDialog('widget-detail',{item});return;}
   if(action==='edit')return openDialog('edit-item',{id});
@@ -1207,6 +1216,7 @@ document.addEventListener('click', async event=>{
   return openDialog(action);
  }
  const action=target.dataset.action;
+ if(action==='permissions')return openDialog('settings',{tab:'permissions'});
  if(action==='upload-avatar')return $('#avatar-file',dialog)?.click();
  if(action==='reset-avatar')return await resetAvatar();
  if(action==='clear-search-history'){clearSearchHistory();hideSearchMenus();toast(t("最近搜索已清除。"));return;}
@@ -1305,7 +1315,7 @@ document.addEventListener('change',async event=>{
  try{
   if(input.id==='site-icon-upload'){await uploadSiteIcon(input);return;}
   if(input.id==='avatar-file'){const file=input.files?.[0],panel=input.closest('#avatar-panel');input.value='';if(file&&panel)await uploadAvatar(file,panel);return;}
-  if(input.dataset.preference){state.settings[input.dataset.preference]=input.dataset.preference==='windowSize'?Number(input.value):input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
+  if(input.dataset.preference){state.settings[input.dataset.preference]=typeof state.settings[input.dataset.preference]==='number'?Number(input.value):input.value;document.body.classList.remove('navigation-open');applySettings();await persist();if(input.dataset.preference==='language'){lastDate='';renderDesktop();renderClock();openDialog('settings',{tab:'general'});return;}if(['navigationMode','sidebarVisibility'].includes(input.dataset.preference))renderGroups();updateHeaderPlacement();return;}
   if(input.dataset.settingColor){await persist();return;}
   if(input.name==='iconMode' && input.closest('#link-form')){updateLinkPreview(input.form);return;}
   if(input.dataset.setting){state.settings[input.dataset.setting]=input.checked;applySettings();await persist();if(['wallpaperApiEnabled','showAddTile'].includes(input.dataset.setting))renderDesktop();return;}
@@ -1519,3 +1529,9 @@ async function savePluginEnvelope(id,value,expected,{plugin,title,size}) {
  if(item.title!==current.title||item.size!==current.size)setTimeout(()=>renderDesktop({preserveWidgets:true}),0);
  return state.items.find(item=>item.id===id);
 }
+
+installPermissionControls({toast,onRemoved:descriptor=>{
+ if(descriptor.permissions?.includes(localScope)){searchToken++;localExtra=[];renderLocalResults('');}
+ if(descriptor.permissions?.includes('bookmarks')&&dialogKind==='import-preview')void closeDialog();
+ cancelLinkFaviconVisit();
+}});

@@ -12,11 +12,12 @@ async function requireHotboardPermission(url) {
 }
 export async function fetchPluginHotboard(type, { fetcher = fetchPublicJson, permission = requireHotboardPermission, now = Date.now } = {}) {
  if (!platforms.has(type)) throw new Error('Unsupported hotboard platform');
- const cached = requests.get(type);
- if (cached && now() - cached.time < 3000) return cached.promise;
  const url = 'https://uapis.cn/api/v1/misc/hotboard?type=' + encodeURIComponent(type);
+ await permission(url);
+ const cached = requests.get(type);
+ if (cached && now() - cached.time < 3000) {const result=await cached.promise;await permission(url);return result;}
  const job = {time: now()};
- job.promise = (async () => { await permission(url); return fetcher(url, {maxBytes:1024*1024}); })();
+ job.promise = fetcher(url, {maxBytes:1024*1024});
  requests.set(type, job);
- try { return await job.promise; } catch (error) { if (requests.get(type) === job) requests.delete(type); throw error; }
+ try { const result=await job.promise;await permission(url);return result; } catch (error) { if (requests.get(type) === job) requests.delete(type); throw error; }
 }

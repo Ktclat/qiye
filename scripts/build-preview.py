@@ -5,6 +5,8 @@ import re
 import base64
 import json
 root=Path(__file__).resolve().parents[1]
+sandbox=(root/'src/plugin-sandbox.js').read_text(encoding='utf-8').split('`',2)[1]
+(root/'widget-sandbox.html').write_text(sandbox,encoding='utf-8')
 version=json.loads((root/'manifest.json').read_text(encoding='utf-8'))['version']
 if version != json.loads((root/'package.json').read_text(encoding='utf-8'))['version']:
  raise SystemExit('manifest.json and package.json versions differ')

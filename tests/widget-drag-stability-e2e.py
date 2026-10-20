@@ -38,7 +38,7 @@ with sync_playwright() as pw:
    context.add_init_script('if(window===top&&!localStorage.getItem("stability-seed")){localStorage.setItem("qiye.state.v5",%s);localStorage.setItem("qiye.community.v1",%s);localStorage.setItem("stability-seed","yes");}'%(json.dumps(json.dumps(fixture(size,theme))),json.dumps(json.dumps([{'url':SOURCE,'enabled':True,'catalog':catalog}]))))
    # Exercise a busy iframe: mouse movement arrives 35ms late, after its rect
    # may have changed. Real browser pointer events still determine every point.
-   context.add_init_script('''const send=MessagePort.prototype.postMessage;MessagePort.prototype.postMessage=function(message,...rest){if(message?.type==='interaction'&&message.action==='pointermove'&&message.pointerType==='mouse'){setTimeout(()=>send.call(this,message,...rest),35);return;}return send.call(this,message,...rest)};
+   context.add_init_script('''const send=MessagePort.prototype.postMessage;MessagePort.prototype.postMessage=function(message,...rest){if(message?.type==='interaction'&&message.pointerType==='touch'){(window.touchSamples??=[]).push({...message});}if(message?.type==='interaction'&&message.action==='pointermove'&&message.pointerType==='mouse'){setTimeout(()=>send.call(this,message,...rest),35);return;}return send.call(this,message,...rest)};
    if(window===top){window.dragSamples=[];function sample(){const g=document.querySelector('.drag-ghost');if(g){const r=g.getBoundingClientRect();dragSamples.push({time:performance.now(),x:r.x,y:r.y,width:r.width,height:r.height,order:[...document.querySelectorAll('#desktop>[data-item]')].map(n=>n.dataset.item).join(',')});}requestAnimationFrame(sample)}requestAnimationFrame(sample)}''')
    worker=context.service_workers[0] if context.service_workers else context.wait_for_event('serviceworker',timeout=20000)
    page=context.new_page();page.set_default_timeout(45000);errors=[];requests=[]
@@ -59,7 +59,7 @@ with sync_playwright() as pw:
     page.mouse.move(x,y);page.mouse.down();started=page.evaluate('performance.now()')
     page.wait_for_function('document.body.classList.contains("is-dragging")');frame.locator('html.widget-dragging').wait_for(state='attached');page.wait_for_timeout(80)
     origin=page.locator('.drag-ghost').bounding_box();first=page.evaluate('dragSamples[0].time')
-    assert first-started>=350,(label,'hold too short',first-started)
+    assert first-started>=180,(label,'hold too short',first-started)
     assert abs(origin['width']-original['width'])<.5 and abs(origin['height']-original['height'])<.5,(label,'drag resized the card')
     assert frame.evaluate('({width:innerWidth,height:innerHeight})')==frame_size,(label,'iframe viewport changed')
     distance=min(210,page.evaluate('innerWidth')-x-65);assert distance>45
@@ -85,11 +85,11 @@ with sync_playwright() as pw:
      # and release with native delivery; absolute screen mapping has unit tests.
      tile.scroll_into_view_if_needed();page.wait_for_timeout(250);rect=node.bounding_box();tx=rect['x']+20;ty=rect['y']+35
      cdp=context.new_cdp_session(page);cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':tx,'y':ty}]})
-     page.wait_for_function('document.body.classList.contains("is-dragging")');origin=page.locator('.drag-ghost').bounding_box()
+     page.wait_for_function('document.body.classList.contains("is-dragging")');frame.locator('html.widget-dragging').wait_for(state='attached');origin=page.locator('.drag-ghost').bounding_box()
      for step in range(1,21):
       cdp.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':tx+step*2,'y':ty+step}]});page.wait_for_timeout(8)
      page.wait_for_timeout(180);end=page.locator('.drag-ghost').bounding_box()
-     assert abs(end['x']-origin['x']-40)<1 and abs(end['y']-origin['y']-20)<1,(label,'touch drift',{'dx':end['x']-origin['x'],'dy':end['y']-origin['y']})
+     assert abs(end['x']-origin['x']-40)<1 and abs(end['y']-origin['y']-20)<1,(label,'touch drift',{'dx':end['x']-origin['x'],'dy':end['y']-origin['y'],'live_frame':page.locator('.drag-ghost iframe').count(),'events':frame.evaluate('window.touchSamples')})
      cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});page.wait_for_function('!document.body.classList.contains("is-dragging")')
      print('PASS narrow touch trajectory and release',flush=True)
     assert not errors,errors

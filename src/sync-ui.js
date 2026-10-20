@@ -2,6 +2,7 @@
 import { t, getLocale } from './i18n.js';
 import { loadWebDAVConfig, saveWebDAVConfig, clearWebDAVConfig, requestWebDAVPermission, testWebDAVConnection, syncWebDAV, completeWebDAVDownload, getWebDAVStatus } from './webdav.js';
 import { icon } from './icons.js';
+import { PERMISSIONS_CHANGED, permissionControl, permissionEpoch } from './permissions.js';
 
 const syncEscape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const EMPTY_CONFIG = {enabled:false,endpoint:'',path:'qiye.json',username:'',password:'',autoSync:false};
@@ -15,6 +16,13 @@ export function createSyncController(context) {
  const formatDate = timestamp => Number.isFinite(Number(timestamp)) && Number(timestamp)>0 ? new Intl.DateTimeFormat(getLocale(),{dateStyle:'medium',timeStyle:'short'}).format(new Date(Number(timestamp))) : t("尚未同步");
  const isExtension = () => Boolean(globalThis.chrome?.runtime?.id);
  const cloneConfig = value => ({...EMPTY_CONFIG,...value});
+ const accessRemoved=async event=>{
+  if(!config.endpoint||!event.detail.origins?.some(origin=>origin==='https://*/*'||origin===new URL(config.endpoint).origin+'/*'))return;
+  clearTimeout(autoTimer);autoPaused=true;
+  try{config=cloneConfig(await saveWebDAVConfig({...config,enabled:false}));setMessage(t('站点授权已撤销，自动同步已暂停。'));context.refreshPanel();}
+  catch(error){context.toast(error.message);}
+ };
+ globalThis.addEventListener?.(PERMISSIONS_CHANGED,accessRemoved);
  function setMessage(text, kind='idle') {
   message = String(text || ''); messageKind = kind;
   const element = document.querySelector('#webdav-status');
@@ -101,7 +109,9 @@ export function createSyncController(context) {
     setMessage(t("WebDAV 连接在另一标签页中更改了，请检查配置后重新同步。"),'review');context.refreshPanel();if(manual)context.toast(message);return;
    }
    await context.beforeSync();
+   const accessEpoch=permissionEpoch();
    const result = await syncWebDAV(context.getState(),{mode,manual,expectedConfig:{...config}, ...(review?{review}:{})});
+   if(accessEpoch!==permissionEpoch()){autoPaused=true;return;}
    return consume(result,{manual,decision:review?mode:null});
   },t("正在比较本机与远端桌面…"));
  }
@@ -129,7 +139,7 @@ export function createSyncController(context) {
    </form>
    <div id="webdav-status" class="sync-status" role="status" aria-live="polite" data-kind="${messageKind}">${syncEscape(message)}</div>
    <div class="sync-actions"><button class="primary-button" data-action="webdav-sync" data-webdav-busy data-webdav-needs-config ${busy||!config.enabled?'disabled':''}>${t("{v0}立即同步", {v0: icon('sync')})}</button>${pendingReview?`<button class="secondary-button" data-action="webdav-review">${t("查看待确认内容")}</button>`:''}${config.enabled?`<button class="text-button" data-action="webdav-disable" data-webdav-busy>${t("暂停同步")}</button>`:''}${config.endpoint||configBroken?`<button class="text-button" data-action="webdav-clear" data-webdav-busy>${t("清除本机连接")}</button>`:''}</div>
-   <div class="sync-details"><p>${t("同步网址、分组、布局、便签、待办和壁纸设置。WebDAV 密码仅保存在本机，不进入 JSON 备份或同步文件。远端文件是普通 JSON，请使用你信任的私有目录。")}</p><p>${t("{v0}连接测试只读取；写入权限会在实际同步时检查。", {v0: isExtension()?t("安装版会在首次连接时请求对应站点的访问权限。"):t("网页版需要 WebDAV 服务允许此网站跨域访问（CORS）；若服务不支持，请使用扩展安装版。")})}</p></div>`;
+   ${config.endpoint&&isExtension()?permissionControl({origins:[new URL(config.endpoint).origin+'/*']}):''}<div class="sync-details"><p>${t("同步网址、分组、布局、便签、待办和壁纸设置。WebDAV 密码仅保存在本机，不进入 JSON 备份或同步文件。远端文件是普通 JSON，请使用你信任的私有目录。")}</p><p>${t("{v0}连接测试只读取；写入权限会在实际同步时检查。", {v0: isExtension()?t("安装版会在首次连接时请求对应站点的访问权限。"):t("网页版需要 WebDAV 服务允许此网站跨域访问（CORS）；若服务不支持，请使用扩展安装版。")})}</p></div>`;
  }
  function renderReview(result=pendingReview) {
   if (!result) return `<div class="dialog-body"><p class="help-text">${t("没有待确认的同步。请重新检查。")}</p></div>`;
@@ -176,6 +186,6 @@ export function createSyncController(context) {
   renderPanel,renderReview,saveFromForm,handleAction,scheduleLocal,
   onVisible:()=>scheduleLocal(2000),
   onIdle:()=>{if(!autoTimer)scheduleLocal(5000);},
-  dispose:()=>clearTimeout(autoTimer)
+  dispose:()=>{clearTimeout(autoTimer);globalThis.removeEventListener?.(PERMISSIONS_CHANGED,accessRemoved);}
  };
 }
