@@ -144,9 +144,29 @@ test('all widget surfaces require a hold, including focused inputs',async()=>{
  const h=harness();h.pointer('pointerdown',h.nodes.note.control,510,250);h.pointer('pointermove',h.nodes.note.control,240,265);assert.equal(h.controller.isDragging(),false);
  h.doc.activeElement=h.nodes.note.control;h.pointer('pointerdown',h.nodes.note.control,510,250);await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));h.hit(h.nodes.b.control);h.pointer('pointermove',h.nodes.note.control,240,265);h.tick();assert.equal(h.controller.isDragging(),true);assert.deepEqual(h.order(),['a','note','b','folder']);h.pointer('pointerup',h.nodes.note.tile,240,265);await h.flush();assert.equal(h.drops.length,1);h.controller.destroy();
 });
+
+test('a brief press does not arm a widget; holding for 400ms does',async()=>{
+ const h=harness();assert.equal(DRAG_HOLD_MS,400);
+ h.pointer('pointerdown',h.nodes.note.control,510,250);await new Promise(r=>setTimeout(r,250));
+ assert.equal(h.controller.isDragging(),false);h.pointer('pointerup',h.nodes.note.control,510,250);
+ await new Promise(r=>setTimeout(r,DRAG_HOLD_MS-250+25));assert.equal(h.controller.isDragging(),false);
+ h.controller.destroy();
+});
+
+test('layout reflow and small boundary tremors cannot repeatedly swap mixed-size cards',async()=>{
+ const h=harness();h.state.items.find(i=>i.id==='a').type='widget';
+ // A dense mixed-size row can leave the insertion gap outside the pointer.
+ h.grid.layout=n=>n.dataset.item==='a'?bounds(100,430):bounds(230,230);
+ h.pointer('pointerdown',h.nodes.a.control,120,450);await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));
+ h.hit(h.nodes.b.control);h.pointer('pointermove',h.nodes.a.control,315,265);h.tick();
+ const first=h.order();assert.notEqual(first[0],'a');
+ await new Promise(r=>setTimeout(r,120));
+ for(const x of [315,316,314,315]){h.pointer('pointermove',h.nodes.a.control,x,265);h.tick();assert.deepEqual(h.order(),first);}
+ h.pointer('pointerup',h.nodes.a.control,315,265);await h.flush();assert.equal(h.drops.length,1);h.controller.destroy();
+});
 test('touch swipe scrolls; holding the surface arms touch sorting',async()=>{
  const h=harness(),n=h.nodes.a.tile;h.pointer('pointerdown',n,120,250,{pointerType:'touch'});h.pointer('pointermove',n,150,260,{pointerType:'touch'});assert.equal(h.controller.isDragging(),false);
- h.pointer('pointerup',n,150,260,{pointerType:'touch'});h.pointer('pointerdown',n,120,250,{pointerType:'touch'});await new Promise(r=>setTimeout(r,350));
+ h.pointer('pointerup',n,150,260,{pointerType:'touch'});h.pointer('pointerdown',n,120,250,{pointerType:'touch'});await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));
  assert.equal(h.controller.isDragging(),true);assert.equal(h.doc.emit('touchmove',{}).defaultPrevented,true);h.controller.destroy();
 });
 
@@ -201,6 +221,13 @@ test('reduced-effects mode disables neighbour animations but keeps reordering',(
 
 test('pointer capture lives on stable grid; child blur never cancels live reflow',()=>{
  const h=harness();start(h);assert.equal(h.grid.capture.has(1),true);h.win.emit('blur',{target:h.nodes.a.control});assert.equal(h.controller.isDragging(),true);h.win.emit('blur',{target:h.win});assert.equal(h.controller.isDragging(),false);h.controller.destroy();
+});
+
+test('first focus into an iframe preserves the hold; leaving the page still cancels',async()=>{
+ const h=harness();h.doc.hasFocus=()=>true;
+ h.pointer('pointerdown',h.nodes.note.control,510,250);h.win.emit('blur',{target:h.win});
+ await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));assert.equal(h.controller.isDragging(),true);
+ h.doc.hasFocus=()=>false;h.win.emit('blur',{target:h.win});assert.equal(h.controller.isDragging(),false);h.controller.destroy();
 });
 
 test('only two distinct top-level websites can form a new folder, while edges still reorder',()=>{

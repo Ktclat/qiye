@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { fetchPluginHotboard } from './plugin-hotboard.js';
+import { createPluginPointerMapper } from './plugin-pointer.js';
 import { t, getLocale } from './i18n.js';
 import { escapeText as e } from './html.js';
 import { icon } from './icons.js';
@@ -123,6 +124,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  root.replaceChildren(loading);
  const prepared=mode==='window'&&!preview?takePreparedWindow(root,item,plugin):null;
  const frame=prepared?.frame||createPluginFrame(item,plugin,{preview});
+ const pointerMapper=createPluginPointerMapper(frame);
  root.setAttribute('aria-busy','true');
  const pluginKey=JSON.stringify(plugin);
  const active=()=>{
@@ -159,9 +161,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
    if(message?.type==='ready'&&message.version===plugin.manifest.version){session.menu=validatePluginMenu(message.contextMenu);ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
    if(message?.type==='interaction'&&mode==='card'&&!preview){
-    const rect=frame.getBoundingClientRect(),x=Number(message.x),y=Number(message.y);
-    if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>20000||Math.abs(y)>20000)return;
-    const point={clientX:rect.left+x*rect.width/(frame.clientWidth||1),clientY:rect.top+y*rect.height/(frame.clientHeight||1)};
+    const point=pointerMapper.point(message);if(!point)return;
     if(message.action==='contextmenu')host.openWidgetContext?.(item.id,point);
     if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
     return;
@@ -226,7 +226,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   viewTransition=requestView();
   try{await viewTransition;update();}catch(error){fail(error.message);}
  };
- const session={itemId:item.id,menu:[],dragState:state=>{if(ready&&active())port.postMessage({type:'drag-state',...state});},command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
+ const session={itemId:item.id,menu:[],dragState:state=>{pointerMapper.setDragging(state.active);if(ready&&active())port.postMessage({type:'drag-state',...state});},command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
   if(preview||homeMode!=='card'||mode!=='card'||borrowed||!reusable||!ready||!active()||!target.moveBefore||!homeRoot.moveBefore||candidate.id!==item.id||JSON.stringify(resolved)!==JSON.stringify(plugin))return null;
   target.replaceChildren();
   try{target.moveBefore(frame,null);}catch{return null;}

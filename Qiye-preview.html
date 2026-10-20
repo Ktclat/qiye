@@ -4105,6 +4105,51 @@ async function fetchPluginHotboard(type, { fetcher = fetchPublicJson, permission
 
 return {fetchPluginHotboard};
 })();
+const __plugin_pointer = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+// MessagePort delivery can lag behind a moving iframe. During a drag, anchor
+// screen deltas once instead of adding old local coordinates to its new rect.
+function createPluginPointerMapper(frame) {
+ let pointer=null,dragging=false;
+ const finite=value=>typeof value==='number'&&Number.isFinite(value);
+ const screen=message=>finite(message.screenX)&&finite(message.screenY)&&(message.screenX!==0||message.screenY!==0)&&Math.abs(message.screenX)<1e7&&Math.abs(message.screenY)<1e7;
+ function point(message){
+  if(!finite(message.x)||!finite(message.y)||Math.abs(message.x)>20000||Math.abs(message.y)>20000)return null;
+  const localPoint=()=>{const rect=frame.getBoundingClientRect();return {clientX:rect.left+message.x*rect.width/(frame.clientWidth||1),clientY:rect.top+message.y*rect.height/(frame.clientHeight||1)};};
+  if(message.action==='contextmenu')return localPoint();
+  if(!Number.isInteger(message.pointerId))return null;
+  if(message.action==='pointerdown'){
+   const point=localPoint();pointer={id:message.pointerId,point,screen:screen(message)?{x:message.screenX,y:message.screenY}:null,scale:null};dragging=false;return point;
+  }
+  if(!pointer||pointer.id!==message.pointerId)return null;
+  let result;
+  // Some touch emulators/privacy modes omit screen positions. Keep the legacy
+  // viewport path for the whole gesture instead of freezing at the anchor.
+  if(pointer.screen&&!screen(message))pointer.screen=null;
+  if(pointer.screen&&screen(message)){
+   const dx=message.screenX-pointer.screen.x,dy=message.screenY-pointer.screen.y,distance=dx*dx+dy*dy;
+   // Calibrate while the frame is stationary. Screen pixels and viewport CSS
+   // pixels differ at browser/pinch zoom; do not assume devicePixelRatio is zoom.
+   // Four pixels avoid magnifying subpixel noise. Until then a held card stays
+   // at its anchor; pre-hold input/selection continues to use native positions.
+   if(pointer.scale===null&&distance>=16){
+    const local=localPoint();
+    const scale=((local.clientX-pointer.point.clientX)*dx+(local.clientY-pointer.point.clientY)*dy)/distance;
+    if(scale>=.1&&scale<=10)pointer.scale=scale;
+    else{pointer.screen=null;result=local;}
+   }
+   if(pointer.scale!==null)result={clientX:pointer.point.clientX+dx*pointer.scale,clientY:pointer.point.clientY+dy*pointer.scale};
+   else if(dragging&&pointer.screen)result=pointer.point;
+  }
+  result??=localPoint();
+  if(message.action==='pointerup'||message.action==='pointercancel'){pointer=null;dragging=false;}
+  return result;
+ }
+ return {point,setDragging(active){dragging=active;if(!active)pointer=null;}};
+}
+
+return {createPluginPointerMapper};
+})();
 const __icons = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const paths = {
@@ -4308,6 +4353,7 @@ return {createPluginFrame, discardPreparedWindow, preparePluginWindow, takePrepa
 const __plugin_host = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 const { fetchPluginHotboard } = __plugin_hotboard;
+const { createPluginPointerMapper } = __plugin_pointer;
 const { t, getLocale } = __i18n;
 const { escapeText: e } = __html;
 const { icon } = __icons;
@@ -4431,6 +4477,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  root.replaceChildren(loading);
  const prepared=mode==='window'&&!preview?takePreparedWindow(root,item,plugin):null;
  const frame=prepared?.frame||createPluginFrame(item,plugin,{preview});
+ const pointerMapper=createPluginPointerMapper(frame);
  root.setAttribute('aria-busy','true');
  const pluginKey=JSON.stringify(plugin);
  const active=()=>{
@@ -4467,9 +4514,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
    if(message?.type==='ready'&&message.version===plugin.manifest.version){session.menu=validatePluginMenu(message.contextMenu);ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
    if(message?.type==='interaction'&&mode==='card'&&!preview){
-    const rect=frame.getBoundingClientRect(),x=Number(message.x),y=Number(message.y);
-    if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>20000||Math.abs(y)>20000)return;
-    const point={clientX:rect.left+x*rect.width/(frame.clientWidth||1),clientY:rect.top+y*rect.height/(frame.clientHeight||1)};
+    const point=pointerMapper.point(message);if(!point)return;
     if(message.action==='contextmenu')host.openWidgetContext?.(item.id,point);
     if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
     return;
@@ -4534,7 +4579,7 @@ function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   viewTransition=requestView();
   try{await viewTransition;update();}catch(error){fail(error.message);}
  };
- const session={itemId:item.id,menu:[],dragState:state=>{if(ready&&active())port.postMessage({type:'drag-state',...state});},command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
+ const session={itemId:item.id,menu:[],dragState:state=>{pointerMapper.setDragging(state.active);if(ready&&active())port.postMessage({type:'drag-state',...state});},command:command=>{if(ready&&active())port.postMessage({type:'command',command});},update,dispose,frame,flush:async()=>{if(!active())return;await viewTransition;await flush();},borrow(target,candidate,resolved){
   if(preview||homeMode!=='card'||mode!=='card'||borrowed||!reusable||!ready||!active()||!target.moveBefore||!homeRoot.moveBefore||candidate.id!==item.id||JSON.stringify(resolved)!==JSON.stringify(plugin))return null;
   target.replaceChildren();
   try{target.moveBefore(frame,null);}catch{return null;}
@@ -6788,7 +6833,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.6";
+const APP_VERSION = "0.10.7";
 
 return {APP_VERSION};
 })();
@@ -8960,7 +9005,8 @@ const __drag = (() => {
 const { t } = __i18n;
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
-const DRAG_HOLD_MS = 320;
+const DRAG_HOLD_MS = 400;
+const SWAP_TRAVEL = 10;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
 const FOLDER_DWELL_MS = 500;
@@ -9127,7 +9173,7 @@ function createDesktopDragController({
   if(mergeHint){const rect=target.getBoundingClientRect();mergeHint.textContent=ready?t("松手创建文件夹"):t("停留片刻，创建文件夹");mergeHint.style.left=(rect.left+rect.width/2)+'px';mergeHint.style.top=Math.min(win.innerHeight-40,rect.bottom+10)+'px';}
  }
  const cancel=()=>clean({waitForRelease:true});
- function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
+ function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(${session.source.type==='widget'?1:1.015})`;}
  function begin(){
   if(session?.active)return;
   clearTimeout(holdTimer);holdTimer=null;
@@ -9150,7 +9196,7 @@ function createDesktopDragController({
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
   doc.body.append(ghost);if(s.liveBody)ghost.moveBefore(s.liveBody,ghost.firstChild);
   s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
-  if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
+  if(s.source.type!=='widget'&&!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
   if(!s.external)try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   if(s.external)onWidgetDrag(s.source.id,{pointerId:s.pointerId,active:true});
   doc.getSelection?.()?.removeAllRanges();
@@ -9163,7 +9209,7 @@ function createDesktopDragController({
   if(next===source || source.nextElementSibling===next)return;
   const list=nodes(root),before=boxes(list);cancelAnimations();if(root.moveBefore)root.moveBefore(source,next);else root.insertBefore(source,next);
   // Capture final layout before FLIP transforms affect hit testing.
-  s.layout=boxes(nodes(root));s.lastSwap=Date.now();
+  s.layout=boxes(nodes(root));s.lastSwap=Date.now();s.swapPoint={x:s.x,y:s.y,scrollX:s.scrollX,scrollY:s.scrollY};
   animate(before,list);s.changed=true;
  }
  function updateTarget(force=false){
@@ -9210,6 +9256,9 @@ function createDesktopDragController({
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
   if(s.source.type==='widget'&&!root.moveBefore){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
+  // Dense grids can move a different-sized neighbour underneath a still pointer.
+  // A fresh swap needs real pointer/scroll travel, not that layout change alone.
+  if(s.swapPoint&&Math.hypot(s.x-s.swapPoint.x+scrollX-s.swapPoint.scrollX,s.y-s.swapPoint.y+scrollY-s.swapPoint.scrollY)<SWAP_TRAVEL)return;
   if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
   swap(dest,intent.position);
  }
@@ -9292,7 +9341,10 @@ function createDesktopDragController({
  listen(doc,'dragstart',e=>{if(sourceAt({target:e.target}))e.preventDefault();});
  listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
  listen(doc,'selectstart',e=>{if(session?.active)e.preventDefault();});
- listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
+ listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});
+ // Focusing an iframe blurs its parent window while the page still has focus.
+ // Only leaving the page should cancel the hold/drag.
+ listen(win,'blur',e=>{if(e.target===win&&!doc.hasFocus?.())cancel();});
  return {forwardPointer:(itemId,event)=>{
   const target=nodes(grid()).find(node=>node.dataset.item===itemId);if(!target)return;
   if(event.type!=='pointerdown'&&session?.source.id!==itemId)return;
