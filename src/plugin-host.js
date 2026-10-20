@@ -9,6 +9,8 @@ import { validatePluginData } from './plugin-data.js';
 import { validateCommunityData } from './community-format.js';
 import { publicHttpsUrl } from './public-json.js';
 import { createPluginFrame, preparePluginWindow, takePreparedWindow, discardPreparedWindow } from './plugin-preload.js';
+import { cachedWidgetDocument, loadCachedFrame } from './plugin-cache.js';
+import { PERMISSIONS_CHANGED, HOTBOARD_PERMISSION, HOTBOARD_EXPLANATION, permissionControl, permissionAffects, permissionEpoch } from './permissions.js';
 
 const sessions = new Map(), queuedCommands = new Map();
 export function pluginMenu(itemId) { return [...sessions.values()].find(s=>s.itemId===itemId)?.menu || []; }
@@ -30,7 +32,7 @@ export function pluginCard(item) {
 }
 export function pluginWorkspace(item) {
  let plugin;try{plugin=resolveWidgetSource(item);}catch{}
- return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.id==='qiye.hotsearch'&&globalThis.chrome?.runtime?.id?`<button data-plugin-hotboard-grant>${t('授权热榜访问')}</button>`:''}${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
+ return `<header class="plugin-window-header"><h2 id="dialog-title" tabindex="-1">${e(item.title)}</h2>${plugin?.manifest.id==='qiye.hotsearch'&&globalThis.chrome?.runtime?.id?`<details class="permission-explanation"><summary>${t('为何需要授权？')}</summary><p>${t(HOTBOARD_EXPLANATION)}</p></details><button data-plugin-hotboard-grant>${t('授权热榜访问')}</button>${permissionControl(HOTBOARD_PERMISSION)}`:''}${plugin?.manifest.capabilities?.includes('bookmarks')?`<button data-plugin-grant>${t('授权浏览器书签')}</button>${permissionControl({permissions:['bookmarks']})}`:''}${plugin?.manifest.capabilities?.includes('geolocation')?`<button data-plugin-location>${t('授权定位')}</button>${permissionControl({permissions:['geolocation']})}`:''}<button data-action="widget-sources" aria-label="${t('组件源')}">${icon('settings')}</button><button data-plugin-expand aria-label="${t('切换窗口大小')}">${icon('maximize')}</button><button data-close aria-label="${t('关闭')}">${icon('close')}</button></header>${pluginCard(item)}`;
 }
 function payload(item) {
  return item.widget==='community'?{value:item.data.value||'null',revision:item.data.value||'null'}
@@ -41,6 +43,7 @@ function grantKey(plugin) { return 'qiye.plugin.grant.'+encodeURIComponent(plugi
 
 export async function performPluginCall(method,params,{item,plugin,host,active,mode='card',preview=false}) {
  if(!active())throw new Error(t('组件已停止'));
+ const accessEpoch=permissionEpoch();
  if(preview)throw new Error(t('预览不会修改桌面数据'));
  if(method==='save'){
   const value=validatePluginData(params.value);
@@ -76,6 +79,7 @@ export async function performPluginCall(method,params,{item,plugin,host,active,m
    throw new Error(t('请先点击窗口标题栏的“授权定位”。'));
   }
   const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:10000,maximumAge:60000}));
+  if(!active()||permissionEpoch()!==accessEpoch)throw new Error(t('授权已撤销。'));
   return {timestamp:position.timestamp,coords:{latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy}};
  }
  if(method==='bookmarks'){
@@ -102,7 +106,9 @@ export async function performPluginCall(method,params,{item,plugin,host,active,m
     if(details.index!==undefined&&(!Number.isInteger(details.index)||details.index<0))throw new Error('Invalid index');
    }
   }
-  return chrome.bookmarks[action](...args);
+  const result=await chrome.bookmarks[action](...args);
+  if(!active()||permissionEpoch()!==accessEpoch)throw new Error(t('授权已撤销。'));
+  return result;
  }
  throw new Error('Unsupported plugin API');
 }
@@ -118,7 +124,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   }
  }
  const homeRoot=root,homeMode=mode;
- const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
+ const controller=new AbortController();let port,timer,prepareTimer,observer,themeObserver,cached=false,ready=false,loaded=false,busy=false,closed=false,lastSignature='',flushJob,flushPromise,retryCleanup=()=>{};
  let reusable=false,borrowed=false,homeDetached=false,viewJob,viewSequence=0,viewTransition=Promise.resolve(),parkedLabel,viewError,onHomeRetry,homeRetryCleanup=()=>{};
  const loading=document.createElement('div');loading.className='plugin-loading';loading.setAttribute('role','status');loading.innerHTML=`<span class="plugin-loading-mark">${icon('grid')}</span><strong>${e(item.title)}</strong><span>${t('正在打开组件…')}</span><i aria-hidden="true"></i>`;
  root.replaceChildren(loading);
@@ -150,9 +156,11 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   }
  };
  const onRetry=()=>{root.replaceChildren();retryCleanup=mountPlugin(root,item,host,mode,{preview});};
+ window.addEventListener(PERMISSIONS_CHANGED,event=>{if(permissionAffects(plugin,event.detail))fail(t('授权已撤销。'));},{signal:controller.signal});
  const initialize=()=>{
   // Never transfer a new capability after an untrusted frame navigates itself.
   if(loaded){fail(t('组件页面已跳转，请重试。'));return;}loaded=true;
+  clearTimeout(timer);timer=setTimeout(()=>fail(t('组件启动未完成，请重试。')),20000);
   const channel=new MessageChannel();port=channel.port1;
   port.onmessage=async event=>{
    const message=event.data;if(!active())return;
@@ -160,10 +168,10 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
    if(message?.type==='flushed'&&flushJob){const job=flushJob;flushJob=null;clearTimeout(job.timer);message.error?job.reject(new Error(message.error)):job.resolve();return;}
    if(message?.type==='ready'&&message.version===plugin.manifest.version){session.menu=validatePluginMenu(message.contextMenu);ready=true;reusable=plugin.manifest.version===2&&Array.isArray(message.features)&&message.features.includes('view-switch');clearTimeout(timer);requestAnimationFrame(()=>{if(!active())return;frame.dataset.ready='true';frame.removeAttribute('aria-hidden');if(!preview)frame.removeAttribute('tabindex');root.setAttribute('aria-busy','false');loading.remove();});update();return;}
    if(!ready)return;
-   if(message?.type==='interaction'&&mode==='card'&&!preview){
+   if(message?.type==='interaction'&&mode==='card'&&!preview&&root.getClientRects().length){
     const point=pointerMapper.point(message);if(!point)return;
     if(message.action==='contextmenu')host.openWidgetContext?.(item.id,point);
-    if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
+    if(['pointerdown','pointermove','pointerup','pointercancel'].includes(message.action)&&Number.isInteger(message.pointerId))host.widgetPointer?.(item.id,{...point,stableCoordinates:pointerMapper.hasScreenAnchor(),type:message.action,pointerId:message.pointerId,pointerType:message.pointerType==='touch'?'touch':'mouse',button:0,buttons:message.buttons===0?0:1});
     return;
    }
    if(plugin.manifest.version===1&&message?.type==='save'){
@@ -185,7 +193,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   observer=new ResizeObserver(update);observer.observe(root);
   themeObserver=new MutationObserver(update);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','lang']});
  };
- frame.addEventListener('load',initialize,{signal:controller.signal});
+ frame.addEventListener('load',()=>{if(!cached||loaded)initialize();},{signal:controller.signal});
  if(mode==='card'&&!preview){
   const target=root.closest('.tile-widget')||root;
   const prepare=()=>{
@@ -198,7 +206,7 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
   target.addEventListener('pointerleave',()=>clearTimeout(prepareTimer),{signal:controller.signal});
   target.addEventListener('focusin',prepare,{signal:controller.signal});
  }
- timer=setTimeout(()=>fail(t('组件未响应，请检查网络后重试。')),15000);
+ timer=setTimeout(()=>fail(t('首次下载组件未完成，请联网后重试。已缓存的组件可离线打开。')),90000);
  const flush=()=>!ready||plugin.manifest.version!==2||!active()?Promise.resolve():flushPromise||(flushPromise=new Promise((resolve,reject)=>{
   flushJob={resolve,reject,timer:setTimeout(()=>{flushJob=null;reject(new Error(t('组件没有确认保存，请稍后重试关闭。')));},5000)};port.postMessage({type:'flush'});
  }).finally(()=>{flushPromise=null;}));
@@ -243,7 +251,13 @@ export function mountPlugin(root,item,host,mode='card',{preview=false}={}) {
  }};
  sessions.set(root,session);
  if(prepared?.loaded)initialize();
- if(!prepared){frame.src=plugin.manifest.entry;root.append(frame);}
+ if(!prepared)void(async()=>{
+  let html;try{html=await cachedWidgetDocument(plugin);}catch{}
+  if(!active())return;
+  if(html){cached=true;loadCachedFrame(frame,html,plugin.manifest.entry,controller.signal,initialize);}
+  else frame.src=plugin.manifest.entry;
+  root.append(frame);
+ })();
  return ()=>{
   // A desktop layout refresh can remove the original slot while its window is
   // open. Keep that live editor until close, but never reuse it after revocation.

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extName__",
   "short_name": "__MSG_shortName__",
-  "version": "0.10.8",
+  "version": "0.10.9",
   "description": "__MSG_extDescription__",
   "minimum_chrome_version": "116",
   "icons": {
@@ -55,7 +55,9 @@
     }
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    "sandbox": "sandbox allow-scripts allow-forms allow-downloads; script-src 'unsafe-inline' data: https:; object-src 'none'; child-src 'none'; base-uri 'none'"
   },
+  "sandbox": { "pages": ["widget-sandbox.html"] },
   "default_locale": "en"
 }

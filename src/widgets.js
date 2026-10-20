@@ -6,7 +6,7 @@ export function renderWidget(item) { return pluginCard(item); }
 export function bindWidgets(container, host) {
  const mounted=bindings.get(container)||new Map();bindings.set(container,mounted);
  // Keep sibling frames (and their editor drafts) when a different card changes.
- for(const [root,dispose] of mounted)if(!container.contains(root)){dispose();mounted.delete(root);}
+ for(const [root,dispose] of mounted)if(!root.isConnected){dispose();mounted.delete(root);}
  for(const root of container.querySelectorAll('[data-plugin-slot]')){
   if(mounted.has(root))continue;
   const item=host.getState().items.find(item=>item.id===root.dataset.widgetId);

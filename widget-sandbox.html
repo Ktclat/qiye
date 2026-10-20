@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><script>
+addEventListener('message',function boot(event){
+ if(event.source!==parent||event.data?.type!=='qiye:cached-document'||typeof event.data.html!=='string')return;
+ removeEventListener('message',boot);
+ const token=event.data.token,html=event.data.html,entry=event.data.entry;
+ document.open();
+ // Cached documents have a local URL. Preserve entry parsing used by pinned
+ // runtimes, while keeping the real Location and opaque origin untouched.
+ const NativeURL=URL,localAddress=location.href;
+ globalThis.URL=class extends NativeURL {
+  constructor(value,base){super(String(value)===localAddress?entry:value,base===localAddress?entry:base);}
+  static parse(value,base){try{return new this(value,base);}catch{return null;}}
+ };
+ Object.defineProperty(document,'baseURI',{get:()=>entry,configurable:true});
+ document.write(html);
+ addEventListener('load',()=>parent.postMessage({type:'qiye:cached-ready',token},'*'),{once:true});
+ document.close();
+});
+</script></body></html>

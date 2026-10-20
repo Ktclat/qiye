@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 export const INSTALLED_STATE = JSON.parse(readFileSync(new URL('./fixtures/installed-desktop.json',import.meta.url),'utf8'));
+INSTALLED_STATE.settings.dragHoldMs=200;
 import assert from 'node:assert/strict';
 
 export function widgetData(state, type = 'notes') {

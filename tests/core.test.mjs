@@ -108,6 +108,7 @@ test('default state is valid, rich, immutable, and exports a lossless backup', (
 
 test('incomplete settings are rejected without changing the stored desktop', async () => {
   for (const key of Object.keys(DEFAULT_STATE.settings)) {
+    if(key==='dragHoldMs')continue; // Optional migration field added in 0.10.9.
     const partial = fresh();
     delete partial.settings[key];
     const fixture = extensionFixture(partial);

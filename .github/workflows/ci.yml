@@ -30,7 +30,7 @@ jobs:
           python scripts/build-wiki.py
           python -m unittest discover -s tests -p 'release_test.py'
           python scripts/package-release.py
-          git diff --exit-code -- Qiye-preview.html src/version.js
+          git diff --exit-code -- Qiye-preview.html widget-sandbox.html src/version.js
       - name: Install browser
         run: |
           python -m pip install playwright==1.56.0
@@ -47,6 +47,10 @@ jobs:
           python tests/component-gallery-e2e.py --preview
           python tests/extension-e2e.py
           python tests/extension-e2e.py --reuse
+          python tests/widget-cache-e2e.py
+          python tests/widget-cache-e2e.py --preview
+          python tests/widget-cache-e2e.py --extension
+          python tests/bookmark-import-e2e.py
           python tests/editor-e2e.py
           python tests/search-overlays-e2e.py
           python tests/search-overlays-e2e.py --preview

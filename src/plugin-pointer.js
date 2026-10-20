@@ -37,5 +37,5 @@ export function createPluginPointerMapper(frame) {
   if(message.action==='pointerup'||message.action==='pointercancel'){pointer=null;dragging=false;}
   return result;
  }
- return {point,setDragging(active){dragging=active;if(!active)pointer=null;}};
+ return {point,hasScreenAnchor:()=>!!pointer?.screen,setDragging(active){dragging=active;if(!active)pointer=null;}};
 }

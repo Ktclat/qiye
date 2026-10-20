@@ -8,6 +8,7 @@ import { uid } from './core.js';
 import { sizeLabel, gridMetrics, widgetDimensions } from './widget-sizes.js';
 import { mountPlugin } from './plugin-host.js';
 import { readWidgetSources, saveWidgetSources, OFFICIAL_WIDGET_SOURCE, SOURCES_CHANGED } from './widget-sources.js';
+import { permissionControl } from './permissions.js';
 
 export const DEFAULT_COMMUNITY_SOURCE = OFFICIAL_WIDGET_SOURCE;
 const sourceName = source => source.url === OFFICIAL_WIDGET_SOURCE ? t('官方源') : source.catalog?.name || new URL(source.url).hostname;
@@ -34,7 +35,7 @@ export function bindCommunity(root, host, initial={}) {
  const persist = next => {writingSources=true;try{saveWidgetSources(next);sources=next;}finally{writingSources=false;}};
  const stopPreviews = () => {observer?.disconnect();for(const dispose of previews.values())dispose();previews.clear();};
  const label = source => source.url===OFFICIAL_WIDGET_SOURCE ? t('栖页官方小组件') : sourceName(source);
- const buttons = (source,index,details=false) => `<button type="button" role="switch" aria-checked="${source.enabled}" data-source-toggle="${index}">${t(source.enabled?'停用':'启用')}</button>${details?`<button data-source-refresh="${index}" ${!source.enabled?'disabled':''}>${t('检查更新')}</button>`:`<button data-source-details="${index}">${t('查看组件详情')}</button>`}${source.url===OFFICIAL_WIDGET_SOURCE?'':`<button data-source-remove="${index}">${t('移除')}</button>`}`;
+ const buttons = (source,index,details=false) => `<button type="button" role="switch" aria-checked="${source.enabled}" data-source-toggle="${index}">${t(source.enabled?'停用':'启用')}</button>${details?`<button data-source-refresh="${index}" ${!source.enabled?'disabled':''}>${t('检查更新')}</button>`:`<button data-source-details="${index}">${t('查看组件详情')}</button>`}${source.url===OFFICIAL_WIDGET_SOURCE?'':`<button data-source-remove="${index}">${t('移除')}</button>${permissionControl({origins:[new URL(source.url).origin+'/*']})}`}`;
  const access = manifest => `<details class="source-widget-access"><summary>${t('来源与权限')}</summary><dl><dt>${t('运行地址')}</dt><dd>${e(new URL(manifest.entry).origin)}</dd><dt>${t('权限')}</dt><dd>${e((manifest.capabilities||[]).map(c=>t({bookmarks:'浏览器书签',wallpaper:'壁纸',geolocation:'定位'}[c])).join('、') || t('仅组件自己的数据'))}</dd><dt>${t('许可证')}</dt><dd>${e(manifest.license)}</dd></dl><a href="${e(manifest.repository)}" target="_blank" rel="noopener noreferrer">${t('查看源码')}</a></details>`;
 
  function renderSettings() {
@@ -115,7 +116,7 @@ export function bindCommunity(root, host, initial={}) {
    if(button.hasAttribute('data-source-back')){const url=selectedSource;selectedSource=null;query='';render();body.querySelector(`[data-source-details="${sources.findIndex(s=>s.url===url)}"]`)?.focus();return;}
    if(button.hasAttribute('data-source-browse')){host.openCatalog?.(selectedSource);return;}
    if(button.hasAttribute('data-gallery-source')){host.openSources?.(entries[Number(button.dataset.gallerySource)].source.url);return;}
-   if(button.hasAttribute('data-source-toggle')){const source=sources[Number(button.dataset.sourceToggle)];if(source.enabled){persist(sources.map(s=>s===source?{...s,enabled:false}:s));render();}else await load(source.url);return;}
+   if(button.hasAttribute('data-source-toggle')){const source=sources[Number(button.dataset.sourceToggle)];if(source.enabled){persist(sources.map(s=>s===source?{...s,enabled:false}:s));render();}else if(source.catalog){if(source.url!==OFFICIAL_WIDGET_SOURCE)await requestPublicOrigin(source.url);persist(sources.map(s=>s===source?{...s,enabled:true}:s));render();}else await load(source.url);return;}
    if(button.hasAttribute('data-source-refresh')){await load(sources[Number(button.dataset.sourceRefresh)].url);return;}
    if(button.hasAttribute('data-source-remove')){persist(sources.filter((_,index)=>index!==Number(button.dataset.sourceRemove)));render();return;}
    if(button.hasAttribute('data-community-category')){category=button.dataset.communityCategory;filter();return;}

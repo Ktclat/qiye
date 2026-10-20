@@ -10,7 +10,7 @@ parser=argparse.ArgumentParser();parser.add_argument('--widgets',type=Path,defau
 OUT=ROOT/'output/playwright/gallery'/('fixture' if args.widgets==ROOT/'tests/fixtures/plugin-source' else 'integration')/('preview' if args.preview else 'source');OUT.mkdir(parents=True,exist_ok=True)
 official=json.loads((args.widgets/'index.json').read_text(encoding='utf-8'));notes=next(m for m in official['widgets'] if m['id']=='qiye.notes')
 customs={f'https://community-{i}.example.com/index.json':{'format':'qiye-widget-source','version':1,'name':name,'widgets':[{**notes,'name':'社区便签','author':name}]} for i,name in enumerate(['青柠工作室','长名称作者的实用组件收藏'])}
-calls=[];held=[];hold=False
+calls=[]
 class Quiet(SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
 server=ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)));threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -19,12 +19,10 @@ def fulfill(route):
  path=args.widgets/route.request.url.split('/qiye-widgets/',1)[1].split('?')[0]
  route.fulfill(path=str(path),headers={'Access-Control-Allow-Origin':'*'})
 def route_external(route):
- global hold
  url=route.request.url;calls.append(url)
  if url=='https://ktclat.github.io/qiye-widgets/index.json':return route.fulfill(json=official,headers={'Access-Control-Allow-Origin':'*'})
  if url in customs:return route.fulfill(json=customs[url],headers={'Access-Control-Allow-Origin':'*'})
  if url.startswith('https://ktclat.github.io/qiye-widgets/'):
-  if hold and '/widget.html' in url:held.append(route);hold=False;return
   return fulfill(route)
  return route.fulfill(json={},headers={'Access-Control-Allow-Origin':'*'})
 def check(name,ok=True):
@@ -81,21 +79,18 @@ with sync_playwright() as pw:
   check('Closing gallery releases its frames',page.locator('.community-preview iframe').count()==0)
   check('Desktop cards retain 20px clipping',page.locator('#desktop .tile-widget .tile-body').first.evaluate("e=>getComputedStyle(e).borderRadius==='20px'&&getComputedStyle(e).overflow==='hidden'"))
   page.screenshot(path=str(OUT/'rounded-desktop-dark.png'))
-  # Exercise a real cold/slow request. A prepared document intentionally skips
-  # this loading surface; its reuse is covered by plugin-window-e2e.
+  # The legacy fixture has no view-switch feature, but its window still shares
+  # the downloaded bundle. Opening it must not request the document again.
+  # Real cold/slow downloads are covered by widget-cache-e2e.
   page.evaluate("()=>{Object.defineProperty(navigator,'connection',{configurable:true,value:{saveData:true}});dispatchEvent(new Event('qiye:widget-sources-changed'));}")
   for theme in ['dark','light']:
    if theme=='light':
     page.locator('#brand-button').click();page.locator('[data-settings-tab=appearance]').click();page.locator('[data-theme=light]').click();page.locator('#dialog [data-close]').first.click()
-   hold=True;page.frame_locator('#desktop iframe').first.locator('[data-action=widget-open]').first.click()
-   page.locator('#dialog .plugin-loading').wait_for();check(theme+' delayed widget keeps a visible loading surface',page.locator('#dialog .plugin-loading').is_visible())
-   check(theme+' unfinished frame is hidden',page.locator('#dialog iframe').evaluate("e=>getComputedStyle(e).visibility==='hidden'"))
-   page.screenshot(path=str(OUT/('loading-'+theme+'.png')))
-   color=page.locator('#dialog .plugin-loading').evaluate("e=>getComputedStyle(e).backgroundColor.match(/[\\d.]+/g).map(Number)")
-   check(theme+' loading uses a themed surface '+str(color),(sum(color[:3])/3<100 if theme=='dark' else sum(color[:3])/3>180) and (len(color)==3 or color[3]>=0.9))
-   page.wait_for_timeout(150);assert held
-   for route in held:fulfill(route)
-   held.clear();page.locator('#dialog iframe[data-ready=true]').wait_for();check('Ready frame replaces loading surface',page.locator('#dialog .plugin-loading').count()==0)
+   before=len(calls);page.frame_locator('#desktop iframe').first.locator('[data-action=widget-open]').first.click()
+   page.locator('#dialog iframe[data-ready=true]').wait_for()
+   check(theme+' cached window has no new resource requests',len(calls)==before)
+   check('Ready frame replaces loading surface',page.locator('#dialog .plugin-loading').count()==0)
+   page.screenshot(path=str(OUT/('cached-window-'+theme+'.png')))
    page.frame_locator('#dialog iframe').locator('[data-close]').first.click();expect(page.locator('#dialog')).not_to_be_visible()
   page.evaluate('delete navigator.connection')
   # Refreshing source metadata leaves installed data pinned until explicit update.
@@ -116,5 +111,4 @@ with sync_playwright() as pw:
   check('Narrow source overview still has no widget list',page.locator('[data-source-widget],[data-community-card]').count()==0)
   check('No browser script errors',not errors)
  finally:
-  for route in held:route.abort()
   browser.close();server.shutdown()

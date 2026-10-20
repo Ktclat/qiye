@@ -29,11 +29,12 @@ def check(name,value):
 def seed(page):
  page.goto(base+('/Qiye-preview.html' if args.preview else '/'))
  page.locator('#desktop .tile-link').first.wait_for() if not page.locator('#desktop .tile-widget').count() else None
- page.evaluate('''({state,catalog,source})=>{
+ page.evaluate('''({state,catalog,source,supported})=>{
   state.settings.theme='dark';state.activeGroupId=state.groups[0].id;
+  if(!supported){catalog=structuredClone(catalog);catalog.widgets[0].release='1.0.1';}
   state.items=['a','b'].map(id=>({id,type:'widget',widget:'community',title:'便签 '+id,size:'2x2',groupId:state.activeGroupId,config:{source,manifest:catalog.widgets[0]},data:{value:JSON.stringify({config:{},data:{notes:'内容 '+id}})}}));
   localStorage.setItem('qiye.state.v5',JSON.stringify(state));localStorage.setItem('qiye.community.v1',JSON.stringify([{url:source,enabled:true,catalog}]));
- }''',dict(state=state,catalog=catalog,source=SOURCE))
+ }''',dict(state=state,catalog=catalog,source=SOURCE,supported=supported))
  page.reload();page.wait_for_function('document.querySelectorAll("#desktop iframe[data-ready=true]").length===2')
 def card(page,id='a'):return page.frame_locator(f'#desktop [data-item={id}] iframe')
 def open_window(page,id='a'):
@@ -90,7 +91,7 @@ try:
   page.evaluate('''()=>{const s=JSON.parse(localStorage.getItem('qiye.state.v5'));Object.assign(s.items[0],{widget:'notes',config:{color:'yellow'},data:{notes:'关闭前立即保存'}});localStorage.setItem('qiye.state.v5',JSON.stringify(s));}''')
   page.reload();page.wait_for_function('document.querySelectorAll("#desktop iframe[data-ready=true]").length===2');f=open_window(page);boot=f.locator('body').evaluate('()=>bootId')
   page.evaluate('''()=>{const s=JSON.parse(localStorage.getItem('qiye.community.v1')),m=s[0].catalog.widgets[0];m.release='2.0.0';m.entry=m.entry.replace('/1.0.0/','/2.0.0/');localStorage.setItem('qiye.community.v1',JSON.stringify(s));dispatchEvent(new Event('qiye:widget-sources-changed'));}''')
-  page.locator('#dialog iframe[src*="/2.0.0/"][data-ready=true]').wait_for()
+  page.locator('#dialog iframe[data-entry*="/2.0.0/"][data-ready=true]').wait_for()
   check('A changed source manifest does not reuse the previous runtime',page.frame_locator('#dialog iframe').locator('body').evaluate('()=>bootId')!=boot)
   close(page)
   page.reload();page.wait_for_function('document.querySelectorAll("#desktop iframe[data-ready=true]").length===2');open_window(page)

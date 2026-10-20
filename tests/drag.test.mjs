@@ -145,12 +145,21 @@ test('all widget surfaces require a hold, including focused inputs',async()=>{
  h.doc.activeElement=h.nodes.note.control;h.pointer('pointerdown',h.nodes.note.control,510,250);await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));h.hit(h.nodes.b.control);h.pointer('pointermove',h.nodes.note.control,240,265);h.tick();assert.equal(h.controller.isDragging(),true);assert.deepEqual(h.order(),['a','note','b','folder']);h.pointer('pointerup',h.nodes.note.tile,240,265);await h.flush();assert.equal(h.drops.length,1);h.controller.destroy();
 });
 
-test('a brief press does not arm a widget; holding for 400ms does',async()=>{
- const h=harness();assert.equal(DRAG_HOLD_MS,400);
- h.pointer('pointerdown',h.nodes.note.control,510,250);await new Promise(r=>setTimeout(r,250));
+test('a press shorter than the default 200ms does not arm a widget',async()=>{
+ const h=harness();assert.equal(DRAG_HOLD_MS,200);
+ h.pointer('pointerdown',h.nodes.note.control,510,250);await new Promise(r=>setTimeout(r,80));
  assert.equal(h.controller.isDragging(),false);h.pointer('pointerup',h.nodes.note.control,510,250);
- await new Promise(r=>setTimeout(r,DRAG_HOLD_MS-250+25));assert.equal(h.controller.isDragging(),false);
+ await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));assert.equal(h.controller.isDragging(),false);
  h.controller.destroy();
+});
+
+test('legacy iframe pointers keep their coordinate source stationary until release',async()=>{
+ const h=harness(),forward=(type,x,y)=>h.controller.forwardPointer('note',{type,clientX:x,clientY:y,pointerId:7,pointerType:'touch',stableCoordinates:false});
+ forward('pointerdown',510,250);await new Promise(r=>setTimeout(r,DRAG_HOLD_MS+25));
+ h.hit(h.nodes.b.control);forward('pointermove',240,265);h.tick();
+ assert.deepEqual(h.order(),['a','b','folder','note']);
+ forward('pointerup',240,265);await h.flush();
+ assert.deepEqual(h.drops,[{kind:'reorder',itemId:'note',targetId:'b',position:'before'}]);h.controller.destroy();
 });
 
 test('layout reflow and small boundary tremors cannot repeatedly swap mixed-size cards',async()=>{

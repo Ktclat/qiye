@@ -1,6 +1,6 @@
 {
   "name": "qiye-extension",
-  "version": "0.10.8",
+  "version": "0.10.9",
   "private": true,
   "type": "module",
   "description": "Qiye — an open-source new tab with flexible layouts, search, extensible widgets and WebDAV sync",
