@@ -2,7 +2,8 @@
 import { t } from './i18n.js';
 // Real-time pointer sorting. No external drag library or per-card listeners.
 const DRAG_THRESHOLD = 7;
-export const DRAG_HOLD_MS = 320;
+export const DRAG_HOLD_MS = 400;
+const SWAP_TRAVEL = 10;
 const CLICK_GUARD_MS = 550;
 const DROP_CLASSES = ['drop-before', 'drop-after', 'drop-inside', 'folder-pending', 'folder-ready'];
 export const FOLDER_DWELL_MS = 500;
@@ -169,7 +170,7 @@ export function createDesktopDragController({
   if(mergeHint){const rect=target.getBoundingClientRect();mergeHint.textContent=ready?t("松手创建文件夹"):t("停留片刻，创建文件夹");mergeHint.style.left=(rect.left+rect.width/2)+'px';mergeHint.style.top=Math.min(win.innerHeight-40,rect.bottom+10)+'px';}
  }
  const cancel=()=>clean({waitForRelease:true});
- function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(1.015)`;}
+ function moveGhost(){if(ghost && session)ghost.style.transform=`translate3d(${session.x-session.offsetX}px,${session.y-session.offsetY}px,0) scale(${session.source.type==='widget'?1:1.015})`;}
  function begin(){
   if(session?.active)return;
   clearTimeout(holdTimer);holdTimer=null;
@@ -192,7 +193,7 @@ export function createDesktopDragController({
   ghost.style.cssText=`position:fixed;left:0;top:0;width:${rect.width}px;height:${rect.height}px;margin:0;z-index:1000;pointer-events:none;`;
   doc.body.append(ghost);if(s.liveBody)ghost.moveBefore(s.liveBody,ghost.firstChild);
   s.source.element.classList.add('dragging');doc.body.classList.add('is-dragging');
-  if(!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
+  if(s.source.type!=='widget'&&!reduced())ghost.querySelector?.('.tile-body')?.animate?.([{transform:'scale(.98)'},{transform:'scale(1.025)',offset:.7},{transform:'scale(1)'}],{duration:200,easing:'cubic-bezier(.2,.8,.2,1)'});
   if(!s.external)try{s.capture=s.source.root;s.capture.setPointerCapture(s.pointerId);}catch{s.capture=null;}
   if(s.external)onWidgetDrag(s.source.id,{pointerId:s.pointerId,active:true});
   doc.getSelection?.()?.removeAllRanges();
@@ -205,7 +206,7 @@ export function createDesktopDragController({
   if(next===source || source.nextElementSibling===next)return;
   const list=nodes(root),before=boxes(list);cancelAnimations();if(root.moveBefore)root.moveBefore(source,next);else root.insertBefore(source,next);
   // Capture final layout before FLIP transforms affect hit testing.
-  s.layout=boxes(nodes(root));s.lastSwap=Date.now();
+  s.layout=boxes(nodes(root));s.lastSwap=Date.now();s.swapPoint={x:s.x,y:s.y,scrollX:s.scrollX,scrollY:s.scrollY};
   animate(before,list);s.changed=true;
  }
  function updateTarget(force=false){
@@ -252,6 +253,9 @@ export function createDesktopDragController({
   if(intent?.kind==='folder'){s.special=intent;dest.classList.add('drop-inside');return;}
   if(!intent)return;
   if(s.source.type==='widget'&&!root.moveBefore){s.fallbackIntent=intent;dest.classList.add('drop-'+intent.position);return;}
+  // Dense grids can move a different-sized neighbour underneath a still pointer.
+  // A fresh swap needs real pointer/scroll travel, not that layout change alone.
+  if(s.swapPoint&&Math.hypot(s.x-s.swapPoint.x+scrollX-s.swapPoint.scrollX,s.y-s.swapPoint.y+scrollY-s.swapPoint.scrollY)<SWAP_TRAVEL)return;
   if(!force && Date.now()-s.lastSwap<110){s.dirty=true;return;}
   swap(dest,intent.position);
  }
@@ -334,7 +338,10 @@ export function createDesktopDragController({
  listen(doc,'dragstart',e=>{if(sourceAt({target:e.target}))e.preventDefault();});
  listen(doc,'contextmenu',e=>{if(session?.active){e.preventDefault();e.stopImmediatePropagation();}});
  listen(doc,'selectstart',e=>{if(session?.active)e.preventDefault();});
- listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});listen(win,'blur',e=>{if(e.target===win)cancel();});
+ listen(doc,'visibilitychange',()=>{if(doc.hidden)cancel();});
+ // Focusing an iframe blurs its parent window while the page still has focus.
+ // Only leaving the page should cancel the hold/drag.
+ listen(win,'blur',e=>{if(e.target===win&&!doc.hasFocus?.())cancel();});
  return {forwardPointer:(itemId,event)=>{
   const target=nodes(grid()).find(node=>node.dataset.item===itemId);if(!target)return;
   if(event.type!=='pointerdown'&&session?.source.id!==itemId)return;

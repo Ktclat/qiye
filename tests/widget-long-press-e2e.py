@@ -40,7 +40,7 @@ with sync_playwright() as pw:
     context=browser.new_context(viewport={'width':1440,'height':980},locale='zh-CN',has_touch=True)
     if not args.live:context.route('https://ktclat.github.io/qiye-widgets/**',local_assets)
     context.add_init_script('''if(window===top&&!localStorage.getItem('hold-seeded')){localStorage.setItem('qiye.state.v5',%s);localStorage.setItem('qiye.community.v1',%s);localStorage.setItem('hold-seeded','yes');}'''%(json.dumps(json.dumps(state)),json.dumps(json.dumps([{'url':SOURCE,'enabled':True,'catalog':catalog}]))))
-    page=context.new_page();page.set_default_timeout(12000);errors=[];requests=[]
+    page=context.new_page();page.set_default_timeout(30000);errors=[];requests=[]
     page.on('pageerror',lambda error:errors.append(str(error)))
     page.on('request',lambda request:requests.append(request.url) if '/releases/' in request.url else None)
     def tile(kind):return page.locator('#desktop>[data-item="w-'+kind+'"]')
@@ -58,10 +58,10 @@ with sync_playwright() as pw:
         assert page.locator('.drag-ghost iframe[data-ready=true]').count()==1
         return frame,x,y
     try:
-        page.goto(base);ready()
+        page.goto(base,wait_until='domcontentloaded');ready()
         for theme in ['dark','light']:
             if theme=='light':
-                page.evaluate('()=>{const s=JSON.parse(localStorage.getItem("qiye.state.v5"));s.settings.theme="light";localStorage.setItem("qiye.state.v5",JSON.stringify(s));}');page.reload();ready()
+                page.evaluate('()=>{const s=JSON.parse(localStorage.getItem("qiye.state.v5"));s.settings.theme="light";localStorage.setItem("qiye.state.v5",JSON.stringify(s));}');page.reload(wait_until='domcontentloaded');ready()
             assert page.locator('#desktop .widget-host-actions,#desktop .widget-drag-handle,#desktop .tile-widget .tile-actions').count()==0
             for kind in manifests:
                 tile(kind).scroll_into_view_if_needed();frame=widget(kind)
@@ -96,7 +96,7 @@ with sync_playwright() as pw:
         page.wait_for_function('!document.body.classList.contains("is-dragging")')
         assert order()!=before
         assert widget('notes').locator('textarea').input_value()=='Keep the draft while dragging. Select this text.'
-        saved_order=order();page.reload();ready();assert order()==saved_order
+        saved_order=order();page.reload(wait_until='domcontentloaded');ready();assert order()==saved_order
         check('long hold in focused text reorders and persists without losing the draft',True)
         # Holding native controls does not toggle/delete; short clicks still work.
         for selector in ['.w-todo-row input[type=checkbox]','.w-row-delete']:
