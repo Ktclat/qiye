@@ -91,6 +91,11 @@ with tempfile.TemporaryDirectory(prefix='qiye-update-regression-') as directory,
         page.goto(f'chrome-extension://{EXPECTED_ID}/index.html')
         page.locator('#desktop .tile-link').first.wait_for()
         after = page.evaluate("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']")
+        if before != after:
+            comparison = {'before': before, 'after': after}
+            (OUT / 'storage-comparison.json').write_text(json.dumps(comparison, ensure_ascii=False, indent=2), encoding='utf-8')
+            print('Storage differences:', {key: {'before': before.get(key), 'after': after.get(key)}
+                  for key in before.keys() | after.keys() if before.get(key) != after.get(key)}, flush=True)
         check('Desktop and settings survive updating', before == after)
         check('Extension storage survives updating', page.evaluate("async()=> (await chrome.storage.local.get('qiye.plugin-probe'))['qiye.plugin-probe'].value") == 'preserved')
         check('Local storage survives updating', page.evaluate("localStorage.getItem('qiye.identity-probe')") == 'preserved')
