@@ -4,8 +4,8 @@
 
 <h1 align="center">Qiye</h1>
 
-<p align="center"><strong>A familiar place, every time you open a tab.</strong></p>
-<p align="center">A customizable new tab · Local storage · Your own WebDAV sync</p>
+<p align="center"><strong>A new tab for productivity and personalization</strong></p>
+<p align="center">Flexible layouts · Multiple search engines · Extensible widgets · WebDAV sync</p>
 
 <p align="center">
   <a href="README.md">简体中文</a> · <strong>English</strong>
@@ -19,23 +19,22 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-Qiye brings websites, search, everyday widgets and wallpapers together on your browser's new tab. Organize groups, choose card sizes and customize the layout in Chrome or Edge. No Qiye account is required: your desktop stays in your browser, with JSON backups and optional synchronization through your own WebDAV server.
+Qiye is an open-source new tab extension for Chrome and Edge, bringing website shortcuts, multiple search engines and an extensible widget library into one place for work and everyday browsing. Organize content into groups, arrange cards by dragging, choose widget sizes and customize themes to create a browser desktop that fits your workflow.
 
-> The app ships without widgets. Enable the built-in official source under **Settings → Widget sources**, then choose widgets from **Add → Widgets**. Existing widget data is retained; sources are disabled until you enable them.
+Desktop content and settings are stored in your browser, with JSON backup and restore and optional synchronization across devices through a WebDAV service. The extension, web app and standalone preview share the same core code; browser integration and network access depend on the environment, as outlined below.
 
 ## Highlights
 
 | Capability | What you can do |
 | --- | --- |
-| Flexible desktop | Arrange websites, folders and widgets; move between groups, use keyboard controls and undo changes |
-| Independent widget library | [qiye-widgets](https://github.com/Ktclat/qiye-widgets) owns widget code, manifests, assets, tests and releases. The official source is disabled by default. |
-| Search and browser integration | Built-in and custom search engines, local search, optional bookmarks/history access, toolbar and context-menu saving |
-| Appearance | Light/dark themes, accent colors, translucent materials, local image/video wallpapers, online galleries and layout settings |
-| Your data | Local storage, JSON import/export and WebDAV sync with revision and conflict checks |
-| Community and sharing | Subscribe to widget catalogs, run isolated web widgets, preview and import shared desktop layouts |
-| Chinese and English | Follow the browser language or select one manually; your own names and notes stay unchanged |
-
-The desktop, windows, themes, host API and settings live here. Widget implementations are maintained in [qiye-widgets](https://github.com/Ktclat/qiye-widgets). The two repositories build and release independently. See [repository boundaries and protocol](docs/PLUGIN-API.md).
+| Desktop organization | Organize websites and widgets with groups, folders and multiple card sizes; drag to reorder, move between groups, use keyboard controls and undo changes |
+| Search and navigation | Switch between built-in or custom search engines and find desktop content; search bookmarks and history with optional permissions, and save pages from the toolbar or context menu |
+| Widget library | Enable widget sources to add notes, tasks, calendars, weather, focus timers and other tools; official widgets are maintained independently in [qiye-widgets](https://github.com/Ktclat/qiye-widgets) |
+| Themes and wallpapers | Light/dark themes, accent colors, translucent surfaces and layout settings; local image/video wallpapers, online galleries and a local wallpaper library |
+| Image processing | Compress wallpaper uploads locally when useful; the separate Image Compressor widget provides batch processing and format conversion |
+| Backup and sync | Local storage, JSON import/export and WebDAV sync with revision and conflict checks |
+| Community and sharing | Subscribe to widget catalogs, run web widgets in isolated frames, and preview and import shared desktop layouts |
+| Interface languages | Use Simplified Chinese or English, selected automatically or manually, while preserving user-created content |
 
 ## Quick start
 
@@ -44,7 +43,10 @@ The desktop, windows, themes, host API and settings live here. Widget implementa
 1. Download `qiye-X.Y.Z-chrome-edge.zip` from [Releases](https://github.com/Ktclat/qiye/releases) and extract it.
 2. Open `chrome://extensions/` or `edge://extensions/` and enable **Developer mode**.
 3. Choose **Load unpacked** and select the directory that directly contains `manifest.json`.
-4. Open a new tab. Click the Qiye icon in the navigation to open settings, or **＋** to add websites. For widgets, enable a source in Settings first.
+4. Open a new tab. Click the Qiye icon in the navigation to open settings, or **＋** to add websites.
+5. To add widgets, enable the built-in official source under **Settings → Widget sources**, then open **Add → Widgets** to choose a widget, preview it and select its size.
+
+Widget sources are disabled by default and can be enabled as needed. Disabling a source preserves existing widget instances and data.
 
 No Node.js, npm dependencies or build step is needed to use the extension. The manifest requires Chrome 116 or later; Qiye targets Chrome and Edge and has not been adapted for Firefox. Change the interface language in **Settings → Opening behavior → Language**.
 
@@ -84,6 +86,8 @@ The [documentation index](docs/README.en.md) identifies the language of each gui
 
 Qiye uses HTML, CSS and JavaScript ES Modules. Load the repository root as an unpacked extension. CI uses Node.js 22 and Python 3.13.
 
+This repository maintains the desktop, windows, themes, host API and settings. Widget implementations are developed, tested and released independently in [qiye-widgets](https://github.com/Ktclat/qiye-widgets). See [repository boundaries and protocol](docs/PLUGIN-API.md).
+
 ```sh
 git clone https://github.com/Ktclat/qiye.git
 cd qiye
@@ -99,8 +103,4 @@ Edit `index.html`, styles and `src/`, then regenerate `Qiye-preview.html`. See t
 
 ## License
 
-Copyright © 2026 Ktclat and Qiye contributors. Qiye is licensed under [GPL-3.0-only](LICENSE). Fonts, the calendar engine and external assets retain their own licenses; see [third-party notices](docs/THIRD_PARTY.md). Interactions take inspiration from iTab; Qiye's branding, interface icons and code are independently implemented.
-
-### Local image compression
-
-The Image Compressor widget runs entirely in your browser. It supports lossless PNG recompression, high-quality WebP/JPEG, batch comparison, ZIP downloads and applying an image as wallpaper. Static PNG/JPEG/WebP wallpaper uploads are automatically compressed locally when helpful (up to 32 MiB input and 4 MiB stored output); animated images and video are not re-encoded.
+Copyright © 2026 Ktclat and Qiye contributors. Qiye is licensed under [GPL-3.0-only](LICENSE). Fonts, the calendar engine and external assets are subject to their respective licenses. Sources, license details and acknowledgments are listed in [third-party notices](docs/THIRD_PARTY.md).

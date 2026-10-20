@@ -975,12 +975,12 @@ function settingsDialog(tab) {
  else if(tab==='sources') content = communityView();
  else if(tab==='sync') content = syncController.renderPanel();
  else content = `
-  <div class="about-block"><img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="66" height="66" draggable="false"><h3>${t("栖页")} <span style="font-weight:350">Qiye</span></h3><p>${t("让每一次打开，都有一处喜欢的风景。")}</p><span class="version-badge">${t("v{v0} · GPLv3 · 无需账号", {v0: APP_VERSION})}</span></div>
-  <div class="about-features"><div>${t("{v0}自在的桌面", {v0: icon('grid')})}</div><div>${t("{v0}轻巧的入口", {v0: icon('globe')})}</div><div>${t("{v0}本地的陪伴", {v0: icon('heart')})}</div></div>
-  <p class="about-note">${t("栖页使用独立代码与原创品牌，提供可自由编排的新标签页。桌面、搜索和日常小组件开箱即用；跨设备同步连接你自己的 WebDAV。")}</p>
-  <p class="about-note">${t("图标直接从对应网站加载；低清图标可按设置自动补充公开图标声明，也可主动点击智能提取；自动过程不申请新权限。头像与数据默认保存在本机。启用在线壁纸或天气时，会连接相应服务；启用 WebDAV 后，将桌面同步到你填写的服务。")}</p>
-  <p class="about-note">${t("Copyright © 2026 Ktclat and Qiye contributors. 栖页代码使用 GNU GPLv3，允许使用、修改和按许可证再分发，不提供担保。")}<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">${t("完整许可证")}</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/WIDGETS.md" target="_blank" rel="noopener noreferrer">${t("组件贡献指南")}</a></p>
-  <p class="about-note">${t("Inter 采用 SIL Open Font License 1.1，随项目本地提供；中文使用系统字体。Mica 风格为轻量网页材质。")}</p>
+  <div class="about-block"><img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="66" height="66" draggable="false"><h3>${t("栖页 Qiye")}</h3><p>${t("专注效率与个性化的浏览器新标签页")}</p><span class="version-badge">${t("v{version} · GPL-3.0", {version: APP_VERSION})}</span></div>
+  <div class="about-features"><div>${t("{icon}桌面编排", {icon: icon('grid')})}</div><div>${t("{icon}快捷搜索", {icon: icon('search')})}</div><div>${t("{icon}组件扩展", {icon: icon('layers')})}</div></div>
+  <p class="about-note">${t("栖页是一款面向 Chrome 与 Edge 的开源新标签页扩展，集成网站导航、多引擎搜索与可扩展小组件。通过分组、灵活布局与主题定制，为工作和日常浏览提供有序的起点。")}</p>
+  <p class="about-note">${t("桌面内容与设置默认保存在当前浏览器，支持 JSON 备份、恢复与 WebDAV 跨设备同步。小组件通过组件源按需启用；网站图标与在线服务会连接相应提供方。")} <a href="https://github.com/Ktclat/qiye/blob/main/docs/PRIVACY.md" target="_blank" rel="noopener noreferrer">${t("隐私说明")}</a></p>
+  <p class="about-note">${t("Copyright © 2026 Ktclat and Qiye contributors. 本项目采用 GNU GPLv3 许可证。")}<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">${t("完整许可证")}</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/README.md" target="_blank" rel="noopener noreferrer">${t("项目文档")}</a></p>
+  <p class="about-note">${t("界面采用 Inter 与系统字体。Inter 以 SIL Open Font License 1.1 授权，随项目本地提供。")}</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${t("{v0}源代码", {v0: icon('github')})}</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">${t("字体与许可")}</a></div>`;
  const current = tabs.find(item=>item.id===tab);
  return dialogCloseButton() + `

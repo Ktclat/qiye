@@ -25,7 +25,7 @@ shutil.copytree(root / 'icons', output / 'icons', dirs_exist_ok=True)
 shutil.copyfile(root / 'LICENSE', output / 'LICENSE')
 (output / 'README.md').write_text(f'''# 栖页 Qiye · GitHub Pages
 
-栖页 v{version} 的公开网页演示。无需注册或登录，个人桌面保存在各自浏览器中，可通过自己的 WebDAV 服务同步。
+栖页 v{version} 的公开网页版，集成桌面编排、多引擎搜索与可扩展小组件。桌面内容默认保存在当前浏览器，支持 JSON 备份与 WebDAV 跨设备同步。
 
 **[打开栖页](https://ktclat.github.io/qiye/)** · **[完整源码与扩展安装](https://github.com/Ktclat/qiye/tree/main)**
 
