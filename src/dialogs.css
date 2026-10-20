@@ -148,6 +148,27 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 @media(prefers-reduced-motion:reduce){.wallpaper-photo-actions{transition:none}}
 .reduce-effects .wallpaper-photo-actions{transition:none}
 
+/* Uploaded media uses the same gallery/preview controls as built-in sources. */
+.wallpaper-photo-card{position:relative}
+.local-wallpaper-upload{width:100%;min-height:104px;margin:0;padding:20px;border-radius:14px}
+.local-wallpaper-help{font-size:11px;line-height:1.7;margin:10px 0 24px;color:var(--muted)}
+.local-wallpaper-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.local-wallpaper-heading h4{margin:0;font-size:14px;font-weight:550}
+.local-wallpaper-heading>span,.local-wallpaper-empty{color:var(--muted);font-size:12px}
+.local-wallpaper-empty{padding:26px 16px;text-align:center;background:var(--control-surface);border-radius:14px;line-height:1.7}
+.wallpaper-upload{border-radius:14px;background:var(--control-surface);overflow:visible}
+.wallpaper-upload .wallpaper-photo-visual{border-radius:14px 14px 0 0}
+.wallpaper-photo-visual>video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.wallpaper-upload-caption{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;padding:11px 12px}
+.wallpaper-upload-caption>strong{grid-column:1/-1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wallpaper-upload-caption>span{align-self:center;font-size:10px;color:var(--muted);overflow-wrap:anywhere}
+.wallpaper-upload-delete{font-size:11px;color:var(--muted);padding:3px 5px;border-radius:6px}
+.wallpaper-upload-delete:hover{color:var(--fg);background:var(--control-surface)}
+.wallpaper-preview-art>video{display:block;width:100%;height:100%;max-height:inherit;object-fit:contain}
+.wallpaper-delete-confirm{padding:0 12px 12px;font-size:11px;line-height:1.6}
+.wallpaper-delete-confirm p{margin:0 0 8px;color:var(--muted)}
+.wallpaper-delete-confirm button{font-size:11px;padding:5px 8px;border-radius:7px}
+
 /* A single focus indication on the URL control, not a nested outline. */
 .address-control:focus-within{border-color:color-mix(in srgb,var(--fg) 25%,transparent)}
 .address-control input:focus{outline:none!important;box-shadow:none!important}

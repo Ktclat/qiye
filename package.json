@@ -1,6 +1,6 @@
 {
   "name": "qiye-extension",
-  "version": "0.10.7",
+  "version": "0.10.8",
   "private": true,
   "type": "module",
   "description": "栖页 Qiye — account-free new tab with WebDAV sync",
