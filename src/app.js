@@ -11,6 +11,7 @@ import { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand, s
 import { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } from './widget-sources.js';
 import { t, setLocale, getLocale, formatDate, localizeDocument } from './i18n.js';
 import { APP_VERSION } from './version.js';
+import { extensionUpdatePanel } from './extension-update.js';
 import { applyWindowSize, WINDOW_SIZES } from './window-layout.js';
 import { themeTokens } from './theme.js';
 import { getWidgetDefinition, newWidgetConfig } from './widget-registry.js';
@@ -987,6 +988,7 @@ function settingsDialog(tab) {
  else content = `
   <div class="about-block"><img class="brand-mark" src="icons/qiye-icon.svg" alt="" width="66" height="66" draggable="false"><h3>${t("栖页 Qiye")}</h3><p>${t("专注效率与个性化的浏览器新标签页")}</p><span class="version-badge">${t("v{version} · GPL-3.0", {version: APP_VERSION})}</span></div>
   <div class="about-features"><div>${t("{icon}桌面编排", {icon: icon('grid')})}</div><div>${t("{icon}快捷搜索", {icon: icon('search')})}</div><div>${t("{icon}组件扩展", {icon: icon('layers')})}</div></div>
+  ${extensionUpdatePanel()}
   <p class="about-note">${t("栖页是一款面向 Chrome 与 Edge 的开源新标签页扩展，集成网站导航、多引擎搜索与可扩展小组件。通过分组、灵活布局与主题定制，为工作和日常浏览提供有序的起点。")}</p>
   <p class="about-note">${t("桌面内容与设置默认保存在当前浏览器，支持 JSON 备份、恢复与 WebDAV 跨设备同步。小组件通过组件源按需启用；网站图标与在线服务会连接相应提供方。")} <a href="https://github.com/Ktclat/qiye/blob/main/docs/PRIVACY.md" target="_blank" rel="noopener noreferrer">${t("隐私说明")}</a></p>
   <p class="about-note">${t("Copyright © 2026 Ktclat and Qiye contributors. 本项目采用 GNU GPLv3 许可证。")}<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">${t("完整许可证")}</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/README.md" target="_blank" rel="noopener noreferrer">${t("项目文档")}</a></p>
@@ -1229,6 +1231,7 @@ document.addEventListener('click', async event=>{
  if(action==='visit-favicon')return await visitLinkFavicon(target);
  if(action?.startsWith('webdav-'))return await syncController.handleAction(action);
  if(action==='open-sync')return openDialog('settings',{tab:'sync'});
+ if(action==='open-backup')return openDialog('settings',{tab:'data'});
  if(action==='add-wallpaper-widget')return openDialog('add',{tab:'widgets'});
  if(action==='widget-sources')return openDialog('settings',{tab:'sources'});
  if(action==='settings')return openDialog('settings');

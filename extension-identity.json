@@ -1,0 +1,5 @@
+{
+  "id": "olphdlcjiaijcppklllciaeaonbbjjia",
+  "introduced": "0.10.10",
+  "purpose": "Permanent public identity for the locally installed Chrome/Edge distribution. Never regenerate between releases."
+}

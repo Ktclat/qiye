@@ -1,5 +1,11 @@
 # Qiye Widgets
 
+## 浏览器扩展重复安装与组件更新（主程序 0.10.10，2026-10-21）
+
+浏览器扩展列表出现两个栖页属于主程序安装身份问题。0.10.9 及更早版本未指定固定 `key`，不同解压路径可能生成不同 ID；版本号不能合并两个身份。主程序 0.10.10 起固定公开身份并在构建时校验，旧版首次迁移需先备份，后续保留安装目录并重新加载。详见随扩展 ZIP 提供的 [升级指南](../UPDATING.md)。
+
+调研依据：[Chrome 固定 ID 的官方示例](https://developer.chrome.com/docs/extensions/reference/manifest/key)、[Edge 本地安装与 Reload](https://learn.microsoft.com/en-us/microsoft-edge/extensions/getting-started/extension-sideloading)、[Chromium 身份生成实现](https://chromium.googlesource.com/chromium/src/+/main/extensions/common/extension.cc)。采用固定公开 key 与数据迁移说明，不添加管理其他扩展的权限。组件仓库无须发布新版本；仍在组件源详情中检查并更新已添加的组件。
+
 ## 缓存、授权与书签导入（主程序 0.10.9，2026-10-21）
 
 用户最后确认长按为 **0.2 秒**。设置 → 打开方式 → 长按拖动时间提供 0.1、0.2、0.4、0.6、1、1.5、2、3 秒；旧备份缺少该字段时迁移到 200ms，非法类型与越界值仍拒绝。保留屏幕坐标锚点、7px 移动取消容差及无按钮卡片，右键菜单提供组件专属命令与授权管理。本文后面的 320/400ms 为历史决策。

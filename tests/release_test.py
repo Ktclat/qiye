@@ -17,9 +17,34 @@ def load(name):
 
 package = load('package-release')
 publish = load('publish-release')
+identity = load('extension_identity')
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_identity_is_permanent(self):
+        self.assertEqual(identity.validate_identity(ROOT), 'olphdlcjiaijcppklllciaeaonbbjjia')
+
+    def test_identity_survives_version_and_directory_changes(self):
+        original = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))
+        with tempfile.TemporaryDirectory() as directory:
+            for name, version in [('old', '0.10.10'), ('new', '0.10.11')]:
+                root = Path(directory) / name
+                root.mkdir()
+                (root / 'manifest.json').write_text(json.dumps({**original, 'version': version}))
+                (root / 'extension-identity.json').write_bytes((ROOT / 'extension-identity.json').read_bytes())
+                self.assertEqual(identity.validate_identity(root), identity.validate_identity(ROOT))
+
+    def test_missing_or_replaced_identity_fails_closed(self):
+        original = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'extension-identity.json').write_bytes((ROOT / 'extension-identity.json').read_bytes())
+            for key in [None, '', 'invalid key', original['key'][:-4] + 'AAAA']:
+                candidate = {**original, 'key': key}
+                if key is None: candidate.pop('key')
+                (root / 'manifest.json').write_text(json.dumps(candidate))
+                with self.assertRaises(ValueError): identity.validate_identity(root)
+
     def test_trigger_policy(self):
         self.assertFalse(publish.release_requested('refs/heads/main', '0.5.0', '0.4.0', False))
         self.assertFalse(publish.release_requested('refs/heads/main', '0.5.0', '0.5.0', True))

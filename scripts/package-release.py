@@ -2,6 +2,7 @@
 """Build reproducible, allowlisted Chrome/Edge and corresponding source archives."""
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -11,6 +12,9 @@ import sys
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+identity_spec = importlib.util.spec_from_file_location('extension_identity', ROOT / 'scripts/extension_identity.py')
+identity = importlib.util.module_from_spec(identity_spec)
+identity_spec.loader.exec_module(identity)
 
 
 def release_version(root=ROOT):
@@ -38,14 +42,15 @@ def archive(path, files):
 
 def build(output):
     version = release_version()
+    identity.validate_identity(ROOT)
     output.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, str(ROOT / 'scripts/build-preview.py')], check=True)
-    runtime = ['manifest.json', 'index.html', 'styles.css', 'background.js', 'popup.html', 'popup.css', 'popup.js', 'widget-sandbox.html', 'LICENSE', 'docs/THIRD_PARTY.md']
+    runtime = ['manifest.json', 'index.html', 'styles.css', 'background.js', 'popup.html', 'popup.css', 'popup.js', 'widget-sandbox.html', 'LICENSE', 'UPDATING.md', 'docs/THIRD_PARTY.md']
     for folder, suffixes in [('src', {'.js', '.css'}), ('icons', {'.png', '.svg'}), ('fonts', {'.woff2', '.txt', '.md'}), ('_locales', {'.json'})]:
         runtime.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in suffixes)
     extension = output / f'qiye-{version}-chrome-edge.zip'
     archive(extension, runtime)
-    source = runtime + ['package.json', 'README.md', 'README.en.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'REQUIREMENTS.md', '.gitignore', '.gitattributes', '.nojekyll']
+    source = runtime + ['package.json', 'extension-identity.json', 'README.md', 'README.en.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'REQUIREMENTS.md', '.gitignore', '.gitattributes', '.nojekyll']
     for folder in ['scripts', 'tests', 'docs', '.github']:
         source.extend(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs', '.js', '.html', '.svg', '.md', '.json', '.yml', '.yaml', '.png', '.jpg'})
     source_zip = output / f'qiye-{version}-source.zip'

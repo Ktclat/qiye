@@ -48,6 +48,8 @@ Desktop content and settings are stored in your browser, with JSON backup and re
 
 Widget sources are disabled by default and can be enabled as needed. Disabling a source preserves existing widget instances and data.
 
+**Updating an existing installation:** packages use a fixed extension ID starting with 0.10.10. When migrating from 0.10.9 or older, export your desktop in the old installation first, import and verify it in the new one, then remove an old copy. For subsequent updates, replace files in the original folder and click **Reload**. Read [Installing and updating Qiye](UPDATING.md) before upgrading.
+
 No Node.js, npm dependencies or build step is needed to use the extension. The manifest requires Chrome 116 or later; Qiye targets Chrome and Edge and has not been adapted for Firefox. Change the interface language in **Settings → Opening behavior → Language**.
 
 ### Try the web app

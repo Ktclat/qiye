@@ -4,13 +4,15 @@ from pathlib import Path
 import re
 import base64
 import json
+from extension_identity import validate_identity
 root=Path(__file__).resolve().parents[1]
 sandbox=(root/'src/plugin-sandbox.js').read_text(encoding='utf-8').split('`',2)[1]
 (root/'widget-sandbox.html').write_text(sandbox,encoding='utf-8')
 version=json.loads((root/'manifest.json').read_text(encoding='utf-8'))['version']
 if version != json.loads((root/'package.json').read_text(encoding='utf-8'))['version']:
  raise SystemExit('manifest.json and package.json versions differ')
-(root/'src/version.js').write_text('// SPDX-License-Identifier: GPL-3.0-only\n// Generated from manifest.json by scripts/build-preview.py.\nexport const APP_VERSION = '+json.dumps(version)+';\n',encoding='utf-8')
+extension_id=validate_identity(root)
+(root/'src/version.js').write_text('// SPDX-License-Identifier: GPL-3.0-only\n// Generated from manifest.json by scripts/build-preview.py.\nexport const APP_VERSION = '+json.dumps(version)+';\nexport const EXTENSION_ID = '+json.dumps(extension_id)+';\n',encoding='utf-8')
 modules=[]
 def inline_imports(source):
  def binding(match):

@@ -1331,6 +1331,20 @@ body.is-dragging .plugin-slot iframe{pointer-events:none}
 }
 
 </style>
+  <style>
+.extension-update{min-width:0;margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--field);text-align:left}
+.extension-update header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.extension-update h4{margin:0;font-size:14px}
+.extension-update p,.extension-update details{font-size:12px;line-height:1.7;color:var(--muted)}
+.extension-update summary{width:fit-content;max-width:100%;cursor:pointer;color:var(--text);padding:6px 0}
+.extension-update ol{padding-inline-start:22px;margin:6px 0}
+.extension-update li{margin:6px 0}
+.extension-update code{display:block;overflow-wrap:anywhere;font-size:11px}
+.extension-update .button-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;margin-top:14px}
+.extension-update .button-row>*{white-space:normal;text-align:center}
+.extension-update .extension-update-footnote{margin:12px 0 0;font-size:11px}
+
+</style>
 <!-- Bundled Inter font: copyright and full license
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 
@@ -3938,6 +3952,20 @@ const englishMessages = {
   "授权热榜访问": "Allow hotboards",
   "已授权热榜访问，正在刷新。": "Hotboard access granted. Refreshing.",
  "{v0} · 长按拖动，右键设置，Alt 加方向键调整位置": "{v0} · Hold to drag, right-click to configure, Alt + arrows to reorder",
+  "安装与更新": "Installation and updates",
+  "此安装使用旧标识。迁移到新版前，请先在此版本导出桌面备份。": "This installation uses a legacy ID. Export your desktop here before migrating to a new version.",
+  "此安装使用固定标识。更新时保留安装目录，覆盖文件后在扩展管理页点击“重新加载”。": "This installation uses a permanent ID. Keep the installation folder, replace its files, then click Reload on the extensions page.",
+  "网页版刷新即可使用已发布的更新。浏览器扩展需要单独下载并更新。": "Reload the web app to use published updates. Download and update the browser extension separately.",
+  "扩展列表出现两个栖页？": "Two Qiye installations in your extensions list?",
+  "先在有数据的旧版中导出 JSON 备份；两份安装都有内容时，请分别备份。": "Export a JSON backup from the old installation containing your data. Back up both copies separately if needed.",
+  "在新版的“备份与恢复”中导入并核对内容，再移除不需要的旧安装。": "Import and verify your content in Backup and restore in the new version before removing an old copy.",
+  "重新启用组件源并按需授权。WebDAV 连接和未使用的本地壁纸需另行保留。": "Re-enable widget sources and grant permissions as needed. Keep WebDAV connection details and unused local wallpapers separately.",
+  "0.10.9 及更早版本没有固定标识，首次迁移不会自动合并不同安装的数据。": "Version 0.10.9 and earlier had no permanent ID. The first migration does not automatically merge data from separate installations.",
+  "当前安装标识": "Current installation ID",
+  "导出桌面备份": "Export desktop backup",
+  "下载新版": "Download latest",
+  "小组件可在“组件源”中检查并更新，无需重新安装栖页。": "Check and update widgets in Widget sources without reinstalling Qiye.",
+  "完整升级说明": "Full update guide",
 };
 
 return {englishMessages};
@@ -7243,9 +7271,36 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.9";
+const APP_VERSION = "0.10.10";
+const EXTENSION_ID = "olphdlcjiaijcppklllciaeaonbbjjia";
 
-return {APP_VERSION};
+return {APP_VERSION, EXTENSION_ID};
+})();
+const __extension_update = (() => {
+// SPDX-License-Identifier: GPL-3.0-only
+const { t } = __i18n;
+const { escapeText: e } = __html;
+const { APP_VERSION, EXTENSION_ID } = __version;
+
+function extensionUpdatePanel() {
+ const id = globalThis.chrome?.runtime?.id;
+ const legacy = id && id !== EXTENSION_ID;
+ return `<section class="extension-update" aria-labelledby="extension-update-title">
+  <header><h4 id="extension-update-title">${t('安装与更新')}</h4><span class="version-badge">v${e(APP_VERSION)}</span></header>
+  <p>${t(id ? legacy ? '此安装使用旧标识。迁移到新版前，请先在此版本导出桌面备份。' : '此安装使用固定标识。更新时保留安装目录，覆盖文件后在扩展管理页点击“重新加载”。' : '网页版刷新即可使用已发布的更新。浏览器扩展需要单独下载并更新。')}</p>
+  <details><summary>${t('扩展列表出现两个栖页？')}</summary>
+   <ol><li>${t('先在有数据的旧版中导出 JSON 备份；两份安装都有内容时，请分别备份。')}</li>
+   <li>${t('在新版的“备份与恢复”中导入并核对内容，再移除不需要的旧安装。')}</li>
+   <li>${t('重新启用组件源并按需授权。WebDAV 连接和未使用的本地壁纸需另行保留。')}</li></ol>
+   <p>${t('0.10.9 及更早版本没有固定标识，首次迁移不会自动合并不同安装的数据。')}</p>
+  </details>
+  ${id ? `<details><summary>${t('当前安装标识')}</summary><code>${e(id)}</code></details>` : ''}
+  <div class="button-row"><button class="secondary-button" data-action="export">${t('导出桌面备份')}</button><button class="secondary-button" data-action="open-backup">${t('备份与恢复')}</button><a class="secondary-button" href="https://github.com/Ktclat/qiye/releases/latest" target="_blank" rel="noopener noreferrer">${t('下载新版')}</a></div>
+  <p class="extension-update-footnote">${t('小组件可在“组件源”中检查并更新，无需重新安装栖页。')} <a href="https://github.com/Ktclat/qiye/blob/main/UPDATING.md" target="_blank" rel="noopener noreferrer">${t('完整升级说明')}</a></p>
+ </section>`;
+}
+
+return {extensionUpdatePanel};
 })();
 const __theme = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
@@ -10192,6 +10247,7 @@ const { pluginWorkspace, bindPluginWorkspace, pluginMenu, queuePluginCommand, se
 const { SOURCES_CHANGED, readWidgetSources, resolveWidgetSource } = __widget_sources;
 const { t, setLocale, getLocale, formatDate, localizeDocument } = __i18n;
 const { APP_VERSION } = __version;
+const { extensionUpdatePanel } = __extension_update;
 const { applyWindowSize, WINDOW_SIZES } = __window_layout;
 const { themeTokens } = __theme;
 const { getWidgetDefinition, newWidgetConfig } = __widget_registry;
@@ -11168,6 +11224,7 @@ function settingsDialog(tab) {
  else content = `
   <div class="about-block"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iODYiIHkxPSI2MiIgeDI9IjQzMCIgeTI9IjQ1MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjMTYzNjRBIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMC41MiIgc3RvcC1jb2xvcj0iIzEwMkIzQyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjIyMzEiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJxTWFpbiIgeDE9IjE1MCIgeTE9IjEzMCIgeDI9IjM3MiIgeTI9IjM4NiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjQzlGRkYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMC41MiIgc3RvcC1jb2xvcj0iIzhFRThENSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2N0NGQkMiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJmb2xkIiB4MT0iMzE5IiB5MT0iMjQxIiB4Mj0iNDAxIiB5Mj0iMzYyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIHN0b3AtY29sb3I9IiM2NENCQkIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjM0NCNEExIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgoKICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ibGVhZiIgeDE9IjI5MiIgeTE9IjI4NiIgeDI9IjM5MCIgeTI9IjM4NyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBzdG9wLWNvbG9yPSIjRDVGRkYzIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzg3RThENiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KCiAgICA8ZmlsdGVyIGlkPSJzaGFkb3ciIHg9Ii0zMCUiIHk9Ii0zMCUiIHdpZHRoPSIxNjAlIiBoZWlnaHQ9IjE2MCUiPgogICAgICA8ZmVEcm9wU2hhZG93IGR4PSIwIiBkeT0iMTYiIHN0ZERldmlhdGlvbj0iMjIiIGZsb29kLWNvbG9yPSIjMDAxMDE5IiBmbG9vZC1vcGFjaXR5PSIwLjI2Ii8+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CgogIDxyZWN0IHg9IjMyIiB5PSIzMiIgd2lkdGg9IjQ0OCIgaGVpZ2h0PSI0NDgiIHJ4PSIxMTIiIGZpbGw9InVybCgjYmcpIiBmaWx0ZXI9InVybCgjc2hhZG93KSIvPgoKICA8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIKICAgICAgICBkPSJNMTY0IDEyNwogICAgICAgICAgIEMxMjAgMTI3IDkxIDE1NyA5MSAyMDIKICAgICAgICAgICBWMzEyCiAgICAgICAgICAgQzkxIDM1NyAxMjAgMzg2IDE2NCAzODYKICAgICAgICAgICBIMzA5CiAgICAgICAgICAgQzM1NCAzODYgMzgzIDM1NyAzODMgMzEyCiAgICAgICAgICAgVjIwMgogICAgICAgICAgIEMzODMgMTU3IDM1NCAxMjcgMzA5IDEyNwogICAgICAgICAgIEgxNjRaTTE3NyAxOTgKICAgICAgICAgICBDMTYwIDE5OCAxNDkgMjA5IDE0OSAyMjYKICAgICAgICAgICBWMjg4CiAgICAgICAgICAgQzE0OSAzMDUgMTYwIDMxNiAxNzcgMzE2CiAgICAgICAgICAgSDI5NgogICAgICAgICAgIEMzMTMgMzE2IDMyNCAzMDUgMzI0IDI4OAogICAgICAgICAgIFYyMjYKICAgICAgICAgICBDMzI0IDIwOSAzMTMgMTk4IDI5NiAxOTgKICAgICAgICAgICBIMTc3WiIKICAgICAgICBmaWxsPSJ1cmwoI3FNYWluKSIvPgoKICA8cGF0aCBkPSJNMzAxIDE5OAogICAgICAgICAgIEMzMjIgMTk4IDM0NiAyMDMgMzY2IDIxNAogICAgICAgICAgIEwzODMgMjI0CiAgICAgICAgICAgVjMxMgogICAgICAgICAgIEMzODMgMzM1IDM3NCAzNTQgMzU3IDM2OAogICAgICAgICAgIEMzNTcgMzM4IDM0NCAzMDkgMzIxIDI4OAogICAgICAgICAgIEMzMDkgMjc3IDI5OSAyNjIgMjk5IDI0MwogICAgICAgICAgIFYyMDgKICAgICAgICAgICBDMjk5IDIwNCAzMDAgMjAxIDMwMSAxOThaIgogICAgICAgIGZpbGw9InVybCgjZm9sZCkiCiAgICAgICAgb3BhY2l0eT0iMC45NiIvPgoKICA8cGF0aCBkPSJNMjcyIDI4NgogICAgICAgICAgIEMzMTYgMjg0IDM1MCAyOTUgMzc1IDMyMAogICAgICAgICAgIEMzOTQgMzM5IDQwMCAzNjEgMzk5IDM4NQogICAgICAgICAgIEMzNzAgMzg3IDM0NCAzODMgMzIzIDM3MAogICAgICAgICAgIEMyOTQgMzUyIDI3NiAzMjYgMjcyIDI4NloiCiAgICAgICAgZmlsbD0idXJsKCNsZWFmKSIvPgoKICA8cGF0aCBkPSJNMjczIDI4NwogICAgICAgICAgIEMyNzggMzI2IDI5NSAzNTIgMzIzIDM3MAogICAgICAgICAgIEMzMDcgMzY4IDI5MiAzNjEgMjgwIDM1MAogICAgICAgICAgIEMyNjEgMzMyIDI1NCAzMTAgMjU3IDI4NQogICAgICAgICAgIEMyNjIgMjg2IDI2NyAyODYgMjczIDI4N1oiCiAgICAgICAgZmlsbD0iIzJDOUY5MCIKICAgICAgICBvcGFjaXR5PSIwLjQ1Ii8+Cjwvc3ZnPgo=" alt="" width="66" height="66" draggable="false"><h3>${t("栖页 Qiye")}</h3><p>${t("专注效率与个性化的浏览器新标签页")}</p><span class="version-badge">${t("v{version} · GPL-3.0", {version: APP_VERSION})}</span></div>
   <div class="about-features"><div>${t("{icon}桌面编排", {icon: icon('grid')})}</div><div>${t("{icon}快捷搜索", {icon: icon('search')})}</div><div>${t("{icon}组件扩展", {icon: icon('layers')})}</div></div>
+  ${extensionUpdatePanel()}
   <p class="about-note">${t("栖页是一款面向 Chrome 与 Edge 的开源新标签页扩展，集成网站导航、多引擎搜索与可扩展小组件。通过分组、灵活布局与主题定制，为工作和日常浏览提供有序的起点。")}</p>
   <p class="about-note">${t("桌面内容与设置默认保存在当前浏览器，支持 JSON 备份、恢复与 WebDAV 跨设备同步。小组件通过组件源按需启用；网站图标与在线服务会连接相应提供方。")} <a href="https://github.com/Ktclat/qiye/blob/main/docs/PRIVACY.md" target="_blank" rel="noopener noreferrer">${t("隐私说明")}</a></p>
   <p class="about-note">${t("Copyright © 2026 Ktclat and Qiye contributors. 本项目采用 GNU GPLv3 许可证。")}<a href="https://github.com/Ktclat/qiye/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">${t("完整许可证")}</a> · <a href="https://github.com/Ktclat/qiye/blob/main/docs/README.md" target="_blank" rel="noopener noreferrer">${t("项目文档")}</a></p>
@@ -11410,6 +11467,7 @@ document.addEventListener('click', async event=>{
  if(action==='visit-favicon')return await visitLinkFavicon(target);
  if(action?.startsWith('webdav-'))return await syncController.handleAction(action);
  if(action==='open-sync')return openDialog('settings',{tab:'sync'});
+ if(action==='open-backup')return openDialog('settings',{tab:'data'});
  if(action==='add-wallpaper-widget')return openDialog('add',{tab:'widgets'});
  if(action==='widget-sources')return openDialog('settings',{tab:'sources'});
  if(action==='settings')return openDialog('settings');

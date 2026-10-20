@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extName__",
   "short_name": "__MSG_shortName__",
-  "version": "0.10.9",
+  "version": "0.10.10",
   "description": "__MSG_extDescription__",
   "minimum_chrome_version": "116",
   "icons": {
@@ -58,6 +58,11 @@
     "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
     "sandbox": "sandbox allow-scripts allow-forms allow-downloads; script-src 'unsafe-inline' data: https:; object-src 'none'; child-src 'none'; base-uri 'none'"
   },
-  "sandbox": { "pages": ["widget-sandbox.html"] },
-  "default_locale": "en"
+  "sandbox": {
+    "pages": [
+      "widget-sandbox.html"
+    ]
+  },
+  "default_locale": "en",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0lxTBZryWJGYhtepxumOLONGjFPUWK3rKGYq+QpM9gq07Iz5WO1gSTCqujRxxP4KjwrfYtPR8WKeXkKIWHsGA5/irXdhsDr2kTmjrPRTuwgyCgTrRlVXkV4Wiwqujdg5xl2KAdpaNIPEjq0CTrRKk49SGtq7nzKbm+pZsu4lxZUcxVAV3UihR+s+QudqhtjSiIptfxb62l1cWlGXqXkGya6bDSRKuqXTdovMDx002nNyxnc6C+rzi/3olAM8ezDi6eqBa1utB9O7/Cii/FAxBIhaw2i/N4nrI7GpXkTaSchhs77wIBmGv9uvRL7VaYBW79EgdzRqncw/2WpcNwZoKwIDAQAB"
 }

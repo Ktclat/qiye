@@ -47,6 +47,7 @@ jobs:
           python tests/component-gallery-e2e.py --preview
           python tests/extension-e2e.py
           python tests/extension-e2e.py --reuse
+          python tests/extension-update-e2e.py
           python tests/widget-cache-e2e.py
           python tests/widget-cache-e2e.py --preview
           python tests/widget-cache-e2e.py --extension
