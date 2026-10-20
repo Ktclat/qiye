@@ -18,6 +18,7 @@ import { newWidgetData, widgetContentSummary } from './widget-data.js';
 import { icon, iconNames } from './icons.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
 import { createWallpaperLibrary } from './wallpaper-library.js';
+import { createLocalWallpaperStore, localWallpaperBlob, localWallpaperId } from './local-wallpapers.js';
 import { webDAVStateFingerprint } from './webdav.js';
 import { createSyncController } from './sync-ui.js';
 import { getFaviconCandidates, discoverFavicon, faviconCacheReady } from './favicons.js';
@@ -681,24 +682,37 @@ function blobToDataUrl(blob) {
   });
 }
 let wallpaperUploadRevision=0;
+const localWallpapers=createLocalWallpaperStore();
 const wallpaperChoice=()=>JSON.stringify([state.settings.wallpaper,state.settings.customWallpaper,state.settings.remoteWallpaper,state.settings.dailyWallpaper]);
 function wallpaperRequest() {
   const revision=++wallpaperUploadRevision, choice=wallpaperChoice();
   return ()=>revision===wallpaperUploadRevision && choice===wallpaperChoice();
 }
-async function storeLocalWallpaper(blob,type='image',isCurrent=wallpaperRequest()) {
+async function storeLocalWallpaper(blob,type='image',isCurrent=wallpaperRequest(),name) {
   if(!(blob instanceof Blob) || !blob.size || blob.size>4*1024*1024)
     throw new Error(t('壁纸不能超过 4 MiB'));
   const url=await blobToDataUrl(blob);
   if(!isCurrent())return false;
-  const previous=clone(state.settings);
+  await localWallpapers.remember(state.settings.customWallpaper,state.settings.customWallpaperType);
+  await localWallpapers.put(blob,name);
+  if(!isCurrent())return false;
   state.settings.customWallpaper=url;
   state.settings.customWallpaperType=type;
   state.settings.remoteWallpaper=null;
   state.settings.dailyWallpaper=false;
-  try{await persist();}catch(error){state.settings=previous;throw error;}
+  await persist();
   applySettings();
   return true;
+}
+async function removeLocalWallpaper(row) {
+ const previous=state.settings.customWallpaper;
+ const active=previous&&await localWallpaperId(localWallpaperBlob(previous))===row.id;
+ await localWallpapers.remove(row.id);
+ if(active&&state.settings.customWallpaper===previous){
+  state.settings.customWallpaper=null;state.settings.customWallpaperType='image';state.settings.remoteWallpaper=null;state.settings.dailyWallpaper=false;
+  try{await persist();}catch(error){await localWallpapers.put(row.blob,row.name);applySettings();throw error;}
+  applySettings();
+ }
 }
 let viewerCleanup=()=>{};
 let viewerCleanupJob;
@@ -758,6 +772,7 @@ function openDialog(kind,data={}) {
  if((kind==='add' && ['widgets','community'].includes(data.tab||'widgets')) || (kind==='settings' && data.tab==='sources'))viewerCleanup=bindCommunity($('#dialog-content'),{getState:()=>state,apply:applyExchange,openSources:source=>openDialog('settings',{tab:'sources',source}),openCatalog:source=>openDialog('add',{tab:'widgets',source})},data);
  if(kind==='widget-detail')viewerCleanup=bindPluginWorkspace($('#dialog-content'),state.items.find(i=>i.id===data.item?.id),pluginHost());
  if (kind==='settings') renderAvatar();
+ if (kind==='wallpaper')void wallpaperLibrary.open();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
  else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
@@ -977,15 +992,27 @@ const wallpaperLibrary = createWallpaperLibrary({
  rerender:()=>{
   if(dialogKind!=='wallpaper'||!dialog.open)return;
   const content=$('.wallpaper-content',dialog),nav=$('.wallpaper-nav',dialog);
+  const focused=dialog.contains(document.activeElement)?document.activeElement:null;
+  const focusData=focused?.dataset?Object.entries(focused.dataset).find(([key])=>key.startsWith('gallery')):null;
   const view=wallpaperLibrary.getState(),key=[view.tab,view.page,view.preview?.index??view.preview?.id??''].join('|');
   const y=content?.scrollTop||0,n=nav?.scrollTop||0,previous=dialog.dataset.galleryView;
   $('#dialog-content').innerHTML=wallpaperDialog();dialog.dataset.galleryView=key;
   if(previous===key&&$('.wallpaper-content',dialog))$('.wallpaper-content',dialog).scrollTop=y;
   if($('.wallpaper-nav',dialog))$('.wallpaper-nav',dialog).scrollTop=n;
+  if(focusData&&!dialog.classList.contains('pointer-focus')){
+   const [key,value]=focusData;
+   const replacement=[...dialog.querySelectorAll('button')].find(button=>button.dataset[key]===value);
+   (replacement||$('[data-gallery-back]',dialog)||$('[data-gallery-tab="custom"]',dialog))?.focus({preventScroll:true});
+  }
  },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
- renderCustom:()=>`<h3>${t("自定义背景")}</h3><p class="help-text">${t("静态 PNG、JPEG、WebP 可从 32 MiB 自动压缩至 4 MiB 内（不缩小分辨率）；GIF、AVIF、MP4、WebM 仍须小于 4 MiB。仅在本机处理，应用后参与备份与 WebDAV。")}</p><button class="upload-zone" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t("选择本地图片或视频")}</strong><small>${t("不上传到栖页服务器")}</small></span></button>${state.settings.customWallpaper?`<p class="help-text">${t("当前已使用本地背景。选择任意官方背景可切换回来。")}</p>`:''}`,
+ local:{
+  load:async()=>{let current=null,error='';try{current=await localWallpapers.remember(state.settings.customWallpaper,state.settings.customWallpaperType);}catch(e){error=e.message;}return {rows:await localWallpapers.list(),currentId:current?.id||null,error};},
+  apply:async(row,{isCurrent})=>{const current=wallpaperRequest(),applied=await storeLocalWallpaper(row.blob,row.type,()=>isCurrent()&&current(),row.name);if(applied)toast(t('本地壁纸已保存。'));return applied;},
+  remove:removeLocalWallpaper
+ },
+ renderCustom:()=>`<div class="gallery-intro"><h3>${t('自定义背景')}</h3><p>${t('上传记录仅保存在此浏览器；当前选用的背景随备份与 WebDAV 同步。')}</p></div><button class="upload-zone local-wallpaper-upload" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t('选择本地图片或视频')}</strong><small>${t('不上传到栖页服务器')}</small></span></button><p class="help-text local-wallpaper-help">${t('静态 PNG、JPEG、WebP 最多 32 MiB，自动压缩至 4 MiB 内；GIF、AVIF、MP4、WebM 须小于 4 MiB。')}</p>`,
  renderParameters:()=>`<h3>${t("壁纸参数")}</h3><p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
 });
 function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
@@ -1309,7 +1336,8 @@ document.addEventListener('change',async event=>{
    }
    if(blob.size>4*1024*1024)throw new Error(t("图片压缩后仍超过 4 MiB；请使用图片压缩工具调整。"));
    if(!isCurrent())return;
-   if(!await storeLocalWallpaper(blob,file.type.startsWith('video/')?'video':'image',isCurrent))return;
+   if(!await storeLocalWallpaper(blob,file.type.startsWith('video/')?'video':'image',isCurrent,file.name))return;
+   wallpaperLibrary.showCustom();
    openDialog('wallpaper');
    toast(compressed?t('壁纸已自动压缩：{before} → {after}',{before:(file.size/1024/1024).toFixed(2)+' MiB',after:(blob.size/1024/1024).toFixed(2)+' MiB'}):t('本地壁纸已保存。'));
   }
@@ -1416,6 +1444,7 @@ async function applyDesktopDrop(intent) {
 async function init() {
  setLocale('auto');
  try{state=await loadState();persistedState=clone(state);if(!state.settings.rememberGroup)state.activeGroupId=state.groups[0].id;}catch(err){blockedStorage=true;toast(err.message);}
+ if(state.settings.customWallpaper)void localWallpapers.remember(state.settings.customWallpaper,state.settings.customWallpaperType).catch(()=>{});
  syncController=createSyncController({
   getState:()=>clone(state), beforeSync:async()=>{await saveQueue;if(blockedStorage)throw new Error(t("请先恢复本机桌面数据，再进行同步。"));if(JSON.stringify(state)!==JSON.stringify(persistedState))await persist({fromSync:true});},
   applyRemote:applySyncedDesktop,toast,openDialog,closeDialog,exportBackup,

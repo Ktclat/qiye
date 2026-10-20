@@ -51,6 +51,9 @@ jobs:
           python tests/search-overlays-e2e.py
           python tests/search-overlays-e2e.py --preview
           python tests/tab-favicon-e2e.py
+          python tests/local-wallpaper-e2e.py
+          python tests/local-wallpaper-e2e.py --preview
+          python tests/local-wallpaper-e2e.py --extension
       - uses: actions/upload-artifact@v4
         with:
           name: qiye-release
