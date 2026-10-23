@@ -2,6 +2,7 @@
 import argparse,json,tempfile,os
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
+from browser_checks import wait_for_async
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser();parser.add_argument('--widgets',type=Path,default=ROOT/'tests/fixtures/plugin-source');parser.add_argument('--reuse',action='store_true');args=parser.parse_args()
 catalog=json.loads((args.widgets/'index.json').read_text(encoding='utf-8'))
@@ -24,7 +25,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   assert page.locator('#desktop .tile-widget').count()==0 and not requests
   manifest=page.evaluate('chrome.runtime.getManifest()');assert manifest['version']==json.loads((ROOT/'manifest.json').read_text())['version']
   page.locator('#engine-button').click();page.locator('#engine-menu [data-engine=google]').click()
-  page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.settings.searchEngine==='google'")
+  wait_for_async(page,"async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.settings.searchEngine==='google'")
   page.locator('#brand-button').click();page.locator('[data-settings-tab=sources]').click();assert page.locator('[data-source-toggle]').first.get_attribute('aria-checked')=='false'
   page.locator('[data-source-toggle]').first.click();page.locator('[data-source-toggle][aria-checked=true]').wait_for();page.locator('[data-source-details]').first.click();page.locator('[data-source-browse]').click();page.wait_for_function("n=>document.querySelectorAll('[data-community-card]').length===n",arg=len(catalog['widgets']))
   page.locator('[data-community-query]').fill('便签');page.locator('[data-community-card]:visible [data-community-add]').click();page.locator('#dialog [data-close]').first.click()
@@ -32,7 +33,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-mv3-') as profile,sync_playwright(
   assert card.locator('body').evaluate('()=>{try{void parent.document;return false}catch{return true}}')
   assert card.locator('body').evaluate("()=>document.featurePolicy.allowsFeature('clipboard-write')&&!document.featurePolicy.allowsFeature('clipboard-read')")
   card.locator('[data-widget-input=notes]').fill('MV3 independent widget')
-  page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5'].items.some(i=>i.widget==='community'&&i.data.value.includes('MV3 independent widget'))")
+  wait_for_async(page,"async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.items.some(i=>i.widget==='community'&&i.data.value.includes('MV3 independent widget'))")
   reusable=card.locator('body').evaluate("()=>!!globalThis.qiyeBridge?.onView || Array.isArray(window.views)")
   page.bring_to_front();page.locator('#desktop .tile-widget').focus()
   if reusable:

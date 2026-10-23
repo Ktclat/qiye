@@ -4,6 +4,7 @@ from functools import partial
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 import argparse,base64,json,tempfile,threading
 from playwright.sync_api import sync_playwright,expect
+from browser_checks import wait_for_async
 from image_fixtures import upload,png_image
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -49,7 +50,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-local-wallpapers-') as profile,syn
   check('local preview is separate from applying',settings()['customWallpaper'] is None and page.locator('dialog[open]').count()==1)
   page.keyboard.press('Escape');expect(rows()).to_have_count(2)
   page.locator(f'[data-local-wallpaper="{first_id}"]').hover();page.locator(f'[data-gallery-local-apply="{first_id}"]').click()
-  page.wait_for_function("async value=>{const key='qiye.state.v5';const state=globalThis.chrome?.runtime?.id?(await chrome.storage.local.get(key))[key]:JSON.parse(localStorage.getItem(key));return state.settings.customWallpaper===value}",arg=first_url)
+  wait_for_async(page,"async value=>{const key='qiye.state.v5';const state=globalThis.chrome?.runtime?.id?(await chrome.storage.local.get(key))[key]:JSON.parse(localStorage.getItem(key));return state?.settings.customWallpaper===value}",arg=first_url)
   close();page.reload(wait_until='domcontentloaded');page.locator('#desktop .tile-link').first.wait_for();open_uploads();expect(rows()).to_have_count(2)
   check('selection and both uploaded files survive reload',settings()['customWallpaper']==first_url and page.locator(f'[data-local-wallpaper="{first_id}"].selected').count()==1)
   page.screenshot(path=str(OUT/'uploads-dark.png'))

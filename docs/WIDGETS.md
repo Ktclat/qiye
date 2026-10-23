@@ -1,10 +1,12 @@
 # Qiye Widgets
 
-## 浏览器扩展重复安装与组件更新（主程序 0.10.10，2026-10-21）
+## 浏览器扩展重复安装与组件更新（主程序 0.10.11，2026-10-23）
 
 浏览器扩展列表出现两个栖页属于主程序安装身份问题。0.10.9 及更早版本未指定固定 `key`，不同解压路径可能生成不同 ID；版本号不能合并两个身份。主程序 0.10.10 起固定公开身份并在构建时校验，旧版首次迁移需先备份，后续保留安装目录并重新加载。详见随扩展 ZIP 提供的 [升级指南](../UPDATING.md)。
 
 调研依据：[Chrome 固定 ID 的官方示例](https://developer.chrome.com/docs/extensions/reference/manifest/key)、[Edge 本地安装与 Reload](https://learn.microsoft.com/en-us/microsoft-edge/extensions/getting-started/extension-sideloading)、[Chromium 身份生成实现](https://chromium.googlesource.com/chromium/src/+/main/extensions/common/extension.cc)。采用固定公开 key 与数据迁移说明，不添加管理其他扩展的权限。组件仓库无须发布新版本；仍在组件源详情中检查并更新已添加的组件。
+
+验证入口：`tests/extension-update-e2e.py` 在临时 Chromium 配置中复现无 key 的两个独立安装，再从不同目录加载同一固定 ID 的新版本，比较完整桌面、设置、localStorage、chrome.storage 和 IndexedDB，并检查扩展列表只出现一个固定 ID 的安装。界面覆盖深浅色、390px 窄屏、导出及恢复入口。异步存储先等待实际读值满足条件，再记录升级快照；不以 Promise 对象本身作为已保存的判断。
 
 ## 缓存、授权与书签导入（主程序 0.10.9，2026-10-21）
 
