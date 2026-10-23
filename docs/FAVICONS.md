@@ -87,6 +87,16 @@
 - Chrome 扩展 favicon：https://developer.chrome.com/docs/extensions/how-to/ui/favicons
 - Manifest 图标：https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
 
+## 五种快捷方式尺寸（0.10.12）
+
+1×1 保持常规图标与下方名称。1×2、2×2 将图标和两行以内的名称作为一个居中的组合；2×1、4×2 横向排列两者。名称跟随图标，不再固定在多行卡片的底部。大尺寸图标最多放大到单元格的 1.2 倍，常规设置下不超过 96px；用户主动把全局图标大小设到 96px 以上时尊重该设置。五种已有尺寸及备份格式保持兼容，文件夹继续使用独立布局。
+
+图标容器始终为正方形，图片使用 `object-fit: contain`，不裁剪长宽比不同的素材；不改动用户选择的来源，也不以 CSS 拉伸低清图片冒充高清来源。失败回退使用相同框架和名称位置。原站只有低分辨率图片时仍受素材质量限制。
+
+设计依据为用户的 iTab 截图及 [iTab 公开示例](https://itab.link/)，技术依据为 [MDN aspect-ratio](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/aspect-ratio)、[MDN object-fit](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/object-fit) 与 [CSS 容器查询](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries)。选择限制图片放大、调整组合方向，保留现有尺寸能力。
+
+`tests/site-sizes-e2e.py` 在生产页面和独立预览验证五种尺寸、48/74/120px 网格、两种主题、520/360px 窄屏、本地图片与失败回退、名称间距，以及通过右键修改尺寸后的刷新持久化。
+
 ## 拖拽与图片节点连续性
 
 `keyed-view.js` 以项目 ID 和内容签名复用桌面节点。排序只调整必要的顺序，不重新赋值整个桌面的 HTML；已完成实时预排的指针拖动在保存后甚至不需要再次移动节点。未变化的链接保留图片对象、src、解码状态和加载绑定，不启动新的图标候选轮询。移入文件夹时只更新相关文件夹预览；移出当前分组时只移除该项目。同组移动保留组件事件绑定和输入草稿。浏览器测试同时检查图片引用、src / hidden 属性写入与保存结果，不能只检查视觉截图。
