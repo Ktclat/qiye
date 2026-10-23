@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import zipfile
 from playwright.sync_api import sync_playwright, expect
+from browser_checks import wait_for_async
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'output/playwright/extension-update'
@@ -66,8 +67,9 @@ with tempfile.TemporaryDirectory(prefix='qiye-update-regression-') as directory,
         page.locator('#desktop .tile-link').first.wait_for()
         page.locator('#engine-button').click()
         page.locator('#engine-menu [data-engine=google]').click()
-        page.wait_for_function("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.settings.searchEngine==='google'")
+        wait_for_async(page, "async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']?.settings.searchEngine==='google'")
         before = page.evaluate("async()=> (await chrome.storage.local.get('qiye.state.v5'))['qiye.state.v5']")
+        check('Upgrade begins with a saved customized desktop', before is not None and before['settings']['searchEngine'] == 'google')
         page.evaluate("""async()=>{
           localStorage.setItem('qiye.identity-probe','preserved');
           await chrome.storage.local.set({'qiye.plugin-probe':{value:'preserved'}});
@@ -94,8 +96,7 @@ with tempfile.TemporaryDirectory(prefix='qiye-update-regression-') as directory,
         if before != after:
             comparison = {'before': before, 'after': after}
             (OUT / 'storage-comparison.json').write_text(json.dumps(comparison, ensure_ascii=False, indent=2), encoding='utf-8')
-            print('Storage differences:', {key: {'before': before.get(key), 'after': after.get(key)}
-                  for key in before.keys() | after.keys() if before.get(key) != after.get(key)}, flush=True)
+            print('Storage comparison:', json.dumps(comparison, ensure_ascii=False), flush=True)
         check('Desktop and settings survive updating', before == after)
         check('Extension storage survives updating', page.evaluate("async()=> (await chrome.storage.local.get('qiye.plugin-probe'))['qiye.plugin-probe'].value") == 'preserved')
         check('Local storage survives updating', page.evaluate("localStorage.getItem('qiye.identity-probe')") == 'preserved')
