@@ -53,6 +53,8 @@ jobs:
           python tests/widget-cache-e2e.py --extension
           python tests/bookmark-import-e2e.py
           python tests/editor-e2e.py
+          python tests/site-sizes-e2e.py
+          python tests/site-sizes-e2e.py --preview
           python tests/search-overlays-e2e.py
           python tests/search-overlays-e2e.py --preview
           python tests/tab-favicon-e2e.py
