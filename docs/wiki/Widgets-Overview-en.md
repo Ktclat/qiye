@@ -4,6 +4,14 @@ Widget documentation is maintained in the independent repository. [qiye-widgets 
 
 [Host API and repository boundaries](../PLUGIN-API.md).
 
+## Desktop drag and context menus
+
+2026-10-24: Keep the user's compact iTab references and button-free dragging. Websites drag immediately; widgets retain the configurable 200ms default hold, ordinary text selection and short control clicks. The existing pointer controller, screen-coordinate mapping and iframe-preserving moves passed real-browser checks. [SortableJS grid/shared-list examples](https://sortablejs.github.io/Sortable/), [MDN Pointer Events](https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events), [pointer capture](https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture) and [W3C Pointer Events](https://www.w3.org/TR/pointerevents/latest/) inform movement thresholds, touch cancellation and deliberate folder dwell.
+
+Fix context menus surviving group/search-control clicks or presses inside sandboxed cards. Outside presses and keyboard-generated clicks dismiss the host menu; cards use their existing authenticated interaction channel. Dismissal does not move focus. Menu actions and Escape focus return remain intact; short windows keep long menus scrollable. Following [MDN contextmenu](https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event), test actual right-click and Shift+F10 separately.
+
+`tests/desktop-interactions-e2e.py` supports source, `--preview`, `--live` and `--extension PATH`. The widget interaction, long-press and drag-stability suites use official widget artifacts. Packages retain the fixed extension identity; see [installation/update instructions](../../UPDATING.md) and [QA](../QA.md).
+
 ## Consistent dialog title bars
 
 2026-10-24: The folder window's 46px single-row title bar now also covers website editing, groups, moving items, local search, widget configuration, backup restore, sync review and confirmations. Descriptions sit below the bar; long titles truncate with a full tooltip while Close remains visible. Settings in both drawer and window mode, and the wallpaper library, show the current category or source beside their title. Repeated navigation headings are removed, with navigation and content scrolling independently.

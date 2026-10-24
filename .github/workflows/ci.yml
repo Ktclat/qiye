@@ -55,6 +55,8 @@ jobs:
           python tests/editor-e2e.py
           python tests/site-sizes-e2e.py
           python tests/site-sizes-e2e.py --preview
+          python tests/desktop-interactions-e2e.py
+          python tests/desktop-interactions-e2e.py --preview
           python tests/search-overlays-e2e.py
           python tests/search-overlays-e2e.py --preview
           python tests/tab-favicon-e2e.py

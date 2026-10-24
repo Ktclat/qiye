@@ -1180,7 +1180,13 @@ function confirmDeleteGroup(id) {
  }});
 }
 
+// Dismiss on press, including controls whose click handler returns early.
+// Keyboard-generated clicks use the same boundary without moving focus.
+document.addEventListener('pointerdown',event=>{
+ if(!event.target.closest('.context-menu'))$('#context-menu').hidden=true;
+},true);
 document.addEventListener('click', async event=>{
+ if(!event.target.closest('.context-menu'))$('#context-menu').hidden=true;
  if (!event.target.closest('.shortcuts-control')) { document.body.classList.remove('shortcuts-open'); $('#shortcuts-button').setAttribute('aria-expanded','false'); }
  if (!event.target.closest('.sidebar,#navigation-reveal') && document.body.classList.contains('navigation-open')) { document.body.classList.remove('navigation-open'); updateToolbar(); }
  const target=event.target.closest('button,a');
@@ -1275,7 +1281,6 @@ document.addEventListener('click', async event=>{
  if(target.id==='done-editing'){editing=false;renderDesktop();return;}
  }catch(err){if(!err.notified)toast(err.message || t("操作没有完成，请重试。"));}
  if(!event.target.closest('.search-wrapper'))hideSearchMenus();
- if(!event.target.closest('.context-menu'))$('#context-menu').hidden=true;
 });
 
 dialog.addEventListener('submit',async event=>{
@@ -1534,7 +1539,11 @@ function pluginHost() {
  return {getState:()=>state,saveData:saveWidgetData,saveSettings:saveWidgetSettings,savePlugin:savePluginEnvelope,openDialog,closeDialog,toast,
   refreshCards:()=>refreshLiveWidgets($('#desktop'),state),
   openWidgetContext:(id,point)=>{if(!dialog.open)openContext({...point,preventDefault(){}},{itemId:id});},
-  widgetPointer:(id,event)=>desktopDrag?.forwardPointer(id,event),
+  widgetPointer:(id,event)=>{
+   // Pointer events inside a sandboxed card cannot bubble to the desktop.
+   if(event.type==='pointerdown')$('#context-menu').hidden=true;
+   desktopDrag?.forwardPointer(id,event);
+  },
   applyWallpaper:applyOnlineWallpaper,
   applyWallpaperBlob:blob=>storeLocalWallpaper(blob,'image'),
   openWallpaper:()=>openDialog('wallpaper')};
