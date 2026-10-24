@@ -18,7 +18,7 @@ import { getWidgetDefinition, newWidgetConfig } from './widget-registry.js';
 import { newWidgetData, widgetContentSummary } from './widget-data.js';
 import { icon, iconNames } from './icons.js';
 import { normalizeWallpaperPhoto } from './wallpapers.js';
-import { createWallpaperLibrary } from './wallpaper-library.js';
+import { createWallpaperLibrary, WALLPAPER_SOURCES } from './wallpaper-library.js';
 import { createLocalWallpaperStore, localWallpaperBlob, localWallpaperId } from './local-wallpapers.js';
 import { webDAVStateFingerprint } from './webdav.js';
 import { createSyncController } from './sync-ui.js';
@@ -673,10 +673,11 @@ function submitSearch() {
  hideSearchMenus(); navigate(url,false,true);
 }
 function dialogCloseButton(){return `<button class="dialog-close workspace-close" data-close aria-label="${t("关闭")}">${icon('close')}</button>`;}
-function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2 id="dialog-title">${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="${t("关闭")}">${icon('close')}</button></header>`; }
-function compactDialogHeader(title,details='',actions='') {
- return `<header class="dialog-head compact-dialog-head"><div class="compact-dialog-title"><h2 id="dialog-title" tabindex="-1" title="${esc(title)}">${esc(title)}</h2>${details}</div><div class="compact-dialog-actions">${actions}${dialogCloseButton()}</div></header>`;
+function dialogHeader(title,subtitle='') { return compactDialogHeader(title)+(subtitle?`<p class="dialog-description" id="dialog-description">${esc(subtitle)}</p>`:''); }
+function compactDialogHeader(title,details='',actions='',titleId='dialog-title') {
+ return `<header class="dialog-head compact-dialog-head"><div class="compact-dialog-title"><h2 id="${titleId}" tabindex="-1" title="${esc(title)}">${esc(title)}</h2>${details}</div><div class="compact-dialog-actions">${actions}${dialogCloseButton()}</div></header>`;
 }
+function workspaceDialogHeader(title,context) {return compactDialogHeader(title,`<span class="dialog-context" title="${esc(context)}">${esc(context)}</span>`,'','workspace-title');}
 function field(name,label,value='',options={}) { return `<label class="field"><span>${esc(label)}</span><input name="${esc(name)}" type="${options.type || 'text'}" value="${esc(value)}" ${options.required?'required':''} ${options.type==='number'?'step="any"':''} ${options.min!==undefined?`min="${options.min}"`:''} ${options.max!==undefined?`max="${options.max}"`:''} ${options.maxlength?`maxlength="${options.maxlength}"`:''} ${options.placeholder?`placeholder="${esc(options.placeholder)}"`:''}>${options.help?`<small>${esc(options.help)}</small>`:''}</label>`; }
 function selectField(name,label,value,options) { return `<label class="field"><span>${esc(label)}</span><select name="${name}">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`; }
 function formActions(label=t("保存")) { return `<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="secondary-button" type="button" data-close>${t("取消")}</button><button class="primary-button" type="submit">${icon('check')}${esc(label)}</button></div>`; }
@@ -778,6 +779,8 @@ function openDialog(kind,data={}) {
  cancelLinkFaviconVisit();
  $('#dialog-content').innerHTML = html;
  dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
+ if($('#dialog-description',dialog))dialog.setAttribute('aria-describedby','dialog-description');
+ else dialog.removeAttribute('aria-describedby');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
  if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
@@ -788,9 +791,8 @@ function openDialog(kind,data={}) {
  if (kind==='wallpaper')void wallpaperLibrary.open();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
- else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
- else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(['widget-detail','import-preview','folder'].includes(kind))$('#dialog-title',dialog)?.focus({preventScroll:true});
+ else if(['add','settings','wallpaper'].includes(kind))$('#workspace-title',dialog)?.focus({preventScroll:true});
+ else if(['widget-detail','import-preview','folder','confirm','restore-preview','sync-review'].includes(kind))$('#dialog-title',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -1000,9 +1002,9 @@ function settingsDialog(tab) {
   <p class="about-note">${t("界面采用 Inter 与系统字体。Inter 以 SIL Open Font License 1.1 授权，随项目本地提供。")}</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${t("{v0}源代码", {v0: icon('github')})}</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">${t("字体与许可")}</a></div>`;
  const current = tabs.find(item=>item.id===tab);
- return dialogCloseButton() + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="${t("设置分类")}"><h2 class="workspace-title" id="workspace-title">${t("设置")}</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>${t("栖页 Qiye · {v0}", {v0: APP_VERSION})}</small></nav>
- <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}"><h3 class="settings-section-title" tabindex="-1">${current.name}</h3>${content}</section></div>`;
+ return workspaceDialogHeader(t("设置"),current.name) + `
+ <div class="settings-layout"><nav class="settings-nav" aria-label="${t("设置分类")}">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>${t("栖页 Qiye · {v0}", {v0: APP_VERSION})}</small></nav>
+ <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}">${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
  getState:()=>state, wallpapers:WALLPAPERS, toast,
@@ -1021,6 +1023,7 @@ const wallpaperLibrary = createWallpaperLibrary({
    const replacement=[...dialog.querySelectorAll('button')].find(button=>button.dataset[key]===value);
    (replacement||$('[data-gallery-back]',dialog)||$('[data-gallery-tab="custom"]',dialog))?.focus({preventScroll:true});
   }
+  else if(focused?.id==='workspace-title')$('#workspace-title',dialog)?.focus({preventScroll:true});
  },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
@@ -1029,10 +1032,13 @@ const wallpaperLibrary = createWallpaperLibrary({
   apply:async(row,{isCurrent})=>{const current=wallpaperRequest(),applied=await storeLocalWallpaper(row.blob,row.type,()=>isCurrent()&&current(),row.name);if(applied)toast(t('本地壁纸已保存。'));return applied;},
   remove:removeLocalWallpaper
  },
- renderCustom:()=>`<div class="gallery-intro"><h3>${t('自定义背景')}</h3><p>${t('上传记录仅保存在此浏览器；当前选用的背景随备份与 WebDAV 同步。')}</p></div><button class="upload-zone local-wallpaper-upload" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t('选择本地图片或视频')}</strong><small>${t('不上传到栖页服务器')}</small></span></button><p class="help-text local-wallpaper-help">${t('静态 PNG、JPEG、WebP 最多 32 MiB，自动压缩至 4 MiB 内；GIF、AVIF、MP4、WebM 须小于 4 MiB。')}</p>`,
- renderParameters:()=>`<h3>${t("壁纸参数")}</h3><p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
+ renderCustom:()=>`<div class="gallery-intro"><p>${t('上传记录仅保存在此浏览器；当前选用的背景随备份与 WebDAV 同步。')}</p></div><button class="upload-zone local-wallpaper-upload" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t('选择本地图片或视频')}</strong><small>${t('不上传到栖页服务器')}</small></span></button><p class="help-text local-wallpaper-help">${t('静态 PNG、JPEG、WebP 最多 32 MiB，自动压缩至 4 MiB 内；GIF、AVIF、MP4、WebM 须小于 4 MiB。')}</p>`,
+ renderParameters:()=>`<p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
 });
-function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
+function wallpaperDialog() {
+ const {tab}=wallpaperLibrary.getState(),context=tab==='parameters'?t('参数设置'):t(WALLPAPER_SOURCES.find(source=>source.id===tab)?.name||'壁纸库');
+ return workspaceDialogHeader(t('壁纸库'),context)+wallpaperLibrary.render();
+}
 
 function widgetConfigDialog(item) {
  return dialogHeader(t('设置组件'))+`<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}">${field('title',t('名称'),item.title,{required:true,maxlength:120})}${selectField('size',t('卡片尺寸'),item.size,(item.config?.manifest?.sizes||TILE_SIZES).map(value=>({value,label:sizeLabel(value)})))}<p>${t('组件功能设置请在组件窗口内打开。')}</p>${formActions()}</form></div>`;
@@ -1401,9 +1407,9 @@ document.addEventListener('keydown',event=>{
   if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus();return;}
   if(event.key==='Escape'||event.key==='Tab'){menu.hidden=true;const id=CSS.escape(menu.dataset.item);document.querySelector(`[data-folder-item="${id}"] .folder-link,[data-item="${id}"]`)?.focus();if(event.key==='Escape'){event.preventDefault();return;}}
  }
- if(event.key==='Tab'&&dialog.open&&dialogKind==='folder'&&menu.hidden){
-  const controls=$$('button:not([disabled]),a[href]',dialog).filter(node=>node.tabIndex>=0&&node.getClientRects().length),first=controls[0],last=controls.at(-1),active=document.activeElement;
-  if(event.shiftKey&&(active===first||active.id==='dialog-title')){event.preventDefault();last?.focus();return;}
+ if(event.key==='Tab'&&dialog.open&&dialogKind!=='widget-detail'&&menu.hidden&&!event.defaultPrevented){
+  const controls=$$('button,input,select,textarea,a[href],summary,[tabindex]',dialog).filter(node=>node.tabIndex>=0&&!node.matches(':disabled')&&!node.closest('[inert]')&&node.getClientRects().length),first=controls[0],last=controls.at(-1),active=document.activeElement;
+  if(event.shiftKey&&(active===first||active.matches('#dialog-title,#workspace-title'))){event.preventDefault();last?.focus();return;}
   if(!event.shiftKey&&active===last){event.preventDefault();first?.focus();return;}
  }
  if((event.key==='ContextMenu'||event.shiftKey&&event.key==='F10')&&event.target.closest('[data-item],[data-folder-item]')){event.preventDefault();const tile=event.target.closest('[data-item],[data-folder-item]'),rect=tile.getBoundingClientRect();openContext({preventDefault(){},clientX:rect.left+16,clientY:rect.top+28},{itemId:tile.dataset.folderItem||tile.dataset.item});return;}

@@ -821,17 +821,14 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .workspace-dialog .settings-nav-button.active,.workspace-dialog .add-nav button[aria-selected=true],.workspace-dialog .wallpaper-nav button[aria-selected=true]{background:var(--nav-selection);border-color:var(--nav-selection-border);color:var(--fg);font-weight:550}
 .workspace-dialog .settings-nav-button:hover,.workspace-dialog .add-nav button:hover,.workspace-dialog .wallpaper-nav button:hover{background:var(--control-surface);color:var(--fg)}
 .workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:28px 28px 30px;scrollbar-gutter:stable}
-.workspace-dialog .settings-section-title{font-size:19px;margin:2px 40px 22px 0;font-weight:600;letter-spacing:-.02em}
-.workspace-dialog .settings-content>.section-label:nth-child(2){margin-top:4px}
+.workspace-dialog .settings-content>.section-label:first-child{margin-top:4px}
 .workspace-dialog .settings-nav>small{font-size:10px;line-height:1.65;margin-top:auto;padding:24px 11px 2px;color:var(--muted)}
 .workspace-dialog .add-nav p{padding:12px 10px;font-size:10px;line-height:1.7}
 .workspace-dialog .wallpaper-nav .wallpaper-parameters{margin-top:auto;border:1px solid transparent;padding-top:12px;border-radius:12px}
 .source-symbol{width:20px;flex:none;text-align:center;font-size:18px;font-weight:550;line-height:1}
 /* Two bordered editor sections, as in a desktop icon editor. */
 .app-dialog.site-editor-dialog{width:min(840px,calc(100vw - 40px));background-color:var(--workspace-pane);max-height:calc(100dvh - 44px);scrollbar-gutter:auto}
-.site-editor-dialog .dialog-head{padding:24px 28px 10px;position:relative;background:none;border:0}
-.site-editor-dialog .dialog-head h2{font-size:26px;font-weight:620;letter-spacing:-.04em}
-.site-editor-dialog .dialog-body{padding:10px 28px 26px}
+.site-editor-dialog .dialog-body{padding:20px 28px 26px}
 .site-editor{display:flex;flex-direction:column;gap:16px;min-width:0}
 .editor-section{padding:19px 20px;background:var(--section-surface);border:1px solid var(--control-border);border-radius:19px;min-width:0}
 .editor-section .field{margin:0 0 15px}.editor-section .field:last-child{margin-bottom:0}
@@ -877,7 +874,7 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .editor-footer .button-row{margin:0;flex:none}
 .editor-footer .inline-error{flex-basis:100%}
 /* Denser gallery. Image actions are visible on hover, keyboard focus and touch. */
-.gallery-intro{padding-right:36px;margin:0 0 18px}
+.gallery-intro{margin:0 0 18px}
 .wallpaper-content .gallery-intro h3{font-size:17px;font-weight:560;margin:0 0 6px}
 .gallery-intro p{margin:0;font-size:12px;line-height:1.65;color:var(--muted)}
 .gallery-intro small{display:block;font-size:11px;line-height:1.6;margin-top:3px;color:var(--muted)}
@@ -984,14 +981,19 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-wi
 html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}
 
-/* Folder windows share the compact, single-row workspace title bar. */
-.compact-dialog-head{height:46px;min-height:46px;padding:0 12px 0 18px;gap:12px;flex:none;background:transparent}
+/* All host dialogs share one fixed-height title bar; descriptions belong below it. */
+#dialog .compact-dialog-head{display:flex;align-items:center;justify-content:space-between;height:46px;min-height:46px;padding:0 12px 0 18px;gap:12px;flex:0 0 46px;position:sticky;top:0;background:var(--workspace-pane);border:0;border-bottom:1px solid var(--panel-border)}
 .compact-dialog-title{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.compact-dialog-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:20px;font-weight:600;letter-spacing:0;outline:none}
+#dialog .compact-dialog-head h2{min-width:0;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:20px;font-weight:600;letter-spacing:0;outline:none}
+.dialog-context{min-width:0;padding-left:10px;border-left:1px solid var(--panel-border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:18px;color:var(--muted)}
+.dialog-description{margin:0;padding:18px 28px 0;font-size:12px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere}
 .compact-dialog-actions{display:flex;align-items:center;gap:4px;flex:none}
-.compact-dialog-actions button{display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:8px;background:transparent;color:var(--muted)}
-.compact-dialog-actions button:hover{background:var(--control-surface);color:var(--fg)}
+#dialog .compact-dialog-actions button{position:static;display:grid;place-items:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted)}
+#dialog .compact-dialog-actions button:hover{background:var(--control-surface);color:var(--fg)}
 .compact-dialog-actions .icon{width:16px;height:16px}
+.workspace-dialog .settings-layout,.workspace-dialog .wallpaper-browser{height:auto}
+.workspace-dialog .settings-nav,.workspace-dialog .wallpaper-nav{padding-top:12px}
+.workspace-dialog .settings-content,.workspace-dialog .wallpaper-content{padding:20px 24px 24px}
 .folder-count{flex:none;white-space:nowrap;font-size:11px;line-height:18px;color:var(--muted);font-variant-numeric:tabular-nums}
 #dialog.folder-dialog{width:min(600px,var(--form-width,640px),var(--dialog-width));max-height:var(--dialog-height);border-radius:18px;overflow:hidden;scrollbar-gutter:auto;background-color:var(--workspace-pane)}
 .folder-dialog #dialog-content{display:flex;flex-direction:column;max-height:calc(var(--dialog-height) - 2px)}
@@ -1011,8 +1013,10 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scr
 .folder-editor-dialog .dialog-body{padding:20px 24px 24px}
 @container window (max-width:480px){
  .folder-dialog .folder-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 4px;padding:16px 12px}
- .compact-dialog-head{padding-left:14px;gap:8px}
+ #dialog .compact-dialog-head{padding-left:14px;gap:8px}
  .compact-dialog-title{gap:8px}
+ .dialog-context{padding-left:8px}
+ .dialog-description{padding:16px 21px 0}
  .folder-editor-dialog .dialog-body{padding:18px}
 }
 @container window (max-width:320px){
@@ -1034,7 +1038,8 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scr
 #dialog.compact-dialog .setting-copy{min-width:0}
 #dialog.compact-dialog .setting-row select{width:100%;max-width:100%;flex-basis:100%}
 #dialog.compact-dialog .workspace-close{right:8px;top:10px;background:var(--workspace-pane)}
-#dialog.compact-dialog .settings-nav,#dialog.compact-dialog .add-nav,#dialog.compact-dialog .wallpaper-nav{margin-right:42px;padding-right:10px}
+#dialog.compact-dialog .add-nav{margin-right:42px;padding-right:10px}
+#dialog.compact-dialog .settings-nav,#dialog.compact-dialog .wallpaper-nav{padding-right:10px}
 .widget-catalog-tools{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-bottom:16px}
 .widget-catalog-tools .field{flex:1;min-width:130px;margin:0}
 .widget-catalog-tools input,.widget-catalog-tools select{width:100%}
@@ -1061,12 +1066,12 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scr
   animation:settings-enter .26s cubic-bezier(.2,.75,.2,1);
 }
 #dialog.settings-drawer .settings-layout { grid-template-columns:180px minmax(0,1fr); }
-#dialog.settings-drawer .settings-nav { padding:24px 10px 16px; gap:5px; }
+#dialog.settings-drawer .settings-nav { padding:12px 10px 16px; gap:5px; }
 #dialog.settings-dialog .settings-nav-button { min-height:38px; gap:8px; padding:8px 12px; border:0; border-radius:8px; font-size:13px; line-height:1.5; }
 #dialog.settings-dialog .settings-nav-button span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
 #dialog.settings-drawer .settings-nav-button.active { position:relative; border-color:transparent; background:var(--nav-selection); }
 #dialog.settings-drawer .settings-nav-button.active:before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:16px; background:var(--accent); border-radius:3px; }
-#dialog.settings-drawer .settings-content { padding:52px 22px 28px; }
+#dialog.settings-drawer .settings-content { padding:20px 22px 28px; }
 #dialog.settings-drawer .workspace-title { font-size:25px; }
 #dialog.settings-drawer .two-columns { grid-template-columns:1fr; }
 #dialog.settings-drawer.compact-dialog .settings-layout { grid-template-columns:1fr; }
@@ -1097,8 +1102,8 @@ body.reduce-effects #dialog.settings-drawer { animation:none; }
 @media(prefers-reduced-motion:reduce) { #dialog.settings-drawer { animation:none; } }
 @container window (max-width:620px) {
   .settings-layout { grid-template-columns:150px minmax(0,1fr); grid-template-rows:1fr; }
-  .settings-nav { display:flex; flex-direction:column; overflow-y:auto; padding:22px 6px; }
-  .settings-content,#dialog.settings-drawer .settings-content { padding:50px 14px 22px; }
+  .settings-nav { display:flex; flex-direction:column; overflow-y:auto; padding:12px 6px; }
+  .settings-content,#dialog.settings-drawer .settings-content { padding:18px 14px 22px; }
   .settings-nav-button { padding:10px 5px; gap:5px; font-size:11px; }
   .settings-nav-button .icon { display:none; }
   .two-columns { grid-template-columns:1fr; }
@@ -7417,15 +7422,15 @@ function createWallpaperLibrary({getState,wallpapers,renderCustom,renderParamete
   const settings=getState().settings,tab=WALLPAPER_SOURCES.find(s=>s.id===state.tab);
   let content='';
   if(state.preview)content=previewMarkup();
-  else if(state.tab==='official')content=`<div class="gallery-intro"><h3>${t("官方背景")}</h3><p>${t("内置渐变 · 离线可用")}</p></div><div class="wallpaper-grid">${wallpapers.map(w=>`<article class="wallpaper-photo-card wallpaper-builtin ${settings.wallpaper===w.id&&!settings.customWallpaper&&!(settings.wallpaperApiEnabled&&settings.remoteWallpaper)?'selected':''}"><div class="wallpaper-photo-visual" style="background:${w.background}"><span class="wallpaper-builtin-name">${t(w.name)}</span><div class="wallpaper-photo-actions"><button data-gallery-builtin-preview="${w.id}" aria-label="${t("预览{v0}背景", {v0: w.name})}">${t("预览")}</button><button data-wallpaper="${w.id}" aria-label="${t("选用{v0}背景", {v0: w.name})}">${t("选用")}</button></div></div></article>`).join('')}</div>`;
+  else if(state.tab==='official')content=`<div class="gallery-intro"><p>${t("内置渐变 · 离线可用")}</p></div><div class="wallpaper-grid">${wallpapers.map(w=>`<article class="wallpaper-photo-card wallpaper-builtin ${settings.wallpaper===w.id&&!settings.customWallpaper&&!(settings.wallpaperApiEnabled&&settings.remoteWallpaper)?'selected':''}"><div class="wallpaper-photo-visual" style="background:${w.background}"><span class="wallpaper-builtin-name">${t(w.name)}</span><div class="wallpaper-photo-actions"><button data-gallery-builtin-preview="${w.id}" aria-label="${t("预览{v0}背景", {v0: w.name})}">${t("预览")}</button><button data-wallpaper="${w.id}" aria-label="${t("选用{v0}背景", {v0: w.name})}">${t("选用")}</button></div></div></article>`).join('')}</div>`;
   else if(state.tab==='custom')content=renderCustom()+(local?uploadsMarkup():'');
   else if(state.tab==='parameters')content=renderParameters();
   else{
-   content=`<div class="gallery-intro"><h3>${esc(t(tab.name))}</h3><p>${esc(t(tab.intro))}</p></div>`;
+   content=`<div class="gallery-intro"><p>${esc(t(tab.intro))}</p></div>`;
    if(!settings.wallpaperApiEnabled)content+=`<div class="wallpaper-permission"><strong>${t("连接 {v0}", {v0: esc(t(tab.name))})}</strong><p>${t("启用后直接加载该图库和图片域名，不发送桌面内容或同步凭据。")}</p><button class="primary-button" data-gallery-enable>${t("启用并加载图片")}</button></div>`;
    else content+=`<div class="wallpaper-status ${!state.loading&&!state.applying&&!state.error&&state.photos.length?'is-quiet':''}" role="status">${state.applying?t("正在加载高清壁纸…"):state.loading?t("正在加载图片清单…"):esc(state.error)||(!state.photos.length?t("这一页暂无可用图片。"):'')}</div>${state.error?`<button class="secondary-button" data-gallery-retry>${t("重新加载")}</button>`:''}<div class="wallpaper-grid">${state.photos.map((p,i)=>`<article class="wallpaper-photo-card ${settings.remoteWallpaper?.provider===p.provider&&settings.remoteWallpaper?.id===p.id?'selected':''}"><div class="wallpaper-photo-visual"><img src="${esc(p.thumbnail)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${esc(p.title)}" draggable="false"><div class="wallpaper-photo-actions"><button data-gallery-preview="${i}" aria-label="${t("预览壁纸：{v0}", {v0: esc(p.title)})}" ${state.loading||state.applying?'disabled':''}>${t("预览")}</button><button data-gallery-apply="${i}" aria-label="${t("选用壁纸：{v0}", {v0: esc(p.title)})}" ${state.loading||state.applying?'disabled':''}>${t("选用")}</button></div></div></article>`).join('')}</div><div class="wallpaper-pagination"><button class="secondary-button" data-gallery-page="-1" ${state.page===1||state.loading||state.applying?'disabled':''}>${t("上一页")}</button><span>${t("第 {v0} 页", {v0: state.page})}</span><button class="secondary-button" data-gallery-page="1" ${state.page>=(tab.snapshot?catalogWallpaperPages(state.tab):50)||state.loading||state.applying?'disabled':''}>${t("下一页")}</button></div>`;
   }
-  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="${t("壁纸来源")}"><h2 class="workspace-title" id="workspace-title">${t("壁纸库")}</h2>${WALLPAPER_SOURCES.map(s=>`<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content"><span class="source-symbol" aria-hidden="true">${({custom:'＋',official:'◈',deepin:'◉',wallhaven:'W',picsum:'P',commons:'◎'})[s.id]}</span><span>${t(s.name)}</span></button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}"><span class="source-symbol" aria-hidden="true">☷</span><span>${t("参数设置")}</span></button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="${t("壁纸内容")}">${content}</section></div>`;
+  return `<div class="wallpaper-browser"><nav class="wallpaper-nav" role="tablist" aria-orientation="vertical" aria-label="${t("壁纸来源")}">${WALLPAPER_SOURCES.map(s=>`<button data-gallery-tab="${s.id}" role="tab" aria-selected="${state.tab===s.id}" aria-controls="wallpaper-content"><span class="source-symbol" aria-hidden="true">${({custom:'＋',official:'◈',deepin:'◉',wallhaven:'W',picsum:'P',commons:'◎'})[s.id]}</span><span>${t(s.name)}</span></button>`).join('')}<button class="wallpaper-parameters" data-gallery-tab="parameters" role="tab" aria-controls="wallpaper-content" aria-selected="${state.tab==='parameters'}"><span class="source-symbol" aria-hidden="true">☷</span><span>${t("参数设置")}</span></button></nav><section id="wallpaper-content" class="wallpaper-content" role="tabpanel" aria-label="${t("壁纸内容")}">${content}</section></div>`;
  }
  function back(){if(!state.preview)return false;stop();state.preview=null;state.error='';refresh();return true;}
  async function handleClick(button){
@@ -10290,7 +10295,7 @@ const { getWidgetDefinition, newWidgetConfig } = __widget_registry;
 const { newWidgetData, widgetContentSummary } = __widget_data;
 const { icon, iconNames } = __icons;
 const { normalizeWallpaperPhoto } = __wallpapers;
-const { createWallpaperLibrary } = __wallpaper_library;
+const { createWallpaperLibrary, WALLPAPER_SOURCES } = __wallpaper_library;
 const { createLocalWallpaperStore, localWallpaperBlob, localWallpaperId } = __local_wallpapers;
 const { webDAVStateFingerprint } = __webdav;
 const { createSyncController } = __sync_ui;
@@ -10945,10 +10950,11 @@ function submitSearch() {
  hideSearchMenus(); navigate(url,false,true);
 }
 function dialogCloseButton(){return `<button class="dialog-close workspace-close" data-close aria-label="${t("关闭")}">${icon('close')}</button>`;}
-function dialogHeader(title,subtitle='') { return `<header class="dialog-head"><div><h2 id="dialog-title">${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="dialog-close" data-close aria-label="${t("关闭")}">${icon('close')}</button></header>`; }
-function compactDialogHeader(title,details='',actions='') {
- return `<header class="dialog-head compact-dialog-head"><div class="compact-dialog-title"><h2 id="dialog-title" tabindex="-1" title="${esc(title)}">${esc(title)}</h2>${details}</div><div class="compact-dialog-actions">${actions}${dialogCloseButton()}</div></header>`;
+function dialogHeader(title,subtitle='') { return compactDialogHeader(title)+(subtitle?`<p class="dialog-description" id="dialog-description">${esc(subtitle)}</p>`:''); }
+function compactDialogHeader(title,details='',actions='',titleId='dialog-title') {
+ return `<header class="dialog-head compact-dialog-head"><div class="compact-dialog-title"><h2 id="${titleId}" tabindex="-1" title="${esc(title)}">${esc(title)}</h2>${details}</div><div class="compact-dialog-actions">${actions}${dialogCloseButton()}</div></header>`;
 }
+function workspaceDialogHeader(title,context) {return compactDialogHeader(title,`<span class="dialog-context" title="${esc(context)}">${esc(context)}</span>`,'','workspace-title');}
 function field(name,label,value='',options={}) { return `<label class="field"><span>${esc(label)}</span><input name="${esc(name)}" type="${options.type || 'text'}" value="${esc(value)}" ${options.required?'required':''} ${options.type==='number'?'step="any"':''} ${options.min!==undefined?`min="${options.min}"`:''} ${options.max!==undefined?`max="${options.max}"`:''} ${options.maxlength?`maxlength="${options.maxlength}"`:''} ${options.placeholder?`placeholder="${esc(options.placeholder)}"`:''}>${options.help?`<small>${esc(options.help)}</small>`:''}</label>`; }
 function selectField(name,label,value,options) { return `<label class="field"><span>${esc(label)}</span><select name="${name}">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`; }
 function formActions(label=t("保存")) { return `<div id="form-error" class="inline-error" hidden></div><div class="button-row"><button class="secondary-button" type="button" data-close>${t("取消")}</button><button class="primary-button" type="submit">${icon('check')}${esc(label)}</button></div>`; }
@@ -11050,6 +11056,8 @@ function openDialog(kind,data={}) {
  cancelLinkFaviconVisit();
  $('#dialog-content').innerHTML = html;
  dialog.setAttribute('aria-labelledby',['add','settings','wallpaper'].includes(kind)?'workspace-title':'dialog-title');
+ if($('#dialog-description',dialog))dialog.setAttribute('aria-describedby','dialog-description');
+ else dialog.removeAttribute('aria-describedby');
  if (!dialog.open) dialog.showModal();
  bindFaviconImages($('#dialog-content'));
  if(kind==='add' && data.tab==='sharing')viewerCleanup=bindSharing($('#add-content'),{getState:()=>state,apply:applyExchange});
@@ -11060,9 +11068,8 @@ function openDialog(kind,data={}) {
  if (kind==='wallpaper')void wallpaperLibrary.open();
  if ($('#link-form',dialog)) updateLinkPreview($('#link-form',dialog));
  if (kind==='local-search') { $('#local-query')?.focus(); renderLocalResults(''); }
- else if(kind==='add')$('#workspace-title',dialog)?.focus({preventScroll:true});
- else if(kind==='settings')$('.settings-section-title',dialog)?.focus({preventScroll:true});
- else if(['widget-detail','import-preview','folder'].includes(kind))$('#dialog-title',dialog)?.focus({preventScroll:true});
+ else if(['add','settings','wallpaper'].includes(kind))$('#workspace-title',dialog)?.focus({preventScroll:true});
+ else if(['widget-detail','import-preview','folder','confirm','restore-preview','sync-review'].includes(kind))$('#dialog-title',dialog)?.focus({preventScroll:true});
  else $('input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=color]):not([type=range]),select',dialog)?.focus();
 }
 async function closeDialog() {
@@ -11272,9 +11279,9 @@ function settingsDialog(tab) {
   <p class="about-note">${t("界面采用 Inter 与系统字体。Inter 以 SIL Open Font License 1.1 授权，随项目本地提供。")}</p>
   <div class="button-row"><a class="secondary-button" href="https://github.com/Ktclat/qiye" target="_blank" rel="noopener noreferrer">${t("{v0}源代码", {v0: icon('github')})}</a><a class="secondary-button" href="https://github.com/Ktclat/qiye/blob/main/docs/THIRD_PARTY.md" target="_blank" rel="noopener noreferrer">${t("字体与许可")}</a></div>`;
  const current = tabs.find(item=>item.id===tab);
- return dialogCloseButton() + `
- <div class="settings-layout"><nav class="settings-nav" aria-label="${t("设置分类")}"><h2 class="workspace-title" id="workspace-title">${t("设置")}</h2>${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>${t("栖页 Qiye · {v0}", {v0: APP_VERSION})}</small></nav>
- <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}"><h3 class="settings-section-title" tabindex="-1">${current.name}</h3>${content}</section></div>`;
+ return workspaceDialogHeader(t("设置"),current.name) + `
+ <div class="settings-layout"><nav class="settings-nav" aria-label="${t("设置分类")}">${tabs.map(t=>`<button class="settings-nav-button ${t.id===tab?'active':''}" data-settings-tab="${t.id}" ${t.id===tab?'aria-current="page"':''}>${icon(t.icon)}<span>${t.name}</span></button>`).join('')}<small>${t("栖页 Qiye · {v0}", {v0: APP_VERSION})}</small></nav>
+ <section class="settings-content" aria-label="${t("{v0}设置", {v0: current.name})}">${content}</section></div>`;
 }
 const wallpaperLibrary = createWallpaperLibrary({
  getState:()=>state, wallpapers:WALLPAPERS, toast,
@@ -11293,6 +11300,7 @@ const wallpaperLibrary = createWallpaperLibrary({
    const replacement=[...dialog.querySelectorAll('button')].find(button=>button.dataset[key]===value);
    (replacement||$('[data-gallery-back]',dialog)||$('[data-gallery-tab="custom"]',dialog))?.focus({preventScroll:true});
   }
+  else if(focused?.id==='workspace-title')$('#workspace-title',dialog)?.focus({preventScroll:true});
  },
  enable:async()=>{state.settings.wallpaperApiEnabled=true;await persist();applySettings();},
  apply:applyOnlineWallpaper,
@@ -11301,10 +11309,13 @@ const wallpaperLibrary = createWallpaperLibrary({
   apply:async(row,{isCurrent})=>{const current=wallpaperRequest(),applied=await storeLocalWallpaper(row.blob,row.type,()=>isCurrent()&&current(),row.name);if(applied)toast(t('本地壁纸已保存。'));return applied;},
   remove:removeLocalWallpaper
  },
- renderCustom:()=>`<div class="gallery-intro"><h3>${t('自定义背景')}</h3><p>${t('上传记录仅保存在此浏览器；当前选用的背景随备份与 WebDAV 同步。')}</p></div><button class="upload-zone local-wallpaper-upload" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t('选择本地图片或视频')}</strong><small>${t('不上传到栖页服务器')}</small></span></button><p class="help-text local-wallpaper-help">${t('静态 PNG、JPEG、WebP 最多 32 MiB，自动压缩至 4 MiB 内；GIF、AVIF、MP4、WebM 须小于 4 MiB。')}</p>`,
- renderParameters:()=>`<h3>${t("壁纸参数")}</h3><p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
+ renderCustom:()=>`<div class="gallery-intro"><p>${t('上传记录仅保存在此浏览器；当前选用的背景随备份与 WebDAV 同步。')}</p></div><button class="upload-zone local-wallpaper-upload" data-action="upload-wallpaper">${icon('upload')}<span><strong>${t('选择本地图片或视频')}</strong><small>${t('不上传到栖页服务器')}</small></span></button><p class="help-text local-wallpaper-help">${t('静态 PNG、JPEG、WebP 最多 32 MiB，自动压缩至 4 MiB 内；GIF、AVIF、MP4、WebM 须小于 4 MiB。')}</p>`,
+ renderParameters:()=>`<p class="help-text">${t("参数独立于图库，修改后立即预览并保存。")}</p>${settingRange('blur',t("背景模糊"),0,20)}${settingRange('dim',t("背景暗度"),0,70,'%')}${settingSwitch('dailyWallpaper',t("每日轮换内置背景"),t("手动选择的本地或在线壁纸优先显示。"))}${settingSwitch('wallpaperApiEnabled',t("允许公开图片 API"),t("只在手动选择在线来源时加载图片清单。关闭后恢复内置或本地背景。"))}`
 });
-function wallpaperDialog() {return dialogCloseButton()+wallpaperLibrary.render();}
+function wallpaperDialog() {
+ const {tab}=wallpaperLibrary.getState(),context=tab==='parameters'?t('参数设置'):t(WALLPAPER_SOURCES.find(source=>source.id===tab)?.name||'壁纸库');
+ return workspaceDialogHeader(t('壁纸库'),context)+wallpaperLibrary.render();
+}
 
 function widgetConfigDialog(item) {
  return dialogHeader(t('设置组件'))+`<div class="dialog-body"><form id="widget-form" data-id="${esc(item.id)}">${field('title',t('名称'),item.title,{required:true,maxlength:120})}${selectField('size',t('卡片尺寸'),item.size,(item.config?.manifest?.sizes||TILE_SIZES).map(value=>({value,label:sizeLabel(value)})))}<p>${t('组件功能设置请在组件窗口内打开。')}</p>${formActions()}</form></div>`;
@@ -11673,9 +11684,9 @@ document.addEventListener('keydown',event=>{
   if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus();return;}
   if(event.key==='Escape'||event.key==='Tab'){menu.hidden=true;const id=CSS.escape(menu.dataset.item);document.querySelector(`[data-folder-item="${id}"] .folder-link,[data-item="${id}"]`)?.focus();if(event.key==='Escape'){event.preventDefault();return;}}
  }
- if(event.key==='Tab'&&dialog.open&&dialogKind==='folder'&&menu.hidden){
-  const controls=$$('button:not([disabled]),a[href]',dialog).filter(node=>node.tabIndex>=0&&node.getClientRects().length),first=controls[0],last=controls.at(-1),active=document.activeElement;
-  if(event.shiftKey&&(active===first||active.id==='dialog-title')){event.preventDefault();last?.focus();return;}
+ if(event.key==='Tab'&&dialog.open&&dialogKind!=='widget-detail'&&menu.hidden&&!event.defaultPrevented){
+  const controls=$$('button,input,select,textarea,a[href],summary,[tabindex]',dialog).filter(node=>node.tabIndex>=0&&!node.matches(':disabled')&&!node.closest('[inert]')&&node.getClientRects().length),first=controls[0],last=controls.at(-1),active=document.activeElement;
+  if(event.shiftKey&&(active===first||active.matches('#dialog-title,#workspace-title'))){event.preventDefault();last?.focus();return;}
   if(!event.shiftKey&&active===last){event.preventDefault();first?.focus();return;}
  }
  if((event.key==='ContextMenu'||event.shiftKey&&event.key==='F10')&&event.target.closest('[data-item],[data-folder-item]')){event.preventDefault();const tile=event.target.closest('[data-item],[data-folder-item]'),rect=tile.getBoundingClientRect();openContext({preventDefault(){},clientX:rect.left+16,clientY:rect.top+28},{itemId:tile.dataset.folderItem||tile.dataset.item});return;}

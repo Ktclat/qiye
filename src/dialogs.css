@@ -37,17 +37,14 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .workspace-dialog .settings-nav-button.active,.workspace-dialog .add-nav button[aria-selected=true],.workspace-dialog .wallpaper-nav button[aria-selected=true]{background:var(--nav-selection);border-color:var(--nav-selection-border);color:var(--fg);font-weight:550}
 .workspace-dialog .settings-nav-button:hover,.workspace-dialog .add-nav button:hover,.workspace-dialog .wallpaper-nav button:hover{background:var(--control-surface);color:var(--fg)}
 .workspace-dialog .settings-content,.workspace-dialog .add-content,.workspace-dialog .wallpaper-content{min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:28px 28px 30px;scrollbar-gutter:stable}
-.workspace-dialog .settings-section-title{font-size:19px;margin:2px 40px 22px 0;font-weight:600;letter-spacing:-.02em}
-.workspace-dialog .settings-content>.section-label:nth-child(2){margin-top:4px}
+.workspace-dialog .settings-content>.section-label:first-child{margin-top:4px}
 .workspace-dialog .settings-nav>small{font-size:10px;line-height:1.65;margin-top:auto;padding:24px 11px 2px;color:var(--muted)}
 .workspace-dialog .add-nav p{padding:12px 10px;font-size:10px;line-height:1.7}
 .workspace-dialog .wallpaper-nav .wallpaper-parameters{margin-top:auto;border:1px solid transparent;padding-top:12px;border-radius:12px}
 .source-symbol{width:20px;flex:none;text-align:center;font-size:18px;font-weight:550;line-height:1}
 /* Two bordered editor sections, as in a desktop icon editor. */
 .app-dialog.site-editor-dialog{width:min(840px,calc(100vw - 40px));background-color:var(--workspace-pane);max-height:calc(100dvh - 44px);scrollbar-gutter:auto}
-.site-editor-dialog .dialog-head{padding:24px 28px 10px;position:relative;background:none;border:0}
-.site-editor-dialog .dialog-head h2{font-size:26px;font-weight:620;letter-spacing:-.04em}
-.site-editor-dialog .dialog-body{padding:10px 28px 26px}
+.site-editor-dialog .dialog-body{padding:20px 28px 26px}
 .site-editor{display:flex;flex-direction:column;gap:16px;min-width:0}
 .editor-section{padding:19px 20px;background:var(--section-surface);border:1px solid var(--control-border);border-radius:19px;min-width:0}
 .editor-section .field{margin:0 0 15px}.editor-section .field:last-child{margin-bottom:0}
@@ -93,7 +90,7 @@ body.reduce-effects #main .search-form{background-color:rgb(var(--surface-rgb) /
 .editor-footer .button-row{margin:0;flex:none}
 .editor-footer .inline-error{flex-basis:100%}
 /* Denser gallery. Image actions are visible on hover, keyboard focus and touch. */
-.gallery-intro{padding-right:36px;margin:0 0 18px}
+.gallery-intro{margin:0 0 18px}
 .wallpaper-content .gallery-intro h3{font-size:17px;font-weight:560;margin:0 0 6px}
 .gallery-intro p{margin:0;font-size:12px;line-height:1.65;color:var(--muted)}
 .gallery-intro small{display:block;font-size:11px;line-height:1.6;margin-top:3px;color:var(--muted)}
@@ -200,14 +197,19 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-wi
 html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}
 
-/* Folder windows share the compact, single-row workspace title bar. */
-.compact-dialog-head{height:46px;min-height:46px;padding:0 12px 0 18px;gap:12px;flex:none;background:transparent}
+/* All host dialogs share one fixed-height title bar; descriptions belong below it. */
+#dialog .compact-dialog-head{display:flex;align-items:center;justify-content:space-between;height:46px;min-height:46px;padding:0 12px 0 18px;gap:12px;flex:0 0 46px;position:sticky;top:0;background:var(--workspace-pane);border:0;border-bottom:1px solid var(--panel-border)}
 .compact-dialog-title{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.compact-dialog-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:20px;font-weight:600;letter-spacing:0;outline:none}
+#dialog .compact-dialog-head h2{min-width:0;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:20px;font-weight:600;letter-spacing:0;outline:none}
+.dialog-context{min-width:0;padding-left:10px;border-left:1px solid var(--panel-border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:18px;color:var(--muted)}
+.dialog-description{margin:0;padding:18px 28px 0;font-size:12px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere}
 .compact-dialog-actions{display:flex;align-items:center;gap:4px;flex:none}
-.compact-dialog-actions button{display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:8px;background:transparent;color:var(--muted)}
-.compact-dialog-actions button:hover{background:var(--control-surface);color:var(--fg)}
+#dialog .compact-dialog-actions button{position:static;display:grid;place-items:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted)}
+#dialog .compact-dialog-actions button:hover{background:var(--control-surface);color:var(--fg)}
 .compact-dialog-actions .icon{width:16px;height:16px}
+.workspace-dialog .settings-layout,.workspace-dialog .wallpaper-browser{height:auto}
+.workspace-dialog .settings-nav,.workspace-dialog .wallpaper-nav{padding-top:12px}
+.workspace-dialog .settings-content,.workspace-dialog .wallpaper-content{padding:20px 24px 24px}
 .folder-count{flex:none;white-space:nowrap;font-size:11px;line-height:18px;color:var(--muted);font-variant-numeric:tabular-nums}
 #dialog.folder-dialog{width:min(600px,var(--form-width,640px),var(--dialog-width));max-height:var(--dialog-height);border-radius:18px;overflow:hidden;scrollbar-gutter:auto;background-color:var(--workspace-pane)}
 .folder-dialog #dialog-content{display:flex;flex-direction:column;max-height:calc(var(--dialog-height) - 2px)}
@@ -227,8 +229,10 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scr
 .folder-editor-dialog .dialog-body{padding:20px 24px 24px}
 @container window (max-width:480px){
  .folder-dialog .folder-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 4px;padding:16px 12px}
- .compact-dialog-head{padding-left:14px;gap:8px}
+ #dialog .compact-dialog-head{padding-left:14px;gap:8px}
  .compact-dialog-title{gap:8px}
+ .dialog-context{padding-left:8px}
+ .dialog-description{padding:16px 21px 0}
  .folder-editor-dialog .dialog-body{padding:18px}
 }
 @container window (max-width:320px){
@@ -250,7 +254,8 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scr
 #dialog.compact-dialog .setting-copy{min-width:0}
 #dialog.compact-dialog .setting-row select{width:100%;max-width:100%;flex-basis:100%}
 #dialog.compact-dialog .workspace-close{right:8px;top:10px;background:var(--workspace-pane)}
-#dialog.compact-dialog .settings-nav,#dialog.compact-dialog .add-nav,#dialog.compact-dialog .wallpaper-nav{margin-right:42px;padding-right:10px}
+#dialog.compact-dialog .add-nav{margin-right:42px;padding-right:10px}
+#dialog.compact-dialog .settings-nav,#dialog.compact-dialog .wallpaper-nav{padding-right:10px}
 .widget-catalog-tools{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-bottom:16px}
 .widget-catalog-tools .field{flex:1;min-width:130px;margin:0}
 .widget-catalog-tools input,.widget-catalog-tools select{width:100%}
