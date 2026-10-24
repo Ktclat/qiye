@@ -14,7 +14,6 @@ html[data-theme=light]{--fg:#253843;--muted:#728591;--panel:#f5f8f8;--panel-2:#e
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .tile-link .tile-body,.mini-site,.folder-site{color:var(--tile-ink,#fff)}.site-glyph{color:var(--tile-ink,#fff)}.tile-link .tile-body>.icon{width:32px;height:32px}
-.tile-link:not([data-size="1x1"]) .tile-body{max-width:none;max-height:none;aspect-ratio:auto}.tile-link[data-size="2x2"] .site-glyph,.tile-link[data-size="4x2"] .site-glyph{font-size:45px}.tile-link[data-size="2x2"] .tile-body>.icon,.tile-link[data-size="4x2"] .tile-body>.icon{width:48px;height:48px}
 
 /* v0.2: quieter desktop chrome, consistent spacing, and readable settings. */
 :root{--border:var(--panel-border);--text:var(--fg);--panel-soft:var(--field);--accent-soft:rgba(120,217,198,.12)}
@@ -102,8 +101,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .site-visual>.site-favicon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:60%;height:60%;max-width:38px;max-height:38px;object-fit:contain;background:transparent;pointer-events:none}
 .site-visual>.site-favicon[hidden]{display:none}
 .site-fallback>.icon{width:30px;height:30px}
-.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{max-width:60px;max-height:60px}
-.tile-link[data-size="2x2"] .site-fallback>.icon,.tile-link[data-size="4x2"] .site-fallback>.icon{width:48px;height:48px}
 .mini-site .site-favicon{max-width:30px;max-height:30px}
 .mini-site .site-glyph{font-size:21px}
 .mini-site .site-glyph.small{font-size:15px}

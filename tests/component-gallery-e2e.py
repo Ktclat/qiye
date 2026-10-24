@@ -10,6 +10,7 @@ parser=argparse.ArgumentParser();parser.add_argument('--widgets',type=Path,defau
 OUT=ROOT/'output/playwright/gallery'/('fixture' if args.widgets==ROOT/'tests/fixtures/plugin-source' else 'integration')/('preview' if args.preview else 'source');OUT.mkdir(parents=True,exist_ok=True)
 official=json.loads((args.widgets/'index.json').read_text(encoding='utf-8'));notes=next(m for m in official['widgets'] if m['id']=='qiye.notes')
 customs={f'https://community-{i}.example.com/index.json':{'format':'qiye-widget-source','version':1,'name':name,'widgets':[{**notes,'name':'社区便签','author':name}]} for i,name in enumerate(['青柠工作室','长名称作者的实用组件收藏'])}
+customs['https://community-1.example.com/index.json']['widgets'][0]['sizes']=['4x2','2x2','1x1','2x1','1x2']
 calls=[]
 class Quiet(SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
@@ -48,8 +49,14 @@ with sync_playwright() as pw:
   all_cards=page.locator('[data-community-card]:visible')
   page.locator('[data-community-category=all]').click();check('All subscribed sources appear',all_cards.count()==len(official['widgets'])+2)
   page.locator('[data-community-category=community]').click();check('Community aggregates only custom sources',all_cards.count()==2)
+  check('Preferred wide card and legacy square defaults coexist',[all_cards.nth(i).get_attribute('data-preview-size') for i in range(2)]==['2x2','4x2'])
   page.get_by_role('button',name='青柠工作室',exact=True).first.click();check('Author/source filter selects one source',all_cards.count()==1)
   page.locator('[data-community-category=official]').focus();page.keyboard.press('Space');check('Keyboard can select the official source',all_cards.count()==len(official['widgets']))
+  # First non-launcher size is the source's preferred presentation. Old catalogs
+  # starting with 1x1 retain the previous 2x2 default.
+  for i,manifest in enumerate(official['widgets']):
+   expected='2x2' if manifest['sizes'][0]=='1x1' else manifest['sizes'][0]
+   check('Source default size '+manifest['id'],all_cards.nth(i).get_attribute('data-preview-size')==expected)
   page.locator('[data-community-query]').fill('便签');card=all_cards.first
   page.locator('.community-preview iframe[data-ready=true]').wait_for()
   saved=page.evaluate("localStorage.getItem('qiye.state.v5')")
