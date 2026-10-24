@@ -39,6 +39,16 @@
 
 ## 维护与验证
 
+### 组件源按钮与异步反馈（0.10.15，2026-10-25）
+
+用户报告停用、检查更新和预览偶尔无响应。原实现用一个 `busy` 标记忽略整个来源页面的点击，并把提示放在长列表底部。现在按来源管理可取消的目录请求，只将正在执行的操作标为忙碌；停用、返回和离开页面会取消对应请求，响应过期后不能写回或重新启用来源。添加 / 更新桌面记录仍避免并发写入，但不会锁住导航。
+
+沿用 iTab 参考形成的紧凑界面和 46px 窗口标题栏。按钮采用 36px 高度、16px 图标、完整点击区域与明暗主题的悬停 / 按下状态；主操作“预览与添加”使用强调色。加载文字与进度图标只出现在执行中的按钮，结果提示位于来源操作下方并随内容滚动保持可见，错误保留到下一次操作。更新完成在原组件位置显示“已是最新”，保留焦点、滚动和已展开权限说明。
+
+研究来源：[Carbon 按钮状态与主要操作示例](https://www.carbondesignsystem.com/building-blocks/core/components/button/guidelines)、[WAI-ARIA 按钮交互](https://www.w3.org/WAI/ARIA/apg/patterns/button/)、[MDN aria-busy](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-busy)。使用原生按钮、稳定的来源开关可访问名称、`aria-disabled` 防重复操作、`aria-busy` 和礼貌播报状态；保留键盘焦点，鼠标点击不强制显示焦点边框，减少动态效果时停用旋转动画。
+
+`tests/source-actions-e2e.py` 使用隔离桌面与可控目录服务检查慢请求、重复点击、停用取消与迟到响应、预览导航、失败重试、更新数据保留、键盘、窄屏及刷新持久化。它与原有组件目录回归共同检查源码和独立预览，公开页面发布后另行核对构建字节与按钮行为。
+
 - 清单、来源、实例数据：`src/community-format.js`；联网读取：`src/public-json.js`。
 - 目录 UI：`src/community-ui.js`；隔离运行：`src/plugin-host.js`。
 - 排布协议：`src/layout-sharing.js`；导入导出：`src/sharing-ui.js`。

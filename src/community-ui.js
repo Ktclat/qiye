@@ -18,24 +18,51 @@ export function communityToolbar(state, groupId) {
  return `<div class="catalog-toolbar community-toolbar"><input type="search" data-community-query placeholder="${t('搜索名称或用途')}" aria-label="${t('搜索名称或用途')}"><label><span>${t('添加到')}</span><select data-community-group aria-label="${t('添加到')}">${state.groups.map(g=>`<option value="${e(g.id)}"${g.id === groupId ? ' selected' : ''}>${e(g.name)}</option>`).join('')}</select></label></div><button class="community-manage" data-action="widget-sources" aria-label="${t('管理组件源')}" title="${t('管理组件源')}">${icon('settings')}</button>`;
 }
 export function communityView({catalogOnly=false}={}) {
- return `<div class="community-view ${catalogOnly?'community-gallery':'community-settings'}" data-source-view="${catalogOnly?'catalog':'settings'}"><div data-community-body></div><p data-community-status role="status" aria-live="polite"></p></div>`;
+ return `<div class="community-view ${catalogOnly?'community-gallery':'community-settings'}" data-source-view="${catalogOnly?'catalog':'settings'}"><p data-community-status role="status" aria-live="polite" aria-atomic="true"></p><div data-community-body></div></div>`;
 }
 
 export function bindCommunity(root, host, initial={}) {
  const events = new AbortController(), options = {signal:events.signal};
  const view = root.querySelector('[data-source-view]'), body = view.querySelector('[data-community-body]'), status = view.querySelector('[data-community-status]');
  const gallery = view.dataset.sourceView === 'catalog', sizes = new Map(), previews = new Map();
- let sources = [], busy = false, writingSources = false, observer, entries = [], selectedSource = gallery ? null : initial.source;
+ let sources = [], writingSources = false, observer, entries = [], selectedSource = gallery ? null : initial.source, writeJob;
+ const sourceJobs=new Map(), activityButtons=new Map();
  let category = gallery && initial.source ? initial.source : 'all', query = initial.query || '';
- let reportTimer;
- const report = (message, temporary=true) => { clearTimeout(reportTimer);if(root.isConnected)status.textContent=message;if(temporary)reportTimer=setTimeout(()=>{status.textContent='';},3000); };
+ const report = (message, tone='info') => { if(root.isConnected){status.dataset.tone=tone;status.innerHTML=message?`${icon(tone==='error'?'info':tone==='success'?'check':'refresh')}<span>${e(message)}</span>`:'';} };
+ const buttonLabel=(name,text)=>`${icon(name)}<span>${t(text)}</span>`;
+ function pendingButton(button,text) {
+  if(!button)return;
+  if(!activityButtons.has(button))activityButtons.set(button,button.innerHTML);
+  button.setAttribute('aria-disabled','true');
+  if(text){button.setAttribute('aria-busy','true');button.innerHTML=`<span class="community-spinner" aria-hidden="true"></span><span>${e(text)}</span>`;}
+ }
+ function resetActivity() {
+  for(const [button,html] of activityButtons){button.innerHTML=html;button.removeAttribute('aria-disabled');button.removeAttribute('aria-busy');}
+  activityButtons.clear();
+ }
+ function updateActivity() {
+  resetActivity();
+  for(const [url,job] of sourceJobs){
+   const index=sources.findIndex(s=>s.url===url);
+   pendingButton(index<0?root.querySelector('[data-community-source] button'):body.querySelector(`[data-source-${job.kind==='refresh'?'refresh':'toggle'}="${index}"]`),job.label);
+  }
+  if(writeJob)for(const button of body.querySelectorAll('[data-community-add],[data-community-update]')){
+   const entry=entries[Number(button.hasAttribute('data-community-add')?button.closest('[data-community-card]').dataset.communityCard:button.dataset.communityUpdate)];
+   pendingButton(button,entryKey(entry)===writeJob.key?writeJob.label:null);
+  }
+ }
+ function cancelSource(url) {const job=sourceJobs.get(url);if(job){sourceJobs.delete(url);job.controller.abort();}updateActivity();}
+ async function navigate(button,open) {
+  pendingButton(button,t('正在打开…'));
+  try{await open?.();}finally{updateActivity();}
+ }
  const sourceEntries = source => (source.catalog?.widgets || []).map(manifest=>({manifest, source}));
  const installed = entry => host.getState().items.filter(i=>i.widget==='community' && i.config.source===entry.source.url && i.config.manifest.id===entry.manifest.id);
  const changed = entry => installed(entry).some(i=>JSON.stringify(i.config.manifest)!==JSON.stringify(entry.manifest));
  const persist = next => {writingSources=true;try{saveWidgetSources(next);sources=next;}finally{writingSources=false;}};
  const stopPreviews = () => {observer?.disconnect();for(const dispose of previews.values())dispose();previews.clear();};
  const label = source => source.url===OFFICIAL_WIDGET_SOURCE ? t('栖页官方小组件') : sourceName(source);
- const buttons = (source,index,details=false) => `<button type="button" role="switch" aria-checked="${source.enabled}" data-source-toggle="${index}">${t(source.enabled?'停用':'启用')}</button>${details?`<button data-source-refresh="${index}" ${!source.enabled?'disabled':''}>${t('检查更新')}</button>`:`<button data-source-details="${index}">${t('查看组件详情')}</button>`}${source.url===OFFICIAL_WIDGET_SOURCE?'':`<button data-source-remove="${index}">${t('移除')}</button>${permissionControl({origins:[new URL(source.url).origin+'/*']})}`}`;
+ const buttons = (source,index,details=false) => `<button type="button" role="switch" aria-label="${e(t('启用来源：{name}',{name:label(source)}))}" aria-checked="${source.enabled}" data-source-toggle="${index}">${buttonLabel(source.enabled?'pause':'plus',source.enabled?'停用':'启用')}</button>${details?`<button type="button" data-source-refresh="${index}" ${!source.enabled?'disabled':''}>${buttonLabel('refresh','检查更新')}</button>`:`<button type="button" data-source-details="${index}">${buttonLabel('list','查看组件详情')}</button>`}${source.url===OFFICIAL_WIDGET_SOURCE?'':`<button type="button" data-source-remove="${index}">${buttonLabel('trash','移除')}</button>${permissionControl({origins:[new URL(source.url).origin+'/*']})}`}`;
  const access = manifest => `<details class="source-widget-access"><summary>${t('来源与权限')}</summary><dl><dt>${t('运行地址')}</dt><dd>${e(new URL(manifest.entry).origin)}</dd><dt>${t('权限')}</dt><dd>${e((manifest.capabilities||[]).map(c=>t({bookmarks:'浏览器书签',wallpaper:'壁纸',geolocation:'定位'}[c])).join('、') || t('仅组件自己的数据'))}</dd><dt>${t('许可证')}</dt><dd>${e(manifest.license)}</dd></dl><a href="${e(manifest.repository)}" target="_blank" rel="noopener noreferrer">${t('查看源码')}</a></details>`;
 
  function renderSettings() {
@@ -47,7 +74,7 @@ export function bindCommunity(root, host, initial={}) {
   }
   entries=sourceEntries(source);
   const index=sources.indexOf(source);
-  body.innerHTML=`<header class="source-detail-header"><button data-source-back aria-label="${t('返回组件源')}">${icon('chevronLeft')}</button><div><h3 tabindex="-1" data-source-title>${e(label(source))}</h3><small>${entries.length} ${t('个组件')}</small></div></header><p class="source-address">${e(source.url)}</p><div class="source-actions">${buttons(source,index,true)}<button data-source-browse ${!source.enabled?'disabled':''}>${t('预览与添加')}</button></div>${!source.enabled?`<p class="source-notice">${t('此来源未启用。启用后可预览和添加组件。')}</p>`:''}<div class="source-detail-search"><input type="search" data-community-query value="${e(query)}" placeholder="${t('搜索名称或用途')}" aria-label="${t('搜索名称或用途')}"></div><div class="source-widget-list">${entries.map((entry,i)=>`<article data-source-widget="${i}" class="source-widget"><header><h4>${e(t(entry.manifest.name))}</h4><span>v${e(entry.manifest.release)}</span></header><p>${e(t(entry.manifest.description))}</p><small>${e(entry.manifest.author)} · ${t('已添加')} ${installed(entry).length}</small>${access(entry.manifest)}${changed(entry)?`<button data-community-update="${i}" ${!source.enabled?'disabled':''}>${t('更新已添加的组件')}</button>`:''}</article>`).join('')}</div><p data-community-empty>${t(entries.length?'没有找到匹配的内容':'此来源还没有组件')}</p>`;
+  body.innerHTML=`<header class="source-detail-header"><button type="button" data-source-back aria-label="${t('返回组件源')}">${icon('chevronLeft')}</button><div><h3 tabindex="-1" data-source-title>${e(label(source))}</h3><small>${entries.length} ${t('个组件')}<span class="source-state ${source.enabled?'is-enabled':''}"> · ${t(source.enabled?'已启用':'未启用')}</span></small></div></header><p class="source-address">${e(source.url)}</p><div class="source-actions">${buttons(source,index,true)}<button type="button" class="source-browse" data-source-browse ${!source.enabled?'disabled':''}>${buttonLabel('grid','预览与添加')}</button></div>${!source.enabled?`<p class="source-notice">${t('此来源未启用。启用后可预览和添加组件。')}</p>`:''}<div class="source-detail-search"><input type="search" data-community-query value="${e(query)}" placeholder="${t('搜索名称或用途')}" aria-label="${t('搜索名称或用途')}"></div><div class="source-widget-list">${entries.map((entry,i)=>`<article data-source-widget="${i}" data-source-widget-id="${e(entry.manifest.id)}" class="source-widget"><header><h4 tabindex="-1">${e(t(entry.manifest.name))}</h4><span>v${e(entry.manifest.release)}</span></header><p>${e(t(entry.manifest.description))}</p><small>${e(entry.manifest.author)} · ${t('已添加')} ${installed(entry).length}</small>${access(entry.manifest)}${changed(entry)?`<button type="button" data-community-update="${i}" ${!source.enabled?'disabled':''}>${buttonLabel('download','更新已添加的组件')}</button>`:installed(entry).length?`<span class="source-widget-current">${buttonLabel('check','已是最新')}</span>`:''}</article>`).join('')}</div><p data-community-empty>${t(entries.length?'没有找到匹配的内容':'此来源还没有组件')}</p>`;
  }
 
  function renderGallery() {
@@ -95,32 +122,70 @@ export function bindCommunity(root, host, initial={}) {
   const empty=body.querySelector('[data-community-empty]');if(empty)empty.hidden=count>0;
   for(const button of body.querySelectorAll('[data-community-category]'))button.setAttribute('aria-pressed',String(button.dataset.communityCategory===category));
  }
- function render(){report('');stopPreviews();if(gallery)renderGallery();else renderSettings();filter();}
-
- async function load(url) {
-  if(busy)return;busy=true;report(t('正在读取…'));
-  try{
-   const checked=publicHttpsUrl(url),value=checked.startsWith('https://ktclat.github.io/qiye-widgets/')?checked:await requestPublicOrigin(checked);
-   const catalog=validateCommunitySource(await fetchPublicJson(value,{signal:events.signal,maxBytes:512*1024}));
-   if(events.signal.aborted)return;
-   if(!sources.some(s=>s.url===value)&&sources.filter(s=>s.url!==OFFICIAL_WIDGET_SOURCE).length>=20)throw new Error(t('最多订阅 20 个来源。'));
-   const existing=sources.find(s=>s.url===value),updated={url:value,enabled:true,catalog};
-   persist(existing?sources.map(s=>s===existing?updated:s):[...sources,updated]);render();report(t('来源已更新，已安装的组件需手动更新。'));
-  }catch(error){if(!events.signal.aborted)report(error.message);}finally{busy=false;}
+ function render(){
+  const active=body.contains(document.activeElement)?document.activeElement:null;
+  const attribute=active?.getAttributeNames().find(name=>/^data-(source-|community-(update|query))/.test(name));
+  const focusKey=attribute&&active.getAttribute(attribute),rowId=active?.closest('[data-source-widget-id]')?.dataset.sourceWidgetId;
+  const expanded=[...body.querySelectorAll('[data-source-widget-id]:has(details[open])')].map(row=>row.dataset.sourceWidgetId);
+  const scroller=view.closest('.settings-content'),scrollTop=scroller?.scrollTop;
+  report('');view.prepend(status);stopPreviews();if(gallery)renderGallery();else renderSettings();
+  if(!gallery&&selectedSource)body.querySelector('.source-actions')?.after(status);
+  filter();updateActivity();
+  for(const id of expanded)body.querySelector(`[data-source-widget-id="${CSS.escape(id)}"] details`)?.setAttribute('open','');
+  if(attribute){const row=rowId&&body.querySelector(`[data-source-widget-id="${CSS.escape(rowId)}"]`);(row?.querySelector(`[${attribute}]`)||(!rowId&&body.querySelector(`[${attribute}="${CSS.escape(focusKey)}"]`))||row?.querySelector('h4'))?.focus({preventScroll:true});}
+  if(scroller)scroller.scrollTop=scrollTop;
  }
 
- root.addEventListener('submit',event=>{if(!event.target.matches('[data-community-source]'))return;event.preventDefault();event.stopPropagation();void load(new FormData(event.target).get('url'));},options);
+ async function sourceOperation(url,kind,work) {
+  if(sourceJobs.has(url))return;
+  const controller=new AbortController(),job={controller,kind,label:t(kind==='refresh'?'正在检查…':'正在启用…')};
+  const abort=()=>controller.abort();events.signal.addEventListener('abort',abort,{once:true});
+  const current=()=>!events.signal.aborted&&!controller.signal.aborted&&sourceJobs.get(url)===job;
+  sourceJobs.set(url,job);updateActivity();report(t(kind==='refresh'?'正在检查组件更新…':'正在启用组件源…'),'pending');
+  try{await work(controller.signal,current);}
+  catch(error){if(current())report(error.message,'error');}
+  finally{events.signal.removeEventListener('abort',abort);if(sourceJobs.get(url)===job)sourceJobs.delete(url);updateActivity();}
+ }
+ async function load(url,kind='enable') {
+  const checked=publicHttpsUrl(url);
+  await sourceOperation(checked,kind,async(signal,current)=>{
+   const value=checked===OFFICIAL_WIDGET_SOURCE?checked:await requestPublicOrigin(checked);
+   if(!current())return;
+   const catalog=validateCommunitySource(await fetchPublicJson(value,{signal,maxBytes:512*1024}));
+   if(!current())return;
+   if(!sources.some(s=>s.url===value)&&sources.filter(s=>s.url!==OFFICIAL_WIDGET_SOURCE).length>=20)throw new Error(t('最多订阅 20 个来源。'));
+   const existing=sources.find(s=>s.url===value),updated={url:value,enabled:true,catalog};
+   persist(existing?sources.map(s=>s===existing?updated:s):[...sources,updated]);render();
+   const count=sourceEntries(updated).filter(changed).length;
+   report(kind==='enable'?t('来源已启用。'):count?t('检查完成，{count} 个组件可更新。',{count}):t('检查完成，当前组件已是最新。'),'success');
+  });
+ }
+ async function enable(source) {
+  if(!source.catalog)return load(source.url);
+  await sourceOperation(source.url,'enable',async(signal,current)=>{
+   if(source.url!==OFFICIAL_WIDGET_SOURCE)await requestPublicOrigin(source.url);
+   if(!current())return;
+   persist(sources.map(s=>s.url===source.url?{...s,enabled:true}:s));render();report(t('来源已启用。'),'success');
+  });
+ }
+
+ root.addEventListener('submit',async event=>{
+  if(!event.target.matches('[data-community-source]'))return;event.preventDefault();event.stopPropagation();
+  try{
+   await load(new FormData(event.target).get('url'));
+  }catch(error){if(!events.signal.aborted)report(error.message,'error');}
+ },options);
  root.addEventListener('input',event=>{if(event.target.hasAttribute('data-community-query')){query=event.target.value;filter();}},options);
  root.addEventListener('click',async event=>{
-  const button=event.target.closest('button');if(!button||busy)return;
+  const button=event.target.closest('button');if(!button||button.matches(':disabled,[aria-disabled=true]'))return;
   try{
    if(button.hasAttribute('data-source-details')){selectedSource=sources[Number(button.dataset.sourceDetails)].url;query='';render();body.querySelector('[data-source-title]')?.focus({preventScroll:true});return;}
-   if(button.hasAttribute('data-source-back')){const url=selectedSource;selectedSource=null;query='';render();body.querySelector(`[data-source-details="${sources.findIndex(s=>s.url===url)}"]`)?.focus();return;}
-   if(button.hasAttribute('data-source-browse')){host.openCatalog?.(selectedSource);return;}
-   if(button.hasAttribute('data-gallery-source')){host.openSources?.(entries[Number(button.dataset.gallerySource)].source.url);return;}
-   if(button.hasAttribute('data-source-toggle')){const source=sources[Number(button.dataset.sourceToggle)];if(source.enabled){persist(sources.map(s=>s===source?{...s,enabled:false}:s));render();}else if(source.catalog){if(source.url!==OFFICIAL_WIDGET_SOURCE)await requestPublicOrigin(source.url);persist(sources.map(s=>s===source?{...s,enabled:true}:s));render();}else await load(source.url);return;}
-   if(button.hasAttribute('data-source-refresh')){await load(sources[Number(button.dataset.sourceRefresh)].url);return;}
-   if(button.hasAttribute('data-source-remove')){persist(sources.filter((_,index)=>index!==Number(button.dataset.sourceRemove)));render();return;}
+   if(button.hasAttribute('data-source-back')){const url=selectedSource;cancelSource(url);selectedSource=null;query='';render();body.querySelector(`[data-source-details="${sources.findIndex(s=>s.url===url)}"]`)?.focus();return;}
+   if(button.hasAttribute('data-source-browse')){await navigate(button,()=>host.openCatalog?.(selectedSource));return;}
+   if(button.hasAttribute('data-gallery-source')){const source=entries[Number(button.dataset.gallerySource)].source.url;await navigate(button,()=>host.openSources?.(source));return;}
+   if(button.hasAttribute('data-source-toggle')){const source=sources[Number(button.dataset.sourceToggle)];if(source.enabled){cancelSource(source.url);persist(sources.map(s=>s===source?{...s,enabled:false}:s));render();report(t('来源已停用，桌面数据已保留。'),'success');}else await enable(source);return;}
+   if(button.hasAttribute('data-source-refresh')){await load(sources[Number(button.dataset.sourceRefresh)].url,'refresh');return;}
+   if(button.hasAttribute('data-source-remove')){const source=sources[Number(button.dataset.sourceRemove)];cancelSource(source.url);persist(sources.filter(s=>s!==source));render();report(t('来源已移除，桌面数据已保留。'),'success');return;}
    if(button.hasAttribute('data-community-category')){category=button.dataset.communityCategory;filter();return;}
    if(button.hasAttribute('data-community-size')||button.hasAttribute('data-community-step')){
     const card=button.closest('[data-community-card]'),entry=entries[Number(card.dataset.communityCard)],available=entry.manifest.sizes;
@@ -130,15 +195,20 @@ export function bindCommunity(root, host, initial={}) {
     startPreview(card);return;
    }
    if(!button.hasAttribute('data-community-add')&&!button.hasAttribute('data-community-update'))return;
+   if(writeJob)return;
    const adding=button.hasAttribute('data-community-add'),card=button.closest('[data-community-card]');
    const entry=entries[Number(adding?card.dataset.communityCard:button.dataset.communityUpdate)],manifest=entry.manifest,source=entry.source.url;
-   const before=host.getState(),next=structuredClone(before);busy=true;button.disabled=true;
-   if(adding)next.items.push({id:uid(),groupId:root.querySelector('[data-community-group]').value,type:'widget',widget:'community',title:t(manifest.name).slice(0,120),size:card.dataset.previewSize,config:{manifest,source},data:{value:'null'}});
-   else for(const item of next.items.filter(i=>i.widget==='community'&&i.config.source===source&&i.config.manifest.id===manifest.id)){item.config={manifest,source};if(!manifest.sizes.includes(item.size))item.size='2x2';}
-   await host.apply(next,JSON.stringify(before));if(!events.signal.aborted){if(!adding)render();report(t(adding?'组件已添加到桌面。':'已更新组件，原有数据已保留。'),true);}
-  }catch(error){report(error.message);}finally{busy=false;if(button.isConnected)button.disabled=false;}
+   const before=host.getState(),next=structuredClone(before);
+   writeJob={key:entryKey(entry),label:t(adding?'正在添加…':'正在更新…')};updateActivity();report(writeJob.label,'pending');
+   try{
+    if(adding)next.items.push({id:uid(),groupId:root.querySelector('[data-community-group]').value,type:'widget',widget:'community',title:t(manifest.name).slice(0,120),size:card.dataset.previewSize,config:{manifest,source},data:{value:'null'}});
+    else for(const item of next.items.filter(i=>i.widget==='community'&&i.config.source===source&&i.config.manifest.id===manifest.id)){item.config={manifest,source};if(!manifest.sizes.includes(item.size))item.size='2x2';}
+    await host.apply(next,JSON.stringify(before));if(!events.signal.aborted){if(!adding)render();report(t(adding?'组件已添加到桌面。':'已更新组件，原有数据已保留。'),'success');}
+   }finally{writeJob=null;updateActivity();}
+  }catch(error){if(!events.signal.aborted)report(error.message,'error');}
  },options);
- window.addEventListener(SOURCES_CHANGED,()=>{if(writingSources)return;try{sources=readWidgetSources();render();}catch(error){report(error.message);}},options);
- try{sources=readWidgetSources();}catch(error){report(error.message);}
- render();return ()=>{clearTimeout(reportTimer);events.abort();stopPreviews();};
+ window.addEventListener(SOURCES_CHANGED,()=>{if(writingSources)return;try{for(const url of sourceJobs.keys())cancelSource(url);sources=readWidgetSources();render();}catch(error){report(error.message,'error');}},options);
+ let sourceError;try{sources=readWidgetSources();}catch(error){sourceError=error.message;}
+ render();if(sourceError)report(sourceError,'error');
+ return ()=>{events.abort();for(const url of sourceJobs.keys())cancelSource(url);resetActivity();stopPreviews();};
 }

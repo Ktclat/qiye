@@ -45,6 +45,9 @@ jobs:
           python tests/plugin-reuse-e2e.py --preview
           python tests/component-gallery-e2e.py
           python tests/component-gallery-e2e.py --preview
+          python tests/source-actions-e2e.py
+          python tests/source-actions-e2e.py --preview
+          python tests/source-actions-e2e.py --extension
           python tests/extension-e2e.py
           python tests/extension-e2e.py --reuse
           python tests/extension-update-e2e.py
