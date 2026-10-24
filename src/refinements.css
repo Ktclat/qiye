@@ -73,7 +73,6 @@ html[data-navigation=top] .daily-quote,html[data-sidebar-visibility=hidden] .dai
 .wallpaper-credit{max-width:33vw;bottom:8px;z-index:10}
 .folder-site{position:relative}
 .folder-grid{gap:24px 20px}
-.folder-item:focus-within{outline:1px solid var(--accent);outline-offset:5px;border-radius:12px}
 /* Wallpaper entry: no automatic list requests on page load. */
 .w-wallpaper{isolation:isolate}
 .wallpaper-widget-art{position:absolute;inset:0;background:radial-gradient(ellipse at 82% 14%,#f5ddab 0 9%,transparent 9.5%),linear-gradient(140deg,#629b97,#0d403a 70%)}

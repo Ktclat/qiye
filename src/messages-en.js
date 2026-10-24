@@ -1191,6 +1191,8 @@ export const englishMessages = {
   "重新尝试": "Retry",
   "文件夹已移除": "Folder removed",
   "{v0} 个网站 · 右键网站可编辑或移动": "{v0} websites · Right-click to edit or move",
+  "{count} 个网站": { "one": "{count} website", "other": "{count} websites" },
+  "右键或 Shift+F10 编辑、移动网站": "Right-click or Shift+F10 to edit or move websites",
   "文件夹还是空的。": "This folder is empty.",
   "把网站拖到这个文件夹中央即可收纳。": "Drag websites to the center of this folder.",
   "{v0}编辑文件夹": "{v0}Edit folder",

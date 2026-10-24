@@ -200,6 +200,41 @@ html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form){scrollbar-wi
 html.hide-editor-scrollbar .app-dialog.site-editor-dialog::-webkit-scrollbar,
 html.hide-editor-scrollbar .app-dialog .add-content:has(#link-form)::-webkit-scrollbar{display:none;width:0;height:0}
 
+/* Folder windows share the compact, single-row workspace title bar. */
+.compact-dialog-head{height:46px;min-height:46px;padding:0 12px 0 18px;gap:12px;flex:none;background:transparent}
+.compact-dialog-title{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.compact-dialog-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:20px;font-weight:600;letter-spacing:0;outline:none}
+.compact-dialog-actions{display:flex;align-items:center;gap:4px;flex:none}
+.compact-dialog-actions button{display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:8px;background:transparent;color:var(--muted)}
+.compact-dialog-actions button:hover{background:var(--control-surface);color:var(--fg)}
+.compact-dialog-actions .icon{width:16px;height:16px}
+.folder-count{flex:none;white-space:nowrap;font-size:11px;line-height:18px;color:var(--muted);font-variant-numeric:tabular-nums}
+#dialog.folder-dialog{width:min(600px,var(--form-width,640px),var(--dialog-width));max-height:var(--dialog-height);border-radius:18px;overflow:hidden;scrollbar-gutter:auto;background-color:var(--workspace-pane)}
+.folder-dialog #dialog-content{display:flex;flex-direction:column;max-height:calc(var(--dialog-height) - 2px)}
+.folder-content{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.folder-dialog .folder-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 8px;margin:0;padding:22px 18px 18px;list-style:none}
+.folder-dialog .folder-item{min-width:0}
+.folder-link{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;min-width:0;padding:10px 6px 8px;border-radius:12px;text-decoration:none;color:var(--fg)}
+.folder-link:hover{background:var(--control-surface)}
+.folder-link:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;background:var(--control-surface)}
+.folder-dialog .folder-site{display:grid;place-items:center;flex:none;position:relative;width:52px;height:52px;border-radius:14px;background:var(--tile-color);color:var(--tile-ink,#fff);box-shadow:0 3px 10px rgb(8 25 40 / .08)}
+.folder-dialog .folder-label{display:block;max-width:100%;font-size:12px;line-height:18px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg)}
+.folder-hint{flex:none;margin:0;padding:0 20px 14px;color:var(--muted);font-size:11px;line-height:16px;text-align:center}
+.folder-empty{display:flex;flex-direction:column;align-items:center;padding:36px 20px 38px;color:var(--muted);text-align:center}
+.folder-empty>.icon{width:30px;height:30px;margin-bottom:14px;opacity:.65}
+.folder-empty strong{color:var(--fg);font-size:13px;font-weight:500}
+.folder-empty p{margin:8px 0 0;font-size:12px;line-height:1.7}
+.folder-editor-dialog .dialog-body{padding:20px 24px 24px}
+@container window (max-width:480px){
+ .folder-dialog .folder-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 4px;padding:16px 12px}
+ .compact-dialog-head{padding-left:14px;gap:8px}
+ .compact-dialog-title{gap:8px}
+ .folder-editor-dialog .dialog-body{padding:18px}
+}
+@container window (max-width:320px){
+ .folder-dialog .folder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 /* Window content reflows inside viewport limits. */
 #dialog{width:min(700px,var(--dialog-width,calc(100vw - 24px)));max-width:var(--dialog-width);max-height:var(--dialog-height);}
 #dialog.workspace-dialog{width:min(1040px,var(--dialog-width));height:min(780px,var(--dialog-height));max-height:var(--dialog-height)}
