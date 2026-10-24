@@ -27,7 +27,6 @@ html[data-theme=light]{--fg:#253843;--muted:#728591;--panel:#f5f8f8;--panel-2:#e
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .tile-link .tile-body,.mini-site,.folder-site{color:var(--tile-ink,#fff)}.site-glyph{color:var(--tile-ink,#fff)}.tile-link .tile-body>.icon{width:32px;height:32px}
-.tile-link:not([data-size="1x1"]) .tile-body{max-width:none;max-height:none;aspect-ratio:auto}.tile-link[data-size="2x2"] .site-glyph,.tile-link[data-size="4x2"] .site-glyph{font-size:45px}.tile-link[data-size="2x2"] .tile-body>.icon,.tile-link[data-size="4x2"] .tile-body>.icon{width:48px;height:48px}
 
 /* v0.2: quieter desktop chrome, consistent spacing, and readable settings. */
 :root{--border:var(--panel-border);--text:var(--fg);--panel-soft:var(--field);--accent-soft:rgba(120,217,198,.12)}
@@ -115,8 +114,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .site-visual>.site-favicon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:60%;height:60%;max-width:38px;max-height:38px;object-fit:contain;background:transparent;pointer-events:none}
 .site-visual>.site-favicon[hidden]{display:none}
 .site-fallback>.icon{width:30px;height:30px}
-.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{max-width:60px;max-height:60px}
-.tile-link[data-size="2x2"] .site-fallback>.icon,.tile-link[data-size="4x2"] .site-fallback>.icon{width:48px;height:48px}
 .mini-site .site-favicon{max-width:30px;max-height:30px}
 .mini-site .site-glyph{font-size:21px}
 .mini-site .site-glyph.small{font-size:15px}
@@ -535,7 +532,6 @@ html .scope-button.active { color: var(--fg); border-color: var(--accent); backg
 .folder-site:has(.site-visual.is-loaded){background:transparent!important;border:0;box-shadow:none!important;border-radius:0;overflow:visible}
 .site-visual.is-loaded{background:transparent;border:0;box-shadow:none;border-radius:0;overflow:visible}
 .site-visual>.site-favicon{width:92%;height:92%;max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto;border:0;box-shadow:none;background:transparent}
-.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{max-width:112px;max-height:112px}
 .mini-site .site-favicon{max-width:100%;max-height:100%}
 .engine-mark .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;padding:0}
 html[data-theme=dark] .tile-link .site-favicon{filter:drop-shadow(0 1px 2px rgb(230 243 255 / .20))}
@@ -691,22 +687,14 @@ html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;widt
 .widget-inner{border-radius:inherit;padding:clamp(10px,7cqi,17px);font-size:clamp(11px,5.8cqi,13px)}
 .tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
 .widget-inner h3,.widget-inner strong{max-width:100%}
-.tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:100%;aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
+.tile-link .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:100%;aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
 .tile-folder[data-size="2x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap));height:calc(var(--cell-size)*2 + var(--gap))}
 .tile-link>.tile-label,.tile-folder>.tile-label{position:absolute;top:100%;left:0;height:var(--label-space,24px);padding-top:0;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
-/* A larger shortcut reserves space for a readable icon/title group, not a
-   stretched favicon. Keep labels beside their icon instead of the tile edge. */
-.tile-link:not([data-size="1x1"]){justify-content:center;gap:6px;--site-icon-size:var(--tile-size)}
-.tile-link[data-size="2x2"],.tile-link[data-size="4x2"]{--site-icon-size:min(calc(var(--cell-size)*1.2),max(96px,var(--tile-size)))}
-.tile-link:not([data-size="1x1"]) .tile-body{width:var(--site-icon-size);height:var(--site-icon-size);max-width:100%;max-height:100%;aspect-ratio:1;margin:0;flex:none}
-.tile-link:not([data-size="1x1"])>.tile-label{position:static;flex:none;height:auto;padding:0 2px;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-height:2.6em}
-.tile-link[data-size="2x1"],.tile-link[data-size="4x2"]{flex-direction:row;gap:clamp(6px,4cqi,16px)}
-.tile-link:is([data-size="2x1"],[data-size="4x2"])>.tile-label{flex:0 1 auto;width:auto;max-width:calc(100% - var(--site-icon-size) - clamp(6px,4cqi,16px));text-align:left}
 .tile-link .site-fallback>.icon{width:60%;height:60%;max-width:52px;max-height:52px}
 .tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
 .tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
 .tile-link .site-visual,.tile-link .site-visual.is-loaded,.folder-site .site-visual,.preview-icon .site-visual{width:100%;height:100%;border-radius:inherit;overflow:hidden;background:transparent;aspect-ratio:1}
-.tile-link .site-favicon,.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;filter:none!important;border-radius:inherit;padding:0}
+.tile-link .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;filter:none!important;border-radius:inherit;padding:0}
 html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .tile-link .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .folder-site .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .mini-site .site-visual.is-loaded{background:color-mix(in srgb,var(--tile-color,#64748b) 14%,var(--panel))}
 html[data-icon-shape=original] .tile-link .tile-body:has(.is-loaded),html[data-icon-shape=original] .tile-link .site-visual{border-radius:0!important;background:none!important}
 .tile-link .tile-body{opacity:var(--icon-opacity)}
@@ -6757,7 +6745,9 @@ function validateImport(raw) {
     const iconMode = enumeration(item.iconMode, ['auto', 'text'], `${path}.iconMode`);
     const iconUrl = normalizeIconSelection(item.iconUrl);
     if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, t("需要安全的 HTTPS 图标地址或有效的本地静态图片"));
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    // Accept legacy spans in existing storage/backups, but website shortcuts
+    // always occupy one cell. Folders and widgets retain their own sizes.
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, size: '1x1', iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));
@@ -7188,7 +7178,9 @@ function bindCommunity(root, host, initial={}) {
   const filters=[['all',t('全部')],['official',t('官方源')],['community',t('社区源')],...sources.filter(s=>s.enabled&&s.url!==OFFICIAL_WIDGET_SOURCE).map(s=>[s.url,sourceName(s)])];
   if(!filters.some(([key])=>key===category))category=initial.source===OFFICIAL_WIDGET_SOURCE?'official':'all';
   body.innerHTML=`<div class="catalog-categories community-categories" role="group" aria-label="${t('按组件源筛选')}">${filters.map(([key,name])=>`<button data-community-category="${e(key)}" aria-pressed="${key===category}">${e(name)}</button>`).join('')}</div><div class="community-catalog-scroll"><div class="community-cards">${entries.map((entry,index)=>{
-   const m=entry.manifest, size=sizes.get(entryKey(entry))||'2x2';
+   // Sources may put their preferred card first. Legacy catalogs start with
+   // the 1x1 launcher; keep their existing 2x2 default.
+   const m=entry.manifest, size=sizes.get(entryKey(entry))||(m.sizes[0]==='1x1'?'2x2':m.sizes[0]);
    sizes.set(entryKey(entry),size);
    return `<article class="community-card" data-community-card="${index}" data-preview-size="${size}"><h3>${e(t(m.name))}</h3><p title="${e(t(m.description))}">${e(t(m.description))}</p><div class="community-carousel"><button class="catalog-arrow" data-community-step="-1" aria-label="${t('上一个尺寸')}">‹</button><div class="community-stage" inert aria-hidden="true"><div class="community-preview"><span class="preview-idle">${icon('grid')}</span></div></div><button class="catalog-arrow" data-community-step="1" aria-label="${t('下一个尺寸')}">›</button></div><div class="community-sizes" role="group" aria-label="${t('预览尺寸')}">${m.sizes.map(s=>`<button data-community-size="${s}" aria-pressed="${s===size}" aria-label="${sizeLabel(s)}">${sizeLabel(s)}</button>`).join('')}</div><footer><button class="community-source-link" data-gallery-source="${index}" title="${e(label(entry.source))}">${e(sourceName(entry.source))}</button><button class="catalog-add" data-community-add>${t('添加')}</button></footer></article>`;
   }).join('')}</div><p data-community-empty>${t(sources.some(s=>s.enabled)?'没有找到匹配的内容':'尚未启用组件源。请在设置中启用官方源或添加自己的源。')} ${!sources.some(s=>s.enabled)?`<button data-action="widget-sources">${t('管理组件源')}</button>`:''}</p></div>`;
@@ -7279,7 +7271,7 @@ return {DEFAULT_COMMUNITY_SOURCE, communityToolbar, communityView, bindCommunity
 const __version = (() => {
 // SPDX-License-Identifier: GPL-3.0-only
 // Generated from manifest.json by scripts/build-preview.py.
-const APP_VERSION = "0.10.12";
+const APP_VERSION = "0.10.13";
 const EXTENSION_ID = "olphdlcjiaijcppklllciaeaonbbjjia";
 
 return {APP_VERSION, EXTENSION_ID};
@@ -10870,7 +10862,7 @@ function renderDesktop({preserveWidgets=false} = {}) {
  updateGrid(); refreshLiveWidgets($('#desktop'), state);
 }
 function renderTile(item,index=0) {
- const [width,height] = (item.size || '1x1').split('x').map(Number);
+ const [width,height] = (item.type==='link'?'1x1':item.size || '1x1').split('x').map(Number);
  let body = '';
  if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
  else if (item.type === 'folder') {
@@ -11374,7 +11366,11 @@ function openContext(event,{itemId,groupId}={}) {
  const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
- if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.widget==='community'?item.config.manifest.sizes:item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ if(item) {
+  const sizes=item.type==='link'?[]:item.widget==='community'?item.config.manifest.sizes:item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES;
+  const resize=sizes.length?`<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${sizes.map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${sizeLabel(s)}</button>`).join('')}</div>`:'';
+  html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}${resize}<hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ }
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
@@ -11450,7 +11446,7 @@ document.addEventListener('click', async event=>{
   if(action==='edit')return openDialog('edit-item',{id});
   if(action==='move')return openDialog('move',{id});
   if(action==='delete')return await removeItem(id);
-  if(action==='resize'){const item=state.items.find(i=>i.id===id);if(item){item.size=target.dataset.size;await commit();}return;}
+  if(action==='resize'){const item=state.items.find(i=>i.id===id);if(item&&item.type!=='link'){item.size=target.dataset.size;await commit();}return;}
   if(action==='duplicate'){const item=state.items.find(i=>i.id===id);if(item){const copy={...clone(item),id:uid(),title:item.title+t(" 副本")};state.items.push(copy);if(item.type==='folder')state.items.filter(i=>i.folderId===id).forEach(child=>state.items.push({...clone(child),id:uid(),folderId:copy.id}));await commit();toast(t("已复制到桌面。"));}return;}
   if(action==='edit-group')return openDialog('group',{id:groupId});
   if(action==='delete-group')return confirmDeleteGroup(groupId);
@@ -11514,7 +11510,7 @@ dialog.addEventListener('submit',async event=>{
    const url=safeUrl(value('url'));if(!url)throw new Error(t("请输入有效的 http 或 https 网站地址。"));
    if(!value('title'))throw new Error(t("请填写网站名称。"));
    const old=state.items.find(i=>i.id===form.dataset.id),groupId=value('groupId');
-   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',iconUrl:normalizeIconSelection(value('iconUrl')),color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
+   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',iconUrl:normalizeIconSelection(value('iconUrl')),color:value('color') || COLORS[0],groupId,size:'1x1',folderId:old?.groupId===groupId?old.folderId:null};
    if(old)state.items[state.items.indexOf(old)]=item;else state.items.push(item);
    await commit();closeDialog();toast(old?t("网站已更新。"):t("已添加到桌面。"));
   }else if(form.id==='folder-form'){

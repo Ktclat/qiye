@@ -85,6 +85,27 @@ function extensionFixture(initial) {
   return control;
 }
 
+test('legacy website spans normalize on load/import/export/save without changing content or other tiles', async () => {
+  const original=fresh(), example=copy(original.items.find(i=>i.type==='link'));
+  const folder=original.items.find(i=>i.type==='folder');
+  for(const [index,size] of ['1x1','1x2','2x1','2x2','4x2'].entries()) {
+    original.items.push({...example,id:`legacy-size-${index}`,size,groupId:folder.groupId,folderId:folder.id,iconUrl:avatarPng});
+  }
+  const before=JSON.stringify(original),expected=copy(original);
+  for(const item of expected.items)if(item.type==='link')item.size='1x1';
+  assert.deepEqual(validateImport(original),expected);
+  assert.deepEqual(validateImport(before),expected);
+  assert.deepEqual(JSON.parse(exportState(original)),expected);
+  const storage=extensionFixture(original);
+  const loaded=await loadState();
+  assert.deepEqual(loaded,expected);
+  assert.equal(storage.writes,0,'Reading legacy state does not race another tab with a migration write');
+  const saved=await saveState(loaded);
+  assert.deepEqual(storage.records[STORAGE_KEY],{...expected,updatedAt:saved.updatedAt});
+  assert.deepEqual(await loadState(),saved);
+  assert.equal(JSON.stringify(original),before);
+});
+
 test('default state is valid, rich, immutable, and exports a lossless backup', () => {
   const checked = validateImport(DEFAULT_STATE);
   assert.equal(checked.settings.gridSize, 60);

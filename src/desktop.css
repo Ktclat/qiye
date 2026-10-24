@@ -34,22 +34,14 @@ html.hide-content-scrollbar .content-scroll::-webkit-scrollbar{display:none;widt
 .widget-inner{border-radius:inherit;padding:clamp(10px,7cqi,17px);font-size:clamp(11px,5.8cqi,13px)}
 .tile-widget[data-size="4x2"] .widget-inner{padding:16px 18px}
 .widget-inner h3,.widget-inner strong{max-width:100%}
-.tile-link .tile-body,.tile-link:not([data-size="1x1"]) .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:100%;aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
+.tile-link .tile-body,.tile-folder .tile-body{width:var(--tile-size);height:var(--tile-size);max-width:100%;max-height:100%;aspect-ratio:1;flex:none;border-radius:var(--icon-radius);margin:0 auto;overflow:hidden;display:grid;place-items:center;transition:transform .16s,background-color .16s;box-shadow:none;border:0;padding:0}
 .tile-folder[data-size="2x2"] .tile-body,.tile-folder[data-size="4x2"] .tile-body{width:calc(var(--cell-size)*2 + var(--gap));height:calc(var(--cell-size)*2 + var(--gap))}
 .tile-link>.tile-label,.tile-folder>.tile-label{position:absolute;top:100%;left:0;height:var(--label-space,24px);padding-top:0;line-height:1.3;font-size:var(--label-size);width:100%;max-width:100%;opacity:1;color:var(--label-color)}
-/* A larger shortcut reserves space for a readable icon/title group, not a
-   stretched favicon. Keep labels beside their icon instead of the tile edge. */
-.tile-link:not([data-size="1x1"]){justify-content:center;gap:6px;--site-icon-size:var(--tile-size)}
-.tile-link[data-size="2x2"],.tile-link[data-size="4x2"]{--site-icon-size:min(calc(var(--cell-size)*1.2),max(96px,var(--tile-size)))}
-.tile-link:not([data-size="1x1"]) .tile-body{width:var(--site-icon-size);height:var(--site-icon-size);max-width:100%;max-height:100%;aspect-ratio:1;margin:0;flex:none}
-.tile-link:not([data-size="1x1"])>.tile-label{position:static;flex:none;height:auto;padding:0 2px;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-height:2.6em}
-.tile-link[data-size="2x1"],.tile-link[data-size="4x2"]{flex-direction:row;gap:clamp(6px,4cqi,16px)}
-.tile-link:is([data-size="2x1"],[data-size="4x2"])>.tile-label{flex:0 1 auto;width:auto;max-width:calc(100% - var(--site-icon-size) - clamp(6px,4cqi,16px));text-align:left}
 .tile-link .site-fallback>.icon{width:60%;height:60%;max-width:52px;max-height:52px}
 .tile-link .tile-body:hover,.tile-folder .tile-body:hover{transform:translateY(-2px);box-shadow:none}
 .tile-link .tile-body:has(.is-loaded),.mini-site:has(.is-loaded),.folder-site:has(.is-loaded),.preview-icon:has(.is-loaded){background:transparent!important;border-radius:var(--icon-radius)!important;overflow:hidden!important}
 .tile-link .site-visual,.tile-link .site-visual.is-loaded,.folder-site .site-visual,.preview-icon .site-visual{width:100%;height:100%;border-radius:inherit;overflow:hidden;background:transparent;aspect-ratio:1}
-.tile-link .site-favicon,.tile-link[data-size="2x2"] .site-favicon,.tile-link[data-size="4x2"] .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;filter:none!important;border-radius:inherit;padding:0}
+.tile-link .site-favicon{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;filter:none!important;border-radius:inherit;padding:0}
 html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .tile-link .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .folder-site .site-visual.is-loaded,html[data-icon-backdrop=adaptive][data-icon-shape=rounded] .mini-site .site-visual.is-loaded{background:color-mix(in srgb,var(--tile-color,#64748b) 14%,var(--panel))}
 html[data-icon-shape=original] .tile-link .tile-body:has(.is-loaded),html[data-icon-shape=original] .tile-link .site-visual{border-radius:0!important;background:none!important}
 .tile-link .tile-body{opacity:var(--icon-opacity)}

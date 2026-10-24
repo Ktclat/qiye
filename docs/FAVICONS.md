@@ -87,15 +87,15 @@
 - Chrome 扩展 favicon：https://developer.chrome.com/docs/extensions/how-to/ui/favicons
 - Manifest 图标：https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
 
-## 五种快捷方式尺寸（0.10.12）
+## 统一网站尺寸（0.10.13）
 
-1×1 保持常规图标与下方名称。1×2、2×2 将图标和两行以内的名称作为一个居中的组合；2×1、4×2 横向排列两者。名称跟随图标，不再固定在多行卡片的底部。大尺寸图标最多放大到单元格的 1.2 倍，常规设置下不超过 96px；用户主动把全局图标大小设到 96px 以上时尊重该设置。五种已有尺寸及备份格式保持兼容，文件夹继续使用独立布局。
+按用户最新要求，删除单个网站快捷方式的多种尺寸及右键尺寸入口，全部占用 1×1。图标为等比正方形框，名称位于下方；设置中的全局图标大小仍统一生效。文件夹和小组件的尺寸功能保留。
 
-图标容器始终为正方形，图片使用 `object-fit: contain`，不裁剪长宽比不同的素材；不改动用户选择的来源，也不以 CSS 拉伸低清图片冒充高清来源。失败回退使用相同框架和名称位置。原站只有低分辨率图片时仍受素材质量限制。
+数据边界接受旧的五种合法尺寸并将网站统一为 1×1，覆盖本地加载、JSON 导入/导出、布局导入、WebDAV 同步和保存；网址、已选图标、名称、ID、分组、文件夹和排列顺序不变。加载只规范化内存，不在读取时抢写其他标签页；下一次正常保存写回规范尺寸。旧数据格式无需重置。非法尺寸仍拒绝，不绕过校验。
 
-设计依据为用户的 iTab 截图及 [iTab 公开示例](https://itab.link/)，技术依据为 [MDN aspect-ratio](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/aspect-ratio)、[MDN object-fit](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/object-fit) 与 [CSS 容器查询](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries)。选择限制图片放大、调整组合方向，保留现有尺寸能力。
+技术依据：[MDN aspect-ratio](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/aspect-ratio) 与 [MDN object-fit](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/object-fit)。保留 `object-fit: contain` 及正常图标加载/失败回退，不更改用户选择的图标来源。此决策取代 0.10.12 的多尺寸实现。
 
-`tests/site-sizes-e2e.py` 在生产页面和独立预览验证五种尺寸、48/74/120px 网格、两种主题、520/360px 窄屏、本地图片与失败回退、名称间距，以及通过右键修改尺寸后的刷新持久化。
+`tests/site-sizes-e2e.py` 在生产页面和独立预览中验证五种旧尺寸全部恢复为单格、48/74/120px 全局网格、深浅主题、520/360px 窄屏、键盘右键菜单、编辑保存和刷新，同时验证文件夹仍可调整尺寸。核心测试比较迁移前后完整记录，包含文件夹内链接。
 
 ## 拖拽与图片节点连续性
 

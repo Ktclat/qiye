@@ -626,7 +626,7 @@ function renderDesktop({preserveWidgets=false} = {}) {
  updateGrid(); refreshLiveWidgets($('#desktop'), state);
 }
 function renderTile(item,index=0) {
- const [width,height] = (item.size || '1x1').split('x').map(Number);
+ const [width,height] = (item.type==='link'?'1x1':item.size || '1x1').split('x').map(Number);
  let body = '';
  if (item.type === 'widget') body = `<div class="tile-body">${renderWidget(item,state)}</div>`;
  else if (item.type === 'folder') {
@@ -1130,7 +1130,11 @@ function openContext(event,{itemId,groupId}={}) {
  const menu=$('#context-menu');(dialog.open ? dialog : document.body).append(menu);menu.dataset.item=itemId || '';menu.dataset.group=groupId || '';
  const item=state.items.find(i=>i.id===itemId),group=state.groups.find(g=>g.id===groupId);
  let html;
- if(item) html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${(item.widget==='community'?item.config.manifest.sizes:item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES).map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${s.replace('x',' × ')}</button>`).join('')}</div><hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ if(item) {
+  const sizes=item.type==='link'?[]:item.widget==='community'?item.config.manifest.sizes:item.type==='widget'?getWidgetDefinition(item.widget).sizes:TILE_SIZES;
+  const resize=sizes.length?`<hr><div class="menu-label">${t("卡片尺寸")}</div><div class="size-options">${sizes.map(s=>`<button data-context="resize" data-size="${s}" class="${item.size===s?'selected':''}">${sizeLabel(s)}</button>`).join('')}</div>`:'';
+  html = `${contextButton('edit',t("编辑")+(item.type==='widget'?t("组件"):item.type==='folder'?t("文件夹"):t("网站")),'edit')}${contextButton('move',t("移动到…"),'move')}${contextButton('duplicate',t("复制一份"),'copy')}${resize}<hr>${contextButton('delete',t("移除"),'trash','class="danger"')}`;
+ }
  else if(group)html=`${contextButton('edit-group',t("编辑分组"),'edit')}${state.groups.length>1?contextButton('delete-group',t("删除分组"),'trash','class="danger"'):''}`;
  else html=`${contextButton('add-link',t("添加网站"),'link')}${contextButton('add-widget',t("添加组件"),'grid')}${contextButton('add-folder',t("新建文件夹"),'folder')}<hr>${contextButton('edit-desktop',editing?t("完成编辑"):t("编辑桌面"),'edit')}${contextButton('wallpaper',t("更换壁纸"),'wallpaper')}${contextButton('local-search',t("本地搜索"),'search')}<hr>${contextButton('export',t("立即备份"),'download')}${contextButton('settings',t("设置"),'settings')}`;
  menu.getAnimations().forEach(animation=>animation.cancel());
@@ -1206,7 +1210,7 @@ document.addEventListener('click', async event=>{
   if(action==='edit')return openDialog('edit-item',{id});
   if(action==='move')return openDialog('move',{id});
   if(action==='delete')return await removeItem(id);
-  if(action==='resize'){const item=state.items.find(i=>i.id===id);if(item){item.size=target.dataset.size;await commit();}return;}
+  if(action==='resize'){const item=state.items.find(i=>i.id===id);if(item&&item.type!=='link'){item.size=target.dataset.size;await commit();}return;}
   if(action==='duplicate'){const item=state.items.find(i=>i.id===id);if(item){const copy={...clone(item),id:uid(),title:item.title+t(" 副本")};state.items.push(copy);if(item.type==='folder')state.items.filter(i=>i.folderId===id).forEach(child=>state.items.push({...clone(child),id:uid(),folderId:copy.id}));await commit();toast(t("已复制到桌面。"));}return;}
   if(action==='edit-group')return openDialog('group',{id:groupId});
   if(action==='delete-group')return confirmDeleteGroup(groupId);
@@ -1270,7 +1274,7 @@ dialog.addEventListener('submit',async event=>{
    const url=safeUrl(value('url'));if(!url)throw new Error(t("请输入有效的 http 或 https 网站地址。"));
    if(!value('title'))throw new Error(t("请填写网站名称。"));
    const old=state.items.find(i=>i.id===form.dataset.id),groupId=value('groupId');
-   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',iconUrl:normalizeIconSelection(value('iconUrl')),color:value('color') || COLORS[0],groupId,size:old?.size || '1x1',folderId:old?.groupId===groupId?old.folderId:null};
+   const item={...(old || {}),id:old?.id || uid(),type:'link',title:value('title'),url,icon:value('icon') || value('title').slice(0,2),iconMode:value('iconMode')==='text'?'text':'auto',iconUrl:normalizeIconSelection(value('iconUrl')),color:value('color') || COLORS[0],groupId,size:'1x1',folderId:old?.groupId===groupId?old.folderId:null};
    if(old)state.items[state.items.indexOf(old)]=item;else state.items.push(item);
    await commit();closeDialog();toast(old?t("网站已更新。"):t("已添加到桌面。"));
   }else if(form.id==='folder-form'){

@@ -680,7 +680,9 @@ export function validateImport(raw) {
     const iconMode = enumeration(item.iconMode, ['auto', 'text'], `${path}.iconMode`);
     const iconUrl = normalizeIconSelection(item.iconUrl);
     if (item.iconUrl !== undefined && item.iconUrl !== null && !iconUrl) invalid(`${path}.iconUrl`, t("需要安全的 HTTPS 图标地址或有效的本地静态图片"));
-    return { ...base, url: url(item.url, `${path}.url`), ...appearance, iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
+    // Accept legacy spans in existing storage/backups, but website shortcuts
+    // always occupy one cell. Folders and widgets retain their own sizes.
+    return { ...base, url: url(item.url, `${path}.url`), ...appearance, size: '1x1', iconMode, ...(iconUrl ? {iconUrl} : {}), folderId: item.folderId === null ? null : id(item.folderId, `${path}.folderId`) };
   });
   unique(items.map(item => item.id), 'items');
   const folderMap = new Map(items.filter(item => item.type === 'folder').map(item => [item.id, item]));

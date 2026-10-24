@@ -1,4 +1,4 @@
-"""Website shortcut geometry: real desktop, five spans, loaded and failed icons."""
+"""Legacy website spans normalize to a standard icon, with menus and saved state verified."""
 import argparse
 import base64
 import copy
@@ -46,6 +46,7 @@ with sync_playwright() as pw:
                 iconUrl=artwork if kind == 'loaded' else None,
                 color='#397b70', size=size, folderId=None)
                 for kind in ['loaded', 'failed'] for size in sizes]
+            state['items'].append(dict(id='folder-standard',type='folder',groupId='home',title='保留文件夹尺寸',icon='folder',color='#397b70',size='2x2'))
             page.add_init_script('if(!localStorage.getItem("qiye.state.v5"))localStorage.setItem("qiye.state.v5",'+json.dumps(json.dumps(state))+')')
             page.goto(base + ('/Qiye-preview.html' if args.preview else '/'))
             page.locator('[data-item="loaded-4x2"] .site-visual.is-loaded').wait_for()
@@ -53,30 +54,51 @@ with sync_playwright() as pw:
                 result = tile.evaluate('''n=>{
                   const b=n.querySelector('.tile-body'),l=n.querySelector('.tile-label');
                   const frame=n.getBoundingClientRect(),icon=b.getBoundingClientRect(),label=l.getBoundingClientRect();
-                  const horizontal=['2x1','4x2'].includes(n.dataset.size);
+
                   return {size:n.dataset.size,square:Math.abs(icon.width-icon.height)<1,
                     max:icon.width<=Math.max(96,parseFloat(getComputedStyle(n).getPropertyValue('--tile-size')))+1,
                     fit:icon.left>=frame.left-1&&icon.right<=frame.right+1&&icon.top>=frame.top-1&&icon.bottom<=frame.bottom+1,
                     labelFit:label.left>=frame.left-1&&label.right<=frame.right+1,
-                    gap:horizontal?label.left-icon.right:label.top-icon.bottom,
+                    gap:label.top-icon.bottom,
                     textVisible:label.width>12&&label.height>=12,
                     contain:!n.querySelector('img')||getComputedStyle(n.querySelector('img')).objectFit==='contain'};
                 }''')
+                assert result['size']=='1x1', result
                 assert result['square'] and result['max'] and result['fit'] and result['labelFit'] and result['textVisible'] and result['contain'], (width, grid, theme, result)
                 assert -1 <= result['gap'] <= 17, (width, grid, theme, result)
                 checks += 1
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+1')
             if grid == 74:
                 page.screenshot(path=str(OUT/f'{theme}-{width}{"-preview" if args.preview else ""}.png'), full_page=True)
-            # Resize through the actual menu and verify saved geometry after reload.
+            # Keyboard context menu has no per-website size controls; edit/save
+            # persists the normalized record without changing its selected image.
             tile = page.locator('[data-item="loaded-1x1"]')
-            tile.click(button='right')
-            page.locator('#context-menu [data-context="resize"][data-size="1x2"]').click()
-            page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id==="loaded-1x1").size==="1x2"')
+            tile.focus();tile.press('Shift+F10')
+            assert page.locator('#context-menu [data-context="edit"]').is_visible()
+            assert page.locator('#context-menu [data-context="resize"]').count()==0
+            page.locator('#context-menu [data-context="edit"]').click()
+            assert page.locator('#link-form [name="size"]').count()==0
+            page.locator('#link-form [name="title"]').fill('保留选定图标')
+            page.locator('#link-form button[type="submit"]').click()
+            page.locator('#dialog').wait_for(state='hidden')
+            page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.filter(i=>i.type==="link").every(i=>i.size==="1x1")')
+            saved=page.evaluate('JSON.parse(localStorage.getItem("qiye.state.v5"))')
+            assert [i['id'] for i in saved['items']]==[i['id'] for i in state['items']]
+            for old,new in zip(state['items'],saved['items']):
+                if old['type']!='link':
+                    assert old==new
+                    continue
+                assert new['url']==old['url'] and new['folderId']==old['folderId']
+                assert new.get('iconUrl')==old.get('iconUrl')
             page.reload()
-            page.locator('[data-item="loaded-1x1"][data-size="1x2"] .site-visual.is-loaded').wait_for()
+            page.locator('[data-item="loaded-1x1"][data-size="1x1"] .site-visual.is-loaded').wait_for()
+            assert page.locator('.tile-link:not([data-size="1x1"])').count()==0
+            # Folder sizing is intentionally still available and persistent.
+            page.locator('[data-item="folder-standard"]').click(button='right')
+            page.locator('#context-menu [data-context="resize"][data-size="2x1"]').click()
+            page.wait_for_function('JSON.parse(localStorage.getItem("qiye.state.v5")).items.find(i=>i.id==="folder-standard").size==="2x1"')
             assert not errors, errors
             context.close()
     browser.close()
 server.shutdown()
-print(f'PASS {checks} website size/theme/icon geometry checks; resize persistence; preview={args.preview}')
+print(f'PASS {checks} standard website geometry checks; legacy migration, menus, folder resize and persistence; preview={args.preview}')
