@@ -128,6 +128,26 @@ test('duplicate declarations remain unique and conventional paths plus Chrome st
   assert.equal(preferredCandidates.at(-1), chromeUrl.href, 'adding a previously loaded image cannot evict the reserved Chrome fallback');
 });
 
+test('a declared favicon.svg is ranked as artwork and the picker prioritizes all twelve declarations', async t => {
+  const site = 'https://picker.example.com/';
+  const bitmaps = Array.from({ length: 11 }, (_, index) => `<link rel=icon sizes=32x32 href=/alternative-${index}.png>`);
+  const { api } = await setup(t, {
+    chrome: { runtime, permissions: { contains: async () => true } },
+    fetchImpl: async () => htmlResponse(bitmaps.join('') + '<link rel=icon type=image/svg+xml href=/favicon.svg>'),
+  });
+  const result = await api.discoverFavicon(site, { allCandidates: true });
+  assert.equal(result.url, site + 'favicon.svg');
+  assert.equal(result.variants.length, 12);
+  assert.ok(result.variants.every(variant => variant.source === '网站声明'));
+  assert.ok(result.variants.some(variant => variant.url === site + 'alternative-10.png'));
+  const desktop = api.getFaviconCandidates(site);
+  assert.equal(desktop[0], result.url);
+  assert.equal(desktop.length, 12);
+  assert.ok(desktop.includes(site + 'apple-touch-icon.png'));
+  assert.ok(desktop.includes(site + 'favicon.ico'));
+  assert.ok(desktop.at(-1).startsWith('chrome-extension:'));
+});
+
 test('concurrent extraction coalesces; successful declarations have a seven-day TTL', async t => {
   let release;
   let calls = 0;
@@ -432,6 +452,34 @@ test('head-only extraction stops the stream before a huge application body and k
    })
  });
  const r=await api.discoverFavicon('https://head.example.com/',{force:true});assert.equal(r.candidates[0],'https://cdn.example.com/real.png');assert.equal(cancelled,true);assert.equal(readCount,1);
+});
+
+test('streaming metadata ignores literal head boundaries and unrelated preloads before the real icon', async t => {
+  const page = '<html><head><!-- fake </head> -->' +
+    '<script>const template = "<body><link rel=icon href=/script.svg></head>";</script>' +
+    '<meta content="中文 <body hidden>"><title>Ignore </head></title>' +
+    '<template><template><body></body></template><link rel=icon href=/template.svg></template>' +
+    '<link rel=preload href=/chunk.js>'.repeat(150) +
+    '<link rel="shortcut icon" href="/actual.svg"></head>';
+  const bytes = new TextEncoder().encode(page);
+  let offset = 0, cancelled = false;
+  const { api } = await setup(t, { fetchImpl: async () => ({
+    ok: true, headers: new Headers({ 'content-type': 'text/html' }),
+    body: { getReader: () => ({
+      async read() {
+        if (offset === bytes.length) throw new Error('Read past the real head');
+        const value = bytes.subarray(offset, offset + 3);
+        offset += value.length;
+        return { value, done: false };
+      },
+      async cancel() { cancelled = true; },
+      releaseLock() {},
+    }) },
+  }) });
+  const result = await api.discoverFavicon('https://stream.example.com/');
+  assert.equal(result.url, 'https://stream.example.com/actual.svg');
+  assert.ok(!result.candidates.some(url => /script\.svg|template\.svg/.test(url)));
+  assert.equal(cancelled, true);
 });
 
 test('explicit candidate enumeration reads manifest even when HTML already contains adequate icons',async t=>{

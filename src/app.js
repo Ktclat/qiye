@@ -200,7 +200,8 @@ function updateLinkPreview(form, options = {}) {
   visitButton.disabled=!view.url;
   visitButton.textContent=view.visitController?t('取消获取'):canVisitForFavicon()?t('访问网站取图标'):t('访问网站');
  }
- status.textContent=view.message || (mode === 'text' ? t("文字图标 · 可编辑下方文字与颜色。") : t("保留当前图标，或获取网站提供的其他图标。"));
+ const message=view.message || (mode === 'text' ? t("文字图标 · 可编辑下方文字与颜色。") : t("保留当前图标，或获取网站提供的其他图标。"));
+ if(status.textContent!==message)status.textContent=message;
  renderLinkIconChoices(form,view);
 }
 function renderLinkIconChoices(form, view) {
@@ -228,6 +229,7 @@ function renderLinkIconChoices(form, view) {
     if(info.url)row.title=`${entry.source||t("网站图标")} · ${info.scalable?'SVG':info.width+' × '+info.height+'px'}${entry.url.startsWith('data:')?'':'\n'+entry.url}`;
     row.classList.toggle('icon-unavailable',!info.url);
     view.measurements.set(entry.url,Boolean(info.url));
+    updateExtractionStatus(form,view);
    }});
   }
   row.dataset.iconIndex=String(index);
@@ -256,6 +258,26 @@ function chooseLinkIcon(button){
 function isLinkPreviewCurrent(form, view, request) {
  return form.isConnected && dialog.open && faviconFormStates.get(form) === view && view.request === request && view.identity === linkPreviewIdentity(form);
 }
+function updateExtractionStatus(form, view) {
+ const batch = view.extraction;
+ if (!batch || !isLinkPreviewCurrent(form, view, batch.request)) return;
+ const ready = batch.urls.filter(url => view.measurements.get(url) === true);
+ const newlyReady = ready.filter(url => !batch.previous.has(url)).length;
+ let message;
+ if (batch.urls.some(url => !view.measurements.has(url))) {
+  message = t("正在检查候选图片…");
+ } else if (newlyReady) {
+  message = t("新增 {count} 个可用图标，选中后保存。", {count: newlyReady});
+ } else if (ready.length) {
+  message = t("可用图标已在候选列表中。");
+ } else if (!batch.full || batch.urls.length) {
+  message = t("这次未找到可用图标。可重试、上传图片或选择文字图标。");
+ }
+ const limit = batch.full ? t('候选图标已满，请保存或重新打开编辑窗口后再试。') : '';
+ view.message = [batch.warning, message, limit].filter(Boolean).join(' ');
+ const status = $('#favicon-status', form);
+ if (status.textContent !== view.message) status.textContent = view.message;
+}
 async function extractLinkFavicon(button) {
  const form=button.closest('#link-form');
  if (!form || button.disabled) return;
@@ -270,12 +292,21 @@ async function extractLinkFavicon(button) {
   const result=await pending;if (!isLinkPreviewCurrent(form,view,request)) return;
   view.busy=false;view.candidates=result.candidates?.length ? result.candidates : getFaviconCandidates(url);
   const incoming=(result.variants?.length?result.variants:view.candidates.map(url=>({url,source:t("站点候选")}))).filter(v=>normalizeIconSelection(v.url)).slice(0,12);
-  view.retryUrls=new Set(incoming.filter(v=>view.measurements.get(v.url)===false).map(v=>v.url));
   const known=new Set(view.variants.map(v=>v.url));
-  for(const variant of incoming)if(!known.has(variant.url) && view.variants.length<48){view.variants.push({...variant,sourceSite:url});known.add(variant.url);}
-  view.warning=result.warning||'';
-  // Listing candidates never changes the selected asset or the website name.
-  view.message=(result.warning ? result.warning+' ' : '')+(incoming.length?t("候选已追加，之前的图标与选择保留；选择后点击保存。"):t("这个网址没有新图标，已有候选与选择已保留。"));
+  const urls=new Set();
+  let full=false;
+  for(const variant of incoming){
+   if(!known.has(variant.url)){
+    if(view.variants.length>=48){full=true;continue;}
+    view.variants.push({...variant,sourceSite:url});known.add(variant.url);
+   }
+   urls.add(variant.url);
+  }
+  const previous=new Set([...urls].filter(url=>view.measurements.get(url)===true));
+  view.retryUrls=new Set([...urls].filter(url=>view.measurements.get(url)===false));
+  for(const retry of view.retryUrls)view.measurements.delete(retry);
+  view.extraction={request,urls:[...urls],previous,full,warning:result.warning};
+  updateExtractionStatus(form,view);
   updateLinkPreview(form);
  } catch(err) {
   if (!isLinkPreviewCurrent(form,view,request)) return;

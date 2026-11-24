@@ -79,6 +79,11 @@ export function bindCommunity(root, host, initial={}) {
 
  function renderGallery() {
   entries=sources.filter(s=>s.enabled).flatMap(sourceEntries);
+  const officialIndex=sources.findIndex(source=>source.url===OFFICIAL_WIDGET_SOURCE && !source.enabled);
+  const enableOfficial=officialIndex<0?'':`<div class="gallery-source-prompt" data-gallery-enable hidden>
+   <p>${t('启用官方源后，可预览并添加便签、待办、日历等小组件。')}</p>
+   <div class="source-actions"><button type="button" class="source-browse" data-source-toggle="${officialIndex}">${t('启用官方组件源')}</button><button type="button" data-action="widget-sources">${t('管理组件源')}</button></div>
+   </div>`;
   const filters=[['all',t('全部')],['official',t('官方源')],['community',t('社区源')],...sources.filter(s=>s.enabled&&s.url!==OFFICIAL_WIDGET_SOURCE).map(s=>[s.url,sourceName(s)])];
   if(!filters.some(([key])=>key===category))category=initial.source===OFFICIAL_WIDGET_SOURCE?'official':'all';
   body.innerHTML=`<div class="catalog-categories community-categories" role="group" aria-label="${t('按组件源筛选')}">${filters.map(([key,name])=>`<button data-community-category="${e(key)}" aria-pressed="${key===category}">${e(name)}</button>`).join('')}</div><div class="community-catalog-scroll"><div class="community-cards">${entries.map((entry,index)=>{
@@ -87,7 +92,7 @@ export function bindCommunity(root, host, initial={}) {
    const m=entry.manifest, size=sizes.get(entryKey(entry))||(m.sizes[0]==='1x1'?'2x2':m.sizes[0]);
    sizes.set(entryKey(entry),size);
    return `<article class="community-card" data-community-card="${index}" data-preview-size="${size}"><h3>${e(t(m.name))}</h3><p title="${e(t(m.description))}">${e(t(m.description))}</p><div class="community-carousel"><button class="catalog-arrow" data-community-step="-1" aria-label="${t('上一个尺寸')}">‹</button><div class="community-stage" inert aria-hidden="true"><div class="community-preview"><span class="preview-idle">${icon('grid')}</span></div></div><button class="catalog-arrow" data-community-step="1" aria-label="${t('下一个尺寸')}">›</button></div><div class="community-sizes" role="group" aria-label="${t('预览尺寸')}">${m.sizes.map(s=>`<button data-community-size="${s}" aria-pressed="${s===size}" aria-label="${sizeLabel(s)}">${sizeLabel(s)}</button>`).join('')}</div><footer><button class="community-source-link" data-gallery-source="${index}" title="${e(label(entry.source))}">${e(sourceName(entry.source))}</button><button class="catalog-add" data-community-add>${t('添加')}</button></footer></article>`;
-  }).join('')}</div><p data-community-empty>${t(sources.some(s=>s.enabled)?'没有找到匹配的内容':'尚未启用组件源。请在设置中启用官方源或添加自己的源。')} ${!sources.some(s=>s.enabled)?`<button data-action="widget-sources">${t('管理组件源')}</button>`:''}</p></div>`;
+  }).join('')}</div>${enableOfficial}<p data-community-empty>${t('没有找到匹配的内容')}</p></div>`;
   const input=root.querySelector('[data-community-query]');if(input)input.value=query;
   observer=new IntersectionObserver(changes=>{for(const entry of changes){const card=entry.target;if(entry.isIntersecting&&!card.hidden)startPreview(card);else stopPreview(card);}},{root:body.querySelector('.community-catalog-scroll'),rootMargin:'60px'});
   for(const card of body.querySelectorAll('[data-community-card]'))observer.observe(card);
@@ -119,7 +124,10 @@ export function bindCommunity(root, host, initial={}) {
    const inCategory=!gallery||category==='all'||(category==='official'?entry.source.url===OFFICIAL_WIDGET_SOURCE:category==='community'?entry.source.url!==OFFICIAL_WIDGET_SOURCE:entry.source.url===category);
    card.hidden=!(matches&&inCategory);if(card.hidden)stopPreview(card);else count++;
   }
-  const empty=body.querySelector('[data-community-empty]');if(empty)empty.hidden=count>0;
+  const prompt=body.querySelector('[data-gallery-enable]');
+  const offerOfficial=prompt && (category==='official' || (category==='all' && !sources.some(source=>source.enabled)));
+  if(prompt)prompt.hidden=!offerOfficial;
+  const empty=body.querySelector('[data-community-empty]');if(empty)empty.hidden=count>0 || Boolean(offerOfficial);
   for(const button of body.querySelectorAll('[data-community-category]'))button.setAttribute('aria-pressed',String(button.dataset.communityCategory===category));
  }
  function render(){
@@ -133,6 +141,7 @@ export function bindCommunity(root, host, initial={}) {
   filter();updateActivity();
   for(const id of expanded)body.querySelector(`[data-source-widget-id="${CSS.escape(id)}"] details`)?.setAttribute('open','');
   if(attribute){const row=rowId&&body.querySelector(`[data-source-widget-id="${CSS.escape(rowId)}"]`);(row?.querySelector(`[${attribute}]`)||(!rowId&&body.querySelector(`[${attribute}="${CSS.escape(focusKey)}"]`))||row?.querySelector('h4'))?.focus({preventScroll:true});}
+  if(active?.closest('[data-gallery-enable]') && !body.querySelector('[data-gallery-enable]'))root.querySelector('[data-community-query]')?.focus({preventScroll:true});
   if(scroller)scroller.scrollTop=scrollTop;
  }
 

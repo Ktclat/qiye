@@ -147,12 +147,12 @@ export function getFaviconCandidates(siteUrl, options = {}) {
   const preferred = entry?.loadedAt + CACHE_TTL > Date.now() ? entry.preferred : null;
   const qualityOptions = { targetSize: options.targetSize, pixelRatio: options.pixelRatio };
   const conventional = [`${origin}/favicon.svg`, `${origin}/apple-touch-icon.png`, `${origin}/favicon.ico`, browserFavicon(pageUrl, options)].filter(Boolean);
-  const extracted = unique([preferred, ...known]);
+  const extracted = [...new Set([preferred, ...known].filter(Boolean))];
   const sorted = extracted.map((url, order) => ({ url, order, ...iconQuality(detailFor(entry, url), qualityOptions) }))
     .sort((a, b) => b.score - a.score || a.order - b.order).map(item => item.url);
-  const declared = sorted.filter(url => !conventional.includes(url));
-  // Known declarations come first, then conventional paths. A known tiny ICO
-  // cannot hide a discovered SVG or a touch icon with sufficient resolution.
+  // A conventional path can also be a site's declared, high-resolution asset.
+  // Only unconfirmed conventional paths belong at the end as guesses.
+  const declared = sorted.filter(url => known.includes(url) || !conventional.includes(url));
   const preferredQuality = preferred ? iconQuality(detailFor(entry, preferred), qualityOptions) : null;
   const coolingDown = entry?.upgradeAt + UPGRADE_TTL > Date.now() && entry.upgradeSize >= requestedSize(options);
   let keepPreferred = false;
@@ -161,8 +161,13 @@ export function getFaviconCandidates(siteUrl, options = {}) {
     keepPreferred = !best || !preferredQuality.measured || (coolingDown && !iconQuality(detailFor(entry,best),qualityOptions).adequate);
   }
   const first = keepPreferred ? [preferred, ...declared.filter(url => url !== preferred)] : declared;
-  const last = conventional.filter(url => !keepPreferred || url !== preferred);
-  return unique([...first.slice(0, MAX_CANDIDATES - last.length), ...last]);
+  const last = conventional.filter(url => !first.includes(url));
+  // The renderer reserves fallback slots for recovery. The editor prioritizes
+  // actual alternatives and fills any unused slots with conventional paths.
+  if (options.allCandidates) return unique([...first, ...last]);
+  const reserved = new Set(conventional);
+  const other = first.filter(url => !reserved.has(url)).slice(0, MAX_CANDIDATES - reserved.size);
+  return [...first.filter(url => reserved.has(url) || other.includes(url)), ...last];
 }
 
 /** Claim one bounded background quality upgrade. Keep the current image visible
@@ -301,62 +306,82 @@ function decodeAttribute(value) {
   });
 }
 
-/* A bounded metadata tokenizer, not a DOM: fetched markup is never inserted,
- * executed, or handed to DOMParser (which can load embedded resources). */
-function metadataTags(html) {
-  const tags = [];
-  const lower = html.toLowerCase();
-  let index = 0;
-  let templateDepth = 0;
-  while (index < html.length && tags.length < 128) {
-    const start = html.indexOf('<', index);
-    if (start < 0) break;
-    if (html.startsWith('<!--', start)) {
-      const end = html.indexOf('-->', start + 4);
-      index = end < 0 ? html.length : end + 3;
-      continue;
-    }
-    const match = /^<\s*(\/?)\s*([a-z][a-z\d:-]*)/i.exec(html.slice(start, start + 100));
-    if (!match) { index = start + 1; continue; }
-    const tag = match[2].toLowerCase();
-    const closing = Boolean(match[1]);
-    let cursor = start + match[0].length;
-    const attrs = Object.create(null);
-    while (cursor < html.length) {
-      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
-      if (html[cursor] === '>' || html[cursor] === '/' && html[cursor + 1] === '>') break;
-      const nameStart = cursor;
-      while (cursor < html.length && !/[\s=/>]/.test(html[cursor])) cursor++;
-      const name = html.slice(nameStart, cursor).toLowerCase();
-      if (!name) { cursor++; continue; }
-      while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
-      let value = '';
-      if (html[cursor] === '=') {
-        cursor++;
-        while (/\s/.test(html[cursor] || '') && cursor < html.length) cursor++;
-        const quote = html[cursor] === '"' || html[cursor] === "'" ? html[cursor++] : null;
-        const valueStart = cursor;
-        if (quote) while (cursor < html.length && html[cursor] !== quote) cursor++;
-        else while (cursor < html.length && !/[\s>]/.test(html[cursor])) cursor++;
-        value = html.slice(valueStart, cursor);
-        if (quote && html[cursor] === quote) cursor++;
-      }
-      if (!Object.hasOwn(attrs, name)) attrs[name] = decodeAttribute(value);
-    }
-    const end = html.indexOf('>', cursor);
-    index = end < 0 ? html.length : end + 1;
-    if (!templateDepth && (tag === 'body' || closing && tag === 'head')) break;
-    if (tag === 'template') { templateDepth = Math.max(0, templateDepth + (closing ? -1 : 1)); continue; }
-    if (!closing && /^(?:script|style|title|textarea|xmp|iframe|noembed|noframes|noscript)$/.test(tag)) {
-      const endTag = new RegExp(`</${tag}(?=[\\s/>])`, 'g');
-      endTag.lastIndex = index;
-      const rawEnd = endTag.exec(lower);
-      index = rawEnd ? rawEnd.index : html.length;
-      continue;
-    }
-    if (!templateDepth && !closing && (tag === 'link' || tag === 'base')) tags.push({ tag, attrs });
+function tagAttributes(markup, offset) {
+  const attrs = Object.create(null);
+  const attributes = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*)))?/g;
+  attributes.lastIndex = offset;
+  for (let match; (match = attributes.exec(markup));) {
+    const name = match[1].toLowerCase();
+    if (!Object.hasOwn(attrs, name)) attrs[name] = decodeAttribute(match[2] ?? match[3] ?? match[4] ?? '');
   }
-  return tags;
+  return attrs;
+}
+
+// Feed one growing, byte-limited prefix. Keep the cursor, raw-text and quote
+// state across reads so chunk boundaries cannot turn inert text into markup.
+function createHeadReader() {
+  const tags = [];
+  const delimiters = /[>'"]/g;
+  let cursor = 0, start = -1, quote = '', comment = false, rawEnd = null, rawTail = 0, templateDepth = 0;
+
+  function scan(text) {
+    while (cursor < text.length) {
+      if (comment) {
+        const end = text.indexOf('-->', cursor);
+        if (end < 0) { cursor = Math.max(cursor, text.length - 2); return 0; }
+        cursor = end + 3;
+        comment = false;
+      } else if (rawEnd) {
+        rawEnd.lastIndex = cursor;
+        const end = rawEnd.exec(text);
+        if (!end) { cursor = Math.max(cursor, text.length - rawTail); return 0; }
+        cursor = end.index;
+        rawEnd = null;
+      } else if (start < 0) {
+        const next = text.indexOf('<', cursor);
+        if (next < 0) { cursor = text.length; return 0; }
+        cursor = next;
+        const prefix = text.slice(next, next + 4);
+        if (prefix === '<!--') { cursor += 4; comment = true; continue; }
+        if ('<!--'.startsWith(prefix) || prefix === '</') return 0;
+        cursor++;
+        if (/^<\/?[a-z]|^<!/i.test(prefix)) start = next;
+      } else if (quote) {
+        const end = text.indexOf(quote, cursor);
+        if (end < 0) { cursor = text.length; return 0; }
+        cursor = end + 1;
+        quote = '';
+      } else {
+        delimiters.lastIndex = cursor;
+        const delimiter = delimiters.exec(text);
+        if (!delimiter) { cursor = text.length; return 0; }
+        cursor = delimiters.lastIndex;
+        if (delimiter[0] !== '>') { quote = delimiter[0]; continue; }
+
+        const markup = text.slice(start, cursor);
+        start = -1;
+        const match = /^<(\/?)([a-z][a-z\d:-]*)(?=[\s/>])/i.exec(markup);
+        if (!match) continue;
+        const closing = Boolean(match[1]);
+        const tag = match[2].toLowerCase();
+        if (!templateDepth && (tag === 'body' && !closing || tag === 'head' && closing)) return cursor;
+        if (tag === 'template') templateDepth = Math.max(0, templateDepth + (closing ? -1 : 1));
+        if (closing) continue;
+        if (/^(?:script|style|title|textarea|xmp|iframe|noembed|noframes|noscript)$/.test(tag)) {
+          rawEnd = new RegExp(`</${tag}(?=[\\s/>])`, 'ig');
+          rawTail = tag.length + 2;
+        } else if (!templateDepth && tags.length < 128 && (tag === 'base' || tag === 'link')) {
+          const attrs = tagAttributes(markup, match[0].length);
+          // Bundled applications can preload hundreds of unrelated resources.
+          if (tag === 'base' || /(?:^|\s)(?:icon|fluid-icon|apple-touch-icon(?:-precomposed)?|manifest)(?:\s|$)/i.test(attrs.rel || '')) {
+            tags.push({ tag, attrs });
+          }
+        }
+      }
+    }
+    return 0;
+  }
+  return { scan, tags };
 }
 
 function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, order, options) {
@@ -379,8 +404,7 @@ function rankIcon({ url, sizes = '', type = '', kind = 'html', purpose = '' }, o
   return { ...detail, score, adequate, source: kind === 'manifest' ? 'manifest' : 'html', order };
 }
 
-function parseHtmlIcons(html, pageUrl, options) {
-  const tags = metadataTags(html);
+function parseHtmlIcons(tags, pageUrl, options) {
   const firstBase = tags.find(tag => tag.tag === 'base' && Object.hasOwn(tag.attrs, 'href'));
   const base = firstBase ? safeImageUrl(firstBase.attrs.href, pageUrl) || pageUrl : pageUrl;
   let manifest = null;
@@ -413,14 +437,15 @@ function parseManifestIcons(text, manifestUrl, offset, options) {
   });
 }
 
-async function boundedText(response, limit, headOnly=false) {
-  const headEnd=text=>{const match=/<\/head\s*>|<body(?:\s|>)/i.exec(text);return match?match.index+match[0].length:0;};
-  if ((!headOnly || !response.body?.getReader) && Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
+async function readMetadata(response, kind) {
+  const head = kind === 'html' ? createHeadReader() : null;
+  const limit = head ? HTML_LIMIT : MANIFEST_LIMIT;
+  if ((!head || !response.body?.getReader) && Number(response.headers?.get?.('content-length')) > limit) throw new Error('large');
   if (!response.body?.getReader) {
-    let text = await response.text();
-    if(headOnly&&headEnd(text))text=text.slice(0,headEnd(text));
-    if (new TextEncoder().encode(text).byteLength > limit) throw new Error('large');
-    return text;
+    const text = await response.text();
+    const end = head?.scan(text.slice(0, limit));
+    if (new TextEncoder().encode(end ? text.slice(0, end) : text).byteLength > limit) throw new Error('large');
+    return head ? { tags: head.tags } : { text };
   }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -429,12 +454,19 @@ async function boundedText(response, limit, headOnly=false) {
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
+      const remaining = limit - length;
+      text += decoder.decode(value.subarray(0, remaining), { stream: true });
+      if (head?.scan(text)) {
+        await reader.cancel().catch(() => {});
+        return { tags: head.tags };
+      }
       length += value.byteLength;
-      text += decoder.decode(value, { stream: true });
-      if(headOnly){const end=headEnd(text);if(end&&new TextEncoder().encode(text.slice(0,end)).length<=limit){await reader.cancel().catch(()=>{});return text.slice(0,end);}}
       if (length > limit) { await reader.cancel().catch(() => {}); throw new Error('large'); }
     }
-    return text + decoder.decode();
+    text += decoder.decode();
+    if (!head) return { text };
+    head.scan(text);
+    return { tags: head.tags };
   } finally { reader.releaseLock(); }
 }
 
@@ -462,7 +494,7 @@ async function fetchMetadata(url, kind, signal) {
     if (!response.ok) throw new Error('network');
     const mime = (response.headers?.get?.('content-type') || '').toLowerCase().split(';')[0].trim();
     if (mime && !(kind === 'html' ? ['text/html', 'application/xhtml+xml'].includes(mime) : /^(?:application\/(?:manifest\+json|json)|text\/json)$/.test(mime))) throw new Error('content');
-    return { text: await boundedText(response, kind === 'html' ? HTML_LIMIT : MANIFEST_LIMIT, kind === 'html'), url };
+    return { ...await readMetadata(response, kind), url };
   }
   throw new Error('redirect');
 }
@@ -507,7 +539,7 @@ export function discoverFavicon(siteUrl, { requestPermission = false, force = fa
     try {
       const operation = (async () => {
         const html = await fetchMetadata(pageUrl, 'html', controller.signal);
-        const metadata = parseHtmlIcons(html.text, html.url, options);
+        const metadata = parseHtmlIcons(html.tags, html.url, options);
         const measuredIcon = icon => {
           const observed = previous?.details?.find(detail => detail.url === icon.url && detail.measuredAt);
           const detail = observed ? { ...icon, actualWidth: observed.actualWidth, actualHeight: observed.actualHeight, measuredAt: observed.measuredAt } : icon;
@@ -567,7 +599,7 @@ export function getFaviconVariants(siteUrl, options={}) {
  const pageUrl=sitePageUrl(siteUrl);if(!pageUrl)return [];
  const entry=currentEntry(pageUrl), audited=SITE_ICON_CATALOG[originKey(pageUrl)]||[];
  const declared=entry?.checkedAt + CACHE_TTL > Date.now()?entry.candidates:[];
- return getFaviconCandidates(pageUrl,options).filter(url=>safeImageUrl(url)).map(url=>{
+ return getFaviconCandidates(pageUrl,{...options,allCandidates:true}).filter(url=>safeImageUrl(url)).map(url=>{
   const detail=detailFor(entry,url), known=audited.some(v=>v.url===url);
   return {url,kind:detail.kind||'fallback',scalable:!!detail.scalable,
    width:detail.actualWidth||detail.width||0,height:detail.actualHeight||detail.height||0,

@@ -27,7 +27,7 @@ const declaration=prefix=>{
 };
 const code=[
  declaration('const esc ='),declaration('const faviconFormStates ='),declaration('let faviconRequestSequence ='),
- ...['tileInk','siteGlyph','renderLinkIconChoices','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','extractLinkFavicon','visitLinkFavicon'].map(extractFunction),
+ ...['tileInk','siteGlyph','renderLinkIconChoices','linkPreviewIdentity','updateLinkPreview','isLinkPreviewCurrent','updateExtractionStatus','extractLinkFavicon','visitLinkFavicon'].map(extractFunction),
  'globalThis.app={siteGlyph,updateLinkPreview,extractLinkFavicon,visitLinkFavicon,view:form=>faviconFormStates.get(form)};'
 ].join('\n\n');
 function deferred() {
@@ -101,6 +101,17 @@ test('a full candidate list keeps earlier artwork and explains why the captured 
  assert.equal(view.variants.length,48);assert.equal(view.visitController,null);assert.match(f.status.textContent,/候选图标已满/);
 });
 
+test('explicit discovery at capacity reports the limit and preserves the full list', async () => {
+ const h=harness({discoverFavicon:async()=>({candidates:['https://example.com/new.png']})}), f=linkForm();
+ h.app.updateLinkPreview(f.form);
+ const view=h.app.view(f.form);
+ const previous=Array.from({length:48},(_,index)=>({url:`https://example.com/${index}.png`}));
+ view.variants=[...previous];
+ await h.app.extractLinkFavicon(f.button);
+ assert.deepEqual(view.variants,previous);
+ assert.match(f.status.textContent,/候选图标已满/);
+});
+
 test('automatic icons use an inert image and escaped text; text mode and unsafe URLs make no image request',()=>{
  const {app}=harness();
  const markup=app.siteGlyph({url:'https://example.com/?q=%22',icon:'<svg>',title:'Example'});
@@ -124,7 +135,7 @@ test('smart extraction starts the optional permission operation synchronously an
  done.resolve({candidates:['https://example.com/apple-touch-icon.png'],warning:'<img src=x> 图标声明不可读取'});
  await pending;
  assert.equal(f.button.disabled,false);
- assert.equal(f.status.textContent,'<img src=x> 图标声明不可读取 候选已追加，之前的图标与选择保留；选择后点击保存。');
+ assert.equal(f.status.textContent,'<img src=x> 图标声明不可读取 正在检查候选图片…');
  assert.equal(f.status.innerHTML,'','remote messages must be text only');
 });
 
