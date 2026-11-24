@@ -29,10 +29,60 @@ def route_external(route):
 def check(name,ok=True):
  assert ok,name
  print('PASS',name,flush=True)
+
+def check_first_run(browser):
+ context=browser.new_context(viewport={'width':390,'height':844},locale='en-US')
+ page=context.new_page()
+ catalog_requests=[]
+ def first_run_route(route):
+  if route.request.url!='https://ktclat.github.io/qiye-widgets/index.json':
+   return route_external(route)
+  catalog_requests.append(route)
+  if len(catalog_requests)==1:return
+  if len(catalog_requests)==2:return route.fulfill(status=503,headers={'Access-Control-Allow-Origin':'*'})
+  return route.fulfill(json=official,headers={'Access-Control-Allow-Origin':'*'})
+ context.route('https://**/*',first_run_route)
+ try:
+  page.goto(base+('/Qiye-preview.html' if args.preview else '/'))
+  add=page.locator('.add-main')
+  enable=page.get_by_role('button',name='Enable official widget source')
+  query=page.locator('[data-community-query]')
+  group=page.locator('[data-community-group]')
+  add.click();expect(enable).to_be_visible()
+  check('Opening Add starts on Widgets without widget traffic',not catalog_requests and not any('/qiye-widgets/' in url for url in calls))
+  page.locator('[data-community-category=community]').click();expect(enable).to_be_hidden()
+  page.locator('[data-community-category=official]').click()
+  enable.focus();page.keyboard.press('Space')
+  pending=page.locator('[data-gallery-enable] button[aria-busy=true]')
+  expect(pending).to_be_visible()
+  page.keyboard.press('Enter')
+  check('A pending enable requests the catalog once',len(catalog_requests)==1)
+  page.locator('#dialog [data-close]').first.click()
+  catalog_requests[0].fulfill(json=official,headers={'Access-Control-Allow-Origin':'*'})
+  add.click();expect(enable).to_be_visible()
+  query.fill('sticky note');group.select_option('code')
+  enable.click();expect(page.locator('[data-community-status]')).to_contain_text('503')
+  expect(enable).to_be_enabled();expect(enable).to_be_focused()
+  check('Failure leaves the source disabled and retryable',not page.evaluate("JSON.parse(localStorage.getItem('qiye.community.v1')||'[]').some(s=>s.enabled)"))
+  page.keyboard.press('Enter');expect(query).to_be_focused()
+  expect(query).to_have_value('sticky note');expect(group).to_have_value('code')
+  card=page.locator('[data-community-card]:visible').filter(has=page.get_by_role('heading',name='Sticky note',exact=True))
+  card.locator('[data-community-size="2x1"]').click();card.locator('[data-community-add]').click()
+  expect(page.locator('[data-community-status]')).to_contain_text('saved to your desktop')
+  page.reload();add.click();expect(enable).to_have_count(0)
+  check('Gallery opt-in, chosen group and size survive reload',len(catalog_requests)==3 and page.evaluate("JSON.parse(localStorage.getItem('qiye.state.v5')).items.some(i=>i.widget==='community'&&i.groupId==='code'&&i.size==='2x1')"))
+  page.locator('.community-manage').click()
+  toggle=page.get_by_role('switch')
+  expect(toggle).to_have_text('Disable');toggle.click();expect(toggle).to_have_text('Enable')
+ finally:
+  context.close()
+  calls.clear()
+
 with sync_playwright() as pw:
  browser=pw.chromium.launch();context=browser.new_context(viewport={'width':1440,'height':960},locale='zh-CN',timezone_id='Asia/Hong_Kong');context.route('https://**/*',route_external)
  page=context.new_page();page.set_default_timeout(15000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  try:
+  check_first_run(browser)
   page.goto(base+('/Qiye-preview.html' if args.preview else '/'));page.locator('#desktop .tile-link').first.wait_for()
   page.locator('#brand-button').click();page.locator('[data-settings-tab=sources]').click()
   check('Settings label is 组件源',page.locator('[data-settings-tab=sources]').inner_text().strip()=='组件源')

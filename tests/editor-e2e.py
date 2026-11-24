@@ -6,7 +6,7 @@ render plus a storage double. Icon and API responses are controlled test fixture
 from pathlib import Path
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from functools import partial
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import argparse,subprocess,json,copy,os,threading,zlib,struct
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser();parser.add_argument('--local-document',action='store_true');parser.add_argument('--output',default='test-results/editor');args=parser.parse_args()
@@ -79,6 +79,12 @@ with sync_playwright() as p:
   check('SVG is described as vector, not enlarged bitmap',lambda:eq(candidate(page,'vector.svg').locator('small').inner_text(),'SVG · 矢量'))
   check('extraction never changes persistent site or selected choice',lambda:eq(link(page),old))
   check('current original is selected until user decides',lambda:eq(page.locator('button[data-icon-choice=current]').get_attribute('aria-pressed'),'true'))
+  status=page.locator('#favicon-status')
+  expect(status).to_contain_text('个可用图标')
+  check('result count includes only decoded icons',lambda:ok(f"新增 {page.locator('[data-icon-ready=true]').count()} 个可用图标" in status.inner_text()))
+  get(page)
+  expect(status).to_contain_text('可用图标已在候选列表中')
+  check('repeat extraction keeps the existing selection',lambda:eq(page.locator('button[data-icon-choice=current]').get_attribute('aria-pressed'),'true'))
   page.screenshot(path=str(OUT/'editor-native-dark.png'))
   candidate(page,'small.png').click();check('small alternative can be deliberately selected',lambda:eq(page.locator('[name=iconUrl]').input_value(),SITE+'small.png'))
   check('candidate preview still does not persist anything',lambda:eq(link(page),old))
@@ -117,6 +123,7 @@ with sync_playwright() as p:
   candidate(page,'alternate.png').click()
   check('main-site candidate remains selectable for child destination',lambda:eq(page.locator('[name=iconUrl]').input_value(),SITE+'alternate.png'))
   page.locator('[data-action=extract-favicon]').click();page.wait_for_function('!document.querySelector("[data-action=extract-favicon]").disabled')
+  expect(page.locator('#favicon-status')).to_contain_text('这次未找到可用图标')
   check('failed child lookup keeps previous decoded choices alive',lambda:ok(page.evaluate('retainedChoices.every(n=>n.isConnected)')))
   check('failed child lookup does not overwrite selected main-site artwork',lambda:eq(page.locator('[name=iconUrl]').input_value(),SITE+'alternate.png'))
   check('changing destination and icon is still a draft',lambda:eq(link(page),before))

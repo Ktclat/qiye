@@ -44,7 +44,7 @@ Desktop content and settings are stored in your browser, with JSON backup and re
 2. Open `chrome://extensions/` or `edge://extensions/` and enable **Developer mode**.
 3. Choose **Load unpacked** and select the directory that directly contains `manifest.json`.
 4. Open a new tab. Click the Qiye icon in the navigation to open settings, or **＋** to add websites.
-5. To add widgets, enable the built-in official source under **Settings → Widget sources**, then open **Add → Widgets** to choose a widget, preview it and select its size.
+5. Choose **Add → Widgets → Enable official widget source** to search the gallery, preview a size and add a widget to the selected group. Use **Manage widget sources** to subscribe to a custom source.
 
 Widget sources are disabled by default and can be enabled as needed. Disabling a source preserves existing widget instances and data.
 
